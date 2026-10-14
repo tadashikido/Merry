@@ -5,7 +5,7 @@ import EsqueciSenhaView from '@/views/autenticacao/EsqueciSenhaView.vue'
 import RedefinirSenhaView from '@/views/autenticacao/RedefinirSenhaView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { DETALHE_LINK_INVALIDO, useAutenticacaoStore } from '@/stores/autenticacao'
-import { TEXTOS_ESQUECI_SENHA, TEXTOS_REDEFINIR_SENHA } from '@/textos/autenticacao'
+import { MENSAGENS_AUTENTICACAO, TEXTOS_ESQUECI_SENHA, TEXTOS_REDEFINIR_SENHA } from '@/textos/autenticacao'
 import { MENSAGENS_VALIDACAO } from '@/utilitarios/validacao'
 import {
   corpoDaChamada,
@@ -63,6 +63,107 @@ describe('EsqueciSenhaView', () => {
 
     expect(wrapper.text()).toContain(MENSAGENS_VALIDACAO.email)
     expect(fetchSimulado).toHaveBeenCalledTimes(1)
+  })
+
+  async function abrirEsqueci() {
+    fetchSimulado.mockResolvedValueOnce(respostaProblema(401))
+    const montagem = await prepararAplicacao('/esqueci-senha')
+    wrapper = await montarView(EsqueciSenhaView, montagem)
+  }
+
+  async function enviarEmail(valor: string) {
+    await wrapper!.get('#esqueci-email').setValue(valor)
+    await wrapper!.get('form').trigger('submit')
+    await flushPromises()
+  }
+
+  it('[COMPONENTE] não mostra erro ao sair do campo vazio antes de enviar', async () => {
+    await abrirEsqueci()
+
+    await wrapper!.get('#esqueci-email').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+    expect(wrapper!.get('#esqueci-email').attributes('aria-invalid')).toBe('false')
+  })
+
+  it('[COMPONENTE] depois de tentar enviar, o erro some enquanto o e-mail válido é digitado', async () => {
+    await abrirEsqueci()
+    await enviarEmail('renata@')
+    expect(wrapper!.get('#esqueci-email').attributes('aria-invalid')).toBe('true')
+
+    await wrapper!.get('#esqueci-email').setValue('renata@exemplo.com')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+    expect(wrapper!.get('#esqueci-email').attributes('aria-invalid')).toBe('false')
+    expect(fetchSimulado).toHaveBeenCalledTimes(1)
+  })
+
+  it('[COMPONENTE] depois de tentar enviar, sair do campo ainda inválido mantém o erro', async () => {
+    await abrirEsqueci()
+    await enviarEmail('')
+    expect(wrapper!.text()).toContain(MENSAGENS_VALIDACAO.obrigatorio)
+
+    await wrapper!.get('#esqueci-email').setValue('renata')
+    await wrapper!.get('#esqueci-email').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.text()).toContain(MENSAGENS_VALIDACAO.email)
+    expect(wrapper!.get('#esqueci-email').attributes('aria-invalid')).toBe('true')
+  })
+
+  it('[COMPONENTE] erro de campo vindo do servidor some quando o e-mail é corrigido', async () => {
+    await abrirEsqueci()
+    fetchSimulado.mockResolvedValueOnce(respostaProblema(400, { errors: { Email: ['E-mail recusado pelo servidor.'] } }))
+
+    await enviarEmail('renata@exemplo.com')
+    expect(wrapper!.text()).toContain('E-mail recusado pelo servidor.')
+    expect(document.activeElement?.id).toBe('esqueci-email')
+
+    await wrapper!.get('#esqueci-email').setValue('renata.albuquerque@exemplo.com')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] informa excesso de tentativas e falha de conexão sem sair do formulário', async () => {
+    await abrirEsqueci()
+    fetchSimulado.mockResolvedValueOnce(respostaProblema(429))
+    await enviarEmail('renata@exemplo.com')
+    expect(wrapper!.text()).toContain(MENSAGENS_AUTENTICACAO.muitasTentativas)
+
+    fetchSimulado.mockRejectedValueOnce(new TypeError('offline'))
+    await enviarEmail('renata@exemplo.com')
+    expect(wrapper!.text()).toContain(MENSAGENS_AUTENTICACAO.conexao)
+    expect(wrapper!.find('form').exists()).toBe(true)
+  })
+
+  it('[SEGURANÇA] mostra a mesma confirmação genérica sem revelar se o e-mail existe', async () => {
+    await abrirEsqueci()
+    fetchSimulado.mockResolvedValueOnce(respostaJson({ mensagem: 'ok' }, 202))
+
+    await enviarEmail('ninguem@exemplo.com')
+
+    expect(wrapper!.get('h1').text()).toBe(TEXTOS_ESQUECI_SENHA.enviadoTitulo)
+    expect(wrapper!.text()).toContain(TEXTOS_ESQUECI_SENHA.enviadoTexto)
+    expect(wrapper!.text()).not.toContain('ninguem@exemplo.com')
+  })
+
+  it('[COMPONENTE] organiza formulário e confirmação com as primitivas de ritmo do Nossia', async () => {
+    await abrirEsqueci()
+
+    const formulario = wrapper!.get('[data-teste="formulario-esqueci-senha"]')
+    expect(formulario.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--cartao']))
+    expect(formulario.get('div.pilha.pilha--grupo').find('#esqueci-email').exists()).toBe(true)
+
+    fetchSimulado.mockResolvedValueOnce(respostaJson({ mensagem: 'ok' }, 202))
+    await enviarEmail('renata@exemplo.com')
+
+    const confirmacao = wrapper!.get('[data-teste="confirmacao-envio"]')
+    expect(confirmacao.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--grupo']))
+    expect(confirmacao.get('[data-teste="lacre-envio"]').attributes('aria-hidden')).toBe('true')
+    expect(confirmacao.get('p.texto-legenda').text()).toBe(TEXTOS_ESQUECI_SENHA.enviadoDica)
   })
 })
 

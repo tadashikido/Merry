@@ -69,14 +69,17 @@ async function enviarDeNovo() {
   >
     <div
       v-if="enviado"
-      class="confirmacao-envio"
+      class="confirmacao-envio pilha pilha--grupo"
       data-teste="confirmacao-envio"
     >
       <span
-        class="confirmacao-envio__icone ie ie-email"
+        class="confirmacao-envio__lacre"
         aria-hidden="true"
-      />
-      <p class="confirmacao-envio__dica">
+        data-teste="lacre-envio"
+      >
+        <span class="ie ie-email" />
+      </span>
+      <p class="confirmacao-envio__dica texto-legenda">
         {{ TEXTOS_ESQUECI_SENHA.enviadoDica }}
       </p>
       <Button
@@ -94,33 +97,37 @@ async function enviarDeNovo() {
         :mensagem="mensagemErro"
       />
       <form
-        class="formulario-autenticacao"
+        class="formulario-esqueci pilha pilha--cartao"
         novalidate
         data-teste="formulario-esqueci-senha"
         @submit.prevent="enviar"
       >
-        <CampoFormulario
-          v-slot="{ id, invalido, descritoPor }"
-          :rotulo="ROTULOS_CAMPOS_AUTENTICACAO.email"
-          id-campo="esqueci-email"
-          :erro="formulario.erros.email"
-        >
-          <InputText
-            :id="id"
-            v-model="formulario.valores.email"
-            type="email"
-            inputmode="email"
-            autocomplete="email"
-            autocapitalize="off"
-            spellcheck="false"
-            :placeholder="ROTULOS_CAMPOS_AUTENTICACAO.exemploEmail"
-            :invalid="invalido"
-            :aria-invalid="invalido"
-            :aria-describedby="descritoPor"
-            :readonly="enviando"
-            @blur="formulario.validarCampo('email')"
-          />
-        </CampoFormulario>
+        <div class="pilha pilha--grupo">
+          <CampoFormulario
+            v-slot="{ id, invalido, descritoPor }"
+            :rotulo="ROTULOS_CAMPOS_AUTENTICACAO.email"
+            id-campo="esqueci-email"
+            :erro="formulario.erros.email"
+          >
+            <InputText
+              :id="id"
+              v-model="formulario.valores.email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              autocapitalize="off"
+              spellcheck="false"
+              :placeholder="ROTULOS_CAMPOS_AUTENTICACAO.exemploEmail"
+              :invalid="invalido"
+              :aria-invalid="invalido"
+              :aria-describedby="descritoPor"
+              :readonly="enviando"
+              @update:model-value="formulario.revalidarAoDigitar('email')"
+              @blur="formulario.validarAoSair('email')"
+            />
+          </CampoFormulario>
+        </div>
+
         <Button
           type="submit"
           :label="TEXTOS_ESQUECI_SENHA.botao"
@@ -143,27 +150,26 @@ async function enviarDeNovo() {
 </template>
 
 <style scoped>
-.formulario-autenticacao {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
-}
-
 .confirmacao-envio {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--p-espaco-3);
   text-align: center;
 }
 
-.confirmacao-envio__icone {
+.confirmacao-envio__lacre {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--p-dimensao-alvo-presenca);
+  height: var(--p-dimensao-alvo-presenca);
   font-size: var(--p-fonte-tamanho-pagina-celular);
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-acento-texto);
+  background: var(--p-cor-acento-suave);
+  border: 1px solid var(--p-cor-borda);
+  border-radius: var(--p-raio-total);
 }
 
 .confirmacao-envio__dica {
-  font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-apoio);
+  max-width: 32ch;
+  text-wrap: pretty;
 }
 </style>
