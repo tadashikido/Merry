@@ -1,0 +1,57 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using Casamento.Dominio.Checklists;
+using Casamento.Dominio.Convidados;
+using Casamento.Dominio.Excecoes;
+using Casamento.Dominio.Tarefas;
+
+namespace Casamento.Aplicacao.Checklists;
+
+public sealed record SalvarItemModeloChecklistRequest(
+    [Required(ErrorMessage = MensagensTarefas.TituloObrigatorio)]
+    [StringLength(TarefaCasamento.TamanhoMaximoTitulo, ErrorMessage = MensagensTarefas.TamanhoTitulo)]
+    string? Titulo,
+    [StringLength(TarefaCasamento.TamanhoMaximoDescricao, ErrorMessage = MensagensTarefas.TamanhoDescricao)]
+    string? Descricao,
+    [property: JsonConverter(typeof(JsonStringEnumConverter<ResponsavelTarefa>))]
+    ResponsavelTarefa? Responsavel,
+    [property: JsonConverter(typeof(JsonStringEnumConverter<CategoriaTarefa>))]
+    CategoriaTarefa? Categoria,
+    [Required(ErrorMessage = MensagensChecklist.DiasObrigatorios)]
+    int? DiasAntesDoCasamento) : IValidatableObject
+{
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var titulo = NormalizadorTexto.Normalizar(Titulo);
+
+        if (titulo is not null && titulo.Length < TarefaCasamento.TamanhoMinimoTitulo)
+        {
+            yield return new ValidationResult(MensagensTarefas.TamanhoTitulo, [nameof(Titulo)]);
+        }
+
+        if (Responsavel is { } responsavel && !Enum.IsDefined(responsavel))
+        {
+            yield return new ValidationResult(MensagensTarefas.ResponsavelInvalido, [nameof(Responsavel)]);
+        }
+
+        if (Categoria is { } categoria && !Enum.IsDefined(categoria))
+        {
+            yield return new ValidationResult(MensagensTarefas.CategoriaInvalida, [nameof(Categoria)]);
+        }
+
+        if (DiasAntesDoCasamento is { } dias && !ItemModeloChecklist.DiasValidos(dias))
+        {
+            yield return new ValidationResult(MensagensChecklist.DiasForaDaFaixa, [nameof(DiasAntesDoCasamento)]);
+        }
+    }
+
+    public DadosItemModeloChecklist ParaDados()
+    {
+        return new DadosItemModeloChecklist(
+            Titulo,
+            Descricao,
+            Responsavel ?? ResponsavelTarefa.Assessoria,
+            Categoria ?? CategoriaTarefa.Geral,
+            DiasAntesDoCasamento ?? throw new RegraNegocioException(MensagensChecklist.DiasObrigatorios));
+    }
+}

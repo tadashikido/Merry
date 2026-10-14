@@ -1,0 +1,126 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+
+import { descreverContagem, descreverContagemAcessivel, legendaContagemDestaque } from '@/textos/casamentos'
+
+const props = withDefaults(defineProps<{ dias: number; variante?: 'compacta' | 'destaque' | 'cabecalho' }>(), {
+  variante: 'compacta',
+})
+
+const futuro = computed(() => props.dias > 0)
+const texto = computed(() => descreverContagem(props.dias))
+const textoAcessivel = computed(() => descreverContagemAcessivel(props.dias))
+const numero = computed(() => props.dias.toLocaleString('pt-BR'))
+</script>
+
+<template>
+  <span
+    v-if="variante === 'compacta'"
+    class="contagem contagem--compacta numeros-tabulares"
+    :class="{ 'contagem--passado': dias < 0 }"
+    data-teste="contagem-regressiva"
+  >{{ texto }}</span>
+
+  <div
+    v-else
+    class="contagem"
+    :class="[`contagem--${variante}`, { 'contagem--passado': dias < 0 }]"
+    role="group"
+    :aria-label="textoAcessivel"
+    data-teste="contagem-regressiva"
+  >
+    <template v-if="futuro">
+      <span
+        class="contagem__numero numeros-tabulares"
+        aria-hidden="true"
+      >{{ numero }}</span>
+      <span
+        class="contagem__legenda"
+        aria-hidden="true"
+      >{{ legendaContagemDestaque(dias) }}</span>
+    </template>
+    <span
+      v-else
+      class="contagem__frase"
+      aria-hidden="true"
+    >{{ texto }}</span>
+    <div
+      v-if="$slots.default"
+      class="contagem__complemento"
+    >
+      <slot />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.contagem--compacta {
+  font-size: var(--p-fonte-tamanho-controle);
+  font-weight: var(--p-fonte-peso-seminegrito);
+  color: var(--p-cor-texto);
+  white-space: nowrap;
+}
+
+.contagem--compacta.contagem--passado {
+  font-weight: var(--p-fonte-peso-regular);
+  color: var(--p-cor-texto-apoio);
+}
+
+.contagem--destaque {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--p-espaco-1);
+  padding: var(--p-espaco-8) var(--p-espaco-6);
+  text-align: center;
+  background: var(--p-cor-superficie);
+  border: 1px solid var(--p-cor-borda);
+  border-radius: var(--p-raio-painel);
+}
+
+.contagem--cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--p-espaco-2);
+}
+
+.contagem__numero {
+  font-family: var(--p-fonte-editorial);
+  font-variant-numeric: lining-nums;
+  font-size: var(--p-fonte-tamanho-display);
+  font-weight: var(--p-fonte-peso-medio);
+  line-height: 1;
+  color: var(--p-cor-primaria);
+}
+
+.contagem__legenda {
+  font-size: var(--p-fonte-tamanho-controle);
+  color: var(--p-cor-texto-secundario);
+}
+
+.contagem__frase {
+  font-family: var(--p-fonte-editorial);
+  font-variant-numeric: lining-nums;
+  font-size: var(--p-fonte-tamanho-pagina-celular);
+  font-weight: var(--p-fonte-peso-medio);
+  line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-texto);
+}
+
+.contagem--passado .contagem__frase {
+  color: var(--p-cor-texto-apoio);
+}
+
+.contagem__complemento {
+  margin-top: var(--p-espaco-2);
+  font-size: var(--p-fonte-tamanho-controle);
+  color: var(--p-cor-texto-apoio);
+}
+
+@media (min-width: 1024px) {
+  .contagem--destaque .contagem__frase {
+    font-size: var(--p-fonte-tamanho-pagina);
+  }
+}
+</style>

@@ -1,0 +1,161 @@
+import type { VarianteStatus } from '@/componentes/base/tipos'
+import type {
+  CategoriaTarefa,
+  HorizonteTarefa,
+  ResponsavelTarefa,
+  SituacaoFiltroTarefa,
+  StatusTarefa,
+} from '@/tipos/tarefas'
+
+function plural(quantidade: number, singular: string, varios: string): string {
+  return quantidade === 1 ? singular : varios
+}
+
+export const ROTULOS_STATUS_TAREFA: Record<StatusTarefa, string> = {
+  AFazer: 'A fazer',
+  EmAndamento: 'Em andamento',
+  Concluida: 'Concluída',
+  Cancelada: 'Cancelada',
+}
+
+export const ROTULOS_RESPONSAVEL_TAREFA: Record<ResponsavelTarefa, string> = {
+  Assessoria: 'Assessoria',
+  Casal: 'Casal',
+}
+
+export const ROTULOS_CATEGORIA_TAREFA: Record<CategoriaTarefa, string> = {
+  Geral: 'Geral',
+  Cerimonia: 'Cerimônia',
+  Recepcao: 'Recepção',
+  Fornecedores: 'Fornecedores',
+  Convidados: 'Convidados',
+  Financeiro: 'Financeiro',
+  Documentos: 'Documentos',
+  TrajesBeleza: 'Trajes e beleza',
+}
+
+export const ROTULOS_SITUACAO_FILTRO_TAREFA: Record<SituacaoFiltroTarefa, string> = {
+  abertas: 'Abertas',
+  atrasadas: 'Atrasadas',
+  semana: 'Esta semana',
+  concluidas: 'Concluídas',
+  canceladas: 'Canceladas',
+  todas: 'Todas',
+}
+
+export const ROTULOS_HORIZONTE_TAREFA: Record<HorizonteTarefa, string> = {
+  atrasadas: 'Atrasadas',
+  semana: 'Esta semana',
+  adiante: 'Mais adiante',
+  semPrazo: 'Sem prazo',
+}
+
+export const VARIANTE_STATUS_TAREFA: Record<StatusTarefa, VarianteStatus> = {
+  AFazer: 'neutro',
+  EmAndamento: 'informacao',
+  Concluida: 'sucesso',
+  Cancelada: 'neutro',
+}
+
+export const TEXTOS_TAREFAS = {
+  menu: 'Tarefas',
+  titulo: 'Tarefas',
+  tituloCasal: 'Tarefas de vocês',
+  tituloDocumento: (nomes: string) => `Tarefas · ${nomes}`,
+  resumo: (abertas: number, concluidas: number) =>
+    `${abertas} ${plural(abertas, 'aberta', 'abertas')} · ${concluidas} ${plural(concluidas, 'concluída', 'concluídas')}`,
+  resumoCasal: (abertas: number) =>
+    abertas === 0 ? 'Tudo em dia' : `${abertas} esperando por vocês`,
+  destaqueAtrasadas: (quantidade: number) => plural(quantidade, 'atrasada', 'atrasadas'),
+  destaqueEmDia: 'Em dia',
+  nova: 'Nova tarefa',
+  filtroSituacao: 'Situação das tarefas',
+  opcaoSituacao: (rotulo: string, quantidade: number | null) => (quantidade === null ? rotulo : `${rotulo} (${quantidade})`),
+  filtroResponsavel: 'Quem faz',
+  responsavelTodos: 'Todos',
+  filtroCategoria: 'Categoria',
+  categoriaTodas: 'Todas as categorias',
+  listaRotulo: 'Tarefas do casamento',
+  grupoRotulo: (rotulo: string, quantidade: number) => `${rotulo} · ${quantidade}`,
+  prazoHoje: 'vence hoje',
+  prazoAmanha: 'vence amanhã',
+  prazoFuturo: (dias: number, data: string) => `vence em ${dias} dias · ${data}`,
+  prazoAtraso: (dias: number) => `venceu há ${dias} ${plural(dias, 'dia', 'dias')}`,
+  prazoData: (data: string) => `prazo ${data}`,
+  semPrazo: 'sem prazo',
+  concluidaPorAssessoria: (data: string) => `Concluída pela assessoria em ${data}`,
+  concluidaPeloCasal: (data: string) => `Concluída pelo casal em ${data}`,
+  concluidaPorVoces: (data: string) => `Concluída por vocês em ${data}`,
+  badgeAtrasada: 'Atrasada',
+  badgeVenceHoje: 'Vence hoje',
+  badgeSemana: 'Esta semana',
+  concluirAria: (titulo: string) => `Concluir: ${titulo}`,
+  reabrirAria: (titulo: string) => `Reabrir: ${titulo}`,
+  somenteLeituraAria: (titulo: string, situacao: string) => `${titulo}: ${situacao}`,
+  maisAcoes: 'Mais ações',
+  maisAcoesAria: (titulo: string) => `Mais ações: ${titulo}`,
+  acaoEditar: 'Editar',
+  acaoIniciar: 'Iniciar',
+  acaoReabrir: 'Reabrir',
+  acaoCancelar: 'Cancelar tarefa',
+  acaoExcluir: 'Excluir',
+  toastCriada: 'Tarefa criada.',
+  toastSalva: 'Alterações salvas.',
+  toastConcluida: 'Tarefa concluída.',
+  toastConcluidaCasal: 'Tarefa concluída. A assessoria já pode ver.',
+  toastReaberta: 'Tarefa reaberta.',
+  toastIniciada: 'Tarefa em andamento.',
+  toastCancelada: 'Tarefa cancelada.',
+  vazioTitulo: 'Nenhuma tarefa ainda',
+  vazioTexto: 'Registre o que falta fazer neste casamento.',
+  vazioFiltro: 'Nenhuma tarefa nesta visão.',
+  verTodas: 'Ver todas',
+  vazioCasalTitulo: 'Nada esperando por vocês agora.',
+  vazioCasalTexto: 'Quando a assessoria combinar algo com vocês, aparece aqui.',
+  rodapeCasal: 'A assessoria cuida das demais tarefas do casamento.',
+  erroTitulo: 'Não foi possível carregar as tarefas.',
+  erroTexto: 'Verifique a conexão e tente de novo.',
+  semAcesso: 'Você não tem acesso às tarefas deste casamento.',
+  naoEncontradoTitulo: 'Casamento não encontrado',
+  naoEncontradoTexto: 'O casamento não existe ou você não tem acesso a ele.',
+  naoEncontradoCasalTitulo: 'Tarefas não encontradas',
+  voltarCasamentos: 'Voltar para casamentos',
+  voltarNossoCasamento: 'Voltar para o nosso casamento',
+  arquivado: 'Este casamento está arquivado. As tarefas ficam só para consulta.',
+  formNova: 'Nova tarefa',
+  formEditar: 'Editar tarefa',
+  campoTitulo: 'Título',
+  campoTituloPlaceholder: 'Ex.: Confirmar horário do DJ',
+  campoResponsavel: 'Quem faz',
+  campoResponsavelDica: 'O casal vê e conclui as tarefas marcadas como dele.',
+  campoPrazo: 'Prazo',
+  campoPrazoDica: 'Deixe em branco se não houver data.',
+  campoCategoria: 'Categoria',
+  campoDescricao: 'Descrição',
+  campoDescricaoDica: (usados: number, limite: number) => `Detalhes que ajudam quem vai fazer. ${usados}/${limite}`,
+  campoSituacao: 'Situação',
+  criar: 'Criar tarefa',
+  salvar: 'Salvar alterações',
+  cancelar: 'Cancelar',
+  erroTituloTamanho: 'Use entre 2 e 160 caracteres.',
+  erroDescricaoTamanho: 'Use até 2.000 caracteres.',
+  erroPrazo: 'Informe um prazo entre 2000 e 2100.',
+  erroSalvar: 'Não foi possível salvar. Verifique a conexão e tente de novo.',
+  erroAlterar: 'Não foi possível atualizar a tarefa. Tente de novo.',
+  tarefaNaoEncontradaTitulo: 'Tarefa não encontrada',
+  tarefaNaoEncontradaTexto: 'A tarefa foi excluída ou não pertence a este casamento.',
+  semPermissao: 'Somente a assessoria pode alterar esta tarefa.',
+  confirmarExclusaoTexto: 'A tarefa sai do casamento e não pode ser recuperada. Para manter o registro, cancele a tarefa.',
+  dashTitulo: 'Tarefas',
+  dashAtrasadas: (quantidade: number, casamentos: number) =>
+    `${plural(quantidade, 'atrasada', 'atrasadas')} em ${casamentos} ${plural(casamentos, 'casamento', 'casamentos')}`,
+  dashSemana: 'nesta semana',
+  dashGrupoAtrasadas: 'Atrasadas',
+  dashGrupoSemana: 'Esta semana',
+  dashMais: (quantidade: number) => `Mais ${quantidade}`,
+  dashVazio: 'Nenhuma tarefa atrasada ou para esta semana.',
+  dashErro: 'Não foi possível carregar as tarefas.',
+  dashPrazoAtraso: (dias: number) => `${dias} ${plural(dias, 'dia', 'dias')}`,
+  dashPrazoHoje: 'hoje',
+  dashPrazoFuturo: (dias: number) => (dias === 1 ? 'amanhã' : `em ${dias} dias`),
+} as const

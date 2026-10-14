@@ -1,0 +1,40 @@
+using Npgsql;
+using Testcontainers.PostgreSql;
+
+namespace Casamento.Testes.Integracao.Banco;
+
+public class BancoPostgreSqlFixture : IAsyncLifetime
+{
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:16-alpine")
+        .WithDatabase("casamento_testes")
+        .WithUsername("casamento_testes")
+        .WithPassword(Guid.NewGuid().ToString("N"))
+        .Build();
+
+    public string StringConexao => _container.GetConnectionString();
+
+    public string CriarStringConexaoBancoNovo()
+    {
+        var construtor = new NpgsqlConnectionStringBuilder(StringConexao)
+        {
+            Database = $"casamento_{Guid.NewGuid():N}",
+        };
+        return construtor.ConnectionString;
+    }
+
+    public Task InitializeAsync()
+    {
+        return _container.StartAsync();
+    }
+
+    public Task DisposeAsync()
+    {
+        return _container.DisposeAsync().AsTask();
+    }
+}
+
+[CollectionDefinition(Nome)]
+public class ColecaoBancoPostgreSql : ICollectionFixture<BancoPostgreSqlFixture>
+{
+    public const string Nome = "Banco PostgreSQL";
+}

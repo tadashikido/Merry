@@ -1,0 +1,64 @@
+name: casamento
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?defina POSTGRES_DB no .env}
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORTA:-5432}:5432"
+    volumes:
+      - dados-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: src/Casamento.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Principal: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      Jwt__ChaveAssinatura: ${JWT_CHAVE_ASSINATURA:?defina JWT_CHAVE_ASSINATURA no .env}
+      DadosSensiveis__ChaveCifragem: ${DADOS_SENSIVEIS_CHAVE:?defina DADOS_SENSIVEIS_CHAVE no .env (openssl rand -base64 32)}
+      Autenticacao__UrlFrontend: http://localhost:${WEB_PORTA:-8081}
+      Email__Smtp__Host: email
+      Email__Smtp__Porta: "1025"
+      Email__Smtp__UsarSsl: "false"
+      ArmazenamentoArquivos__Diretorio: /var/lib/enlace/arquivos
+    volumes:
+      - arquivos-enlace:/var/lib/enlace/arquivos
+    ports:
+      - "127.0.0.1:${API_PORTA:-5080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      email:
+        condition: service_started
+
+  email:
+    image: axllent/mailpit:v1.27
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MAILPIT_PORTA:-8025}:8025"
+      - "127.0.0.1:${MAILPIT_SMTP_PORTA:-1025}:1025"
+
+  web:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${WEB_PORTA:-8081}:8080"
+    depends_on:
+      - api
+
+volumes:
+  dados-postgres:
+  arquivos-enlace:

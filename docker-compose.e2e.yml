@@ -1,0 +1,15 @@
+services:
+  api:
+    environment:
+      Autenticacao__UrlFrontend: http://localhost:5180
+      RetencaoDadosSensiveis__Habilitada: "false"
+      LimitesRequisicao__entrar__Limite: "10000"
+      LimitesRequisicao__cadastro__Limite: "10000"
+      LimitesRequisicao__recuperacao__Limite: "10000"
+      LimitesRequisicao__renovar__Limite: "10000"
+      LimitesRequisicao__importacao__Limite: "10000"
+      LimitesRequisicao__rsvp__Limite: "10000"
+      LimitesRequisicao__acesso-casal__Limite: "10000"
+      LimitesRequisicao__contrato__Limite: "10000"
+      LimitesRequisicao__comprovante__Limite: "10000"
+      LimitesRequisicao__cronograma-publico__Limite: "10000"

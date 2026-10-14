@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (.NET 8)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+
+      - name: Restaurar dependências
+        run: dotnet restore
+
+      - name: Verificar formatação
+        run: dotnet format --verify-no-changes --no-restore
+
+      - name: Compilar
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Verificar pacotes vulneráveis
+        run: dotnet list package --vulnerable --include-transitive 2>&1 | tee vulneraveis.txt && ! grep -q "has the following vulnerable packages" vulneraveis.txt
+
+      - name: Testar
+        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=resultados.trx"
+
+  frontend:
+    name: Frontend (Vue 3)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Verificar tipos
+        run: npm run type-check
+
+      - name: Testar
+        run: npm run test
+
+      - name: Compilar
+        run: npm run build-only
+
+      - name: Auditar dependências
+        run: npm audit --omit=dev --audit-level=high

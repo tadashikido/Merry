@@ -1,0 +1,32 @@
+using Casamento.Aplicacao.Persistencia;
+using Casamento.Dominio.Autenticacao;
+using Microsoft.EntityFrameworkCore;
+
+namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+
+public class TokenRedefinicaoSenhaRepository : ITokenRedefinicaoSenhaRepository
+{
+    private readonly CasamentoDbContext _contexto;
+
+    public TokenRedefinicaoSenhaRepository(CasamentoDbContext contexto)
+    {
+        _contexto = contexto;
+    }
+
+    public Task<TokenRedefinicaoSenha?> ObterPorHashAsync(string tokenHash, CancellationToken cancelamento)
+    {
+        return _contexto.TokensRedefinicaoSenha.FirstOrDefaultAsync(token => token.TokenHash == tokenHash, cancelamento);
+    }
+
+    public async Task<IReadOnlyList<TokenRedefinicaoSenha>> ListarPendentesDoUsuarioAsync(Guid usuarioId, CancellationToken cancelamento)
+    {
+        return await _contexto.TokensRedefinicaoSenha
+            .Where(token => token.UsuarioId == usuarioId && token.UsadoEm == null && token.InvalidadoEm == null)
+            .ToListAsync(cancelamento);
+    }
+
+    public void Adicionar(TokenRedefinicaoSenha token)
+    {
+        _contexto.TokensRedefinicaoSenha.Add(token);
+    }
+}

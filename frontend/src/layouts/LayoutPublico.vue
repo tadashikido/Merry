@@ -1,0 +1,158 @@
+<script setup lang="ts">
+import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
+
+withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convite' | 'operacao' }>(), { demonstracao: false, variante: 'padrao' })
+</script>
+
+<template>
+  <div
+    class="layout-publico"
+    :class="[`layout-publico--${variante}`, { 'tema-operacao': variante === 'operacao' }]"
+  >
+    <header
+      v-if="variante === 'padrao'"
+      class="layout-publico__cabecalho"
+    >
+      <slot name="marca">
+        <MarcaProduto somente-simbolo />
+      </slot>
+    </header>
+    <component
+      :is="demonstracao ? 'div' : 'main'"
+      :id="demonstracao ? undefined : 'conteudo-principal'"
+      class="layout-publico__folha"
+    >
+      <slot />
+    </component>
+    <footer
+      v-if="$slots.rodape"
+      class="layout-publico__rodape"
+    >
+      <slot name="rodape" />
+    </footer>
+  </div>
+</template>
+
+<style scoped>
+.layout-publico {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--p-espaco-6);
+  min-height: 100vh;
+  padding: var(--p-espaco-6) var(--p-espaco-3) var(--p-espaco-8);
+  background: var(--p-cor-fundo);
+}
+
+.layout-publico__cabecalho {
+  display: flex;
+  justify-content: center;
+}
+
+.layout-publico__folha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-espaco-6);
+  width: 100%;
+  max-width: var(--p-dimensao-largura-publica);
+  padding: var(--p-espaco-8) var(--p-espaco-5);
+  font-size: 1.0625rem;
+  line-height: var(--p-fonte-entrelinha-leitura);
+  background: var(--p-cor-superficie);
+  border: 1px solid var(--p-cor-borda);
+  border-radius: var(--p-raio-folha);
+  box-shadow: var(--p-sombra-suave);
+}
+
+.layout-publico__folha :deep(h1) {
+  font-size: var(--p-fonte-tamanho-pagina);
+  text-align: center;
+}
+
+.layout-publico__folha :deep(.p-button) {
+  width: 100%;
+  min-height: var(--p-dimensao-alvo-toque-movel);
+}
+
+.layout-publico__rodape {
+  max-width: var(--p-dimensao-largura-publica);
+  font-size: var(--p-fonte-tamanho-controle);
+  color: var(--p-cor-texto-apoio);
+  text-align: center;
+}
+
+.layout-publico--convite {
+  gap: var(--p-espaco-5);
+  padding: var(--p-espaco-4) var(--p-espaco-4) var(--p-espaco-8);
+  color: var(--p-cor-texto);
+  background: var(--p-cor-fundo-convite);
+}
+
+.layout-publico--convite .layout-publico__folha {
+  max-width: var(--p-dimensao-largura-convite);
+  padding: 0;
+  font-size: var(--p-fonte-tamanho-corpo);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.layout-publico--convite .layout-publico__rodape {
+  max-width: var(--p-dimensao-largura-convite);
+  color: var(--p-cor-apoio-quente);
+}
+
+.layout-publico--convite .layout-publico__rodape :deep(a) {
+  color: var(--p-cor-primaria);
+}
+
+.layout-publico--operacao {
+  gap: var(--p-espaco-5);
+  padding: var(--p-espaco-5) var(--p-espaco-4) var(--p-espaco-8);
+  color: var(--p-cor-operacao-texto);
+  background: var(--p-cor-operacao-fundo);
+}
+
+.layout-publico--operacao .layout-publico__folha {
+  max-width: var(--p-dimensao-largura-convite);
+  padding: 0;
+  font-size: var(--p-fonte-tamanho-corpo);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.layout-publico--operacao .layout-publico__folha :deep(h1) {
+  font-size: var(--p-fonte-tamanho-pagina-celular);
+  text-align: left;
+}
+
+.layout-publico--operacao .layout-publico__rodape {
+  max-width: var(--p-dimensao-largura-convite);
+  color: var(--p-cor-operacao-apoio);
+}
+
+@media (min-width: 640px) {
+  .layout-publico--operacao {
+    padding-top: var(--p-espaco-8);
+  }
+
+  .layout-publico--convite {
+    padding-top: var(--p-espaco-8);
+  }
+
+  .layout-publico {
+    padding-top: var(--p-espaco-12);
+  }
+
+  .layout-publico__folha {
+    padding: var(--p-espaco-12) var(--p-espaco-10);
+  }
+
+  .layout-publico__folha :deep(h1) {
+    font-size: var(--p-fonte-tamanho-display);
+  }
+}
+</style>
