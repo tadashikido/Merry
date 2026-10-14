@@ -93,15 +93,15 @@ public class ConfiguracaoApiTestes
     }
 
     [Theory]
-    [InlineData("172.30.0.7", "203.0.113.7", "https")]
-    [InlineData("172.30.0.254", "203.0.113.7", "https")]
-    [InlineData("172.30.1.7", "172.30.1.7", "http")]
+    [InlineData("10.214.0.7", "203.0.113.7", "https")]
+    [InlineData("10.214.0.254", "203.0.113.7", "https")]
+    [InlineData("10.214.1.7", "10.214.1.7", "http")]
     [InlineData("10.0.0.7", "10.0.0.7", "http")]
     public async Task ConfigurarProxyReverso_RedeDeProducao_DeveAceitarCabecalhosEncaminhadosSomenteDaRedeConfiavel(
         string ipConexao, string ipEsperado, string esquemaEsperado)
     {
         var configuracao = new ConfigurationBuilder()
-            .AddInMemoryCollection([new KeyValuePair<string, string?>("ProxyReverso:Redes:0", "172.30.0.0/24")])
+            .AddInMemoryCollection([new KeyValuePair<string, string?>("ProxyReverso:Redes:0", "10.214.0.0/24")])
             .Build();
         var opcoes = new ForwardedHeadersOptions();
         ConfiguracaoApi.ConfigurarProxyReverso(opcoes, configuracao);

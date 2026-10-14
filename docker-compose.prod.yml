@@ -35,7 +35,7 @@ services:
       AllowedHosts: ${DOMINIO:?defina DOMINIO no .env}
       ConnectionStrings__Principal: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       Banco__AplicarMigrationsAoIniciar: "true"
-      ProxyReverso__Redes__0: 172.30.0.0/24
+      ProxyReverso__Redes__0: 10.214.0.0/24
       Jwt__ChaveAssinatura: ${JWT_CHAVE_ASSINATURA:?defina JWT_CHAVE_ASSINATURA no .env}
       DadosSensiveis__ChaveCifragem: ${DADOS_SENSIVEIS_CHAVE:?defina DADOS_SENSIVEIS_CHAVE no .env (openssl rand -base64 32)}
       Autenticacao__UrlFrontend: https://${DOMINIO}
@@ -67,7 +67,7 @@ networks:
   default:
     ipam:
       config:
-        - subnet: 172.30.0.0/24
+        - subnet: 10.214.0.0/24
 
 volumes:
   dados-postgres:

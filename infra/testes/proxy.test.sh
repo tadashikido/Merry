@@ -86,7 +86,7 @@ CERTIFICADO="$(caminho_docker "$DIRETORIO_TEMPORARIO/certificado")"
 NGINX_CONF="$(caminho_docker "$RAIZ_REPOSITORIO/frontend/nginx/default.conf")"
 NGINX_CABECALHOS="$(caminho_docker "$RAIZ_REPOSITORIO/frontend/nginx/cabecalhos-seguranca.conf")"
 
-docker network create --subnet 172.30.0.0/24 "$REDE_INTERNA" > /dev/null
+docker network create --subnet 10.214.0.0/24 "$REDE_INTERNA" > /dev/null
 docker network create --subnet 192.168.250.0/24 "$REDE_EXTERNA" > /dev/null
 
 subir_api() {
@@ -155,7 +155,7 @@ afirmar_contem() {
 
 echo "proxy (nginx do host com TLS do certbot → nginx do container → api)"
 
-if ! aguardar http://web:8080/api/pronto "$REDE_INTERNA" 172.30.0.40; then
+if ! aguardar http://web:8080/api/pronto "$REDE_INTERNA" 10.214.0.40; then
   echo "  ✗ container web não ficou pronto"
   exit 1
 fi
@@ -173,7 +173,7 @@ if ! aguardar "https://$DOMINIO_TESTE/api/pronto" "$REDE_EXTERNA" 192.168.250.40
 fi
 
 afirmar_contem "proxy confiável da rede interna repassa IP e proto ao container" \
-  "$(curl_em "$REDE_INTERNA" 172.30.0.50 -H "X-Forwarded-For: 203.0.113.7" -H "X-Forwarded-Proto: https" "http://web:8080/api/convidados?pagina=2")" \
+  "$(curl_em "$REDE_INTERNA" 10.214.0.50 -H "X-Forwarded-For: 203.0.113.7" -H "X-Forwarded-Proto: https" "http://web:8080/api/convidados?pagina=2")" \
   "xff=203.0.113.7 proto=https uri=/api/convidados?pagina=2"
 
 afirmar_contem "cliente fora da rede confiável não consegue forjar IP nem proto" \
