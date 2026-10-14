@@ -2,7 +2,7 @@
 import type { ItemDetalhe } from './tipos'
 import { VALOR_AUSENTE } from '@/textos/rotulos'
 
-defineProps<{ itens: ItemDetalhe[] }>()
+defineProps<{ itens: ItemDetalhe[]; embutida?: boolean }>()
 
 function exibir(valor: ItemDetalhe['valor']): string {
   if (valor === null || valor === undefined || String(valor).trim() === '') {
@@ -15,6 +15,7 @@ function exibir(valor: ItemDetalhe['valor']): string {
 <template>
   <dl
     class="lista-detalhes"
+    :class="{ 'lista-detalhes--embutida': embutida }"
     data-teste="lista-detalhes"
   >
     <div
@@ -53,6 +54,16 @@ function exibir(valor: ItemDetalhe['valor']): string {
   flex-direction: column;
   gap: var(--p-espaco-1);
   padding: var(--p-espaco-3) var(--p-espaco-4);
+}
+
+.lista-detalhes--embutida {
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.lista-detalhes--embutida .lista-detalhes__item {
+  padding-inline: 0;
 }
 
 .lista-detalhes__item + .lista-detalhes__item {

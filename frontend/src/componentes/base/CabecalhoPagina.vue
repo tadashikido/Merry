@@ -142,8 +142,13 @@ withDefaults(defineProps<{ titulo: string; descricao?: string; tamanho?: 'pagina
 @media (min-width: 1024px) {
   .cabecalho-pagina__linha {
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: flex-end;
-    gap: var(--p-espaco-8);
+    gap: var(--p-ritmo-grupo) var(--p-espaco-8);
+  }
+
+  .cabecalho-pagina__textos {
+    min-width: min(100%, 24rem);
   }
 
   .cabecalho-pagina__destaque {

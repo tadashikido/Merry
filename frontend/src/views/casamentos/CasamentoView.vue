@@ -138,7 +138,10 @@ async function desfazerArquivamento(id: string) {
       :linhas="2"
     />
 
-    <template v-else-if="store.falhaAtual">
+    <div
+      v-else-if="store.falhaAtual"
+      class="pilha pilha--grupo"
+    >
       <EstadoErro
         v-if="store.falhaAtual.tipo === 'naoEncontrado'"
         :titulo="TEXTOS_CASAMENTOS.naoEncontradoTitulo"
@@ -169,7 +172,7 @@ async function desfazerArquivamento(id: string) {
       >
         {{ TEXTOS_CASAMENTOS.voltarLista }}
       </RouterLink>
-    </template>
+    </div>
 
     <template v-else-if="casamento">
       <CabecalhoPagina
@@ -246,77 +249,78 @@ async function desfazerArquivamento(id: string) {
         </template>
       </CabecalhoPagina>
 
-      <div class="casamento">
-        <MensagemFormulario
-          v-if="casamento.arquivado"
-          variante="informacao"
-          :mensagem="TEXTOS_CASAMENTOS.avisoArquivado"
-          data-teste="aviso-arquivado"
-        />
-
-        <MensagemFormulario
-          v-for="faltante in dadosFaltantes"
-          :key="faltante.titulo"
-          variante="alerta"
-          :mensagem="faltante.titulo"
-          data-teste="dados-incompletos"
+      <div class="casamento pilha pilha--bloco">
+        <div
+          v-if="casamento.arquivado || dadosFaltantes.length > 0"
+          class="pilha pilha--grupo"
         >
-          <span>{{ faltante.texto }}</span>
-          <RouterLink :to="{ name: 'casamento-editar', params: { id: casamento.id } }">
-            {{ faltante.acao }}
-          </RouterLink>
-        </MensagemFormulario>
+          <MensagemFormulario
+            v-if="casamento.arquivado"
+            variante="informacao"
+            :mensagem="TEXTOS_CASAMENTOS.avisoArquivado"
+            data-teste="aviso-arquivado"
+          />
 
-        <div class="casamento__grade">
-          <div class="casamento__coluna">
-            <BlocoAlertasPagamentos
-              v-if="!casamento.arquivado"
-              :alertas="financeiro.casamentoAlertas === casamento.id ? financeiro.alertasCasamento : null"
-              contexto="casamento"
-              :carregando="financeiro.carregandoAlertasCasamento"
-              :com-erro="financeiro.casamentoAlertas === casamento.id && financeiro.falhaAlertasCasamento !== null"
-              :destino-financeiro="{ name: 'casamento-financeiro', params: { id: casamento.id } }"
-              @tentar-novamente="financeiro.carregarAlertasCasamento(casamento.id)"
-            />
+          <MensagemFormulario
+            v-for="faltante in dadosFaltantes"
+            :key="faltante.titulo"
+            variante="alerta"
+            :mensagem="faltante.titulo"
+            data-teste="dados-incompletos"
+          >
+            <span>{{ faltante.texto }}</span>
+            <RouterLink :to="{ name: 'casamento-editar', params: { id: casamento.id } }">
+              {{ faltante.acao }}
+            </RouterLink>
+          </MensagemFormulario>
+        </div>
 
-            <BlocoConvidados
-              :casamento-id="casamento.id"
-              :arquivado="casamento.arquivado"
-              :convidados-estimados="casamento.convidadosEstimados"
-            />
-
-            <BlocoAcessoCasal
-              v-if="!autenticacao.ehCasal"
-              :casamento-id="casamento.id"
-              :arquivado="casamento.arquivado"
-            />
-          </div>
+        <div
+          class="casamento__resumo"
+          data-teste="resumo-casamento"
+        >
+          <BlocoAlertasPagamentos
+            v-if="!casamento.arquivado"
+            :alertas="financeiro.casamentoAlertas === casamento.id ? financeiro.alertasCasamento : null"
+            contexto="casamento"
+            :carregando="financeiro.carregandoAlertasCasamento"
+            :com-erro="financeiro.casamentoAlertas === casamento.id && financeiro.falhaAlertasCasamento !== null"
+            :destino-financeiro="{ name: 'casamento-financeiro', params: { id: casamento.id } }"
+            @tentar-novamente="financeiro.carregarAlertasCasamento(casamento.id)"
+          />
 
           <section
-            class="casamento__detalhes"
+            class="cartao pilha pilha--campo"
             aria-labelledby="titulo-detalhes"
+            data-teste="detalhes-casamento"
           >
-            <h2
-              id="titulo-detalhes"
-              class="casamento__titulo-secao"
-            >
+            <h2 id="titulo-detalhes">
               {{ TEXTOS_CASAMENTOS.detalhesTitulo }}
             </h2>
-            <ListaDetalhes :itens="detalhes" />
+            <ListaDetalhes
+              :itens="detalhes"
+              embutida
+            />
           </section>
         </div>
+
+        <BlocoConvidados
+          :casamento-id="casamento.id"
+          :arquivado="casamento.arquivado"
+          :convidados-estimados="casamento.convidadosEstimados"
+        />
+
+        <BlocoAcessoCasal
+          v-if="!autenticacao.ehCasal"
+          :casamento-id="casamento.id"
+          :arquivado="casamento.arquivado"
+        />
       </div>
     </template>
   </LayoutPainelUsuario>
 </template>
 
 <style scoped>
-.casamento {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
-}
-
 .casamento__quando::first-letter {
   text-transform: uppercase;
 }
@@ -324,40 +328,17 @@ async function desfazerArquivamento(id: string) {
 .casamento__situacao {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
-.casamento__grade {
+.casamento__resumo {
   display: grid;
-  gap: var(--p-espaco-6);
+  grid-template-columns: repeat(auto-fit, minmax(min(28rem, 100%), 1fr));
+  gap: var(--p-ritmo-cartao);
   align-items: start;
 }
 
-.casamento__coluna {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
-  min-width: 0;
-}
-
-.casamento__detalhes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-3);
-}
-
-.casamento .casamento__titulo-secao {
-  font-size: var(--p-fonte-tamanho-titulo);
-}
-
 .casamento__voltar {
-  display: inline-block;
-  margin-top: var(--p-espaco-4);
-}
-
-@media (min-width: 1280px) {
-  .casamento__grade {
-    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
-  }
+  align-self: flex-start;
 }
 </style>
