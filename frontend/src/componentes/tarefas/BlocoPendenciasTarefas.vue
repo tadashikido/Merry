@@ -181,8 +181,9 @@ function prazoCurto(item: TarefaPendenteDto): string {
 .pendencias-tarefas {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-4);
-  padding: var(--p-espaco-5);
+  gap: var(--p-ritmo-grupo);
+  padding: var(--p-ritmo-cartao);
+  container-type: inline-size;
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
   background: var(--p-cor-superficie);
@@ -309,7 +310,7 @@ function prazoCurto(item: TarefaPendenteDto): string {
   color: var(--p-cor-erro-texto);
 }
 
-@media (min-width: 1280px) {
+@container (min-width: 52rem) {
   .pendencias-tarefas__grupos {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

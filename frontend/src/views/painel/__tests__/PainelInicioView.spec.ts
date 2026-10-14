@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
+import Button from 'primevue/button'
 
 import PainelInicioView from '@/views/painel/PainelInicioView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -10,8 +13,13 @@ import { montarView, prepararAplicacao, respostaJson, respostaProblema, resposta
 import { ID_CASAMENTO, chamadas, quando, resumoCasamento, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
 import { alertasExemplo } from '@/__tests__/auxiliaresFinanceiro'
 import { TEXTOS_ALERTAS_PAGAMENTOS } from '@/textos/financeiro'
+import { pendenciasExemplo } from '@/__tests__/auxiliaresTarefas'
+import { ROTA_PENDENCIAS_TAREFAS } from '@/stores/tarefas'
 
 const ROTA_ATIVOS = '/api/casamentos?situacao=Ativos'
+
+const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
+const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
 
 describe('PainelInicioView', () => {
   let fetchSimulado: ReturnType<typeof simularFetch>
@@ -178,5 +186,90 @@ describe('PainelInicioView', () => {
     await bloco.get('[data-teste="tentar-alertas"]').trigger('click')
     await flushPromises()
     expect(chamadas(fetchSimulado, 'GET', '/api/financeiro/alertas')).toHaveLength(2)
+  })
+
+  it('[COMPONENTE] organiza a página em seções do ritmo Nossia, com pendências lado a lado e a grade larga de casamentos', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento()])),
+      quando('GET', ROTA_PENDENCIAS_TAREFAS, () => respostaJson(pendenciasExemplo())),
+      quando('GET', '/api/financeiro/alertas', () => respostaJson(alertasExemplo())),
+    )
+    const montagem = await prepararAplicacao('/')
+
+    wrapper = await montarView(PainelInicioView, montagem)
+    await flushPromises()
+
+    const secoes = wrapper.get('.pilha.pilha--secao')
+    const pendencias = secoes.get('.painel-inicio__pendencias')
+    expect(pendencias.find('[data-teste="bloco-pendencias-tarefas"]').exists()).toBe(true)
+    expect(pendencias.find('[data-teste="bloco-alertas-pagamentos"]').exists()).toBe(true)
+    const proximos = secoes.get('section[aria-labelledby="titulo-proximos"]')
+    expect(proximos.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--cartao']))
+    const cabecalho = proximos.get('.cabecalho-secao')
+    expect(cabecalho.get('h2#titulo-proximos').text()).toBe(TEXTOS_CASAMENTOS.proximosTitulo)
+    expect(cabecalho.get('.texto-legenda').text()).toBe(TEXTOS_CASAMENTOS.proximosLegenda)
+    expect(proximos.get('[data-teste="proximos-casamentos"]').classes()).toEqual(expect.arrayContaining(['grade', 'grade--larga']))
+  })
+
+  it('[COMPONENTE] "Ver todos os casamentos" é um link real com cara de botão secundário no cabeçalho da seção', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento()])))
+    const montagem = await prepararAplicacao('/')
+
+    wrapper = await montarView(PainelInicioView, montagem)
+
+    const verTodos = wrapper.get('.cabecalho-secao [data-teste="ver-todos"]')
+    expect(verTodos.element.tagName).toBe('A')
+    expect(verTodos.attributes('href')).toBe('/casamentos')
+    const botao = wrapper.findAllComponents(Button).find((componente) => componente.attributes('data-teste') === 'ver-todos')
+    expect(botao?.props('severity')).toBe('secondary')
+    expect(botao?.props('outlined')).toBe(true)
+    expect(verTodos.text()).toBe(TEXTOS_CASAMENTOS.verTodos)
+  })
+
+  it('[INTEGRAÇÃO] acionar "Ver todos os casamentos" leva à lista de casamentos', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento()])))
+    const montagem = await prepararAplicacao('/')
+    wrapper = await montarView(PainelInicioView, montagem)
+
+    await wrapper.get('[data-teste="ver-todos"]').trigger('click')
+
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamentos'))
+  })
+
+  it('[COMPONENTE] sem próximos casamentos a legenda da seção não aparece', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento({ diasRestantes: -10, fase: 'Realizado' })])))
+    const montagem = await prepararAplicacao('/')
+
+    wrapper = await montarView(PainelInicioView, montagem)
+
+    expect(wrapper.find('.cabecalho-secao .texto-legenda').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="ver-todos"]').exists()).toBe(true)
+  })
+
+  it('[UNITÁRIO] o estilo da tela usa só o ritmo e os tokens do Nossia, sem espaços soltos', () => {
+    const estilo = estiloDe(lerFonte('views/painel/PainelInicioView.vue'))
+
+    expect(estilo).not.toMatch(/--p-espaco-/)
+    expect(estilo).not.toMatch(/margin-bottom/)
+    const declaracoes = estilo.split('\n').filter((linha) => !linha.trim().startsWith('@media'))
+    expect(declaracoes.join('\n')).not.toMatch(/\b\d+px\b/)
+    expect(estilo).not.toMatch(/#[0-9a-f]{3,8}\b/i)
+    expect(estilo).toContain('var(--p-ritmo-cartao)')
+    expect(estilo).toContain('var(--p-fonte-peso-leve)')
+  })
+
+  it('[UNITÁRIO] cartão de casamento e blocos do painel seguem o Nossia: sem sombra e com padding do ritmo de cartão', () => {
+    const cartao = estiloDe(lerFonte('componentes/casamentos/CartaoCasamento.vue'))
+    const tarefas = estiloDe(lerFonte('componentes/tarefas/BlocoPendenciasTarefas.vue'))
+    const pagamentos = estiloDe(lerFonte('componentes/base/BlocoAlertasPagamentos.vue'))
+
+    expect(cartao).not.toMatch(/box-shadow/)
+    for (const estilo of [cartao, tarefas, pagamentos]) {
+      expect(estilo).toContain('padding: var(--p-ritmo-cartao)')
+    }
+    expect(tarefas).toContain('container-type: inline-size')
+    expect(tarefas).toMatch(/@container \(min-width: 52rem\)/)
+    expect(tarefas).not.toMatch(/@media \(min-width: 1280px\)/)
   })
 })

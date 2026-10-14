@@ -84,104 +84,117 @@ onMounted(carregar)
       </template>
     </CabecalhoPagina>
 
-    <div
-      v-if="exibirPendencias"
-      class="painel-inicio__pendencias"
-    >
-      <BlocoPendenciasTarefas
-        :pendencias="tarefas.pendencias"
-        :carregando="tarefas.carregandoPendencias"
-        :com-erro="tarefas.falhaPendencias !== null"
-        @tentar-novamente="carregarPendencias"
-      />
-      <BlocoAlertasPagamentos
-        :alertas="financeiro.alertasOrganizacao"
-        contexto="organizacao"
-        :carregando="financeiro.carregandoAlertasOrganizacao"
-        :com-erro="financeiro.falhaAlertasOrganizacao !== null"
-        @tentar-novamente="carregarAlertasPagamentos"
-      />
-    </div>
-
-    <section
-      class="painel-proximos"
-      aria-labelledby="titulo-proximos"
-    >
-      <div class="painel-proximos__cabecalho">
-        <h2
-          id="titulo-proximos"
-          class="painel-proximos__titulo"
-        >
-          {{ TEXTOS_CASAMENTOS.proximosTitulo }}
-        </h2>
-        <RouterLink
-          v-if="casamentos.proximos.length > 0 || temRealizados"
-          :to="{ name: 'casamentos' }"
-          data-teste="ver-todos"
-        >
-          {{ TEXTOS_CASAMENTOS.verTodos }}
-        </RouterLink>
+    <div class="pilha pilha--secao">
+      <div
+        v-if="exibirPendencias"
+        class="painel-inicio__pendencias"
+      >
+        <BlocoPendenciasTarefas
+          :pendencias="tarefas.pendencias"
+          :carregando="tarefas.carregandoPendencias"
+          :com-erro="tarefas.falhaPendencias !== null"
+          @tentar-novamente="carregarPendencias"
+        />
+        <BlocoAlertasPagamentos
+          :alertas="financeiro.alertasOrganizacao"
+          contexto="organizacao"
+          :carregando="financeiro.carregandoAlertasOrganizacao"
+          :com-erro="financeiro.falhaAlertasOrganizacao !== null"
+          @tentar-novamente="carregarAlertasPagamentos"
+        />
       </div>
 
-      <EstadoCarregando
-        v-if="casamentos.carregando"
-        variante="cartao"
-        :linhas="3"
-      />
-
-      <EstadoErro
-        v-else-if="semPermissao"
-        :titulo="TEXTOS_CASAMENTOS.erroCarregarTitulo"
-        :mensagem="TEXTOS_CASAMENTOS.semAcesso"
-        :pode-tentar-novamente="false"
-        variante="semPermissao"
-      />
-
-      <EstadoErro
-        v-else-if="casamentos.falha"
-        :titulo="TEXTOS_CASAMENTOS.erroCarregarTitulo"
-        :mensagem="TEXTOS_CASAMENTOS.erroCarregarTexto"
-        @tentar-novamente="carregar"
-      />
-
-      <EstadoPrimeiroAcesso
-        v-else-if="primeiroAcesso"
-        :titulo="TEXTOS_PAINEL.primeiroAcessoTitulo"
-        :descricao="TEXTOS_PAINEL.primeiroAcessoTexto"
-        :passos="passosPrimeiroAcesso"
-        :rotulo-acao="TEXTOS_CASAMENTOS.novoCasamento"
-        @continuar="novoCasamento"
-      />
-
-      <EstadoVazio
-        v-else-if="casamentos.proximos.length === 0"
-        icone="calendario"
-        :titulo="TEXTOS_CASAMENTOS.painelVazioTitulo"
-        :descricao="TEXTOS_CASAMENTOS.painelVazioTexto"
+      <section
+        class="pilha pilha--cartao"
+        aria-labelledby="titulo-proximos"
       >
-        <template #acao>
+        <div class="cabecalho-secao">
+          <div>
+            <h2
+              id="titulo-proximos"
+              class="painel-inicio__titulo-secao"
+            >
+              {{ TEXTOS_CASAMENTOS.proximosTitulo }}
+            </h2>
+            <p
+              v-if="casamentos.proximos.length > 0"
+              class="texto-legenda"
+            >
+              {{ TEXTOS_CASAMENTOS.proximosLegenda }}
+            </p>
+          </div>
           <Button
-            :label="TEXTOS_CASAMENTOS.novoCasamento"
+            v-if="casamentos.proximos.length > 0 || temRealizados"
+            :as="RouterLink"
+            :to="{ name: 'casamentos' }"
+            :label="TEXTOS_CASAMENTOS.verTodos"
             severity="secondary"
             outlined
-            @click="novoCasamento"
+            class="painel-inicio__ver-todos"
+            data-teste="ver-todos"
           />
-        </template>
-      </EstadoVazio>
+        </div>
 
-      <ul
-        v-else
-        class="painel-proximos__grade"
-        data-teste="proximos-casamentos"
-      >
-        <li
-          v-for="casamento in casamentos.proximos"
-          :key="casamento.id"
+        <EstadoCarregando
+          v-if="casamentos.carregando"
+          variante="cartao"
+          :linhas="3"
+        />
+
+        <EstadoErro
+          v-else-if="semPermissao"
+          :titulo="TEXTOS_CASAMENTOS.erroCarregarTitulo"
+          :mensagem="TEXTOS_CASAMENTOS.semAcesso"
+          :pode-tentar-novamente="false"
+          variante="semPermissao"
+        />
+
+        <EstadoErro
+          v-else-if="casamentos.falha"
+          :titulo="TEXTOS_CASAMENTOS.erroCarregarTitulo"
+          :mensagem="TEXTOS_CASAMENTOS.erroCarregarTexto"
+          @tentar-novamente="carregar"
+        />
+
+        <EstadoPrimeiroAcesso
+          v-else-if="primeiroAcesso"
+          :titulo="TEXTOS_PAINEL.primeiroAcessoTitulo"
+          :descricao="TEXTOS_PAINEL.primeiroAcessoTexto"
+          :passos="passosPrimeiroAcesso"
+          :rotulo-acao="TEXTOS_CASAMENTOS.novoCasamento"
+          @continuar="novoCasamento"
+        />
+
+        <EstadoVazio
+          v-else-if="casamentos.proximos.length === 0"
+          icone="calendario"
+          :titulo="TEXTOS_CASAMENTOS.painelVazioTitulo"
+          :descricao="TEXTOS_CASAMENTOS.painelVazioTexto"
         >
-          <CartaoCasamento :casamento="casamento" />
-        </li>
-      </ul>
-    </section>
+          <template #acao>
+            <Button
+              :label="TEXTOS_CASAMENTOS.novoCasamento"
+              severity="secondary"
+              outlined
+              @click="novoCasamento"
+            />
+          </template>
+        </EstadoVazio>
+
+        <ul
+          v-else
+          class="grade grade--larga painel-inicio__casamentos"
+          data-teste="proximos-casamentos"
+        >
+          <li
+            v-for="casamento in casamentos.proximos"
+            :key="casamento.id"
+          >
+            <CartaoCasamento :casamento="casamento" />
+          </li>
+        </ul>
+      </section>
+    </div>
   </LayoutPainelUsuario>
 </template>
 
@@ -189,53 +202,36 @@ onMounted(carregar)
 .painel-inicio__pendencias {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-espaco-6);
+  gap: var(--p-ritmo-cartao);
   align-items: start;
-  margin-bottom: var(--p-espaco-8);
 }
 
-@media (min-width: 1024px) {
-  .painel-inicio__pendencias {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.painel-inicio__titulo-secao {
+  font-size: var(--p-fonte-tamanho-pagina-celular);
+  font-weight: var(--p-fonte-peso-leve);
+  line-height: var(--p-fonte-entrelinha-titulo);
 }
 
-.painel-proximos {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-4);
-}
-
-.painel-proximos__cabecalho {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--p-espaco-2) var(--p-espaco-4);
-}
-
-.painel-proximos .painel-proximos__titulo {
-  font-size: var(--p-fonte-tamanho-titulo);
-}
-
-.painel-proximos__grade {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-espaco-4);
+.painel-inicio__casamentos {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-@media (min-width: 640px) {
-  .painel-proximos__grade {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.painel-inicio__ver-todos {
+  text-decoration: none;
+}
+
+@media (max-width: 639px) {
+  .painel-inicio__ver-todos {
+    width: 100%;
+    min-height: var(--p-dimensao-alvo-toque);
   }
 }
 
-@media (min-width: 1280px) {
-  .painel-proximos__grade {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+@media (min-width: 1024px) {
+  .painel-inicio__pendencias {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

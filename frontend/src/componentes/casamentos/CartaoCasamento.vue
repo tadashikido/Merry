@@ -54,15 +54,14 @@ const nomeAcessivel = computed(() =>
 .cartao-casamento {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-campo);
   height: 100%;
-  padding: var(--p-espaco-5);
+  padding: var(--p-ritmo-cartao);
   color: var(--p-cor-texto);
   text-decoration: none;
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
-  box-shadow: var(--p-sombra-suave);
 }
 
 .cartao-casamento:hover {

@@ -7,6 +7,7 @@ export const TEXTOS_CASAMENTOS = {
   novoCasamento: 'Novo casamento',
   verTodos: 'Ver todos os casamentos',
   proximosTitulo: 'Próximos casamentos',
+  proximosLegenda: 'Os casamentos mais próximos, em ordem de data.',
   painelVazioTitulo: 'Nenhum casamento pela frente',
   painelVazioTexto: 'Cadastre um casamento para acompanhar a data, os locais e, em breve, a lista de convidados.',
   listaTitulo: 'Casamentos',

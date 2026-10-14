@@ -197,8 +197,8 @@ function nomesCasal(item: ParcelaAlertaDto): string | null {
 .alertas-pagamentos {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-4);
-  padding: var(--p-espaco-5);
+  gap: var(--p-ritmo-grupo);
+  padding: var(--p-ritmo-cartao);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
   background: var(--p-cor-superficie);
