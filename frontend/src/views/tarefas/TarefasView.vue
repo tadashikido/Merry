@@ -644,7 +644,7 @@ function novaTarefa() {
 }
 
 .tarefas__destaque-numero {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina);
   line-height: var(--p-fonte-entrelinha-titulo);
   font-variant-numeric: lining-nums tabular-nums;

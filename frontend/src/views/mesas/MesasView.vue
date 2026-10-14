@@ -1119,7 +1119,7 @@ function acaoCabecalho(chave: string) {
 }
 
 .mesas__mesa--especial {
-  border-inline-start: var(--p-dimensao-fio-cronograma) solid var(--p-cor-champagne);
+  border-inline-start: var(--p-dimensao-fio-cronograma) solid var(--p-cor-acento);
 }
 
 .mesas__mesa-cabecalho {
@@ -1138,7 +1138,7 @@ function acaoCabecalho(chave: string) {
 }
 
 .mesas__mesa--especial .mesas__mesa-titulo {
-  color: var(--p-cor-champagne-texto);
+  color: var(--p-cor-acento-texto);
 }
 
 .mesas__barra {

@@ -85,7 +85,7 @@ const idApoio = computed(() => (props.apoio ? `${idCampo}-apoio` : undefined))
 }
 
 .linha-pessoa-mesa--selecionada {
-  background: var(--p-cor-salvia);
+  background: var(--p-cor-primaria-suave);
   border-color: var(--p-cor-primaria);
 }
 

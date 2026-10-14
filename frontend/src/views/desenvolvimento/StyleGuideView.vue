@@ -94,9 +94,10 @@ import { useNotificacao } from '@/composables/useNotificacao'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useFormulario } from '@/composables/useFormulario'
 import { MINIMO_CONTRASTE, PARES_CONTRASTE, atendeContraste, razaoContraste } from '@/design/contraste'
-import { breakpoints, cores, espacamento, raio, sombra, tipografia } from '@/design/tokens'
+import logoPrincipal from '@/assets/marca/nossia-logo-principal.png'
+import { breakpoints, cores, coresMarca, espacamento, raio, ritmo, sombra, tipografia } from '@/design/tokens'
 import { MENSAGENS_PADRAO } from '@/textos/mensagens'
-import { ROTULOS_ACOES } from '@/textos/rotulos'
+import { NOME_PRODUTO, ROTULOS_ACOES } from '@/textos/rotulos'
 import { MENSAGENS_AUTENTICACAO, ROTULOS_CAMPOS_AUTENTICACAO, TEXTOS_ENTRAR } from '@/textos/autenticacao'
 import { formatarData, formatarDataExtenso, formatarDataHora, formatarHora, formatarMoeda } from '@/utilitarios/formatacao'
 import { email, obrigatorio, tamanhoMaximo } from '@/utilitarios/validacao'
@@ -253,7 +254,8 @@ const secoes = [
   { id: 'marca', titulo: 'Marca' },
   { id: 'cores', titulo: 'Cores e contraste' },
   { id: 'tipografia', titulo: 'Tipografia' },
-  { id: 'espaco', titulo: 'Espaço, raio e sombra' },
+  { id: 'espaco', titulo: 'Espaço, ritmo e raio' },
+  { id: 'primitivas', titulo: 'Primitivas de layout' },
   { id: 'iconografia', titulo: 'Iconografia' },
   { id: 'textos', titulo: 'Textos e formatos' },
   { id: 'acoes', titulo: 'Botões e status' },
@@ -407,13 +409,13 @@ const nomesCores: Record<keyof typeof cores, string> = {
   navegacaoTexto: 'Navegação · texto',
   navegacaoAtivo: 'Navegação · ativo',
   navegacaoSimbolo: 'Navegação · símbolo',
-  primaria: 'Primária · pinho',
-  primariaEscura: 'Pinho escuro (hover)',
-  salvia: 'Secundária · sálvia',
-  champagne: 'Acento · champagne',
-  champagneClaro: 'Champagne claro',
-  champagneTexto: 'Champagne para texto',
-  champagneSuave: 'Champagne suave',
+  primaria: 'Primária · terracota',
+  primariaEscura: 'Terracota escuro (hover)',
+  primariaSuave: 'Primária suave · seleção e item ativo',
+  acento: 'Acento · terracota claro (decorativo)',
+  acentoClaro: 'Rosa queimado (decorativo)',
+  acentoTexto: 'Acento para texto',
+  acentoSuave: 'Acento suave',
   assistente: 'Fundo do assistente',
   fundo: 'Fundo',
   superficie: 'Superfície',
@@ -444,6 +446,7 @@ const nomesCores: Record<keyof typeof cores, string> = {
   informacaoSuave: 'Informação · tint',
   toast: 'Toast',
   toastTexto: 'Toast · texto',
+  toastApoio: 'Toast · apoio',
   toastAcao: 'Toast · ação',
   toastSucesso: 'Toast · sucesso',
   toastErro: 'Toast · erro',
@@ -495,26 +498,48 @@ const paresContraste = PARES_CONTRASTE.map((par) => ({
 }))
 
 const amostrasTipografia = [
-  { nome: 'Display 52/1.0', tamanho: tipografia.tamanhos.display, familia: 'editorial', texto: 'Ana & João' },
-  { nome: 'H1 40/1.1', tamanho: tipografia.tamanhos.pagina, familia: 'editorial', texto: 'Convidados' },
-  { nome: 'H1 no celular 30/1.1', tamanho: tipografia.tamanhos.paginaCelular, familia: 'editorial', texto: 'Convidados' },
-  { nome: 'H2 20/600', tamanho: tipografia.tamanhos.secao, familia: 'interface', texto: 'Próximas pendências' },
-  { nome: 'Título 17/600', tamanho: tipografia.tamanhos.titulo, familia: 'interface', texto: 'Confirmar buffet para 460 pessoas' },
-  { nome: 'Corpo 15/400', tamanho: tipografia.tamanhos.corpo, familia: 'interface', texto: 'O casal aprovou a decoração em 28/09.' },
-  { nome: 'Controle 14', tamanho: tipografia.tamanhos.controle, familia: 'interface', texto: 'Adicionar convidado' },
-  { nome: 'Apoio 13/400', tamanho: tipografia.tamanhos.apoio, familia: 'interface', texto: 'Ana & João · vence em 3 dias' },
-  { nome: 'Rótulo 12/600', tamanho: tipografia.tamanhos.rotulo, familia: 'rotulo', texto: 'Orçamento' },
+  { nome: 'Display · Jost 64/68 leve', tamanho: tipografia.tamanhos.display, familia: 'display', texto: 'Ana & João' },
+  { nome: 'H1 · Jost 36/44 leve', tamanho: tipografia.tamanhos.pagina, familia: 'display', texto: 'O seu grande dia' },
+  { nome: 'H1 no celular · Jost 30 leve', tamanho: tipografia.tamanhos.paginaCelular, familia: 'display', texto: 'Convidados' },
+  { nome: 'Subtítulo H2 · Jost 22/30 médio', tamanho: tipografia.tamanhos.secao, familia: 'subtitulo', texto: 'Lista de convidados' },
+  { nome: 'Título de cartão · Jost 17 médio', tamanho: tipografia.tamanhos.titulo, familia: 'subtitulo', texto: 'Confirmar buffet para 460 pessoas' },
+  { nome: 'Tagline · Jost 14 caixa alta 0.3em', tamanho: tipografia.tamanhos.tagline, familia: 'tagline', texto: 'Planejem o seu grande dia juntos' },
+  { nome: 'Interface · Jost 16/26', tamanho: tipografia.tamanhos.corpo, familia: 'interface', texto: 'O casal aprovou a decoração em 28/09.' },
+  { nome: 'Controle · Jost 14', tamanho: tipografia.tamanhos.controle, familia: 'interface', texto: 'Adicionar convidado' },
+  { nome: 'Rótulo · Jost 12 médio caixa alta 0.14em', tamanho: tipografia.tamanhos.rotulo, familia: 'rotulo', texto: 'Orçamento' },
+  { nome: 'Destaque · Lora 22/32', tamanho: tipografia.tamanhos.secao, familia: 'serif', texto: 'Organização, inspiração e tudo para o seu casamento em um só lugar.' },
+  { nome: 'Corpo editorial · Lora 16/26', tamanho: tipografia.tamanhos.corpo, familia: 'serif', texto: 'Reúnam fornecedores, orçamento e convidados num só lugar.' },
+  { nome: 'Legenda · Lora 13 itálico', tamanho: tipografia.tamanhos.apoio, familia: 'legenda', texto: 'Mesa posta com alecrim e velas' },
+]
+
+const amostrasMarca = Object.entries(coresMarca).map(([chave, valor]) => ({ chave, valor }))
+
+const amostrasRitmo = [
+  { chave: 'secao', uso: 'Entre seções principais da página', valor: ritmo.secao },
+  { chave: 'bloco', uso: 'Entre blocos e cartões de uma seção', valor: ritmo.bloco },
+  { chave: 'cartao', uso: 'Padding e espaço interno de cartões', valor: ritmo.cartao },
+  { chave: 'grupo', uso: 'Entre campos de formulário e itens curtos', valor: ritmo.grupo },
+  { chave: 'campo', uso: 'Entre rótulo e campo, título e apoio', valor: ritmo.campo },
+]
+
+const amostrasPrimitivas = [
+  { classe: '.pilha + .pilha--secao | --bloco | --cartao | --grupo | --campo', uso: 'Empilha filhos com o espaço do ritmo escolhido; no celular seção e bloco encolhem um passo.' },
+  { classe: '.grade, .grade--indicadores, .grade--larga', uso: 'Cartões lado a lado que quebram sozinhos (mínimo 256, 192 ou 352 px), gap de 24 px.' },
+  { classe: '.pagina-ampla | .pagina-formulario | .pagina-leitura', uso: 'Largura máxima centralizada: listas e painéis (1536 px), formulários (768 px), texto corrido (608 px).' },
+  { classe: '.cartao', uso: 'Superfície branca com hairline, raio de 12 px e padding de 24 px. Sem sombra.' },
+  { classe: '.cabecalho-secao', uso: 'Título e apoio à esquerda, ações à direita; quebra no celular.' },
+  { classe: '.texto-tagline | .texto-rotulo | .texto-destaque | .texto-corrido | .texto-legenda', uso: 'Estilos de texto do Nossia. Tagline só uma vez por página, no topo.' },
 ]
 
 const amostrasEspaco = Object.entries(espacamento).map(([chave, valor]) => ({ chave, valor }))
 const amostrasRaio = Object.entries(raio).map(([chave, valor]) => ({ chave, valor }))
 const amostrasSombra = Object.entries(sombra).map(([chave, valor]) => ({ chave, valor }))
 const amostrasBreakpoints = [
-  { nome: 'Celular', faixa: `até ${breakpoints.tablet - 1} px`, comportamento: 'Barra escura com gaveta, listagem em cartões, ações em largura total e 48 px' },
-  { nome: 'Tablet', faixa: `${breakpoints.tablet} a ${breakpoints.notebook - 1} px`, comportamento: 'Barra escura com gaveta, tabela sem colunas secundárias' },
+  { nome: 'Celular', faixa: `até ${breakpoints.tablet - 1} px`, comportamento: 'Barra clara com gaveta, margem de 16 px, listagem em cartões, ações em largura total e 48 px' },
+  { nome: 'Tablet', faixa: `${breakpoints.tablet} a ${breakpoints.notebook - 1} px`, comportamento: 'Barra clara com gaveta, margem de 24 px, tabela sem colunas secundárias' },
   { nome: 'Notebook', faixa: `${breakpoints.notebook} a ${breakpoints.desktop - 1} px`, comportamento: 'Rail de 72 px e, dentro de um casamento, navegação do casamento de 232 px' },
-  { nome: 'Desktop', faixa: `${breakpoints.desktop} a ${breakpoints.amplo - 1} px`, comportamento: 'Conteúdo limitado a 1200 px, visão geral em duas colunas' },
-  { nome: 'Amplo', faixa: `a partir de ${breakpoints.amplo} px`, comportamento: 'Conteúdo alinhado à esquerda, margem de 40 px' },
+  { nome: 'Desktop', faixa: `${breakpoints.desktop} a ${breakpoints.amplo - 1} px`, comportamento: 'Conteúdo ocupa a largura útil com margem de 40 px; grades em 3 ou 4 colunas' },
+  { nome: 'Amplo', faixa: `a partir de ${breakpoints.amplo} px`, comportamento: 'Conteúdo limitado a 1536 px e centralizado, margens iguais dos dois lados' },
 ]
 
 const dataExemplo = '2026-12-12T19:30:00Z'
@@ -695,12 +720,14 @@ function alternarPessoaMesaDemonstracao(chave: string, valor: boolean) {
 }
 
 const regras = [
-  'O canvas “Enlace — SaaS de Gestão de Casamentos” é a referência oficial do front: toda tela segue suas pranchas (Design System, Arquitetura, Estados e telas). Divergência só por acessibilidade ou regra de negócio, registrada na documentação.',
+  'O design system Nossia é a referência oficial do front: paleta terracota, ramo de alecrim, Jost leve nos títulos, Lora no texto corrido e muito respiro. Divergência só por acessibilidade ou regra de negócio, registrada na documentação.',
   'Toda tela consome apenas os tokens, layouts e componentes desta página. Cor, medida, sombra ou fonte literal em tela é proibido.',
   'Padrão novo exige evoluir o style guide antes de usar numa tela: o token ou componente entra aqui, com seus estados, e só depois vai para a tela.',
   'Toda tela deve invocar a skill frontend-design:frontend-design antes de ser desenhada e implementada.',
-  'Cormorant Garamond é editorial: nomes do casal, H1, display e contagem. Todo texto funcional (rótulos, botões, campos, tabelas, mensagens, H2 e H3) usa Hanken Grotesk.',
-  'Pinho é a cor de ação; sálvia marca seleção e item ativo; champagne aparece com parcimônia (marca, foco e o “&” do casal), sempre em #7F6231 quando for texto.',
+  'Jost é a voz da marca e da interface: títulos em peso leve (nunca bold), rótulos e botões em peso médio. Lora entra no texto corrido, em frases de destaque e em legendas; o “&” do casal é Lora itálico.',
+  'Terracota é a cor de ação e de assinatura, com parcimônia: botão primário, link, foco e item ativo (sobre o rosado). Terracota claro, rosa queimado e hairline são decorativos e nunca levam texto. Verde-alecrim marca concluído.',
+  'Espaço só pelo ritmo: seção 64 px, bloco 40 px, cartão 24 px, grupo 16 px, campo 8 px. Use as primitivas .pilha, .grade e as larguras .pagina-ampla, .pagina-formulario e .pagina-leitura em vez de margens soltas.',
+  'Listas e painéis usam a largura ampla e se espalham em grade; formulários usam a largura de formulário; texto corrido nunca passa da largura de leitura.',
   'Navegação: rail global de 72 px com ícone e rótulo acessível; dentro de /casamentos/:id, a navegação do casamento de 232 px. Módulo novo entra em MODULOS_CASAMENTO (layouts/modulosCasamento.ts) com o seu grupo; grupo sem módulo e módulo que ainda não existe não aparecem.',
   'Uma única ação primária por área. Ações destrutivas nunca são primárias fora do diálogo de confirmação.',
   'Exclusão sempre passa pelo diálogo que nomeia o item, com foco inicial em Cancelar; o diálogo mostra Excluir em carregando, fecha ao terminar e emite o toast de sucesso ou de erro.',
@@ -710,20 +737,20 @@ const regras = [
   'Datas, horas e moeda só pelas funções de formatação (pt-BR, fuso de São Paulo).',
   'Mensagens em frases curtas, voz ativa, sem jargão técnico e sem desculpas; erro sempre indica o próximo passo.',
   'Telas de acesso (entrar, cadastro, recuperação de senha) usam o layout de autenticação: painel editorial escuro com a marca e o formulário numa superfície branca. Erros que não pertencem a um campo aparecem na mensagem de formulário.',
-  'Nomes do casal sempre pelo componente de nomes do casal, com o “&” em itálico champagne; o número grande da contagem regressiva aparece só no cabeçalho do casamento, nas demais telas a contagem é uma frase curta.',
+  'Nomes do casal sempre pelo componente de nomes do casal, com o “&” em Lora itálico na cor de acento; o número grande da contagem regressiva aparece só no cabeçalho do casamento, nas demais telas a contagem é uma frase curta.',
   'Data do casamento é data de calendário (AAAA-MM-DD): formate com as funções de data de calendário, nunca convertendo para Date com fuso.',
-  'Totais de pessoas usam o resumo de contagem: número em Cormorant, rótulo no plural correto e detalhe com adultos e crianças; só um número em destaque (pinho) por resumo. Convites e acompanhantes vão no rodapé, nunca somados às pessoas.',
+  'Totais de pessoas usam o resumo de contagem: número em Jost leve, rótulo no plural correto e detalhe com adultos e crianças; só um número em destaque (terracota) por resumo. Convites e acompanhantes vão no rodapé, nunca somados às pessoas.',
   'Listas que o usuário monta item a item (as pessoas de um convite) usam a lista repetível: blocos numerados, remover por bloco, adicionar no fim, limite visível e foco levado ao bloco novo.',
   'Campos de texto livre que costumam repetir valores (grupo do convite) usam o campo com sugestões: o usuário escolhe um valor existente ou digita um novo.',
-  'Ocupação de mesa usa a fileira de lugares: um ponto por lugar, pinho cheio quando ocupado e vazado tracejado quando livre, sempre com o texto “6 de 8”. Pessoas que podem ser movidas usam a linha selecionável de pessoa, e a seleção múltipla abre a barra de ação fixa com “Sentar em…”. Exceção ao canvas: sem salão espacial e sem arrastar-e-soltar; o caminho “selecione e toque na mesa” do próprio canvas é o padrão.',
+  'Ocupação de mesa usa a fileira de lugares: um ponto por lugar, terracota cheio quando ocupado e vazado tracejado quando livre, sempre com o texto “6 de 8”. Pessoas que podem ser movidas usam a linha selecionável de pessoa, e a seleção múltipla abre a barra de ação fixa com “Sentar em…”. Sem salão espacial e sem arrastar-e-soltar: o caminho “selecione e toque na mesa” é o padrão.',
   'Dados de convidados (telefone, e-mail) não aparecem em listagens, URLs nem no título da aba; ficam só no formulário do convite.',
-  'Fluxos com passos reais em sequência (importar uma planilha) usam o indicador de etapas: números só quando há sequência, etapa atual em pinho e anunciada; no celular vira uma frase curta com barra de três segmentos.',
+  'Fluxos com passos reais em sequência (importar uma planilha) usam o indicador de etapas: números só quando há sequência, etapa atual em terracota e anunciada; no celular vira uma frase curta com barra de três segmentos.',
   'Envio de arquivo sempre pelo componente de envio: botão real como caminho principal, arrastar e soltar só como atalho, limites de tamanho visíveis e erro que diz como corrigir. O servidor é a autoridade; a checagem no navegador é só conforto.',
   'Problemas por linha de planilha usam a lista de problemas: número da linha, nome, tipo em texto (Erro, Repetida, Aviso) e a mensagem por coluna; filtros por tipo e “Mostrar mais” em listas longas.',
   'Confirmações que não são exclusão usam o diálogo de confirmação: título em pergunta, texto que diz o que acontece e o que fica de fora, foco inicial em voltar e rótulo do botão com a ação exata.',
   'Todo CSV gerado pelo produto (modelo, linhas para corrigir) passa pela neutralização de fórmulas antes de ser baixado.',
   'Andamento por etapas reais (caminho dos convites) usa a barra de progresso segmentada com legenda numérica; prazos usam o indicador de prazo; documentos para fornecedores usam o layout de impressão, sem contatos de convidados e com aviso quando houver dado de saúde.',
-  'O convite público (RSVP) usa o layout público na variante convite: fundo #F4F0E8, cartão com serifa e opções de presença de 72 px, em uma única página — responder em até 3 toques vale mais que reproduzir as etapas do canvas.',
+  'O convite público (RSVP) usa o layout público na variante convite: fundo rosado (#F8EFEA), cartão com Jost leve e Lora e opções de presença de 72 px, em uma única página — responder em até 3 toques vale mais que dividir em etapas.',
 ]
 </script>
 
@@ -777,13 +804,18 @@ const regras = [
         Marca
       </h2>
       <p class="guia__texto">
-        Enlace: dois anéis entrelaçados, pinho e champagne, com o nome em Cormorant Garamond. No rail e em fundos escuros, a versão clara.
+        {{ NOME_PRODUTO }}: o ramo de alecrim é o único símbolo. Use sempre os arquivos oficiais — nunca redesenhe o ramo nem recomponha o wordmark. Logo principal em capas e na entrada; horizontal em cabeçalhos; o ícone no rail. Margem mínima de 40 px ao redor do logo.
       </p>
       <div class="guia__linha">
+        <img
+          class="guia__logo-principal"
+          :src="logoPrincipal"
+          :alt="`${NOME_PRODUTO} — logo principal`"
+          width="530"
+          height="435"
+        >
         <MarcaProduto />
-        <span class="guia__marca-escura">
-          <MarcaProduto tom="claro" />
-        </span>
+        <MarcaProduto tom="claro" />
         <MarcaProduto somente-simbolo />
       </div>
     </section>
@@ -800,8 +832,29 @@ const regras = [
         Cores e contraste
       </h2>
       <p class="guia__texto">
-        Base cinza-clara neutra, navegação em verde quase preto, pinho para ação e foco de progresso, sálvia para seleção e champagne com parcimônia. O contexto do casal e o convite usam tons quentes sobre a mesma base.
+        Base branca e areia clara, navegação branca com hairline, terracota para ação e foco, rosado para seleção e fundos de contexto (casal, convite, entrada), verde-alecrim para concluído. Erro em vinho, mais escuro que a terracota, para não se confundir com a ação primária.
       </p>
+      <h3 class="guia__subtitulo">
+        Cores oficiais da marca
+      </h3>
+      <ul class="guia__amostras-cor">
+        <li
+          v-for="amostra in amostrasMarca"
+          :key="amostra.chave"
+          class="guia__amostra-cor"
+        >
+          <span
+            class="guia__cor"
+            :style="{ background: amostra.valor }"
+            aria-hidden="true"
+          />
+          <span class="guia__cor-nome">{{ amostra.chave }}</span>
+          <code class="guia__codigo">{{ amostra.valor }}</code>
+        </li>
+      </ul>
+      <h3 class="guia__subtitulo">
+        Cores semânticas
+      </h3>
       <ul class="guia__amostras-cor">
         <li
           v-for="amostra in amostrasCores"
@@ -885,7 +938,7 @@ const regras = [
         Tipografia
       </h2>
       <p class="guia__texto">
-        Cormorant Garamond é editorial (nomes do casal, H1, display e contagem); Hanken Grotesk é a interface — tudo o que se lê para agir. H2 e H3 são sans.
+        Jost (geométrica, fina) carrega a marca e a interface: títulos em peso leve com bastante espaço, taglines e rótulos em caixa alta espaçada. Lora traz o calor editorial no texto corrido, nas frases de destaque e nas legendas. Nenhum título em negrito.
       </p>
       <dl class="guia__tipos">
         <div
@@ -915,10 +968,27 @@ const regras = [
         id="titulo-espaco"
         class="guia__titulo-secao"
       >
-        Espaço, raio e sombra
+        Espaço, ritmo e raio
       </h2>
       <h3 class="guia__subtitulo">
-        Espaçamento (escala de 4 px)
+        Ritmo — use estes cinco
+      </h3>
+      <ul class="guia__espacos">
+        <li
+          v-for="amostra in amostrasRitmo"
+          :key="amostra.chave"
+        >
+          <code class="guia__codigo">--p-ritmo-{{ amostra.chave }}</code>
+          <span
+            class="guia__barra"
+            :style="{ width: amostra.valor }"
+            aria-hidden="true"
+          />
+          <span class="numeros-tabulares">{{ amostra.valor }} · {{ amostra.uso }}</span>
+        </li>
+      </ul>
+      <h3 class="guia__subtitulo">
+        Escala completa (ajuste fino de componentes)
       </h3>
       <ul class="guia__espacos">
         <li
@@ -935,7 +1005,7 @@ const regras = [
         </li>
       </ul>
       <h3 class="guia__subtitulo">
-        Raio e sombra
+        Raio e sombra (sombra só em menus e diálogos)
       </h3>
       <div class="guia__caixas">
         <div
@@ -986,6 +1056,78 @@ const regras = [
             </tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <section
+      id="primitivas"
+      class="guia__secao"
+      aria-labelledby="titulo-primitivas"
+    >
+      <h2
+        id="titulo-primitivas"
+        class="guia__titulo-secao"
+      >
+        Primitivas de layout
+      </h2>
+      <p class="guia__texto">
+        Classes globais (estilos/layout.css) que aplicam o ritmo e as larguras. Telas usam estas classes em vez de margens e larguras próprias.
+      </p>
+      <div class="guia__tabela-rolagem">
+        <table class="guia__tabela">
+          <thead>
+            <tr>
+              <th scope="col">
+                Classe
+              </th>
+              <th scope="col">
+                Uso
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="primitiva in amostrasPrimitivas"
+              :key="primitiva.classe"
+            >
+              <td><code class="guia__codigo">{{ primitiva.classe }}</code></td>
+              <td>{{ primitiva.uso }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div
+        class="pilha pilha--bloco guia__exemplo-primitivas"
+        data-teste="guia-primitivas"
+      >
+        <div class="cabecalho-secao">
+          <div>
+            <span class="texto-tagline">Planejem o seu grande dia juntos</span>
+            <h3 class="guia__exemplo-titulo">
+              Convidados
+            </h3>
+            <p class="texto-legenda">
+              Exemplo: tagline, título e ações num cabeçalho de seção.
+            </p>
+          </div>
+          <Button
+            label="Adicionar convite"
+            icon="ie ie-mais"
+          />
+        </div>
+        <div class="grade grade--indicadores">
+          <div
+            v-for="indicador in ['Convidados', 'Confirmados', 'Pendentes', 'Recusaram']"
+            :key="indicador"
+            class="cartao pilha pilha--campo"
+          >
+            <span class="texto-rotulo">{{ indicador }}</span>
+            <span class="guia__exemplo-numero numeros-tabulares">128</span>
+          </div>
+        </div>
+        <p class="texto-destaque">
+          Organização, inspiração e tudo para o seu casamento em um só lugar.
+        </p>
       </div>
     </section>
 
@@ -1399,7 +1541,7 @@ const regras = [
         <div class="guia__painel">
           <span class="guia__rotulo-estado">08 · Primeiro acesso</span>
           <EstadoPrimeiroAcesso
-            titulo="Boas-vindas ao Enlace."
+            :titulo="`Boas-vindas ao ${NOME_PRODUTO}.`"
             descricao="Vamos configurar seu primeiro casamento. Leva uns 5 minutos."
             :passos="passosPrimeiroAcessoDemonstracao"
             rotulo-acao="Continuar"
@@ -1466,7 +1608,7 @@ const regras = [
         Autenticação
       </h2>
       <p class="guia__texto">
-        Layout de acesso com painel editorial escuro (marca e frase em Cormorant) e formulário numa superfície branca; no celular, a marca vai para uma barra no topo. Campo de senha com mostrar/ocultar e lista de requisitos que marca cada item com ícone e texto. Mensagem de formulário para erros que não pertencem a um campo.
+        Layout de acesso com painel branco à esquerda (logo principal e frase em Lora) e o formulário num cartão branco sobre o rosado; no celular, o logo horizontal vai para uma barra no topo. Campo de senha com mostrar/ocultar e lista de requisitos que marca cada item com ícone e texto. Mensagem de formulário para erros que não pertencem a um campo.
       </p>
 
       <h3 class="guia__subtitulo">
@@ -1670,7 +1812,7 @@ const regras = [
         Resumo de contagem
       </h3>
       <p class="guia__texto">
-        Números da lista em Cormorant, como a contagem de um livro de presença. Duas colunas no celular, uma linha a partir de 640 px; o número em destaque é o de confirmadas.
+        Números da lista em Jost leve, como a contagem de um livro de presença. Duas colunas no celular, uma linha a partir de 640 px; o número em destaque é o de confirmadas.
       </p>
       <ResumoContagem
         :itens="itensResumoConvidados(TOTAIS_DEMONSTRACAO)"
@@ -1807,7 +1949,7 @@ const regras = [
         Indicador de etapas
       </h3>
       <p class="guia__texto">
-        Para sequências reais. A etapa atual fica em pinho; no celular, só a frase “Etapa 2 de 3: Confira” e a barra.
+        Para sequências reais. A etapa atual fica em terracota; no celular, só a frase “Etapa 2 de 3: Confira” e a barra.
       </p>
       <div class="guia__pilha-larga">
         <IndicadorEtapas
@@ -1898,7 +2040,7 @@ const regras = [
         Confirmação de presença
       </h2>
       <p class="guia__texto">
-        A página do convidado é o próprio convite: cartão em papel quente (#FBF9F4) com os dois anéis, nomes do casal empilhados em Cormorant, o “&amp;” em itálico champagne e a data espaçada. Todo o resto é quieto, grande e direto. Use no layout público, variante convite.
+        A página do convidado é o próprio convite: cartão branco sobre o rosado com o ramo de alecrim, nomes do casal empilhados em Jost leve, o “&amp;” em Lora itálico e a data espaçada. Todo o resto é quieto, grande e direto. Use no layout público, variante convite.
       </p>
 
       <h3 class="guia__subtitulo">
@@ -1934,7 +2076,7 @@ const regras = [
         Escolha de presença
       </h3>
       <p class="guia__texto">
-        Uma pessoa por linha, separadas por divisórias finas. Opções de 72 px; “Vou” marcado fica em pinho sobre sálvia; “Não vou”, em neutro — nunca vermelho, recusar não é erro. É um grupo de rádio: setas alternam, e o estado marcado tem ícone e peso, não só cor. O espaço abaixo das opções recebe a seção extra de cada pessoa (restrição alimentar).
+        Uma pessoa por linha, separadas por divisórias finas. Opções de 72 px; “Vou” marcado fica em terracota sobre o rosado; “Não vou”, em neutro — nunca vermelho, recusar não é erro. É um grupo de rádio: setas alternam, e o estado marcado tem ícone e peso, não só cor. O espaço abaixo das opções recebe a seção extra de cada pessoa (restrição alimentar).
       </p>
       <div class="guia__pilha-larga">
         <EscolhaPresenca
@@ -2102,7 +2244,7 @@ const regras = [
         Resumo em cardápio
       </h3>
       <p class="guia__texto">
-        Para listas que vão para fornecedores (buffet): linhas com pontilhado até o número, como num cardápio, em vez de cartões com número grande. Título em Hanken, número em pinho com algarismos tabulares.
+        Para listas que vão para fornecedores (buffet): linhas com pontilhado até o número, como num cardápio, em vez de cartões com número grande. Título em Jost, número em terracota com algarismos tabulares.
       </p>
       <ResumoCardapio
         :titulo="TEXTOS_DADOS_SENSIVEIS.resumoBuffet"
@@ -2133,7 +2275,7 @@ const regras = [
         Caminho dos convites
       </h3>
       <p class="guia__texto">
-        Barra única, lida da esquerda para a direita porque é uma sequência real: não enviado, enviado, visualizado. Cores por token (neutro, informação, pinho), separadas por 2 px de superfície e sempre acompanhadas da legenda com número — nunca só cor. Respondidos ficam fora da barra, no rodapé, porque são outra dimensão.
+        Barra única, lida da esquerda para a direita porque é uma sequência real: não enviado, enviado, visualizado. Cores por token (neutro, informação, terracota), separadas por 2 px de superfície e sempre acompanhadas da legenda com número — nunca só cor. Respondidos ficam fora da barra, no rodapé, porque são outra dimensão.
       </p>
       <div class="guia__pilha-larga">
         <BarraProgressoEnvio
@@ -2157,7 +2299,7 @@ const regras = [
         Indicador de prazo
       </h3>
       <p class="guia__texto">
-        Data limite de resposta com os dias que faltam. Fio pinho no normal, âmbar a partir de 3 dias, neutro quando encerrado. A ação opcional fica à direita.
+        Data limite de resposta com os dias que faltam. Fio terracota no normal, âmbar a partir de 3 dias, neutro quando encerrado. A ação opcional fica à direita.
       </p>
       <div class="guia__pilha-larga">
         <IndicadorPrazo
@@ -2227,7 +2369,7 @@ const regras = [
         Mesas
       </h2>
       <p class="guia__texto">
-        O mapa de mesas é uma lista, não um salão desenhado. A assinatura visual é a fileira de lugares: o anel de cadeiras do canvas desenrolado em linha, um ponto por lugar. Ela aparece no painel de cada mesa, nas opções do diálogo “Sentar em…” (versão compacta) e na impressão. Acima de 15 lugares a fileira quebra em duas.
+        O mapa de mesas é uma lista, não um salão desenhado. A assinatura visual é a fileira de lugares: o anel de cadeiras desenrolado em linha, um ponto por lugar. Ela aparece no painel de cada mesa, nas opções do diálogo “Sentar em…” (versão compacta) e na impressão. Acima de 15 lugares a fileira quebra em duas.
       </p>
 
       <h3 class="guia__subtitulo">
@@ -2261,7 +2403,7 @@ const regras = [
         Linha de pessoa selecionável
       </h3>
       <p class="guia__texto">
-        Caixa de seleção com o nome como rótulo, apoio (grupo, convite ou “Estava na Mesa 3”) e marcas de criança e acompanhante. Selecionada em sálvia com borda pinho. Sem caixa de seleção quando o casamento está arquivado. O slot “extra” recebe o aviso de convite dividido.
+        Caixa de seleção com o nome como rótulo, apoio (grupo, convite ou “Estava na Mesa 3”) e marcas de criança e acompanhante. Selecionada em rosado com borda terracota. Sem caixa de seleção quando o casamento está arquivado. O slot “extra” recebe o aviso de convite dividido.
       </p>
       <ul class="guia__pilha-larga guia__lista-mesas">
         <li
@@ -2332,7 +2474,7 @@ const regras = [
         Acesso do casal
       </h2>
       <p class="guia__texto">
-        Dois lugares à mesa, ligados pelo "&amp;" em champagne: a estrutura mostra de relance quantos acessos restam (limite de 2). Use ParLugares com dois LugarAcesso. O lugar vazio tem borda tracejada sobre o fundo e uma única ação secundária; o formulário de convite abre dentro do próprio lugar. Situação sempre com texto (BadgeStatus) e data em números tabulares. Revogar fica no menu de ações e só é confirmado no diálogo com botão destrutivo.
+        Dois lugares à mesa, ligados pelo "&amp;" em Lora itálico: a estrutura mostra de relance quantos acessos restam (limite de 2). Use ParLugares com dois LugarAcesso. O lugar vazio tem borda tracejada sobre o fundo e uma única ação secundária; o formulário de convite abre dentro do próprio lugar. Situação sempre com texto (BadgeStatus) e data em números tabulares. Revogar fica no menu de ações e só é confirmado no diálogo com botão destrutivo.
       </p>
       <h3 class="guia__subtitulo">
         Estados do lugar
@@ -2567,7 +2709,7 @@ const regras = [
         Tarefas
       </h2>
       <p class="guia__texto">
-        ItemTarefa é a linha de tarefa: o anel de conclusão (24 px visível, alvo de 44 px e 48 px em toque) ecoa os anéis da marca e preenche em pinho ao concluir; é o único movimento da tela e respeita a redução de movimento. Título 15/600, metadados 13 em texto de apoio, no máximo um badge (Atrasada, Vence hoje, Esta semana, Em andamento, Concluída ou Cancelada) — "A fazer" no prazo não leva badge. Concluída fica riscada; cancelada tem anel tracejado e não alterna. As ações de gestão ficam no MenuAcoes em modo somente ícone. Clique nos anéis para ver os estados.
+        ItemTarefa é a linha de tarefa: o anel de conclusão (24 px visível, alvo de 44 px e 48 px em toque) preenche em verde-alecrim ao concluir; é o único movimento da tela e respeita a redução de movimento. Título 16 em peso médio, metadados 13 em texto de apoio, no máximo um badge (Atrasada, Vence hoje, Esta semana, Em andamento, Concluída ou Cancelada) — "A fazer" no prazo não leva badge. Concluída fica riscada; cancelada tem anel tracejado e não alterna. As ações de gestão ficam no MenuAcoes em modo somente ícone. Clique nos anéis para ver os estados.
       </p>
       <h3 class="guia__subtitulo">
         Estados da linha
@@ -2644,7 +2786,7 @@ const regras = [
         Checklist
       </h2>
       <p class="guia__texto">
-        ReguaMarcos é o elemento memorável do checklist: agrupa itens pela distância até o dia do casamento (12 meses, 6 meses, 3 meses, 30 dias, reta final, no dia, depois). O número do marco usa a serifa editorial, como os demais números editoriais; o complemento e a contagem ficam em texto de apoio. Uma linha vertical liga os marcos em ordem; o nó do marco preenche em pinho quando todas as tarefas dele estão encerradas. No celular a régua empilha (rótulo acima da lista). Marcos sem itens não aparecem. A lista de cada marco usa ItemModeloChecklist (no modelo) ou ItemTarefa (no casamento).
+        ReguaMarcos é o elemento memorável do checklist: agrupa itens pela distância até o dia do casamento (12 meses, 6 meses, 3 meses, 30 dias, reta final, no dia, depois). O número do marco usa a serifa editorial, como os demais números editoriais; o complemento e a contagem ficam em texto de apoio. Uma linha vertical liga os marcos em ordem; o nó do marco preenche em terracota quando todas as tarefas dele estão encerradas. No celular a régua empilha (rótulo acima da lista). Marcos sem itens não aparecem. A lista de cada marco usa ItemModeloChecklist (no modelo) ou ItemTarefa (no casamento).
       </p>
       <h3 class="guia__subtitulo">
         Progresso do checklist
@@ -2705,7 +2847,7 @@ const regras = [
         </ReguaMarcos>
       </div>
       <p class="guia__texto">
-        Na navegação do casamento, o módulo Checklist mostra o percentual à direita do rótulo, em texto de apoio (pinho quando ativo), anunciado como "80% concluído". Veja a seção Navegação e workspace.
+        Na navegação do casamento, o módulo Checklist mostra o percentual à direita do rótulo, em texto de apoio (terracota quando ativo), anunciado como "80% concluído". Veja a seção Navegação e workspace.
       </p>
     </section>
 
@@ -2721,7 +2863,7 @@ const regras = [
         Fornecedores
       </h2>
       <p class="guia__texto">
-        A base de fornecedores é a agenda de contatos da assessoria. O elemento memorável é o IndiceCategorias: uma lista de categorias com a contagem em serifa editorial (número editorial), que é ao mesmo tempo panorama da base e filtro; a categoria escolhida fica em sálvia com texto pinho. No celular o índice vira um seletor "Categoria". A lista agrupa por categoria (cabeçalho com a contagem em texto de apoio) e cada fornecedor é uma LinhaFornecedor, com os canais de contato na própria linha. Ícones novos: fornecedor (traço do canvas) e telefone.
+        A base de fornecedores é a agenda de contatos da assessoria. O elemento memorável é o IndiceCategorias: uma lista de categorias com a contagem em Jost leve editorial (número editorial), que é ao mesmo tempo panorama da base e filtro; a categoria escolhida fica em rosado com texto terracota. No celular o índice vira um seletor "Categoria". A lista agrupa por categoria (cabeçalho com a contagem em texto de apoio) e cada fornecedor é uma LinhaFornecedor, com os canais de contato na própria linha. Ícones novos: fornecedor (traço fino) e telefone.
       </p>
       <h3 class="guia__subtitulo">
         Índice de categorias e linhas de fornecedor
@@ -2818,7 +2960,7 @@ const regras = [
         Fornecedores do casamento
       </h2>
       <p class="guia__texto">
-        O módulo Fornecedores do casamento é o livro-caixa de quem vai fazer o quê e por quanto. O elemento memorável é o ResumoOrcamento: uma frase editorial com os dois totais em serifa ("R$ 25.900,00 contratados de R$ 43.300,00 orçados") e, por categoria, uma régua fina em que o trecho pinho é o contratado sobre o orçado e o trilho é o que ainda está em aberto. Quando o contratado passa do orçado, a régua fica cheia em âmbar e aparece o selo "acima do orçado" (cor + ícone + texto). É uma tabela acessível (legenda e cabeçalhos para leitor de tela); a régua é decorativa. Vínculos cancelados ficam fora do resumo.
+        O módulo Fornecedores do casamento é o livro-caixa de quem vai fazer o quê e por quanto. O elemento memorável é o ResumoOrcamento: uma frase editorial com os dois totais em Jost leve ("R$ 25.900,00 contratados de R$ 43.300,00 orçados") e, por categoria, uma régua fina em que o trecho terracota é o contratado sobre o orçado e o trilho é o que ainda está em aberto. Quando o contratado passa do orçado, a régua fica cheia em âmbar e aparece o selo "acima do orçado" (cor + ícone + texto). É uma tabela acessível (legenda e cabeçalhos para leitor de tela); a régua é decorativa. Vínculos cancelados ficam fora do resumo.
       </p>
       <h3 class="guia__subtitulo">
         Resumo do orçamento
@@ -2860,7 +3002,7 @@ const regras = [
         Contrato em PDF
       </h3>
       <p class="guia__texto">
-        AnexoContrato: sem anexo mostra a área de envio (PDF até 10 MB, validado pela assinatura do arquivo); com anexo mostra nome, tamanho e data com "Baixar", "Substituir" e "Remover contrato" (este sempre com confirmação destrutiva). O download é sempre um arquivo baixado, nunca aberto dentro do Enlace. Para o casal, só "Baixar".
+        AnexoContrato: sem anexo mostra a área de envio (PDF até 10 MB, validado pela assinatura do arquivo); com anexo mostra nome, tamanho e data com "Baixar", "Substituir" e "Remover contrato" (este sempre com confirmação destrutiva). O download é sempre um arquivo baixado, nunca aberto dentro do Nossia. Para o casal, só "Baixar".
       </p>
       <div class="guia__pilha-larga">
         <AnexoContrato
@@ -2901,7 +3043,7 @@ const regras = [
         Cronograma do dia
       </h2>
       <p class="guia__texto">
-        O cronograma é lido em pé, no celular. LinhaCronograma desenha "o fio do dia": horário de início em Hanken com algarismos tabulares numa coluna fixa, um fio pinho contínuo com um nó por item e o conteúdo à direita (atividade, distância da cerimônia, local, responsável, fornecedor, instruções em até duas linhas). O nó do item na hora da cerimônia vira dois anéis champagne, o único ornamento da tela; conflito de horário troca o nó por um anel âmbar e mostra um selo de alerta com texto. A lista é uma &lt;ol&gt; por dia, dentro de um painel com borda; para a assessoria a linha inteira é um botão que abre a edição, para o casal é texto com o horário lido por extenso. AtalhosPreenchimento oferece valores conhecidos (locais da cerimônia e da recepção) em pílulas com aria-pressed; a pílula do valor atual fica em sálvia.
+        O cronograma é lido em pé, no celular. LinhaCronograma desenha "o fio do dia": horário de início em Jost com algarismos tabulares numa coluna fixa, um fio terracota contínuo com um nó por item e o conteúdo à direita (atividade, distância da cerimônia, local, responsável, fornecedor, instruções em até duas linhas). O nó do item na hora da cerimônia vira um nó duplo em terracota claro, o único ornamento da tela; conflito de horário troca o nó por um anel âmbar e mostra um selo de alerta com texto. A lista é uma &lt;ol&gt; por dia, dentro de um painel com borda; para a assessoria a linha inteira é um botão que abre a edição, para o casal é texto com o horário lido por extenso. AtalhosPreenchimento oferece valores conhecidos (locais da cerimônia e da recepção) em pílulas com aria-pressed; a pílula do valor atual fica no rosado.
       </p>
       <h3 class="guia__subtitulo">
         Linha do cronograma (padrão, cerimônia, conflito, dia seguinte e somente leitura)
@@ -2974,7 +3116,7 @@ const regras = [
         Modelos de cronograma
       </h2>
       <p class="guia__texto">
-        A área Modelos reúne dois tipos de modelo em páginas irmãs. AbasSecao é a navegação entre elas: links reais (não abas de conteúdo), a aba da página atual em sálvia com texto pinho e aria-current="page", alvo de 44 px (48 px no toque) e rolagem horizontal própria quando não cabe no celular. No modelo de cronograma, o roteiro usa a mesma LinhaCronograma do casamento, com os horários lidos na referência do modelo e a distância até a cerimônia ao lado; o nó da cerimônia com dois anéis é o pivô do roteiro.
+        A área Modelos reúne dois tipos de modelo em páginas irmãs. AbasSecao é a navegação entre elas: links reais (não abas de conteúdo), a aba da página atual em rosado com texto terracota e aria-current="page", alvo de 44 px (48 px no toque) e rolagem horizontal própria quando não cabe no celular. No modelo de cronograma, o roteiro usa a mesma LinhaCronograma do casamento, com os horários lidos na referência do modelo e a distância até a cerimônia ao lado; o nó da cerimônia com dois anéis é o pivô do roteiro.
       </p>
       <h3 class="guia__subtitulo">
         Abas da seção
@@ -3024,7 +3166,7 @@ const regras = [
         Cronograma para a equipe
       </h2>
       <p class="guia__texto">
-        O link público do cronograma usa o modo operação do board Grande Dia: LayoutPublico com variante "operacao", fundo #141716 e texto #F4F1EA. A variante remapeia os tokens de texto, superfície, borda e destaque para os tokens operacao-*, então os estados padrão (carregando, vazio, erro) e o botão secundário funcionam sobre o fundo escuro sem estilos próprios. CabecalhoOperacao traz os nomes do casal em serifa com o "&amp;" em champagne, a data por extenso, o selo do filtro (equipe completa ou "seus horários") e os locais. ItemRoteiro é a linha somente leitura: horário de início grande com algarismos tabulares numa coluna fixa, término abaixo ("+1" quando passa da meia-noite), fio contínuo com nó cinza, dois anéis champagne no horário da cerimônia, nó verde e selo "Feito" quando o item foi concluído, e instruções num bloco com filete champagne. O cartão claro do board fica reservado ao "Agora" da visão interativa. LinhaDestinoLink é a linha da área de links da assessoria: destino, detalhe, situação (Link ativo, Sem link, Link indisponível) e as ações no slot.
+        O link público do cronograma usa o modo operação do board Grande Dia: LayoutPublico com variante "operacao", fundo #1F1512 e texto #F8EFEA. A variante remapeia os tokens de texto, superfície, borda e destaque para os tokens operacao-*, então os estados padrão (carregando, vazio, erro) e o botão secundário funcionam sobre o fundo escuro sem estilos próprios. CabecalhoOperacao traz os nomes do casal em Jost leve com o "&amp;" em Lora itálico, a data por extenso, o selo do filtro (equipe completa ou "seus horários") e os locais. ItemRoteiro é a linha somente leitura: horário de início grande com algarismos tabulares numa coluna fixa, término abaixo ("+1" quando passa da meia-noite), fio contínuo com nó cinza, nó duplo em terracota claro no horário da cerimônia, nó verde e selo "Feito" quando o item foi concluído, e instruções num bloco com filete em terracota claro. O cartão claro do board fica reservado ao "Agora" da visão interativa. LinhaDestinoLink é a linha da área de links da assessoria: destino, detalhe, situação (Link ativo, Sem link, Link indisponível) e as ações no slot.
       </p>
       <h3 class="guia__subtitulo">
         Página pública (390 px)
@@ -3150,7 +3292,7 @@ const regras = [
         Grande Dia
       </h2>
       <p class="guia__texto">
-        O Grande Dia é a visão de operação do roteiro no momento atual, para o celular em uma mão. SuperficieOperacao leva o modo operação escuro para dentro do workspace com a classe global "tema-operacao" (o mesmo remapeamento de tokens da variante "operacao" do LayoutPublico). O único elemento claro da tela é o CartaoAgora (#F4F1EA, texto #141716, apoio #5E5A52): atividade em 30 px, "Desde … · até …", local, quem e o slot de contatos. RelogioOperacao mostra a hora em 56 px tabular e o selo "Ao vivo" (#F2A89D sobre #2A1E1C, ponto que pulsa só sem preferência de movimento reduzido) ou a fase ("Faltam 12 dias", "Já passou"). LinhaProximo é o bloco com borda do próximo item, com "em N min" em champagne e o horário à direita. LinhaOperacao é a linha compacta de Também agora, Depois, Ficou sem marcar e Feitos (horário, atividade, detalhe e ações no slot). ContatoUmToque são as pílulas Ligar e WhatsApp de 48 px. FaixaFaseDia diz que o dia ainda não chegou ou já passou. PainelAgoraProximo compõe tudo a partir dos itens e do minuto atual e é a mesma visão na tela interna e no link público (sem slots de ação no público). BarraAcaoFixa ganhou a variante "operacao": barra escura com a ação principal champagne #E2C999 de 56 px. Rótulos em caixa normal (exceção ao board, que usa caixa alta espaçada, para leitura rápida).
+        O Grande Dia é a visão de operação do roteiro no momento atual, para o celular em uma mão. SuperficieOperacao leva o modo operação escuro para dentro do workspace com a classe global "tema-operacao" (o mesmo remapeamento de tokens da variante "operacao" do LayoutPublico). O único elemento claro da tela é o CartaoAgora (#F4F1EA, texto #141716, apoio #5E5A52): atividade em 30 px, "Desde … · até …", local, quem e o slot de contatos. RelogioOperacao mostra a hora em 56 px tabular e o selo "Ao vivo" (#F2A89D sobre #2A1E1C, ponto que pulsa só sem preferência de movimento reduzido) ou a fase ("Faltam 12 dias", "Já passou"). LinhaProximo é o bloco com borda do próximo item, com "em N min" em terracota claro e o horário à direita. LinhaOperacao é a linha compacta de Também agora, Depois, Ficou sem marcar e Feitos (horário, atividade, detalhe e ações no slot). ContatoUmToque são as pílulas Ligar e WhatsApp de 48 px. FaixaFaseDia diz que o dia ainda não chegou ou já passou. PainelAgoraProximo compõe tudo a partir dos itens e do minuto atual e é a mesma visão na tela interna e no link público (sem slots de ação no público). BarraAcaoFixa ganhou a variante "operacao": barra escura com a ação principal terracota claro #E2C999 de 56 px. Rótulos em caixa normal (exceção ao board, que usa caixa alta espaçada, para leitura rápida).
       </p>
       <h3 class="guia__subtitulo">
         No dia (390 px)
@@ -3249,7 +3391,7 @@ const regras = [
         Duplicar casamento
       </h2>
       <p class="guia__texto">
-        A tela Duplicar casamento separa o que vai para o casamento novo do que fica com o casal de origem. OpcaoCopia é uma linha inteira clicável com caixa de seleção nativa, a quantidade em número editorial (pinho quando marcada, texto de apoio quando desmarcada ou desabilitada), título e descrição ligada por aria-describedby; o número visual é oculto do leitor de tela, que ouve a quantidade por extenso junto ao título. As opções vivem juntas numa única lista com borda e divisórias, nunca como cartões soltos. ListaNaoCopiado nomeia o casal de origem ("Fica com Ana & João") e lista, em tom de apoio e com cadeado decorativo, os dados que nunca são copiados.
+        A tela Duplicar casamento separa o que vai para o casamento novo do que fica com o casal de origem. OpcaoCopia é uma linha inteira clicável com caixa de seleção nativa, a quantidade em número editorial (terracota quando marcada, texto de apoio quando desmarcada ou desabilitada), título e descrição ligada por aria-describedby; o número visual é oculto do leitor de tela, que ouve a quantidade por extenso junto ao título. As opções vivem juntas numa única lista com borda e divisórias, nunca como cartões soltos. ListaNaoCopiado nomeia o casal de origem ("Fica com Ana & João") e lista, em tom de apoio e com cadeado decorativo, os dados que nunca são copiados.
       </p>
       <h3 class="guia__subtitulo">
         Opções de cópia (marcada, desmarcada, desabilitada e carregando)
@@ -3317,7 +3459,7 @@ const regras = [
         Resumo do orçamento com pagamentos
       </h3>
       <p class="guia__texto">
-        ResumoOrcamento com exibir-pagamentos: a frase passa a "pagos de … contratados", o apoio traz a pagar, vencidos e orçado, e a régua ganha três camadas (pago em pinho, contratado a pagar em champagne claro e livre no orçamento no trilho) com legenda textual e rótulo acessível com os percentuais. Categoria com parcela vencida mostra o selo de erro com o valor.
+        ResumoOrcamento com exibir-pagamentos: a frase passa a "pagos de … contratados", o apoio traz a pagar, vencidos e orçado, e a régua ganha três camadas (pago em terracota, contratado a pagar em terracota claro claro e livre no orçamento no trilho) com legenda textual e rótulo acessível com os percentuais. Categoria com parcela vencida mostra o selo de erro com o valor.
       </p>
       <ResumoOrcamento
         :resumo="RESUMO_PAGAMENTOS_DEMONSTRACAO"
@@ -3327,7 +3469,7 @@ const regras = [
         Parcelas e linha do hoje
       </h3>
       <p class="guia__texto">
-        LinhaParcela: bloco de data (dia em serifa, mês abreviado), "Fornecedor · número/total", observação e indicador de comprovante em apoio, valor à direita e a situação por BadgeStatus: Vencida (erro), Vence hoje e Vence em N dias (alerta), Pendente (neutro), Paga em … (sucesso). A variante histórico (fornecedor cancelado) usa tons de apoio. LinhaHoje separa passado e futuro com texto, não só cor.
+        LinhaParcela: bloco de data (dia em Jost leve, mês abreviado), "Fornecedor · número/total", observação e indicador de comprovante em apoio, valor à direita e a situação por BadgeStatus: Vencida (erro), Vence hoje e Vence em N dias (alerta), Pendente (neutro), Paga em … (sucesso). A variante histórico (fornecedor cancelado) usa tons de apoio. LinhaHoje separa passado e futuro com texto, não só cor.
       </p>
       <div class="guia__painel-fornecedores">
         <ul class="guia__lista-fornecedores">
@@ -3703,25 +3845,68 @@ const regras = [
   overflow-wrap: anywhere;
 }
 
-.guia__tipo-exemplo--editorial {
-  font-family: var(--p-fonte-editorial);
+.guia__tipo-exemplo--display {
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
+  font-weight: var(--p-fonte-peso-leve);
+  line-height: var(--p-fonte-entrelinha-display);
+  letter-spacing: var(--p-fonte-espacamento-letras-display);
+}
+
+.guia__tipo-exemplo--subtitulo {
+  font-family: var(--p-fonte-display);
   font-weight: var(--p-fonte-peso-medio);
-  line-height: 1.1;
+}
+
+.guia__tipo-exemplo--tagline {
+  font-family: var(--p-fonte-display);
+  letter-spacing: var(--p-fonte-espacamento-letras-tagline);
+  text-transform: uppercase;
+  color: var(--p-cor-acento-texto);
 }
 
 .guia__tipo-exemplo--rotulo {
-  font-weight: var(--p-fonte-peso-seminegrito);
-  letter-spacing: 0.08em;
+  font-family: var(--p-fonte-display);
+  font-weight: var(--p-fonte-peso-medio);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
   text-transform: uppercase;
   color: var(--p-cor-texto-apoio);
 }
 
-.guia__marca-escura {
-  display: inline-flex;
-  padding: var(--p-espaco-3) var(--p-espaco-4);
-  background: var(--p-cor-navegacao);
-  border-radius: var(--p-raio-controle);
+.guia__tipo-exemplo--serif {
+  font-family: var(--p-fonte-serif);
+  line-height: 1.45;
+}
+
+.guia__tipo-exemplo--legenda {
+  font-family: var(--p-fonte-serif);
+  font-style: italic;
+  color: var(--p-cor-texto-apoio);
+}
+
+.guia__logo-principal {
+  width: 12rem;
+  height: auto;
+}
+
+.guia__exemplo-primitivas {
+  margin-top: var(--p-ritmo-cartao);
+  padding: var(--p-ritmo-cartao);
+  background: var(--p-cor-fundo);
+  border: 1px dashed var(--p-cor-borda-controle);
+  border-radius: var(--p-raio-painel);
+}
+
+.guia__exemplo-titulo {
+  font-size: var(--p-fonte-tamanho-pagina);
+  font-weight: var(--p-fonte-peso-leve);
+}
+
+.guia__exemplo-numero {
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-pagina);
+  font-weight: var(--p-fonte-peso-leve);
+  line-height: 1;
 }
 
 .guia__icones {
@@ -3812,7 +3997,7 @@ const regras = [
 }
 
 .guia__contexto-frase {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: 1.625rem;
   font-weight: var(--p-fonte-peso-medio);
@@ -3942,7 +4127,7 @@ const regras = [
 }
 
 .guia__publico-nomes {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina);
   font-weight: var(--p-fonte-peso-medio);

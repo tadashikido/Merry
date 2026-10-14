@@ -661,7 +661,7 @@ function alterarResposta() {
 }
 
 .rsvp__nome-convite {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina-celular);
   font-weight: var(--p-fonte-peso-medio);

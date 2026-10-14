@@ -54,7 +54,7 @@ withDefaults(defineProps<{ titulo: string; descricao?: string; icone?: NomeIcone
   height: 3rem;
   font-size: 1.25rem;
   color: var(--p-cor-primaria);
-  background: var(--p-cor-salvia);
+  background: var(--p-cor-primaria-suave);
   border-radius: var(--p-raio-total);
 }
 

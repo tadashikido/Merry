@@ -66,7 +66,7 @@ const itensComEstado = computed(() => props.itens.map((item) => ({ ...item, ativ
   height: var(--p-dimensao-alvo-toque);
   color: var(--p-cor-navegacao-texto);
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: var(--p-raio-controle);
   transition:
     background-color var(--p-duracao-rapida),
     color var(--p-duracao-rapida);
@@ -75,13 +75,13 @@ const itensComEstado = computed(() => props.itens.map((item) => ({ ...item, ativ
 .rail-navegacao__link:hover,
 .rail-navegacao__link:focus-visible {
   color: var(--p-cor-navegacao-ativo);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--p-cor-superficie-sutil);
 }
 
 .rail-navegacao__link--ativo,
 .rail-navegacao__link--ativo:hover {
   color: var(--p-cor-navegacao-ativo);
-  background: rgba(255, 255, 255, 0.11);
+  background: var(--p-cor-primaria-suave);
 }
 
 .rail-navegacao__icone {

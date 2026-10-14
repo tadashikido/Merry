@@ -1,5 +1,6 @@
 import type { VarianteStatus } from '@/componentes/base/tipos'
 import type { FaseCasamento } from '@/tipos/casamentos'
+import { NOME_PRODUTO } from '@/textos/rotulos'
 
 export const TEXTOS_CASAMENTOS = {
   menu: 'Casamentos',
@@ -80,7 +81,7 @@ export const TEXTOS_CASAMENTOS = {
   arquivado: (nomes: string) => `“${nomes}” foi arquivado. Você encontra em Arquivados.`,
   restaurado: (nomes: string) => `“${nomes}” foi restaurado.`,
   acaoComNome: (acao: string, nomes: string) => `${acao} ${nomes}`,
-  tituloDocumento: (nomes: string) => `${nomes} · Enlace`,
+  tituloDocumento: (nomes: string) => `${nomes} · ${NOME_PRODUTO}`,
   conectorNomes: 'e',
 } as const
 

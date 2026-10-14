@@ -97,7 +97,7 @@ function idTitulo(chave: string): string {
 }
 
 .regua__numero {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-medio);
   font-variant-numeric: lining-nums;

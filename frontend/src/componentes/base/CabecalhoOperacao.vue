@@ -82,7 +82,7 @@ const tituloOculto = computed(() => TEXTOS_CRONOGRAMA_PUBLICO.tituloOculto(forma
 
 .cabecalho-operacao__nomes {
   margin: 0;
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-operacao);
   font-weight: var(--p-fonte-peso-seminegrito);
   line-height: var(--p-fonte-entrelinha-titulo);
@@ -91,6 +91,8 @@ const tituloOculto = computed(() => TEXTOS_CRONOGRAMA_PUBLICO.tituloOculto(forma
 }
 
 .cabecalho-operacao__e {
+  font-family: var(--p-fonte-serif);
+  font-weight: var(--p-fonte-peso-regular);
   font-style: italic;
   color: var(--p-cor-operacao-destaque);
 }

@@ -203,11 +203,11 @@ function confirmar() {
 }
 
 .dialogo-sentar__opcao--especial {
-  border-inline-start: var(--p-dimensao-fio-cronograma) solid var(--p-cor-champagne);
+  border-inline-start: var(--p-dimensao-fio-cronograma) solid var(--p-cor-acento);
 }
 
 .dialogo-sentar__opcao--escolhida {
-  background: var(--p-cor-salvia);
+  background: var(--p-cor-primaria-suave);
   border-color: var(--p-cor-primaria);
 }
 

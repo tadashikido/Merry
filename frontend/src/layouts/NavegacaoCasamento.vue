@@ -97,7 +97,7 @@ const quando = computed(() =>
 .navegacao-casamento {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-5);
+  gap: var(--p-ritmo-cartao);
 }
 
 .navegacao-casamento__cabecalho {
@@ -108,9 +108,9 @@ const quando = computed(() =>
 }
 
 .navegacao-casamento__rotulo {
-  font-size: 0.6875rem;
-  font-weight: var(--p-fonte-peso-seminegrito);
-  letter-spacing: 0.08em;
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-medio);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
   text-transform: uppercase;
   color: var(--p-cor-texto-apoio);
 }
@@ -190,14 +190,14 @@ const quando = computed(() =>
 
 .navegacao-casamento__item:hover {
   color: var(--p-cor-texto);
-  background: var(--p-cor-neutro-suave);
+  background: var(--p-cor-superficie-sutil);
 }
 
 .navegacao-casamento__item--ativo,
 .navegacao-casamento__item--ativo:hover {
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   color: var(--p-cor-primaria);
-  background: var(--p-cor-salvia);
+  background: var(--p-cor-primaria-suave);
 }
 
 @media (pointer: coarse) {

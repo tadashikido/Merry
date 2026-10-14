@@ -151,7 +151,7 @@ describe('Estados', () => {
   it('[COMPONENTE] primeiro acesso numera os passos, marca o atual e emite continuar', async () => {
     const wrapper = mount(EstadoPrimeiroAcesso, {
       props: {
-        titulo: 'Boas-vindas ao Enlace.',
+        titulo: 'Boas-vindas ao Nossia.',
         descricao: 'Vamos configurar seu primeiro casamento.',
         rotuloAcao: 'Continuar',
         passos: [
@@ -163,7 +163,7 @@ describe('Estados', () => {
       global,
     })
 
-    expect(wrapper.get('h2').text()).toBe('Boas-vindas ao Enlace.')
+    expect(wrapper.get('h2').text()).toBe('Boas-vindas ao Nossia.')
     const passos = wrapper.findAll('[data-teste="passo-primeiro-acesso"]')
     expect(passos[0]!.classes()).toContain('primeiro-acesso__passo--concluido')
     expect(passos[0]!.find('.ie-concluir').exists()).toBe(true)
@@ -226,20 +226,23 @@ describe('BadgeStatus', () => {
 })
 
 describe('MarcaProduto', () => {
-  it('[COMPONENTE] exibe os dois anéis decorativos e o nome Enlace', () => {
+  it('[COMPONENTE] exibe o logo horizontal oficial com o nome Nossia como texto alternativo', () => {
     const wrapper = mount(MarcaProduto)
 
-    expect(wrapper.get('svg').attributes('aria-hidden')).toBe('true')
-    expect(wrapper.findAll('svg circle')).toHaveLength(2)
-    expect(wrapper.get('.marca__nome').text()).toBe('Enlace')
+    const logo = wrapper.get('img.marca__logo')
+    expect(logo.attributes('alt')).toBe('Nossia')
+    expect(logo.attributes('src')).toContain('nossia-logo-horizontal')
+    expect(wrapper.find('svg').exists()).toBe(false)
     expect(wrapper.classes()).toContain('marca--escuro')
   })
 
   it('[COMPONENTE] mantém o nome para leitores de tela quando só o símbolo aparece e aceita o tom claro', () => {
     const wrapper = mount(MarcaProduto, { props: { somenteSimbolo: true, tom: 'claro' } })
 
-    expect(wrapper.find('.marca__nome').exists()).toBe(false)
-    expect(wrapper.get('.somente-leitor-tela').text()).toBe('Enlace')
+    expect(wrapper.find('.marca__logo').exists()).toBe(false)
+    expect(wrapper.get('img.marca__simbolo').attributes('alt')).toBe('')
+    expect(wrapper.get('img.marca__simbolo').attributes('src')).toContain('nossia-icone-claro')
+    expect(wrapper.get('.somente-leitor-tela').text()).toBe('Nossia')
     expect(wrapper.classes()).toContain('marca--claro')
   })
 })

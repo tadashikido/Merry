@@ -129,10 +129,11 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     expect(secao.text()).not.toContain('Reprovado')
   })
 
-  it('[COMPONENTE] documenta marca, iconografia, os 8 estados, o workspace e os dois contextos do Enlace', async () => {
+  it('[COMPONENTE] documenta marca, iconografia, os 8 estados, o workspace e os dois contextos do Nossia', async () => {
     wrapper = await montar()
 
     expect(wrapper.get('#marca').findAll('[data-teste="marca-produto"]')).toHaveLength(3)
+    expect(wrapper.get('#marca').get('.guia__logo-principal').attributes('alt')).toContain('Nossia')
     expect(wrapper.get('[data-teste="guia-icones"]').findAll('li')).toHaveLength(NOMES_ICONES.length)
     const estados = wrapper.get('#estados').findAll('.guia__rotulo-estado').map((rotulo) => rotulo.text())
     expect(estados).toEqual([
@@ -159,7 +160,7 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
   it('[COMPONENTE] não descreve mais a direção visual antiga', async () => {
     wrapper = await montar()
 
-    expect(wrapper.text()).not.toMatch(/ameixa|latão|Brygada|papelaria|monograma/i)
+    expect(wrapper.text()).not.toMatch(/ameixa|latão|Brygada|papelaria|monograma|Enlace|Cormorant|Hanken|pinho|champagne|sálvia/i)
   })
 
   it('[COMPONENTE] registra as regras obrigatórias de evolução do style guide', async () => {
@@ -168,7 +169,8 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     const regras = wrapper.get('#regras').text()
     expect(regras).toContain('Padrão novo exige evoluir o style guide antes de usar numa tela')
     expect(regras).toContain('frontend-design:frontend-design')
-    expect(regras).toContain('O canvas “Enlace — SaaS de Gestão de Casamentos” é a referência oficial do front')
+    expect(regras).toContain('O design system Nossia é a referência oficial do front')
+    expect(regras).toContain('Espaço só pelo ritmo')
     expect(regras).toContain('“Desfazer” só aparece quando existe operação inversa real')
   })
 

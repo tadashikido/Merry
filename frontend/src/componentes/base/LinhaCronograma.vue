@@ -259,7 +259,7 @@ const metadados = computed(() =>
 .linha-cronograma--cerimonia .linha-cronograma__no {
   margin-left: calc(var(--p-dimensao-no-cronograma) / -3);
   background: var(--p-cor-superficie);
-  border-color: var(--p-cor-champagne);
+  border-color: var(--p-cor-acento);
 }
 
 .linha-cronograma__anel--segundo {
@@ -268,7 +268,7 @@ const metadados = computed(() =>
   left: calc(var(--p-dimensao-no-cronograma) / 2);
   width: var(--p-dimensao-no-cronograma);
   height: var(--p-dimensao-no-cronograma);
-  border: var(--p-dimensao-fio-cronograma) solid var(--p-cor-champagne);
+  border: var(--p-dimensao-fio-cronograma) solid var(--p-cor-acento);
   border-radius: var(--p-raio-total);
 }
 
@@ -297,7 +297,7 @@ const metadados = computed(() =>
 }
 
 .linha-cronograma--editavel .linha-cronograma__conteudo:focus-visible {
-  background: var(--p-cor-salvia);
+  background: var(--p-cor-primaria-suave);
 }
 
 .linha-cronograma__cabeca {
@@ -323,7 +323,7 @@ const metadados = computed(() =>
 
 .linha-cronograma--cerimonia .linha-cronograma__relativo {
   font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-champagne-texto);
+  color: var(--p-cor-acento-texto);
 }
 
 .linha-cronograma__metadados {

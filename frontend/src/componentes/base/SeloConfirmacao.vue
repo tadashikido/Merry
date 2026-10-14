@@ -59,7 +59,7 @@ defineExpose({ focar })
 }
 
 .selo-confirmacao .selo-confirmacao__titulo {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: 2.375rem;
   font-weight: var(--p-fonte-peso-medio);

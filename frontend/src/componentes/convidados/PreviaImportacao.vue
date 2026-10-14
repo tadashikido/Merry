@@ -216,7 +216,7 @@ const convitesExibidos = computed(() =>
 .previa__frase {
   max-width: 34ch;
   margin: 0;
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina-celular);
   font-weight: var(--p-fonte-peso-medio);

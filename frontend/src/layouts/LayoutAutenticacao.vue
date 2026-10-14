@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import logoPrincipal from '@/assets/marca/nossia-logo-principal.png'
 import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
 import { TEXTOS_AUTENTICACAO_LAYOUT } from '@/textos/autenticacao'
+import { NOME_PRODUTO } from '@/textos/rotulos'
 
 withDefaults(defineProps<{ titulo: string; descricao?: string; demonstracao?: boolean }>(), {
   descricao: undefined,
@@ -19,10 +21,14 @@ const ID_TITULO = 'autenticacao-titulo'
       v-if="!demonstracao"
       class="layout-autenticacao__editorial"
     >
-      <MarcaProduto
-        class="layout-autenticacao__marca"
-        tom="claro"
-      />
+      <MarcaProduto class="layout-autenticacao__marca" />
+      <img
+        class="layout-autenticacao__logo"
+        :src="logoPrincipal"
+        :alt="NOME_PRODUTO"
+        width="530"
+        height="435"
+      >
       <p class="layout-autenticacao__frase">
         {{ TEXTOS_AUTENTICACAO_LAYOUT.frase }}
       </p>
@@ -75,7 +81,7 @@ const ID_TITULO = 'autenticacao-titulo'
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--p-cor-fundo);
+  background: var(--p-cor-fundo-casal);
 }
 
 .layout-autenticacao--demonstracao {
@@ -85,11 +91,13 @@ const ID_TITULO = 'autenticacao-titulo'
 .layout-autenticacao__editorial {
   display: flex;
   align-items: center;
-  padding: var(--p-espaco-4) var(--p-espaco-5);
-  color: var(--p-cor-navegacao-texto);
-  background: var(--p-cor-navegacao);
+  justify-content: center;
+  padding: var(--p-ritmo-grupo) var(--p-ritmo-grupo);
+  background: var(--p-cor-superficie);
+  border-bottom: 1px solid var(--p-cor-borda);
 }
 
+.layout-autenticacao__logo,
 .layout-autenticacao__frase {
   display: none;
 }
@@ -99,42 +107,37 @@ const ID_TITULO = 'autenticacao-titulo'
   flex: 1;
   flex-direction: column;
   align-items: center;
-  gap: var(--p-espaco-6);
-  padding: var(--p-espaco-8) var(--p-espaco-4) var(--p-espaco-10);
+  gap: var(--p-ritmo-cartao);
+  padding: var(--p-ritmo-bloco) var(--p-ritmo-grupo) var(--p-ritmo-secao);
 }
 
 .layout-autenticacao__folha {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-6);
+  gap: var(--p-ritmo-cartao);
   width: 100%;
   max-width: var(--p-dimensao-largura-autenticacao);
-  padding: var(--p-espaco-8) var(--p-espaco-5);
+  padding: var(--p-ritmo-bloco) var(--p-ritmo-cartao);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
 }
 
 .layout-autenticacao__lacre {
-  display: inline-flex;
-}
-
-.layout-autenticacao__lacre :deep(.marca__simbolo) {
-  width: 2.25rem;
-  height: 2.25rem;
+  display: none;
 }
 
 .layout-autenticacao__textos {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .layout-autenticacao__titulo {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina-celular);
-  font-weight: var(--p-fonte-peso-medio);
+  font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-texto);
 }
@@ -159,9 +162,13 @@ const ID_TITULO = 'autenticacao-titulo'
   text-align: center;
 }
 
+.layout-autenticacao--demonstracao .layout-autenticacao__lacre {
+  display: inline-flex;
+}
+
 @media (min-width: 640px) {
   .layout-autenticacao__folha {
-    padding: var(--p-espaco-10);
+    padding: var(--p-ritmo-bloco);
   }
 
   .layout-autenticacao__titulo {
@@ -172,42 +179,43 @@ const ID_TITULO = 'autenticacao-titulo'
 @media (min-width: 1024px) {
   .layout-autenticacao:not(.layout-autenticacao--demonstracao) {
     display: grid;
-    grid-template-columns: minmax(22rem, 2fr) 3fr;
+    grid-template-columns: minmax(24rem, 2fr) 3fr;
   }
 
   .layout-autenticacao__editorial {
     position: sticky;
     top: 0;
     flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
+    gap: var(--p-ritmo-bloco);
     height: 100vh;
-    padding: var(--p-espaco-10) var(--p-espaco-12);
+    padding: var(--p-ritmo-secao) var(--p-ritmo-bloco);
+    border-right: 1px solid var(--p-cor-borda);
+    border-bottom: 0;
   }
 
-  .layout-autenticacao__marca :deep(.marca__simbolo) {
-    width: 2.25rem;
-    height: 2.25rem;
+  .layout-autenticacao__marca {
+    display: none;
   }
 
-  .layout-autenticacao__marca :deep(.marca__nome) {
-    font-size: 2rem;
+  .layout-autenticacao__logo {
+    display: block;
+    width: min(100%, 20rem);
+    height: auto;
   }
 
   .layout-autenticacao__frase {
     display: block;
-    max-width: 16ch;
-    font-family: var(--p-fonte-editorial);
-    font-variant-numeric: lining-nums;
-    font-size: var(--p-fonte-tamanho-display);
-    font-weight: var(--p-fonte-peso-medio);
-    line-height: 1.05;
-    color: var(--p-cor-navegacao-ativo);
+    max-width: 20ch;
+    font-family: var(--p-fonte-serif);
+    font-size: var(--p-fonte-tamanho-secao);
+    line-height: 1.45;
+    color: var(--p-cor-texto-apoio);
+    text-align: center;
   }
 
   .layout-autenticacao__area {
     justify-content: center;
-    padding: var(--p-espaco-12) var(--p-espaco-10);
+    padding: var(--p-ritmo-secao) var(--p-ritmo-bloco);
   }
 }
 </style>

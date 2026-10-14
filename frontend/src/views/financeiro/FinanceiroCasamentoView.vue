@@ -886,7 +886,7 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
   display: flex;
   flex-direction: column;
   gap: var(--p-espaco-5);
-  max-width: var(--p-dimensao-largura-conteudo);
+  max-width: var(--p-dimensao-largura-ampla);
 }
 
 .financeiro__visao {

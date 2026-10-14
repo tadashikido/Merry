@@ -75,10 +75,10 @@ const iniciais = computed(() =>
   width: 2rem;
   height: 2rem;
   font-size: var(--p-fonte-tamanho-rotulo);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-navegacao-ativo);
-  background: var(--p-cor-primaria);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-primaria);
+  background: var(--p-cor-primaria-suave);
+  border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-total);
 }
 
@@ -91,7 +91,7 @@ const iniciais = computed(() =>
   overflow: hidden;
   font-size: var(--p-fonte-tamanho-controle);
   font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-navegacao-ativo);
+  color: var(--p-cor-texto);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -110,7 +110,7 @@ const iniciais = computed(() =>
 
 .resumo-usuario .resumo-usuario__sair:hover {
   color: var(--p-cor-navegacao-ativo);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--p-cor-superficie-sutil);
 }
 
 .resumo-usuario--rail .resumo-usuario__sair {

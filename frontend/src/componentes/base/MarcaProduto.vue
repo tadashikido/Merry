@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import iconeMarca from '@/assets/marca/nossia-icone-claro.png'
+import logoHorizontal from '@/assets/marca/nossia-logo-horizontal.png'
 import { NOME_PRODUTO } from '@/textos/rotulos'
 
 withDefaults(defineProps<{ nome?: string; somenteSimbolo?: boolean; tom?: 'escuro' | 'claro' }>(), {
@@ -14,33 +16,24 @@ withDefaults(defineProps<{ nome?: string; somenteSimbolo?: boolean; tom?: 'escur
     :class="`marca--${tom}`"
     data-teste="marca-produto"
   >
-    <svg
-      class="marca__simbolo"
-      viewBox="0 0 28 28"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <circle
-        class="marca__anel marca__anel--primeiro"
-        cx="11"
-        cy="15"
-        r="7"
-      />
-      <circle
-        class="marca__anel marca__anel--segundo"
-        cx="17"
-        cy="13"
-        r="7"
-      />
-    </svg>
-    <span
-      v-if="!somenteSimbolo"
-      class="marca__nome"
-    >{{ nome }}</span>
-    <span
+    <template v-if="somenteSimbolo">
+      <img
+        class="marca__simbolo"
+        :src="iconeMarca"
+        alt=""
+        width="166"
+        height="178"
+      >
+      <span class="somente-leitor-tela">{{ nome }}</span>
+    </template>
+    <img
       v-else
-      class="somente-leitor-tela"
-    >{{ nome }}</span>
+      class="marca__logo"
+      :src="logoHorizontal"
+      :alt="nome"
+      width="397"
+      height="134"
+    >
   </span>
 </template>
 
@@ -48,47 +41,20 @@ withDefaults(defineProps<{ nome?: string; somenteSimbolo?: boolean; tom?: 'escur
 .marca {
   display: inline-flex;
   align-items: center;
-  gap: var(--p-espaco-2);
-  color: var(--p-cor-texto);
-}
-
-.marca--claro {
-  color: var(--p-cor-navegacao-ativo);
+  line-height: 0;
 }
 
 .marca__simbolo {
-  flex-shrink: 0;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: auto;
+  height: var(--marca-altura-simbolo, 2.25rem);
 }
 
-.marca__anel {
-  fill: none;
-  stroke-width: 1.6;
+.marca__logo {
+  width: auto;
+  height: var(--marca-altura-logo, 2.25rem);
 }
 
-.marca__anel--primeiro {
-  stroke: var(--p-cor-primaria);
-}
-
-.marca__anel--segundo {
-  stroke: var(--p-cor-champagne);
-}
-
-.marca--claro .marca__anel--primeiro {
-  stroke: var(--p-cor-navegacao-simbolo);
-}
-
-.marca--claro .marca__anel--segundo {
-  stroke: var(--p-cor-champagne-claro);
-}
-
-.marca__nome {
-  font-family: var(--p-fonte-editorial);
-  font-variant-numeric: lining-nums;
-  font-size: 1.625rem;
-  font-weight: var(--p-fonte-peso-seminegrito);
-  line-height: 1;
-  letter-spacing: 0.01em;
+.marca--claro .marca__logo {
+  --marca-altura-logo: 2rem;
 }
 </style>

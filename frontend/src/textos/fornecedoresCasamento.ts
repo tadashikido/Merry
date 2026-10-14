@@ -1,5 +1,6 @@
 import type { TextosEnvioArquivo } from '@/componentes/base/tipos'
 import type { StatusFornecedorCasamento } from '@/tipos/fornecedoresCasamento'
+import { NOME_PRODUTO } from '@/textos/rotulos'
 
 export const ROTULOS_STATUS_FORNECEDOR_CASAMENTO: Record<StatusFornecedorCasamento, string> = {
   Cotacao: 'Cotação',
@@ -63,7 +64,7 @@ export const TEXTOS_CONTRATO = {
 
 export const TEXTOS_FORNECEDORES_CASAMENTO = {
   titulo: 'Fornecedores',
-  tituloDocumento: (nomes: string) => `Fornecedores · ${nomes} · Enlace`,
+  tituloDocumento: (nomes: string) => `Fornecedores · ${nomes} · ${NOME_PRODUTO}`,
   listaRotulo: 'Fornecedores do casamento',
   adicionar: 'Adicionar fornecedor',
   importar: 'Importar de outro casamento',

@@ -78,7 +78,7 @@ defineProps<{
 .abas-secao__aba--ativa:hover {
   font-weight: var(--p-fonte-peso-seminegrito);
   color: var(--p-cor-primaria);
-  background: var(--p-cor-salvia);
+  background: var(--p-cor-primaria-suave);
 }
 
 @media (pointer: coarse) {

@@ -13,6 +13,7 @@ import { lerNonceCsp } from './design/nonceCsp'
 import './estilos/fontes.css'
 import './estilos/icones.css'
 import './estilos/base.css'
+import './estilos/layout.css'
 
 const aplicacao = createApp(App)
 

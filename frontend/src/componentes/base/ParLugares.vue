@@ -28,13 +28,13 @@ defineProps<{ rotulo: string }>()
 
 .par-lugares__e {
   justify-self: center;
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-serif);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-secao);
   font-style: italic;
   font-weight: var(--p-fonte-peso-regular);
   line-height: 1;
-  color: var(--p-cor-champagne-texto);
+  color: var(--p-cor-acento-texto);
 }
 
 @media (min-width: 640px) {

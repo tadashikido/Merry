@@ -1,6 +1,7 @@
 import type { VarianteStatus } from '@/componentes/base/tipos'
 import type { FaixaEtaria, RespostaRsvp, StatusEnvioConvite } from '@/tipos/convidados'
 import { formatarNumero } from '@/utilitarios/formatacao'
+import { NOME_PRODUTO } from '@/textos/rotulos'
 
 function plural(quantidade: number, singular: string, varias: string): string {
   return quantidade === 1 ? singular : varias
@@ -77,7 +78,7 @@ export const TEXTOS_CONVIDADOS = {
       ? 'A pessoa deste convite também será excluída.'
       : `As ${formatarNumero(quantidade)} pessoas deste convite também serão excluídas.`,
   acaoComNome: (acao: string, nome: string) => `${acao} ${nome}`,
-  tituloDocumento: (nomesCasal: string) => `Convidados · ${nomesCasal} · Enlace`,
+  tituloDocumento: (nomesCasal: string) => `Convidados · ${nomesCasal} · ${NOME_PRODUTO}`,
   rotuloPessoaNumero: (numero: number) => `Pessoa ${numero}`,
   contadorPessoas: (quantidade: number, maximo: number) => `${formatarNumero(quantidade)} de ${formatarNumero(maximo)} pessoas`,
   pessoaAdicionada: (numero: number) => `Pessoa ${numero} adicionada.`,

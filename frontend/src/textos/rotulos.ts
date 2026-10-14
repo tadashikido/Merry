@@ -56,4 +56,4 @@ export const ROTULOS_MODULOS_CASAMENTO = {
   grandeDia: 'Grande Dia',
 } as const
 
-export const NOME_PRODUTO = 'Enlace'
+export const NOME_PRODUTO = 'Nossia'

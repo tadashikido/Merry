@@ -64,8 +64,7 @@ withDefaults(defineProps<{ rotuloAcoes: string; demonstracao?: boolean }>(), { d
   color: var(--p-cor-texto);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-controle);
-  box-shadow: var(--p-sombra-suave);
+  border-radius: var(--p-raio-tag);
 }
 
 @media (min-width: 640px) {

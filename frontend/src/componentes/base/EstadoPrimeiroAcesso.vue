@@ -73,7 +73,7 @@ const indiceAtual = computed(() => props.passos.findIndex((passo) => !passo.conc
 }
 
 .primeiro-acesso .primeiro-acesso__titulo {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: 1.625rem;
   font-weight: var(--p-fonte-peso-medio);

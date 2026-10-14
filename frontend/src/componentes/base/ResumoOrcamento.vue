@@ -335,7 +335,7 @@ const totalExcedente = computed(() =>
 }
 
 .resumo-orcamento__numero {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina-celular);
   font-weight: var(--p-fonte-peso-seminegrito);
   line-height: var(--p-fonte-entrelinha-titulo);
@@ -452,7 +452,7 @@ const totalExcedente = computed(() =>
 }
 
 .resumo-orcamento__camada--a-pagar {
-  background: var(--p-cor-champagne-claro);
+  background: var(--p-cor-acento-claro);
 }
 
 .resumo-orcamento__regua-total {
@@ -491,7 +491,7 @@ const totalExcedente = computed(() =>
 }
 
 .resumo-orcamento__amostra--a-pagar {
-  background: var(--p-cor-champagne-claro);
+  background: var(--p-cor-acento-claro);
 }
 
 .resumo-orcamento__amostra--livre {

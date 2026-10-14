@@ -95,7 +95,7 @@ function selecionar(chave: C | null) {
 .indice-categorias__item[aria-pressed='true'] {
   font-weight: var(--p-fonte-peso-seminegrito);
   color: var(--p-cor-primaria);
-  background: var(--p-cor-salvia);
+  background: var(--p-cor-primaria-suave);
 }
 
 .indice-categorias__rotulo {
@@ -105,7 +105,7 @@ function selecionar(chave: C | null) {
 
 .indice-categorias__quantidade {
   flex: none;
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-medio);
   font-variant-numeric: lining-nums tabular-nums;

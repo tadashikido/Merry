@@ -338,7 +338,7 @@ function imprimir() {
 }
 
 .ficha__casal {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina-celular);
   line-height: var(--p-fonte-entrelinha-titulo);

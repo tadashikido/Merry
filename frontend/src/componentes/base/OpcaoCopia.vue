@@ -115,7 +115,7 @@ const numero = computed(() => (props.quantidade === null ? '' : formatarNumero(p
 }
 
 .opcao-copia__quantidade {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina-celular);
   font-weight: var(--p-fonte-peso-medio);
   font-variant-numeric: lining-nums tabular-nums;

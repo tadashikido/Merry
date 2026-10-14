@@ -163,7 +163,7 @@ const visiveis = computed(() => props.segmentos.filter((segmento) => segmento.va
 .barra-progresso__valor {
   margin: 0;
   padding-left: var(--p-espaco-5);
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-medio);

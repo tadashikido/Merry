@@ -40,8 +40,8 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
   align-items: center;
   gap: var(--p-espaco-6);
   min-height: 100vh;
-  padding: var(--p-espaco-6) var(--p-espaco-3) var(--p-espaco-8);
-  background: var(--p-cor-fundo);
+  padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo) var(--p-ritmo-bloco);
+  background: var(--p-cor-fundo-casal);
 }
 
 .layout-publico__cabecalho {
@@ -56,12 +56,11 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
   width: 100%;
   max-width: var(--p-dimensao-largura-publica);
   padding: var(--p-espaco-8) var(--p-espaco-5);
-  font-size: 1.0625rem;
-  line-height: var(--p-fonte-entrelinha-leitura);
+  font-size: var(--p-fonte-tamanho-corpo);
+  line-height: var(--p-fonte-entrelinha-corpo);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-folha);
-  box-shadow: var(--p-sombra-suave);
 }
 
 .layout-publico__folha :deep(h1) {

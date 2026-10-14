@@ -219,7 +219,7 @@ function prazoCurto(item: TarefaPendenteDto): string {
 
 .pendencias-tarefas__valor {
   margin: 0;
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina-celular);
   line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-texto);

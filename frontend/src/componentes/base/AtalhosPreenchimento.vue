@@ -84,7 +84,7 @@ function marcada(valor: string): boolean {
 
 .atalhos-preenchimento__opcao--marcada {
   color: var(--p-cor-primaria);
-  background: var(--p-cor-salvia);
+  background: var(--p-cor-primaria-suave);
   border-color: var(--p-cor-primaria);
 }
 

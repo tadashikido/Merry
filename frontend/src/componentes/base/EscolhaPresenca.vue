@@ -184,7 +184,7 @@ const opcoes: { valor: EscolhaPresencaRsvp; rotulo: string; icone: string }[] = 
 
 .escolha-presenca__opcao--vou.escolha-presenca__opcao--marcada {
   color: var(--p-cor-primaria);
-  background: var(--p-cor-salvia);
+  background: var(--p-cor-primaria-suave);
   border: 1.5px solid var(--p-cor-primaria);
 }
 

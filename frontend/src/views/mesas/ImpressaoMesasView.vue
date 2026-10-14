@@ -221,7 +221,7 @@ function imprimir() {
 }
 
 .mapa__casal {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina-celular);
   line-height: var(--p-fonte-entrelinha-titulo);
@@ -254,7 +254,7 @@ function imprimir() {
 }
 
 .mapa__mesa--especial .mapa__mesa-titulo {
-  color: var(--p-cor-champagne-texto);
+  color: var(--p-cor-acento-texto);
 }
 
 .mapa__mesa-titulo {

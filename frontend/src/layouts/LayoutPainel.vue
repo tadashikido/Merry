@@ -74,7 +74,6 @@ watch(telaPequena, (pequena) => {
       <MarcaProduto
         class="layout-painel__marca"
         somente-simbolo
-        tom="claro"
       />
       <RailNavegacao :itens="itensRail" />
       <div
@@ -221,6 +220,7 @@ watch(telaPequena, (pequena) => {
   height: 100vh;
   padding: var(--p-espaco-4) 0;
   background: var(--p-cor-navegacao);
+  border-right: 1px solid var(--p-cor-borda);
 }
 
 .layout-painel__marca {
@@ -235,14 +235,10 @@ watch(telaPequena, (pequena) => {
   position: sticky;
   top: 0;
   height: 100vh;
-  padding: var(--p-espaco-6) var(--p-espaco-3);
+  padding: var(--p-ritmo-cartao) var(--p-espaco-3);
   overflow-y: auto;
   background: var(--p-cor-superficie);
   border-right: 1px solid var(--p-cor-borda);
-}
-
-.layout-painel--casal .layout-painel__workspace {
-  border-right-color: var(--p-cor-borda-quente);
 }
 
 .layout-painel__principal {
@@ -260,29 +256,30 @@ watch(telaPequena, (pequena) => {
   gap: var(--p-espaco-2);
   min-height: var(--p-dimensao-altura-barra-celular);
   padding: 0 var(--p-espaco-4) 0 var(--p-espaco-1);
-  color: var(--p-cor-navegacao-ativo);
+  color: var(--p-cor-texto);
   background: var(--p-cor-navegacao);
+  border-bottom: 1px solid var(--p-cor-borda);
 }
 
 .layout-painel__barra .layout-painel__botao-menu {
   width: var(--p-dimensao-alvo-toque);
   height: var(--p-dimensao-alvo-toque);
-  color: var(--p-cor-navegacao-ativo);
+  color: var(--p-cor-navegacao-texto);
 }
 
-.layout-painel__marca-barra :deep(.marca__nome) {
-  font-size: 1.375rem;
+.layout-painel__marca-barra {
+  --marca-altura-logo: 1.75rem;
 }
 
 .layout-painel__casal-barra {
   min-width: 0;
   margin-left: auto;
   overflow: hidden;
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
-  font-size: 1.0625rem;
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-navegacao-texto);
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-weight: var(--p-fonte-peso-regular);
+  color: var(--p-cor-texto);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -290,26 +287,26 @@ watch(telaPequena, (pequena) => {
 .layout-painel__gaveta-corpo {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-6);
+  gap: var(--p-ritmo-cartao);
   min-height: 100%;
 }
 
 .layout-painel__gaveta-casamento {
-  padding: var(--p-espaco-5) var(--p-espaco-2);
-  background: var(--p-cor-superficie);
-  border-radius: var(--p-raio-painel);
+  padding: var(--p-ritmo-grupo) 0 0;
+  border-top: 1px solid var(--p-cor-borda);
 }
 
 .layout-painel__rodape-gaveta {
   margin-top: auto;
-  padding-top: var(--p-espaco-4);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: var(--p-ritmo-grupo);
+  border-top: 1px solid var(--p-cor-borda);
 }
 
 .layout-painel__conteudo {
   width: 100%;
-  max-width: var(--p-dimensao-largura-conteudo);
-  padding: var(--p-espaco-8) var(--p-espaco-10) var(--p-espaco-10);
+  max-width: calc(var(--p-dimensao-largura-ampla) + 2 * var(--p-ritmo-bloco));
+  margin-inline: auto;
+  padding: var(--p-ritmo-bloco) var(--p-ritmo-bloco) var(--p-ritmo-secao);
 }
 
 .layout-painel__conteudo:focus {
@@ -317,12 +314,12 @@ watch(telaPequena, (pequena) => {
 }
 
 .layout-painel--compacto .layout-painel__conteudo {
-  padding: var(--p-espaco-6) var(--p-espaco-4) var(--p-espaco-8);
+  padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo) var(--p-ritmo-bloco);
 }
 
 @media (min-width: 640px) {
   .layout-painel--compacto .layout-painel__conteudo {
-    padding: var(--p-espaco-8) var(--p-espaco-6);
+    padding: var(--p-ritmo-bloco) var(--p-ritmo-cartao);
   }
 }
 </style>

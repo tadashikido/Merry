@@ -30,16 +30,17 @@ h4 {
 }
 
 h1 {
-  font-family: var(--p-fonte-editorial);
-  font-weight: var(--p-fonte-peso-medio);
+  font-family: var(--p-fonte-display);
+  font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
+  letter-spacing: var(--p-fonte-espacamento-letras-display);
 }
 
 h2,
 h3,
 h4 {
-  font-family: var(--p-fonte-interface);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-family: var(--p-fonte-display);
+  font-weight: var(--p-fonte-peso-medio);
   line-height: var(--p-fonte-entrelinha-interface);
 }
 
@@ -75,8 +76,12 @@ a:hover {
   min-height: 100vh;
 }
 
-.editorial {
-  font-family: var(--p-fonte-editorial);
+.fonte-display {
+  font-family: var(--p-fonte-display);
+}
+
+.fonte-serif {
+  font-family: var(--p-fonte-serif);
 }
 
 .somente-leitor-tela {
@@ -119,7 +124,7 @@ body .p-selectbutton .p-togglebutton {
 }
 
 h1,
-.editorial,
+.fonte-display,
 .numeros-editoriais {
   font-variant-numeric: lining-nums;
 }
@@ -162,9 +167,10 @@ h1,
   --p-cor-superficie: var(--p-cor-operacao-superficie);
   --p-cor-borda: var(--p-cor-operacao-borda);
   --p-cor-divisoria: var(--p-cor-operacao-divisoria);
-  --p-cor-salvia: var(--p-cor-operacao-superficie);
+  --p-cor-primaria-suave: var(--p-cor-operacao-superficie);
   --p-cor-primaria: var(--p-cor-operacao-destaque);
-  --p-cor-champagne-texto: var(--p-cor-operacao-destaque);
+  --p-cor-acento-texto: var(--p-cor-operacao-destaque);
+  --p-focus-ring-color: var(--p-cor-operacao-destaque);
   --p-button-outlined-secondary-color: var(--p-cor-operacao-texto);
   --p-button-outlined-secondary-border-color: var(--p-cor-operacao-borda);
   --p-button-outlined-secondary-hover-background: var(--p-cor-operacao-superficie);

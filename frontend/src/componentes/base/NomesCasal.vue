@@ -30,15 +30,15 @@ withDefaults(
 
 .nomes-casal__e {
   margin: 0 0.25em;
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-serif);
   font-variant-numeric: lining-nums;
-  font-weight: var(--p-fonte-peso-medio);
+  font-weight: var(--p-fonte-peso-regular);
   font-style: italic;
-  color: var(--p-cor-champagne-texto);
+  color: var(--p-cor-acento-texto);
 }
 
 .nomes-casal--linha {
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
 }
 
 .nomes-casal--linha .nomes-casal__e {
@@ -50,7 +50,7 @@ withDefaults(
 .nomes-casal--titulo,
 .nomes-casal--navegacao,
 .nomes-casal--display {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-texto);
@@ -58,7 +58,7 @@ withDefaults(
 
 .nomes-casal--cartao,
 .nomes-casal--navegacao {
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-regular);
 }
 
 .nomes-casal--cartao {
@@ -68,7 +68,7 @@ withDefaults(
 .nomes-casal--titulo,
 .nomes-casal--display {
   font-size: inherit;
-  font-weight: var(--p-fonte-peso-medio);
+  font-weight: var(--p-fonte-peso-leve);
 }
 
 .nomes-casal--display {

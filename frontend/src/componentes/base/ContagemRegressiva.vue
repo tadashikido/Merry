@@ -86,7 +86,7 @@ const numero = computed(() => props.dias.toLocaleString('pt-BR'))
 }
 
 .contagem__numero {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-display);
   font-weight: var(--p-fonte-peso-medio);
@@ -100,7 +100,7 @@ const numero = computed(() => props.dias.toLocaleString('pt-BR'))
 }
 
 .contagem__frase {
-  font-family: var(--p-fonte-editorial);
+  font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina-celular);
   font-weight: var(--p-fonte-peso-medio);

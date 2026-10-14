@@ -128,7 +128,7 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
 }
 
 .cartao-agora :focus-visible {
-  outline-color: var(--p-cor-champagne-texto);
+  outline-color: var(--p-cor-acento-texto);
 }
 
 .cartao-agora__rotulo {
@@ -179,7 +179,7 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
 }
 
 .cartao-agora--cerimonia .cartao-agora__instrucoes {
-  border-left-color: var(--p-cor-champagne-texto);
+  border-left-color: var(--p-cor-acento-texto);
 }
 
 .cartao-agora__contatos,

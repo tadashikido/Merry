@@ -137,7 +137,7 @@ function desfazer(mensagem: MensagemToast, fechar: () => void) {
 .toast-enlace__detalhe {
   font-size: var(--p-fonte-tamanho-apoio);
   line-height: 1.45;
-  color: var(--p-cor-navegacao-texto);
+  color: var(--p-cor-toast-apoio);
 }
 
 .toast-enlace__desfazer,
@@ -160,7 +160,7 @@ function desfazer(mensagem: MensagemToast, fechar: () => void) {
 }
 
 .toast-enlace__fechar {
-  color: var(--p-cor-navegacao-texto);
+  color: var(--p-cor-toast-apoio);
 }
 
 .toast-enlace__desfazer:hover,
