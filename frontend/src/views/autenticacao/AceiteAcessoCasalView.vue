@@ -6,7 +6,7 @@ import Button from 'primevue/button'
 import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import CampoSenha from '@/componentes/base/CampoSenha.vue'
-import EstadoErro from '@/componentes/base/EstadoErro.vue'
+import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import IndicadorAbertura from '@/componentes/base/IndicadorAbertura.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useFormulario } from '@/composables/useFormulario'
@@ -56,9 +56,12 @@ const titulo = computed(() => {
   return nomes.value ? TEXTOS_ACEITE_CASAL.titulo(nomes.value) : TEXTOS_ACEITE_CASAL.tituloPadrao
 })
 
-const descricao = computed(() =>
-  convite.value && !invalido.value ? TEXTOS_ACEITE_CASAL.descricao(convite.value.organizacao) : undefined,
-)
+const descricao = computed(() => {
+  if (invalido.value) {
+    return TEXTOS_ACEITE_CASAL.invalidoTexto
+  }
+  return convite.value ? TEXTOS_ACEITE_CASAL.descricao(convite.value.organizacao) : undefined
+})
 
 function lerToken(fragmento: string): string | null {
   const valor = new URLSearchParams(fragmento.replace(/^#/, '')).get('token')
@@ -142,6 +145,11 @@ async function enviar() {
 
   mensagemErro.value = FALHAS[resultado.tipo] ?? MENSAGENS_AUTENTICACAO.inesperado
 }
+
+function aoDigitarSenha() {
+  formulario.revalidarAoDigitar('senha')
+  formulario.revalidarAoDigitar('confirmacao')
+}
 </script>
 
 <template>
@@ -154,14 +162,16 @@ async function enviar() {
       :texto="TEXTOS_ACEITE_CASAL.abrindo"
     />
 
-    <template v-else-if="invalido">
-      <EstadoErro
-        :titulo="TEXTOS_ACEITE_CASAL.invalidoTitulo"
-        :mensagem="TEXTOS_ACEITE_CASAL.invalidoTexto"
-        :pode-tentar-novamente="false"
-        data-teste="convite-invalido"
+    <div
+      v-else-if="invalido"
+      class="convite-invalido"
+      data-teste="convite-invalido"
+    >
+      <LacreIcone
+        icone="ie-link"
+        data-teste="lacre-convite-invalido"
       />
-    </template>
+    </div>
 
     <template v-else-if="convite">
       <MensagemFormulario
@@ -175,48 +185,56 @@ async function enviar() {
         data-teste="aviso-outra-conta"
       />
       <form
-        class="formulario-autenticacao"
+        class="pilha pilha--cartao"
         novalidate
         data-teste="formulario-aceite-casal"
         @submit.prevent="enviar"
       >
-        <dl class="aceite__email">
-          <dt>{{ TEXTOS_ACEITE_CASAL.email }}</dt>
+        <dl class="aceite__email pilha pilha--campo">
+          <dt class="texto-rotulo">
+            {{ TEXTOS_ACEITE_CASAL.email }}
+          </dt>
           <dd data-teste="email-convite">
             {{ convite.email }}
           </dd>
         </dl>
-        <CampoFormulario
-          v-slot="{ id, invalido: campoInvalido, descritoPor }"
-          :rotulo="TEXTOS_ACEITE_CASAL.senha"
-          id-campo="aceite-senha"
-          :erro="formulario.erros.senha"
-        >
-          <CampoSenha
-            :id="id"
-            v-model="formulario.valores.senha"
-            :invalido="campoInvalido"
-            :descrito-por="descritoPor"
-            autocomplete="new-password"
-            com-requisitos
-            @blur="formulario.validarCampo('senha')"
-          />
-        </CampoFormulario>
-        <CampoFormulario
-          v-slot="{ id, invalido: campoInvalido, descritoPor }"
-          :rotulo="TEXTOS_ACEITE_CASAL.confirmarSenha"
-          id-campo="aceite-confirmacao"
-          :erro="formulario.erros.confirmacao"
-        >
-          <CampoSenha
-            :id="id"
-            v-model="formulario.valores.confirmacao"
-            :invalido="campoInvalido"
-            :descrito-por="descritoPor"
-            autocomplete="new-password"
-            @blur="formulario.validarCampo('confirmacao')"
-          />
-        </CampoFormulario>
+
+        <div class="pilha pilha--grupo">
+          <CampoFormulario
+            v-slot="{ id, invalido: campoInvalido, descritoPor }"
+            :rotulo="TEXTOS_ACEITE_CASAL.senha"
+            id-campo="aceite-senha"
+            :erro="formulario.erros.senha"
+          >
+            <CampoSenha
+              :id="id"
+              v-model="formulario.valores.senha"
+              :invalido="campoInvalido"
+              :descrito-por="descritoPor"
+              autocomplete="new-password"
+              com-requisitos
+              @update:model-value="aoDigitarSenha"
+              @blur="formulario.validarAoSair('senha')"
+            />
+          </CampoFormulario>
+          <CampoFormulario
+            v-slot="{ id, invalido: campoInvalido, descritoPor }"
+            :rotulo="TEXTOS_ACEITE_CASAL.confirmarSenha"
+            id-campo="aceite-confirmacao"
+            :erro="formulario.erros.confirmacao"
+          >
+            <CampoSenha
+              :id="id"
+              v-model="formulario.valores.confirmacao"
+              :invalido="campoInvalido"
+              :descrito-por="descritoPor"
+              autocomplete="new-password"
+              @update:model-value="formulario.revalidarAoDigitar('confirmacao')"
+              @blur="formulario.validarAoSair('confirmacao')"
+            />
+          </CampoFormulario>
+        </div>
+
         <Button
           type="submit"
           :label="TEXTOS_ACEITE_CASAL.enviar"
@@ -235,7 +253,7 @@ async function enviar() {
     <template #rodape>
       <p
         v-if="convite && !invalido"
-        class="aceite__apoio"
+        class="aceite__apoio texto-legenda"
       >
         {{ TEXTOS_ACEITE_CASAL.naoEsperava }}
       </p>
@@ -253,33 +271,28 @@ async function enviar() {
 </template>
 
 <style scoped>
-.formulario-autenticacao {
+.convite-invalido {
   display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
+  justify-content: center;
 }
 
 .aceite__email {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-1);
   margin: 0;
-}
-
-.aceite__email dt {
-  font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-texto-apoio);
+  padding: var(--p-ritmo-grupo);
+  background: var(--p-cor-superficie-sutil);
+  border: 1px solid var(--p-cor-divisoria);
+  border-radius: var(--p-raio-campo);
 }
 
 .aceite__email dd {
   margin: 0;
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-family: var(--p-fonte-interface);
   color: var(--p-cor-texto);
   overflow-wrap: anywhere;
 }
 
 .aceite__apoio {
-  margin: 0;
+  max-width: 40ch;
+  text-wrap: pretty;
 }
 </style>

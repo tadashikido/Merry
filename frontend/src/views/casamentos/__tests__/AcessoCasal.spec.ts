@@ -472,4 +472,112 @@ describe('AceiteAcessoCasalView', () => {
 
     expect(wrapper!.text()).toContain('Sem conexão')
   })
+
+  async function abrirConviteValido() {
+    rotear(fetchSimulado, null, quando('POST', '/api/acesso-casal/consulta', () => respostaJson(CONVITE_CASAL)))
+    await abrir(`/acesso-casal#token=${TOKEN_CONVITE}`)
+  }
+
+  async function preencherEEnviarAceite(senha: string, confirmacao: string) {
+    await wrapper!.get('#aceite-senha').setValue(senha)
+    await wrapper!.get('#aceite-confirmacao').setValue(confirmacao)
+    await wrapper!.get('[data-teste="formulario-aceite-casal"]').trigger('submit')
+    await flushPromises()
+  }
+
+  it('[COMPONENTE] fala com o casal no plural', () => {
+    expect(TEXTOS_ACEITE_CASAL.titulo('Ana Beatriz & Bruno')).toBe('Acessem o casamento de Ana Beatriz & Bruno')
+    expect(TEXTOS_ACEITE_CASAL.tituloPadrao).toBe('Acessem o casamento')
+    expect(TEXTOS_ACEITE_CASAL.descricao('Albuquerque Assessoria')).toContain('convidou vocês')
+    expect(TEXTOS_ACEITE_CASAL.invalidoTexto).toContain('Peçam à assessoria')
+    expect(TEXTOS_ACEITE_CASAL.jaTemConta).toBe('Já criaram a senha?')
+  })
+
+  it('[COMPONENTE] convite inválido mostra título e texto uma única vez, com lacre decorativo e sem cartão de erro', async () => {
+    rotear(fetchSimulado, null, quando('POST', '/api/acesso-casal/consulta', () => respostaProblema(422, { detail: 'Este convite não vale mais.' })))
+
+    await abrir(`/acesso-casal#token=${TOKEN_CONVITE}`)
+
+    expect(wrapper!.findAll('h1')).toHaveLength(1)
+    expect(wrapper!.get('h1').text()).toBe(TEXTOS_ACEITE_CASAL.invalidoTitulo)
+    expect(wrapper!.find('h2').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="estado-erro"]').exists()).toBe(false)
+    expect(wrapper!.text().split(TEXTOS_ACEITE_CASAL.invalidoTexto)).toHaveLength(2)
+    const lacre = wrapper!.get('[data-teste="convite-invalido"]').get('[data-teste="lacre-convite-invalido"]')
+    expect(lacre.attributes('aria-hidden')).toBe('true')
+    expect(lacre.find('.ie-link').exists()).toBe(true)
+    expect(wrapper!.find('[data-teste="link-entrar"]').exists()).toBe(true)
+    expect(document.activeElement?.id).toBe('autenticacao-titulo')
+  })
+
+  it('[COMPONENTE] organiza o formulário com as primitivas de ritmo do Nossia', async () => {
+    await abrirConviteValido()
+
+    const formulario = wrapper!.get('[data-teste="formulario-aceite-casal"]')
+    expect(formulario.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--cartao']))
+    expect(formulario.get('dl').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--campo']))
+    expect(formulario.get('dt').classes()).toContain('texto-rotulo')
+    const grupo = formulario.get('div.pilha.pilha--grupo')
+    expect(grupo.find('#aceite-senha').exists()).toBe(true)
+    expect(grupo.find('#aceite-confirmacao').exists()).toBe(true)
+    expect(grupo.find('[data-teste="aceitar-convite"]').exists()).toBe(false)
+    expect(document.activeElement?.id).toBe('aceite-senha')
+  })
+
+  it('[COMPONENTE] não mostra erro ao sair dos campos vazios antes de tentar enviar', async () => {
+    await abrirConviteValido()
+
+    await wrapper!.get('#aceite-senha').trigger('blur')
+    await wrapper!.get('#aceite-confirmacao').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+    expect(wrapper!.get('#aceite-senha').attributes('aria-invalid')).toBe('false')
+    expect(wrapper!.get('#aceite-confirmacao').attributes('aria-invalid')).toBe('false')
+  })
+
+  it('[COMPONENTE] depois de tentar enviar, o erro da confirmação some ao digitar a mesma senha', async () => {
+    await abrirConviteValido()
+    await preencherEEnviarAceite('casalFeliz2027', 'casalFeliz2028')
+    expect(wrapper!.text()).toContain(TEXTOS_ACEITE_CASAL.senhasDiferentes)
+
+    await wrapper!.get('#aceite-confirmacao').setValue('casalFeliz2027')
+    await flushPromises()
+
+    expect(wrapper!.text()).not.toContain(TEXTOS_ACEITE_CASAL.senhasDiferentes)
+    expect(wrapper!.get('#aceite-confirmacao').attributes('aria-invalid')).toBe('false')
+    expect(chamadas(fetchSimulado, 'POST', '/api/acesso-casal/aceite')).toHaveLength(0)
+  })
+
+  it('[COMPONENTE] depois de tentar enviar, ajustar a senha para igualar a confirmação limpa o erro da confirmação', async () => {
+    await abrirConviteValido()
+    await preencherEEnviarAceite('casalFeliz2028', 'casalFeliz2027')
+    expect(wrapper!.text()).toContain(TEXTOS_ACEITE_CASAL.senhasDiferentes)
+
+    await wrapper!.get('#aceite-senha').setValue('casalFeliz2027')
+    await flushPromises()
+
+    expect(wrapper!.text()).not.toContain(TEXTOS_ACEITE_CASAL.senhasDiferentes)
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] depois de tentar enviar, sair de um campo ainda inválido mantém o erro', async () => {
+    await abrirConviteValido()
+    await preencherEEnviarAceite('', '')
+    expect(wrapper!.get('#aceite-senha').attributes('aria-invalid')).toBe('true')
+
+    await wrapper!.get('#aceite-senha').setValue('curta')
+    await wrapper!.get('#aceite-senha').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.get('#aceite-senha').attributes('aria-invalid')).toBe('true')
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] mostra o e-mail do convite e o rodapé para quem não esperava o convite', async () => {
+    await abrirConviteValido()
+
+    expect(wrapper!.get('[data-teste="email-convite"]').text()).toBe(CONVITE_CASAL.email)
+    expect(wrapper!.text()).toContain(TEXTOS_ACEITE_CASAL.naoEsperava)
+  })
 })

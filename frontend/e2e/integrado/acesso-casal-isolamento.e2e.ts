@@ -23,7 +23,7 @@ test.describe('Acesso do casal e isolamento', () => {
     const contextoCasal = await browser.newContext({ baseURL })
     const casal = await contextoCasal.newPage()
     await casal.goto(caminhoRelativo(link))
-    await expect(casal.getByRole('heading', { name: /Acesse o casamento de/ })).toBeVisible()
+    await expect(casal.getByRole('heading', { name: /Acessem o casamento de/ })).toBeVisible()
     await casal.locator('#aceite-senha').fill(senhaCasal)
     await casal.locator('#aceite-confirmacao').fill(senhaCasal)
     await casal.getByRole('button', { name: 'Criar senha e entrar' }).click()
