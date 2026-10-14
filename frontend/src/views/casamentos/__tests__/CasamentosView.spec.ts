@@ -152,12 +152,20 @@ describe('CasamentosView no design system Nossia', () => {
     }
   })
 
-  it('[COMPONENTE] data e nomes do casal não quebram no meio da palavra', async () => {
+  it('[COMPONENTE] nomes do casal ficam dentro do link e a data mantém o horário', async () => {
     rotearFetch(fetchSimulado, quando('GET', '/api/casamentos?situacao=Ativos', () => respostaJson(lista)))
     await abrir('/casamentos')
 
-    expect(wrapper!.findAll('.casamentos__data')[0]!.text()).toBe('15/05/2027, 16:30')
     expect(wrapper!.findAll('[data-teste="link-casamento"] .nomes-casal')).toHaveLength(2)
+    expect(wrapper!.text()).toContain('15/05/2027, 16:30')
+  })
+
+  it('[COMPONENTE] coluna Casal reserva largura para nomes comuns sem anular a quebra de nomes longos', async () => {
+    rotearFetch(fetchSimulado, quando('GET', '/api/casamentos?situacao=Ativos', () => respostaJson(lista)))
+    await abrir('/casamentos')
+
+    const cabecalhoCasal = wrapper!.findAll('th').find((th) => th.text().includes(TEXTOS_CASAMENTOS.colunaCasal))!
+    expect(cabecalhoCasal.attributes('style')).toContain('width: 24%')
   })
 
   it('[UNITÁRIO] estilos da tela usam só tokens, sem largura própria, sombra ou valores soltos', () => {
@@ -166,8 +174,7 @@ describe('CasamentosView no design system Nossia', () => {
 
     expect(estilo).toContain('gap: var(--p-ritmo-campo)')
     expect(estilo).toContain('border-radius: var(--p-raio-campo)')
-    expect(estilo).toContain('white-space: nowrap')
-    expect(estilo).toContain('overflow-wrap: normal')
+    expect(estilo).not.toContain('overflow-wrap')
     expect(estilo).not.toMatch(/\d+(px|rem|em)\b/)
     expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
     expect(estilo).not.toContain('max-width')

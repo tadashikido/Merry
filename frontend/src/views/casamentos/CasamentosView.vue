@@ -34,7 +34,7 @@ const opcoesSituacao: { rotulo: string; valor: SituacaoListagemCasamentos }[] = 
 ]
 
 const colunas: ColunaListagem<CasamentoResumoDto>[] = [
-  { campo: 'nomePrimeiraPessoa', titulo: TEXTOS_CASAMENTOS.colunaCasal, principal: true },
+  { campo: 'nomePrimeiraPessoa', titulo: TEXTOS_CASAMENTOS.colunaCasal, principal: true, largura: '24%' },
   { campo: 'data', titulo: TEXTOS_CASAMENTOS.colunaData },
   { campo: 'fase', titulo: TEXTOS_CASAMENTOS.colunaFase },
   { campo: 'diasRestantes', titulo: TEXTOS_CASAMENTOS.colunaContagem },
@@ -188,7 +188,7 @@ async function alternarArquivamento(casamento: CasamentoResumoDto) {
       </template>
 
       <template #celula-data="{ item }">
-        <span class="numeros-tabulares casamentos__data">{{ dataComHorario(item) }}</span>
+        <span class="numeros-tabulares">{{ dataComHorario(item) }}</span>
       </template>
 
       <template #celula-fase="{ item }">
@@ -245,18 +245,10 @@ async function alternarArquivamento(casamento: CasamentoResumoDto) {
   border-radius: var(--p-raio-campo);
 }
 
-.casamentos__link :deep(.nomes-casal) {
-  overflow-wrap: normal;
-}
-
 .casamentos__link:hover {
   color: var(--p-cor-texto);
   text-decoration: underline;
   text-decoration-color: var(--p-cor-primaria);
-}
-
-.casamentos__data {
-  white-space: nowrap;
 }
 
 .casamentos__status {
