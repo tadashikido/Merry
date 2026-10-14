@@ -44,6 +44,11 @@ withDefaults(defineProps<{ nome?: string; somenteSimbolo?: boolean; tom?: 'escur
   line-height: 0;
 }
 
+.marca__simbolo,
+.marca__logo {
+  mix-blend-mode: multiply;
+}
+
 .marca__simbolo {
   width: auto;
   height: var(--marca-altura-simbolo, 2.25rem);

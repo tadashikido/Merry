@@ -201,12 +201,14 @@ const ID_TITULO = 'autenticacao-titulo'
     display: block;
     width: min(100%, 20rem);
     height: auto;
+    mix-blend-mode: multiply;
   }
 
   .layout-autenticacao__frase {
     display: block;
     max-width: 20ch;
     font-family: var(--p-fonte-serif);
+    text-wrap: balance;
     font-size: var(--p-fonte-tamanho-secao);
     line-height: 1.45;
     color: var(--p-cor-texto-apoio);

@@ -3887,6 +3887,7 @@ const regras = [
 .guia__logo-principal {
   width: 12rem;
   height: auto;
+  mix-blend-mode: multiply;
 }
 
 .guia__exemplo-primitivas {

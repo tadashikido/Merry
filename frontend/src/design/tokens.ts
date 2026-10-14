@@ -124,7 +124,7 @@ export const cores = {
   sucesso: paletas.alecrim[500],
   sucessoTexto: paletas.alecrim[700],
   sucessoSuave: paletas.alecrim[100],
-  alerta: paletas.alerta[500],
+  alerta: paletas.alerta[600],
   alertaTexto: paletas.alerta[700],
   alertaSuave: paletas.alerta[100],
   alertaForte: paletas.alerta[800],

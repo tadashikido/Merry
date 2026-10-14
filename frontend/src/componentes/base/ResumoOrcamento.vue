@@ -448,11 +448,11 @@ const totalExcedente = computed(() =>
 }
 
 .resumo-orcamento__camada--pago {
-  background: var(--p-cor-primaria);
+  background: var(--p-cor-primaria-escura);
 }
 
 .resumo-orcamento__camada--a-pagar {
-  background: var(--p-cor-acento-claro);
+  background: var(--p-cor-acento);
 }
 
 .resumo-orcamento__regua-total {
@@ -487,11 +487,11 @@ const totalExcedente = computed(() =>
 }
 
 .resumo-orcamento__amostra--pago {
-  background: var(--p-cor-primaria);
+  background: var(--p-cor-primaria-escura);
 }
 
 .resumo-orcamento__amostra--a-pagar {
-  background: var(--p-cor-acento-claro);
+  background: var(--p-cor-acento);
 }
 
 .resumo-orcamento__amostra--livre {
