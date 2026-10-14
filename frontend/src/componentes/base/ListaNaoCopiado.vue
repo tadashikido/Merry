@@ -14,7 +14,7 @@ const temItens = computed(() => props.itens.length > 0)
   >
     <h2
       :id="idTitulo"
-      class="lista-nao-copiado__titulo"
+      class="lista-nao-copiado__titulo texto-rotulo"
     >
       {{ titulo }}
     </h2>
@@ -41,21 +41,18 @@ const temItens = computed(() => props.itens.length > 0)
 .lista-nao-copiado {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-grupo);
+  min-width: 0;
 }
 
 .lista-nao-copiado .lista-nao-copiado__titulo {
   margin: 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto-secundario);
 }
 
 .lista-nao-copiado__itens {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -64,7 +61,7 @@ const temItens = computed(() => props.itens.length > 0)
 .lista-nao-copiado__item {
   display: flex;
   align-items: flex-start;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   font-size: var(--p-fonte-tamanho-controle);
   line-height: var(--p-fonte-entrelinha-corpo);
   color: var(--p-cor-texto-apoio);
