@@ -75,3 +75,53 @@ jobs:
 
       - name: Auditar dependências
         run: npm audit --omit=dev --audit-level=high
+
+  infra:
+    name: Infra (deploy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar compose de produção
+        run: |
+          cp .env.production.example .env
+          docker compose -f docker-compose.prod.yml config --quiet
+
+      - name: Recusar compose de produção sem variáveis obrigatórias
+        run: |
+          : > .env
+          ! docker compose -f docker-compose.prod.yml config --quiet
+
+      - name: Lint dos scripts
+        run: shellcheck deploy.sh infra/testes/deploy.test.sh infra/testes/proxy.test.sh
+
+      - name: Testar deploy.sh
+        run: bash infra/testes/deploy.test.sh
+
+      - name: Testar cadeia de proxies
+        run: bash infra/testes/proxy.test.sh
+
+      - name: Validar vhosts do nginx do host
+        run: |
+          mkdir -p vhosts/certificado
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=casamento.exemplo.com.br" \
+            -keyout vhosts/certificado/privkey.pem -out vhosts/certificado/fullchain.pem
+          for template in infra/nginx/*.template; do
+            DOMINIO=casamento.exemplo.com.br WEB_PORTA=8090 envsubst '$DOMINIO $WEB_PORTA' \
+              < "$template" > "vhosts/$(basename "$template" .template)"
+          done
+          for vhost in vhosts/*.conf; do
+            docker run --rm \
+              -v "$PWD/$vhost:/etc/nginx/conf.d/default.conf:ro" \
+              -v "$PWD/vhosts/certificado:/etc/letsencrypt/live/casamento.exemplo.com.br:ro" \
+              nginx:1.27-alpine nginx -t
+          done
+
+      - name: Validar nginx do container web
+        run: >-
+          docker run --rm
+          --add-host api:127.0.0.1
+          -v "$PWD/frontend/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro"
+          -v "$PWD/frontend/nginx/cabecalhos-seguranca.conf:/etc/nginx/snippets/cabecalhos-seguranca.conf:ro"
+          nginxinc/nginx-unprivileged:1.27-alpine
+          nginx -t

@@ -95,7 +95,70 @@ dotnet tool restore
 dotnet ef migrations add <Nome> --project src/Casamento.Infraestrutura --startup-project src/Casamento.Infraestrutura --output-dir Persistencia/Migrations
 ```
 
-Em `Development` as migrations são aplicadas na inicialização (`Banco:AplicarMigrationsAoIniciar`). Nos demais ambientes, aplique com `dotnet ef database update` no deploy.
+Em `Development` as migrations são aplicadas na inicialização (`Banco:AplicarMigrationsAoIniciar`). Em produção o `docker-compose.prod.yml` liga a mesma flag (uma única réplica da API); faça backup do banco antes de publicar migrations destrutivas.
+
+## Deploy em produção
+
+Arquitetura: nginx do host da VPS (TLS do Let's Encrypt, portas 80/443, compartilhado com outros sites) → `web` (nginx do container, SPA e proxy de `/api/`, publicado só em `127.0.0.1:${WEB_PORTA}`) → `api` → `db`. Os containers ficam na rede docker `172.30.0.0/24`, definida em `docker-compose.prod.yml`. O tráfego da porta publicada chega ao `web` pelo gateway dessa rede, que é confiável para `X-Forwarded-*`. A mesma faixa aparece em `frontend/nginx/default.conf` (`set_real_ip_from` e `geo`) e em `ProxyReverso__Redes__0`; se ela colidir com outra rede da VPS, altere os três pontos juntos.
+
+O workflow `Deploy` roda após o `CI` concluir com sucesso num push em `main` (ou manualmente por *Run workflow*), conecta por SSH e executa `deploy.sh <sha>`. O script:
+
+- avança o repositório por fast-forward até o SHA validado;
+- reconstrói apenas `api` (mudanças em `backend/`) e/ou `web` (mudanças em `frontend/`) e aplica `up -d`;
+- avisa quando `infra/nginx/` mudou, porque o vhost do host é reaplicado manualmente;
+- falha se `https://<DOMINIO>/api/saude` não responder em cerca de 90 s.
+
+`./deploy.sh --completo` reconstrói tudo com `--pull` (atualização de imagens base).
+
+### VPS (uma vez)
+
+1. Instale Docker Engine com o plugin compose, `git`, `curl`, `certbot` e `gettext-base` (`envsubst`). O nginx do host continua como está. Firewall: apenas 22/tcp, 80/tcp e 443/tcp.
+2. Aponte o registro DNS `A` (e `AAAA`, se houver IPv6) do domínio para a VPS.
+3. Crie o usuário de deploy sem sudo: `sudo adduser --disabled-password deploy && sudo usermod -aG docker deploy`.
+4. Como `deploy`, gere a chave de leitura do repositório (`ssh-keygen -t ed25519 -f ~/.ssh/github_merry -N ""`), cadastre a pública como *Deploy key* somente leitura no GitHub e configure `~/.ssh/config` com `Host github.com` → `IdentityFile ~/.ssh/github_merry`.
+5. `sudo install -d -o deploy -g deploy /var/www/merry` e, como `deploy`, clone: `git clone git@github.com:tadashikido/Merry.git /var/www/merry`.
+6. `cp .env.production.example .env && chmod 600 .env` e preencha. O compose interpola `$` dentro do `.env`; se um valor tiver `$`, escreva `$$`. Valores:
+   - senha do banco com `openssl rand -hex 32` (sem `;`, para não quebrar a connection string);
+   - `JWT_CHAVE_ASSINATURA` com `openssl rand -base64 48`;
+   - `DADOS_SENSIVEIS_CHAVE` com `openssl rand -base64 32` (guarde uma cópia fora da VPS);
+   - domínio;
+   - `WEB_PORTA` livre no host (confira com `ss -ltn`);
+   - SMTP do provedor (porta 587 com `SMTP_USAR_SSL=true` usa STARTTLS).
+7. Emita o certificado sem parar o nginx (os outros sites continuam no ar):
+
+   ```bash
+   cd /var/www/merry
+   export DOMINIO=casamento.exemplo.com.br WEB_PORTA=8090
+   sudo mkdir -p /var/www/certbot
+   envsubst '$DOMINIO $WEB_PORTA' < infra/nginx/casamento-acme.conf.template | sudo tee /etc/nginx/sites-available/casamento.conf > /dev/null
+   sudo ln -sf /etc/nginx/sites-available/casamento.conf /etc/nginx/sites-enabled/casamento.conf
+   sudo nginx -t && sudo systemctl reload nginx
+   sudo certbot certonly --webroot -w /var/www/certbot -d "$DOMINIO" --deploy-hook "systemctl reload nginx"
+   ```
+
+8. Instale o vhost definitivo (TLS, HTTP→HTTPS, HSTS, uploads de até 11 MB). Repita este passo sempre que o `deploy.sh` avisar que `infra/nginx/` mudou:
+
+   ```bash
+   envsubst '$DOMINIO $WEB_PORTA' < infra/nginx/casamento.conf.template | sudo tee /etc/nginx/sites-available/casamento.conf > /dev/null
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+   Se o nginx do host carrega vhosts de `/etc/nginx/conf.d/` em vez de `sites-enabled/`, grave os dois vhosts em `/etc/nginx/conf.d/casamento.conf` e pule o `ln`.
+
+   As renovações do certbot usam o mesmo webroot (o vhost mantém `/.well-known/acme-challenge/` em HTTP) e recarregam o nginx pelo `--deploy-hook`. Teste com `sudo certbot renew --dry-run`.
+9. Primeiro deploy manual: `./deploy.sh`.
+10. Agende backup diário do banco (`docker compose -f docker-compose.prod.yml exec -T db pg_dump -U casamento casamento | gzip > backup.sql.gz`) e do volume `casamento-producao_arquivos-enlace`, copiando-os para fora da VPS.
+
+### GitHub (uma vez)
+
+1. Gere outro par de chaves só para o Actions (`ssh-keygen -t ed25519 -f deploy_actions -N ""`) e adicione a pública em `/home/deploy/.ssh/authorized_keys` com o prefixo `restrict ` (bloqueia port forwarding, agent e pty).
+2. Em *Settings → Environments*, crie o environment `production` (opcionalmente com aprovação obrigatória) e cadastre:
+   - secrets `VPS_HOST`, `VPS_USUARIO` (`deploy`), `VPS_CHAVE_SSH` (conteúdo da chave privada `deploy_actions`) e `VPS_KNOWN_HOSTS` (saída de `ssh-keyscan -t ed25519 <host>`, conferida com `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` na VPS);
+   - variables `VPS_DIRETORIO` (padrão `/var/www/merry`) e `VPS_PORTA` (padrão `22`).
+
+### Rollback
+
+Se o health check falhar, o código novo continua no ar e o job fica vermelho. Para voltar atrás, faça `git revert` do commit problemático na `main`: o revert passa pelo CI e é publicado como um deploy normal. Chamar `./deploy.sh <sha-antigo>` não funciona, porque um SHA anterior ao publicado é ignorado de propósito, para que execuções fora de ordem nunca regridam a produção. Em emergência, depois de enviar o revert, dispare o workflow `Deploy` manualmente (*Run workflow*): o `workflow_dispatch` publica a ponta da `main` sem aguardar o CI.
 
 ## Configuração
 

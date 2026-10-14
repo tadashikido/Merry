@@ -1,0 +1,55 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-producao
+  cancel-in-progress: false
+
+jobs:
+  producao:
+    name: Produção (VPS)
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    steps:
+      - name: Configurar SSH
+        env:
+          VPS_CHAVE_SSH: ${{ secrets.VPS_CHAVE_SSH }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_CHAVE_SSH" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Executar deploy
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USUARIO: ${{ secrets.VPS_USUARIO }}
+          VPS_PORTA: ${{ vars.VPS_PORTA }}
+          VPS_DIRETORIO: ${{ vars.VPS_DIRETORIO }}
+          COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          ssh -i ~/.ssh/id_deploy \
+            -p "${VPS_PORTA:-22}" \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ServerAliveInterval=30 \
+            "$VPS_USUARIO@$VPS_HOST" \
+            "bash '${VPS_DIRETORIO:-/var/www/merry}/deploy.sh' '$COMMIT'"
+
+      - name: Remover chave SSH
+        if: always()
+        run: rm -f ~/.ssh/id_deploy

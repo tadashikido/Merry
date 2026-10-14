@@ -1,8 +1,11 @@
 using System.Net;
 using Casamento.Api;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Casamento.Testes.Unidade.Api;
 
@@ -87,6 +90,32 @@ public class ConfiguracaoApiTestes
         var excecao = Assert.Throws<InvalidOperationException>(() => ConfiguracaoApi.ConfigurarProxyReverso(new ForwardedHeadersOptions(), configuracao));
 
         Assert.Contains(valor, excecao.Message);
+    }
+
+    [Theory]
+    [InlineData("172.30.0.7", "203.0.113.7", "https")]
+    [InlineData("172.30.0.254", "203.0.113.7", "https")]
+    [InlineData("172.30.1.7", "172.30.1.7", "http")]
+    [InlineData("10.0.0.7", "10.0.0.7", "http")]
+    public async Task ConfigurarProxyReverso_RedeDeProducao_DeveAceitarCabecalhosEncaminhadosSomenteDaRedeConfiavel(
+        string ipConexao, string ipEsperado, string esquemaEsperado)
+    {
+        var configuracao = new ConfigurationBuilder()
+            .AddInMemoryCollection([new KeyValuePair<string, string?>("ProxyReverso:Redes:0", "172.30.0.0/24")])
+            .Build();
+        var opcoes = new ForwardedHeadersOptions();
+        ConfiguracaoApi.ConfigurarProxyReverso(opcoes, configuracao);
+        var middleware = new ForwardedHeadersMiddleware(_ => Task.CompletedTask, NullLoggerFactory.Instance, Options.Create(opcoes));
+        var contexto = new DefaultHttpContext();
+        contexto.Connection.RemoteIpAddress = IPAddress.Parse(ipConexao);
+        contexto.Request.Scheme = "http";
+        contexto.Request.Headers["X-Forwarded-For"] = "203.0.113.7";
+        contexto.Request.Headers["X-Forwarded-Proto"] = "https";
+
+        await middleware.Invoke(contexto);
+
+        Assert.Equal(IPAddress.Parse(ipEsperado), contexto.Connection.RemoteIpAddress);
+        Assert.Equal(esquemaEsperado, contexto.Request.Scheme);
     }
 
     private static IConfiguration CriarConfiguracao(params string[] origens)
