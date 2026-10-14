@@ -337,299 +337,316 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <CabecalhoPagina
-      :titulo="titulo"
-      :descricao="descricao"
-    >
-      <template #trilha>
-        <RouterLink :to="{ name: 'casamentos' }">
-          {{ TEXTOS_CASAMENTOS.listaTitulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <span aria-current="page">{{ titulo }}</span>
-      </template>
-    </CabecalhoPagina>
-
-    <div class="formulario-casamento__area">
-      <EstadoCarregando
-        v-if="carregandoEdicao && !casamentoEditado"
-        variante="formulario"
-        :linhas="4"
-      />
-
-      <EstadoErro
-        v-else-if="falhaEdicao?.tipo === 'naoEncontrado'"
-        :titulo="TEXTOS_CASAMENTOS.naoEncontradoTitulo"
-        :mensagem="TEXTOS_CASAMENTOS.naoEncontradoTexto"
-        :pode-tentar-novamente="false"
-      />
-
-      <EstadoErro
-        v-else-if="falhaEdicao"
-        :titulo="TEXTOS_CASAMENTOS.erroCarregarUmTitulo"
-        :mensagem="falhaEdicao.tipo === 'semPermissao' ? TEXTOS_CASAMENTOS.semAcesso : TEXTOS_CASAMENTOS.erroCarregarTexto"
-        :pode-tentar-novamente="falhaEdicao.tipo !== 'semPermissao'"
-        @tentar-novamente="carregar"
-      />
-
-      <template v-else>
-        <p
-          v-if="!edicao"
-          class="formulario-casamento__alternativa"
-        >
-          <RouterLink
-            :to="{ name: 'casamento-duplicar' }"
-            data-teste="a-partir-de-outro"
-          >
-            <span
-              class="ie ie-copiar"
-              aria-hidden="true"
-            />
-            {{ TEXTOS_DUPLICACAO_CASAMENTO.acaoAPartirDeOutro }}
+    <div class="pagina-formulario">
+      <CabecalhoPagina
+        :titulo="titulo"
+        :descricao="descricao"
+      >
+        <template #trilha>
+          <RouterLink :to="{ name: 'casamentos' }">
+            {{ TEXTOS_CASAMENTOS.listaTitulo }}
           </RouterLink>
-        </p>
-        <MensagemFormulario
-          v-if="arquivado"
-          variante="informacao"
-          :mensagem="TEXTOS_CASAMENTOS.avisoArquivado"
-          data-teste="aviso-arquivado"
-        />
-        <MensagemFormulario
-          v-if="mensagemErro"
-          :mensagem="mensagemErro"
-          data-teste="erro-formulario"
+          <span aria-hidden="true"> / </span>
+          <span aria-current="page">{{ titulo }}</span>
+        </template>
+      </CabecalhoPagina>
+
+      <div class="pilha pilha--cartao">
+        <EstadoCarregando
+          v-if="carregandoEdicao && !casamentoEditado"
+          variante="formulario"
+          :linhas="4"
         />
 
-        <form
-          class="formulario-casamento"
-          novalidate
-          data-teste="formulario-casamento"
-          @submit.prevent="enviar"
-        >
-          <fieldset class="formulario-casamento__grupo">
-            <legend class="formulario-casamento__legenda">
-              {{ TEXTOS_CASAMENTOS.grupoCasal }}
-            </legend>
-            <CampoFormulario
-              v-slot="{ id: idEntrada, invalido, descritoPor }"
-              :rotulo="TEXTOS_CASAMENTOS.nomePrimeiraPessoa"
-              :id-campo="idCampo('nomePrimeiraPessoa')"
-              obrigatorio
-              :erro="formulario.erros.nomePrimeiraPessoa"
-            >
-              <InputText
-                :id="idEntrada"
-                v-model="formulario.valores.nomePrimeiraPessoa"
-                autocomplete="off"
-                :maxlength="LIMITES_CASAMENTO.nomeMaximo"
-                aria-required="true"
-                :invalid="invalido"
-                :aria-invalid="invalido"
-                :aria-describedby="descritoPor"
-                :readonly="enviando"
-                @blur="formulario.validarCampo('nomePrimeiraPessoa')"
-              />
-            </CampoFormulario>
-            <CampoFormulario
-              v-slot="{ id: idEntrada, invalido, descritoPor }"
-              :rotulo="TEXTOS_CASAMENTOS.nomeSegundaPessoa"
-              :id-campo="idCampo('nomeSegundaPessoa')"
-              obrigatorio
-              :erro="formulario.erros.nomeSegundaPessoa"
-            >
-              <InputText
-                :id="idEntrada"
-                v-model="formulario.valores.nomeSegundaPessoa"
-                autocomplete="off"
-                :maxlength="LIMITES_CASAMENTO.nomeMaximo"
-                aria-required="true"
-                :invalid="invalido"
-                :aria-invalid="invalido"
-                :aria-describedby="descritoPor"
-                :readonly="enviando"
-                @blur="formulario.validarCampo('nomeSegundaPessoa')"
-              />
-            </CampoFormulario>
-          </fieldset>
+        <EstadoErro
+          v-else-if="falhaEdicao?.tipo === 'naoEncontrado'"
+          :titulo="TEXTOS_CASAMENTOS.naoEncontradoTitulo"
+          :mensagem="TEXTOS_CASAMENTOS.naoEncontradoTexto"
+          :pode-tentar-novamente="false"
+        />
 
-          <fieldset class="formulario-casamento__grupo">
-            <legend class="formulario-casamento__legenda">
-              {{ TEXTOS_CASAMENTOS.grupoQuando }}
-            </legend>
-            <div class="formulario-casamento__linha">
+        <EstadoErro
+          v-else-if="falhaEdicao"
+          :titulo="TEXTOS_CASAMENTOS.erroCarregarUmTitulo"
+          :mensagem="falhaEdicao.tipo === 'semPermissao' ? TEXTOS_CASAMENTOS.semAcesso : TEXTOS_CASAMENTOS.erroCarregarTexto"
+          :pode-tentar-novamente="falhaEdicao.tipo !== 'semPermissao'"
+          @tentar-novamente="carregar"
+        />
+
+        <template v-else>
+          <p
+            v-if="!edicao"
+            class="formulario-casamento__alternativa"
+          >
+            <RouterLink
+              :to="{ name: 'casamento-duplicar' }"
+              data-teste="a-partir-de-outro"
+            >
+              <span
+                class="ie ie-copiar"
+                aria-hidden="true"
+              />
+              {{ TEXTOS_DUPLICACAO_CASAMENTO.acaoAPartirDeOutro }}
+            </RouterLink>
+          </p>
+          <MensagemFormulario
+            v-if="arquivado"
+            variante="informacao"
+            :mensagem="TEXTOS_CASAMENTOS.avisoArquivado"
+            data-teste="aviso-arquivado"
+          />
+          <MensagemFormulario
+            v-if="mensagemErro"
+            :mensagem="mensagemErro"
+            data-teste="erro-formulario"
+          />
+
+          <form
+            class="pilha pilha--bloco"
+            novalidate
+            data-teste="formulario-casamento"
+            @submit.prevent="enviar"
+          >
+            <fieldset class="formulario-casamento__grupo pilha pilha--grupo">
+              <legend class="formulario-casamento__legenda texto-rotulo">
+                {{ TEXTOS_CASAMENTOS.grupoCasal }}
+              </legend>
+              <div class="formulario-casamento__colunas">
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_CASAMENTOS.nomePrimeiraPessoa"
+                  :id-campo="idCampo('nomePrimeiraPessoa')"
+                  obrigatorio
+                  :erro="formulario.erros.nomePrimeiraPessoa"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.nomePrimeiraPessoa"
+                    autocomplete="off"
+                    :maxlength="LIMITES_CASAMENTO.nomeMaximo"
+                    aria-required="true"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    @update:model-value="formulario.revalidarAoDigitar('nomePrimeiraPessoa')"
+                    @blur="formulario.validarAoSair('nomePrimeiraPessoa')"
+                  />
+                </CampoFormulario>
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_CASAMENTOS.nomeSegundaPessoa"
+                  :id-campo="idCampo('nomeSegundaPessoa')"
+                  obrigatorio
+                  :erro="formulario.erros.nomeSegundaPessoa"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.nomeSegundaPessoa"
+                    autocomplete="off"
+                    :maxlength="LIMITES_CASAMENTO.nomeMaximo"
+                    aria-required="true"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    @update:model-value="formulario.revalidarAoDigitar('nomeSegundaPessoa')"
+                    @blur="formulario.validarAoSair('nomeSegundaPessoa')"
+                  />
+                </CampoFormulario>
+              </div>
+            </fieldset>
+
+            <fieldset class="formulario-casamento__grupo pilha pilha--grupo">
+              <legend class="formulario-casamento__legenda texto-rotulo">
+                {{ TEXTOS_CASAMENTOS.grupoQuando }}
+              </legend>
+              <div class="formulario-casamento__colunas">
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_CASAMENTOS.data"
+                  :id-campo="idCampo('data')"
+                  obrigatorio
+                  :erro="formulario.erros.data"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.data"
+                    type="date"
+                    :min="LIMITES_CASAMENTO.dataMinima"
+                    :max="LIMITES_CASAMENTO.dataMaxima"
+                    aria-required="true"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    @update:model-value="formulario.revalidarAoDigitar('data')"
+                    @blur="formulario.validarAoSair('data')"
+                  />
+                </CampoFormulario>
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_CASAMENTOS.horario"
+                  :id-campo="idCampo('horario')"
+                  :dica="TEXTOS_CASAMENTOS.horarioDica"
+                  :erro="formulario.erros.horario"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.horario"
+                    type="time"
+                    step="60"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    @update:model-value="formulario.revalidarAoDigitar('horario')"
+                    @blur="formulario.validarAoSair('horario')"
+                  />
+                </CampoFormulario>
+              </div>
+              <div class="formulario-casamento__colunas">
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_CASAMENTOS.dataLimiteRsvp"
+                  :id-campo="idCampo('dataLimiteRsvp')"
+                  :dica="dicaDataLimite"
+                  :erro="formulario.erros.dataLimiteRsvp"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.dataLimiteRsvp"
+                    type="date"
+                    :min="LIMITES_CASAMENTO.dataMinima"
+                    :max="formulario.valores.data || LIMITES_CASAMENTO.dataMaxima"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    data-teste="campo-data-limite-rsvp"
+                    @update:model-value="formulario.revalidarAoDigitar('dataLimiteRsvp')"
+                    @blur="formulario.validarAoSair('dataLimiteRsvp')"
+                  />
+                </CampoFormulario>
+              </div>
+            </fieldset>
+
+            <fieldset class="formulario-casamento__grupo pilha pilha--grupo">
+              <legend class="formulario-casamento__legenda texto-rotulo">
+                {{ TEXTOS_CASAMENTOS.grupoOnde }}
+              </legend>
+              <div class="formulario-casamento__colunas">
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_CASAMENTOS.localCerimonia"
+                  :id-campo="idCampo('localCerimonia')"
+                  :erro="formulario.erros.localCerimonia"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.localCerimonia"
+                    :maxlength="LIMITES_CASAMENTO.local"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    @update:model-value="formulario.revalidarAoDigitar('localCerimonia')"
+                    @blur="formulario.validarAoSair('localCerimonia')"
+                  />
+                </CampoFormulario>
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_CASAMENTOS.localRecepcao"
+                  :id-campo="idCampo('localRecepcao')"
+                  :dica="TEXTOS_CASAMENTOS.localRecepcaoDica"
+                  :erro="formulario.erros.localRecepcao"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.localRecepcao"
+                    :maxlength="LIMITES_CASAMENTO.local"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    @update:model-value="formulario.revalidarAoDigitar('localRecepcao')"
+                    @blur="formulario.validarAoSair('localRecepcao')"
+                  />
+                </CampoFormulario>
+              </div>
+            </fieldset>
+
+            <fieldset class="formulario-casamento__grupo pilha pilha--grupo">
+              <legend class="formulario-casamento__legenda texto-rotulo">
+                {{ TEXTOS_CASAMENTOS.grupoPlanejamento }}
+              </legend>
+              <div class="formulario-casamento__colunas">
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_CASAMENTOS.convidados"
+                  :id-campo="idCampo('convidadosEstimados')"
+                  :dica="TEXTOS_CASAMENTOS.convidadosDica"
+                  :erro="formulario.erros.convidadosEstimados"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.convidadosEstimados"
+                    inputmode="numeric"
+                    maxlength="4"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    @update:model-value="formulario.revalidarAoDigitar('convidadosEstimados')"
+                    @blur="formulario.validarAoSair('convidadosEstimados')"
+                  />
+                </CampoFormulario>
+              </div>
               <CampoFormulario
                 v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_CASAMENTOS.data"
-                :id-campo="idCampo('data')"
-                obrigatorio
-                :erro="formulario.erros.data"
+                :rotulo="TEXTOS_CASAMENTOS.observacoes"
+                :id-campo="idCampo('observacoes')"
+                :dica="TEXTOS_CASAMENTOS.contadorObservacoes(quantidadeObservacoes, LIMITES_CASAMENTO.observacoes)"
+                :erro="formulario.erros.observacoes"
               >
-                <InputText
+                <Textarea
                   :id="idEntrada"
-                  v-model="formulario.valores.data"
-                  type="date"
-                  :min="LIMITES_CASAMENTO.dataMinima"
-                  :max="LIMITES_CASAMENTO.dataMaxima"
-                  aria-required="true"
+                  v-model="formulario.valores.observacoes"
+                  rows="4"
+                  auto-resize
+                  :maxlength="LIMITES_CASAMENTO.observacoes"
                   :invalid="invalido"
                   :aria-invalid="invalido"
                   :aria-describedby="descritoPor"
                   :readonly="enviando"
-                  @blur="formulario.validarCampo('data')"
+                  @update:model-value="formulario.revalidarAoDigitar('observacoes')"
+                  @blur="formulario.validarAoSair('observacoes')"
                 />
               </CampoFormulario>
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_CASAMENTOS.horario"
-                :id-campo="idCampo('horario')"
-                :dica="TEXTOS_CASAMENTOS.horarioDica"
-                :erro="formulario.erros.horario"
-              >
-                <InputText
-                  :id="idEntrada"
-                  v-model="formulario.valores.horario"
-                  type="time"
-                  step="60"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  @blur="formulario.validarCampo('horario')"
-                />
-              </CampoFormulario>
+            </fieldset>
+
+            <div class="formulario-casamento__acoes">
+              <Button
+                type="submit"
+                :label="rotuloSalvar"
+                :loading="enviando"
+                :aria-busy="enviando"
+                :disabled="arquivado || bloqueadoPorPermissao"
+                data-teste="salvar-casamento"
+              />
+              <Button
+                type="button"
+                :label="ROTULOS_ACOES.cancelar"
+                severity="secondary"
+                text
+                :disabled="enviando"
+                data-teste="cancelar"
+                @click="cancelar"
+              />
             </div>
-            <CampoFormulario
-              v-slot="{ id: idEntrada, invalido, descritoPor }"
-              class="formulario-casamento__campo-curto"
-              :rotulo="TEXTOS_CASAMENTOS.dataLimiteRsvp"
-              :id-campo="idCampo('dataLimiteRsvp')"
-              :dica="dicaDataLimite"
-              :erro="formulario.erros.dataLimiteRsvp"
-            >
-              <InputText
-                :id="idEntrada"
-                v-model="formulario.valores.dataLimiteRsvp"
-                type="date"
-                :min="LIMITES_CASAMENTO.dataMinima"
-                :max="formulario.valores.data || LIMITES_CASAMENTO.dataMaxima"
-                :invalid="invalido"
-                :aria-invalid="invalido"
-                :aria-describedby="descritoPor"
-                :readonly="enviando"
-                data-teste="campo-data-limite-rsvp"
-                @blur="formulario.validarCampo('dataLimiteRsvp')"
-              />
-            </CampoFormulario>
-          </fieldset>
-
-          <fieldset class="formulario-casamento__grupo">
-            <legend class="formulario-casamento__legenda">
-              {{ TEXTOS_CASAMENTOS.grupoOnde }}
-            </legend>
-            <CampoFormulario
-              v-slot="{ id: idEntrada, invalido, descritoPor }"
-              :rotulo="TEXTOS_CASAMENTOS.localCerimonia"
-              :id-campo="idCampo('localCerimonia')"
-              :erro="formulario.erros.localCerimonia"
-            >
-              <InputText
-                :id="idEntrada"
-                v-model="formulario.valores.localCerimonia"
-                :maxlength="LIMITES_CASAMENTO.local"
-                :invalid="invalido"
-                :aria-invalid="invalido"
-                :aria-describedby="descritoPor"
-                :readonly="enviando"
-                @blur="formulario.validarCampo('localCerimonia')"
-              />
-            </CampoFormulario>
-            <CampoFormulario
-              v-slot="{ id: idEntrada, invalido, descritoPor }"
-              :rotulo="TEXTOS_CASAMENTOS.localRecepcao"
-              :id-campo="idCampo('localRecepcao')"
-              :dica="TEXTOS_CASAMENTOS.localRecepcaoDica"
-              :erro="formulario.erros.localRecepcao"
-            >
-              <InputText
-                :id="idEntrada"
-                v-model="formulario.valores.localRecepcao"
-                :maxlength="LIMITES_CASAMENTO.local"
-                :invalid="invalido"
-                :aria-invalid="invalido"
-                :aria-describedby="descritoPor"
-                :readonly="enviando"
-                @blur="formulario.validarCampo('localRecepcao')"
-              />
-            </CampoFormulario>
-          </fieldset>
-
-          <fieldset class="formulario-casamento__grupo">
-            <legend class="formulario-casamento__legenda">
-              {{ TEXTOS_CASAMENTOS.grupoPlanejamento }}
-            </legend>
-            <CampoFormulario
-              v-slot="{ id: idEntrada, invalido, descritoPor }"
-              class="formulario-casamento__campo-curto"
-              :rotulo="TEXTOS_CASAMENTOS.convidados"
-              :id-campo="idCampo('convidadosEstimados')"
-              :dica="TEXTOS_CASAMENTOS.convidadosDica"
-              :erro="formulario.erros.convidadosEstimados"
-            >
-              <InputText
-                :id="idEntrada"
-                v-model="formulario.valores.convidadosEstimados"
-                inputmode="numeric"
-                maxlength="4"
-                :invalid="invalido"
-                :aria-invalid="invalido"
-                :aria-describedby="descritoPor"
-                :readonly="enviando"
-                @blur="formulario.validarCampo('convidadosEstimados')"
-              />
-            </CampoFormulario>
-            <CampoFormulario
-              v-slot="{ id: idEntrada, invalido, descritoPor }"
-              :rotulo="TEXTOS_CASAMENTOS.observacoes"
-              :id-campo="idCampo('observacoes')"
-              :dica="TEXTOS_CASAMENTOS.contadorObservacoes(quantidadeObservacoes, LIMITES_CASAMENTO.observacoes)"
-              :erro="formulario.erros.observacoes"
-            >
-              <Textarea
-                :id="idEntrada"
-                v-model="formulario.valores.observacoes"
-                rows="4"
-                auto-resize
-                :maxlength="LIMITES_CASAMENTO.observacoes"
-                :invalid="invalido"
-                :aria-invalid="invalido"
-                :aria-describedby="descritoPor"
-                :readonly="enviando"
-                @blur="formulario.validarCampo('observacoes')"
-              />
-            </CampoFormulario>
-          </fieldset>
-
-          <div class="formulario-casamento__acoes">
-            <Button
-              type="submit"
-              :label="rotuloSalvar"
-              :loading="enviando"
-              :aria-busy="enviando"
-              :disabled="arquivado || bloqueadoPorPermissao"
-              data-teste="salvar-casamento"
-            />
-            <Button
-              type="button"
-              :label="ROTULOS_ACOES.cancelar"
-              severity="secondary"
-              text
-              :disabled="enviando"
-              data-teste="cancelar"
-              @click="cancelar"
-            />
-          </div>
-        </form>
-      </template>
+          </form>
+        </template>
+      </div>
     </div>
 
     <DialogoConfirmacao
@@ -659,13 +676,6 @@ function cancelar() {
 </template>
 
 <style scoped>
-.formulario-casamento__area {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-4);
-  max-width: var(--p-dimensao-largura-leitura);
-}
-
 .formulario-casamento__alternativa {
   margin: 0;
   font-size: var(--p-fonte-tamanho-controle);
@@ -674,21 +684,11 @@ function cancelar() {
 .formulario-casamento__alternativa a {
   display: inline-flex;
   align-items: center;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   min-height: var(--p-dimensao-alvo-toque);
 }
 
-.formulario-casamento {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-8);
-}
-
 .formulario-casamento__grupo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
-  min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
@@ -696,23 +696,19 @@ function cancelar() {
 
 .formulario-casamento__legenda {
   padding: 0;
-  margin-bottom: var(--p-espaco-4);
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-secao);
-  font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-texto);
+  margin-bottom: var(--p-ritmo-grupo);
 }
 
-.formulario-casamento__linha {
+.formulario-casamento__colunas {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-espaco-5);
+  gap: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
 }
 
 .formulario-casamento__acoes {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .formulario-casamento__acoes :deep(.p-button) {
@@ -720,17 +716,14 @@ function cancelar() {
 }
 
 @media (min-width: 640px) {
-  .formulario-casamento__linha {
+  .formulario-casamento__colunas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
   }
 
-  .formulario-casamento__campo-curto {
-    max-width: 12rem;
-  }
-
   .formulario-casamento__acoes {
     flex-direction: row;
+    gap: var(--p-ritmo-grupo);
   }
 }
 </style>
