@@ -6,6 +6,7 @@ import InputText from 'primevue/inputtext'
 
 import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
+import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { useAutenticacaoStore, type TipoFalha } from '@/stores/autenticacao'
@@ -72,13 +73,10 @@ async function enviarDeNovo() {
       class="confirmacao-envio pilha pilha--grupo"
       data-teste="confirmacao-envio"
     >
-      <span
-        class="confirmacao-envio__lacre"
-        aria-hidden="true"
+      <LacreIcone
+        icone="ie-email"
         data-teste="lacre-envio"
-      >
-        <span class="ie ie-email" />
-      </span>
+      />
       <p class="confirmacao-envio__dica texto-legenda">
         {{ TEXTOS_ESQUECI_SENHA.enviadoDica }}
       </p>
@@ -153,19 +151,6 @@ async function enviarDeNovo() {
 .confirmacao-envio {
   align-items: center;
   text-align: center;
-}
-
-.confirmacao-envio__lacre {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--p-dimensao-alvo-presenca);
-  height: var(--p-dimensao-alvo-presenca);
-  font-size: var(--p-fonte-tamanho-pagina-celular);
-  color: var(--p-cor-acento-texto);
-  background: var(--p-cor-acento-suave);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-total);
 }
 
 .confirmacao-envio__dica {

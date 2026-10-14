@@ -4,6 +4,7 @@ import PrimeVue from 'primevue/config'
 
 import CampoSenha from '@/componentes/base/CampoSenha.vue'
 import IndicadorAbertura from '@/componentes/base/IndicadorAbertura.vue'
+import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import ResumoUsuario from '@/componentes/base/ResumoUsuario.vue'
 import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
@@ -84,6 +85,18 @@ describe('LayoutAutenticacao', () => {
 
     expect(wrapper.find('main').exists()).toBe(false)
     expect(wrapper.find('h1').exists()).toBe(false)
+  })
+})
+
+describe('LacreIcone', () => {
+  it('[UNITÁRIO] renderiza o ícone pedido escondido de leitores de tela e repassa atributos', () => {
+    const wrapper = mount(LacreIcone, { props: { icone: 'ie-link' }, attrs: { 'data-teste': 'lacre-teste' } })
+
+    const lacre = wrapper.get('[data-teste="lacre-teste"]')
+    expect(lacre.classes()).toContain('lacre-icone')
+    expect(lacre.attributes('aria-hidden')).toBe('true')
+    expect(lacre.get('span.ie').classes()).toContain('ie-link')
+    expect(wrapper.text()).toBe('')
   })
 })
 

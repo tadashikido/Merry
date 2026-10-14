@@ -6,7 +6,7 @@ import Button from 'primevue/button'
 import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import CampoSenha from '@/componentes/base/CampoSenha.vue'
-import EstadoErro from '@/componentes/base/EstadoErro.vue'
+import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { useAutenticacaoStore, type TipoFalha } from '@/stores/autenticacao'
@@ -90,6 +90,11 @@ async function enviar() {
   mensagemErro.value = FALHAS[resultado.tipo] ?? MENSAGENS_AUTENTICACAO.inesperado
 }
 
+function aoDigitarNovaSenha() {
+  formulario.revalidarAoDigitar('novaSenha')
+  formulario.revalidarAoDigitar('confirmacao')
+}
+
 function pedirNovoLink() {
   void roteador.push({ name: 'esqueci-senha' })
 }
@@ -98,13 +103,17 @@ function pedirNovoLink() {
 <template>
   <LayoutAutenticacao
     :titulo="linkInvalido ? TEXTOS_REDEFINIR_SENHA.linkInvalidoTitulo : TEXTOS_REDEFINIR_SENHA.titulo"
-    :descricao="linkInvalido ? undefined : TEXTOS_REDEFINIR_SENHA.descricao"
+    :descricao="linkInvalido ? TEXTOS_REDEFINIR_SENHA.linkInvalidoTexto : TEXTOS_REDEFINIR_SENHA.descricao"
   >
-    <template v-if="linkInvalido">
-      <EstadoErro
-        :titulo="TEXTOS_REDEFINIR_SENHA.linkInvalidoTitulo"
-        :mensagem="TEXTOS_REDEFINIR_SENHA.linkInvalidoTexto"
-        :pode-tentar-novamente="false"
+    <div
+      v-if="linkInvalido"
+      class="link-invalido pilha pilha--cartao"
+      data-teste="link-invalido"
+    >
+      <LacreIcone
+        class="link-invalido__lacre"
+        icone="ie-link"
+        data-teste="lacre-link-invalido"
       />
       <Button
         type="button"
@@ -112,7 +121,7 @@ function pedirNovoLink() {
         data-teste="pedir-novo-link"
         @click="pedirNovoLink"
       />
-    </template>
+    </div>
 
     <template v-else>
       <MensagemFormulario
@@ -120,42 +129,47 @@ function pedirNovoLink() {
         :mensagem="mensagemErro"
       />
       <form
-        class="formulario-autenticacao"
+        class="pilha pilha--cartao"
         novalidate
         data-teste="formulario-redefinir-senha"
         @submit.prevent="enviar"
       >
-        <CampoFormulario
-          v-slot="{ id, invalido, descritoPor }"
-          :rotulo="ROTULOS_CAMPOS_AUTENTICACAO.novaSenha"
-          id-campo="redefinir-novaSenha"
-          :erro="formulario.erros.novaSenha"
-        >
-          <CampoSenha
-            :id="id"
-            v-model="formulario.valores.novaSenha"
-            :invalido="invalido"
-            :descrito-por="descritoPor"
-            autocomplete="new-password"
-            com-requisitos
-            @blur="formulario.validarCampo('novaSenha')"
-          />
-        </CampoFormulario>
-        <CampoFormulario
-          v-slot="{ id, invalido, descritoPor }"
-          :rotulo="ROTULOS_CAMPOS_AUTENTICACAO.confirmarSenha"
-          id-campo="redefinir-confirmacao"
-          :erro="formulario.erros.confirmacao"
-        >
-          <CampoSenha
-            :id="id"
-            v-model="formulario.valores.confirmacao"
-            :invalido="invalido"
-            :descrito-por="descritoPor"
-            autocomplete="new-password"
-            @blur="formulario.validarCampo('confirmacao')"
-          />
-        </CampoFormulario>
+        <div class="pilha pilha--grupo">
+          <CampoFormulario
+            v-slot="{ id, invalido, descritoPor }"
+            :rotulo="ROTULOS_CAMPOS_AUTENTICACAO.novaSenha"
+            id-campo="redefinir-novaSenha"
+            :erro="formulario.erros.novaSenha"
+          >
+            <CampoSenha
+              :id="id"
+              v-model="formulario.valores.novaSenha"
+              :invalido="invalido"
+              :descrito-por="descritoPor"
+              autocomplete="new-password"
+              com-requisitos
+              @update:model-value="aoDigitarNovaSenha"
+              @blur="formulario.validarAoSair('novaSenha')"
+            />
+          </CampoFormulario>
+          <CampoFormulario
+            v-slot="{ id, invalido, descritoPor }"
+            :rotulo="ROTULOS_CAMPOS_AUTENTICACAO.confirmarSenha"
+            id-campo="redefinir-confirmacao"
+            :erro="formulario.erros.confirmacao"
+          >
+            <CampoSenha
+              :id="id"
+              v-model="formulario.valores.confirmacao"
+              :invalido="invalido"
+              :descrito-por="descritoPor"
+              autocomplete="new-password"
+              @update:model-value="formulario.revalidarAoDigitar('confirmacao')"
+              @blur="formulario.validarAoSair('confirmacao')"
+            />
+          </CampoFormulario>
+        </div>
+
         <Button
           type="submit"
           :label="TEXTOS_REDEFINIR_SENHA.botao"
@@ -178,9 +192,7 @@ function pedirNovoLink() {
 </template>
 
 <style scoped>
-.formulario-autenticacao {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
+.link-invalido__lacre {
+  align-self: center;
 }
 </style>

@@ -242,4 +242,104 @@ describe('RedefinirSenhaView', () => {
     expect(wrapper!.get('h1').text()).toBe(TEXTOS_REDEFINIR_SENHA.linkInvalidoTitulo)
     expect(wrapper!.text()).toContain(TEXTOS_REDEFINIR_SENHA.linkInvalidoTexto)
   })
+  it('[COMPONENTE] link inválido mostra título e texto uma única vez, com lacre decorativo e sem cartão de erro', async () => {
+    await abrir('/redefinir-senha')
+
+    expect(wrapper!.findAll('h1')).toHaveLength(1)
+    expect(wrapper!.find('h2').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="estado-erro"]').exists()).toBe(false)
+    expect(wrapper!.text().split(TEXTOS_REDEFINIR_SENHA.linkInvalidoTexto)).toHaveLength(2)
+
+    const estado = wrapper!.get('[data-teste="link-invalido"]')
+    expect(estado.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--cartao']))
+    const lacre = estado.get('[data-teste="lacre-link-invalido"]')
+    expect(lacre.attributes('aria-hidden')).toBe('true')
+    expect(lacre.find('.ie-link').exists()).toBe(true)
+    expect(estado.find('[data-teste="pedir-novo-link"]').exists()).toBe(true)
+    expect(wrapper!.find('form').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] link recusado pelo servidor leva o foco ao título do estado de link inválido', async () => {
+    await abrir('/redefinir-senha#token=abc')
+    fetchSimulado.mockResolvedValue(respostaProblema(422, { detail: DETALHE_LINK_INVALIDO }))
+
+    await preencherEEnviar('senhaForte1', 'senhaForte1')
+
+    expect(document.activeElement?.id).toBe('autenticacao-titulo')
+    expect(wrapper!.find('[data-teste="lacre-link-invalido"]').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] organiza o formulário com as primitivas de ritmo do Nossia', async () => {
+    await abrir('/redefinir-senha#token=abc')
+
+    const formulario = wrapper!.get('[data-teste="formulario-redefinir-senha"]')
+    expect(formulario.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--cartao']))
+    const grupo = formulario.get('div.pilha.pilha--grupo')
+    expect(grupo.find('#redefinir-novaSenha').exists()).toBe(true)
+    expect(grupo.find('#redefinir-confirmacao').exists()).toBe(true)
+    expect(grupo.find('[data-teste="enviar"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] não mostra erro ao sair dos campos vazios antes de tentar salvar', async () => {
+    await abrir('/redefinir-senha#token=abc')
+
+    await wrapper!.get('#redefinir-novaSenha').trigger('blur')
+    await wrapper!.get('#redefinir-confirmacao').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+    expect(wrapper!.get('#redefinir-novaSenha').attributes('aria-invalid')).toBe('false')
+    expect(wrapper!.get('#redefinir-confirmacao').attributes('aria-invalid')).toBe('false')
+  })
+
+  it('[COMPONENTE] depois de tentar salvar, o erro da confirmação some ao digitar a mesma senha', async () => {
+    await abrir('/redefinir-senha#token=abc')
+    await preencherEEnviar('senhaForte1', 'senhaForte2')
+    expect(wrapper!.get('#redefinir-confirmacao').attributes('aria-invalid')).toBe('true')
+
+    await wrapper!.get('#redefinir-confirmacao').setValue('senhaForte1')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+    expect(wrapper!.get('#redefinir-confirmacao').attributes('aria-invalid')).toBe('false')
+    expect(fetchSimulado).not.toHaveBeenCalled()
+  })
+
+  it('[COMPONENTE] depois de tentar salvar, ajustar a nova senha para igualar a confirmação limpa o erro da confirmação', async () => {
+    await abrir('/redefinir-senha#token=abc')
+    await preencherEEnviar('senhaForte2', 'senhaForte1')
+    expect(wrapper!.text()).toContain(MENSAGENS_VALIDACAO.senhasDiferentes)
+
+    await wrapper!.get('#redefinir-novaSenha').setValue('senhaForte1')
+    await flushPromises()
+
+    expect(wrapper!.text()).not.toContain(MENSAGENS_VALIDACAO.senhasDiferentes)
+    expect(wrapper!.get('#redefinir-confirmacao').attributes('aria-invalid')).toBe('false')
+  })
+
+  it('[COMPONENTE] depois de tentar salvar, sair de um campo ainda inválido mantém o erro', async () => {
+    await abrir('/redefinir-senha#token=abc')
+    await preencherEEnviar('', '')
+    expect(wrapper!.text()).toContain(MENSAGENS_VALIDACAO.obrigatorio)
+
+    await wrapper!.get('#redefinir-novaSenha').setValue('curta')
+    await wrapper!.get('#redefinir-novaSenha').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.text()).toContain(MENSAGENS_VALIDACAO.senhaFraca)
+    expect(wrapper!.get('#redefinir-novaSenha').attributes('aria-invalid')).toBe('true')
+  })
+
+  it('[COMPONENTE] informa excesso de tentativas e falha de conexão sem sair do formulário', async () => {
+    await abrir('/redefinir-senha#token=abc')
+    fetchSimulado.mockResolvedValueOnce(respostaProblema(429))
+    await preencherEEnviar('senhaForte1', 'senhaForte1')
+    expect(wrapper!.text()).toContain(MENSAGENS_AUTENTICACAO.muitasTentativas)
+
+    fetchSimulado.mockRejectedValueOnce(new TypeError('offline'))
+    await wrapper!.get('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper!.text()).toContain(MENSAGENS_AUTENTICACAO.conexao)
+    expect(wrapper!.find('form').exists()).toBe(true)
+  })
 })
