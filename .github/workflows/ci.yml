@@ -101,21 +101,11 @@ jobs:
       - name: Testar cadeia de proxies
         run: bash infra/testes/proxy.test.sh
 
-      - name: Validar vhosts do nginx do host
+      - name: Validar vhost do nginx do host
         run: |
-          mkdir -p vhosts/certificado
-          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=casamento.exemplo.com.br" \
-            -keyout vhosts/certificado/privkey.pem -out vhosts/certificado/fullchain.pem
-          for template in infra/nginx/*.template; do
-            DOMINIO=casamento.exemplo.com.br WEB_PORTA=8090 envsubst '$DOMINIO $WEB_PORTA' \
-              < "$template" > "vhosts/$(basename "$template" .template)"
-          done
-          for vhost in vhosts/*.conf; do
-            docker run --rm \
-              -v "$PWD/$vhost:/etc/nginx/conf.d/default.conf:ro" \
-              -v "$PWD/vhosts/certificado:/etc/letsencrypt/live/casamento.exemplo.com.br:ro" \
-              nginx:1.27-alpine nginx -t
-          done
+          DOMINIO=casamento.exemplo.com.br WEB_PORTA=8090 envsubst '$DOMINIO $WEB_PORTA' \
+            < infra/nginx/casamento.conf.template > casamento.conf
+          docker run --rm -v "$PWD/casamento.conf:/etc/nginx/conf.d/default.conf:ro" nginx:1.27-alpine nginx -t
 
       - name: Validar nginx do container web
         run: >-

@@ -105,14 +105,14 @@ O workflow `Deploy` roda após o `CI` concluir com sucesso num push em `main` (o
 
 - avança o repositório por fast-forward até o SHA validado;
 - reconstrói apenas `api` (mudanças em `backend/`) e/ou `web` (mudanças em `frontend/`) e aplica `up -d`;
-- avisa quando `infra/nginx/` mudou, porque o vhost do host é reaplicado manualmente;
+- avisa quando `infra/nginx/` mudou, porque o vhost do host é atualizado manualmente;
 - falha se `https://<DOMINIO>/api/saude` não responder em cerca de 90 s.
 
 `./deploy.sh --completo` reconstrói tudo com `--pull` (atualização de imagens base).
 
 ### VPS (uma vez)
 
-1. Instale Docker Engine com o plugin compose, `git`, `curl`, `certbot` e `gettext-base` (`envsubst`). O nginx do host continua como está. Firewall: apenas 22/tcp, 80/tcp e 443/tcp.
+1. Instale Docker Engine com o plugin compose, `git`, `curl`, `certbot`, `python3-certbot-nginx` e `gettext-base` (`envsubst`). O nginx do host continua como está. Firewall: apenas 22/tcp, 80/tcp e 443/tcp.
 2. Aponte o registro DNS `A` (e `AAAA`, se houver IPv6) do domínio para a VPS.
 3. Crie o usuário de deploy sem sudo: `sudo adduser --disabled-password deploy && sudo usermod -aG docker deploy`.
 4. Como `deploy`, gere a chave de leitura do repositório (`ssh-keygen -t ed25519 -f ~/.ssh/github_merry -N ""`), cadastre a pública como *Deploy key* somente leitura no GitHub e configure `~/.ssh/config` com `Host github.com` → `IdentityFile ~/.ssh/github_merry`.
@@ -124,28 +124,24 @@ O workflow `Deploy` roda após o `CI` concluir com sucesso num push em `main` (o
    - domínio;
    - `WEB_PORTA` livre no host (confira com `ss -ltn`);
    - SMTP do provedor (porta 587 com `SMTP_USAR_SSL=true` usa STARTTLS).
-7. Emita o certificado sem parar o nginx (os outros sites continuam no ar):
+7. Crie o vhost no mesmo padrão dos outros sites da VPS (`server_name` + `proxy_pass` para a porta local) e deixe o certbot injetar o TLS:
 
    ```bash
    cd /var/www/merry
    export DOMINIO=casamento.exemplo.com.br WEB_PORTA=8090
-   sudo mkdir -p /var/www/certbot
-   envsubst '$DOMINIO $WEB_PORTA' < infra/nginx/casamento-acme.conf.template | sudo tee /etc/nginx/sites-available/casamento.conf > /dev/null
+   envsubst '$DOMINIO $WEB_PORTA' < infra/nginx/casamento.conf.template | sudo tee /etc/nginx/sites-available/casamento.conf > /dev/null
    sudo ln -sf /etc/nginx/sites-available/casamento.conf /etc/nginx/sites-enabled/casamento.conf
    sudo nginx -t && sudo systemctl reload nginx
-   sudo certbot certonly --webroot -w /var/www/certbot -d "$DOMINIO" --deploy-hook "systemctl reload nginx"
+   sudo certbot --nginx -d "$DOMINIO" --redirect
    ```
 
-8. Instale o vhost definitivo (TLS, HTTP→HTTPS, HSTS, uploads de até 11 MB). Repita este passo sempre que o `deploy.sh` avisar que `infra/nginx/` mudou:
+   O template difere do padrão dos outros sites em dois pontos:
+   - `client_max_body_size 11m`: sem ele, PDFs de contrato acima de 1 MB recebem 413;
+   - `127.0.0.1` no lugar de `localhost`: o container é publicado só em IPv4.
 
-   ```bash
-   envsubst '$DOMINIO $WEB_PORTA' < infra/nginx/casamento.conf.template | sudo tee /etc/nginx/sites-available/casamento.conf > /dev/null
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
+   Para usar também `www`, acrescente-o ao `server_name` e ao certbot (`-d www.$DOMINIO`). Se o nginx do host carrega vhosts de `/etc/nginx/conf.d/`, grave em `/etc/nginx/conf.d/casamento.conf` e pule o `ln`.
 
-   Se o nginx do host carrega vhosts de `/etc/nginx/conf.d/` em vez de `sites-enabled/`, grave os dois vhosts em `/etc/nginx/conf.d/casamento.conf` e pule o `ln`.
-
-   As renovações do certbot usam o mesmo webroot (o vhost mantém `/.well-known/acme-challenge/` em HTTP) e recarregam o nginx pelo `--deploy-hook`. Teste com `sudo certbot renew --dry-run`.
+8. Depois do certbot, o arquivo `/etc/nginx/sites-available/casamento.conf` passa a conter o TLS e é a fonte da verdade: **nunca o sobrescreva com o template**. Quando o `deploy.sh` avisar que `infra/nginx/casamento.conf.template` mudou, aplique só a diferença à mão e rode `sudo nginx -t && sudo systemctl reload nginx`. As renovações são automáticas pelo timer do certbot; confira com `sudo certbot renew --dry-run`.
 9. Primeiro deploy manual: `./deploy.sh`.
 10. Agende backup diário do banco (`docker compose -f docker-compose.prod.yml exec -T db pg_dump -U casamento casamento | gzip > backup.sql.gz`) e do volume `casamento-producao_arquivos-enlace`, copiando-os para fora da VPS.
 
