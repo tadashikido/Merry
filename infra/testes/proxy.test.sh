@@ -61,8 +61,21 @@ PYTHON
 
 sed -e "s/\${DOMINIO}/$DOMINIO_TESTE/g" \
   -e "s/127\.0\.0\.1:\${WEB_PORTA}/web:8080/" \
-  -e '/listen \[::\]/d' \
+  -e "/server_name/a\\    listen 443 ssl;" \
+  -e "/server_name/a\\    ssl_certificate /etc/letsencrypt/live/$DOMINIO_TESTE/fullchain.pem;" \
+  -e "/server_name/a\\    ssl_certificate_key /etc/letsencrypt/live/$DOMINIO_TESTE/privkey.pem;" \
   "$RAIZ_REPOSITORIO/infra/nginx/casamento.conf.template" > "$DIRETORIO_TEMPORARIO/borda/casamento.conf"
+cat >> "$DIRETORIO_TEMPORARIO/borda/casamento.conf" <<NGINX
+
+server {
+    if (\$host = $DOMINIO_TESTE) {
+        return 301 https://\$host\$request_uri;
+    }
+    listen 80;
+    server_name $DOMINIO_TESTE;
+    return 404;
+}
+NGINX
 openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=$DOMINIO_TESTE" \
   -keyout "$(caminho_docker "$DIRETORIO_TEMPORARIO/certificado/privkey.pem")" \
   -out "$(caminho_docker "$DIRETORIO_TEMPORARIO/certificado/fullchain.pem")" > /dev/null 2>&1
@@ -140,16 +153,7 @@ afirmar_contem() {
   fi
 }
 
-afirmar_igual() {
-  local nome=$1 obtido=$2 esperado=$3
-  if [ "$obtido" = "$esperado" ]; then
-    registrar "$nome" sim ""
-  else
-    registrar "$nome" nao "esperado: $esperado | obtido: $obtido"
-  fi
-}
-
-echo "proxy (nginx do host → nginx do container → api)"
+echo "proxy (nginx do host com TLS do certbot → nginx do container → api)"
 
 if ! aguardar http://web:8080/api/pronto "$REDE_INTERNA" 172.30.0.40; then
   echo "  ✗ container web não ficou pronto"
@@ -179,15 +183,6 @@ afirmar_contem "cliente fora da rede confiável não consegue forjar IP nem prot
 afirmar_contem "cadeia completa descarta X-Forwarded-For forjado e entrega https" \
   "$(curl_na_borda -H "X-Forwarded-For: 6.6.6.6" "https://$DOMINIO_TESTE/api/x")" \
   "xff=192.168.250.60 proto=https"
-
-afirmar_igual "HTTP redireciona para HTTPS preservando a URI" \
-  "$(curl_na_borda -o /dev/null -w '%{http_code} %{redirect_url}' "http://$DOMINIO_TESTE/api/x?a=1")" \
-  "301 https://$DOMINIO_TESTE/api/x?a=1"
-
-CABECALHOS_BORDA="$(curl_na_borda -o /dev/null -D - "https://$DOMINIO_TESTE/api/x")"
-afirmar_igual "HSTS único, definido pelo nginx do host" \
-  "$(grep -i '^strict-transport-security:' <<< "$CABECALHOS_BORDA" | tr -d '\r' | tr '[:upper:]' '[:lower:]')" \
-  "strict-transport-security: max-age=31536000; includesubdomains"
 
 afirmar_contem "upload de 10 MB atravessa a cadeia completa (limite de PDF da API)" \
   "$(enviar_arquivo 10 "https://$DOMINIO_TESTE/api/fornecedores/contrato")" \

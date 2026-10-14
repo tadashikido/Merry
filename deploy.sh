@@ -100,7 +100,7 @@ principal() {
   compose up -d --remove-orphans
 
   if alterou '^infra/nginx/'; then
-    echo "⚠️  Templates em infra/nginx/ mudaram: reaplique o vhost no nginx do host (README, seção Deploy em produção) e rode 'sudo nginx -t && sudo systemctl reload nginx'"
+    echo "⚠️  infra/nginx/casamento.conf.template mudou: aplique a diferença à mão em /etc/nginx/sites-available/casamento.conf (o arquivo foi editado pelo certbot, não o sobrescreva) e rode 'sudo nginx -t && sudo systemctl reload nginx'"
   fi
 
   aguardar_saude "$dominio"

@@ -144,7 +144,7 @@ alteracao_no_vhost_do_host_avisa_sem_build() {
   commitar infra/nginx/casamento.conf.template > /dev/null
   executar_deploy
   verificar "código de saída 0" [ "$CODIGO" -eq 0 ]
-  verificar "aviso de reaplicação do vhost" grep -q "reaplique o vhost no nginx do host" <<< "$SAIDA"
+  verificar "aviso de reaplicação do vhost" grep -q "aplique a diferença à mão" <<< "$SAIDA"
   verificar "nenhum build" docker_nao_executou_build
 }
 
