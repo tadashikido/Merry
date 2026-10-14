@@ -13,7 +13,7 @@ import NomesCasal from '@/componentes/base/NomesCasal.vue'
 import type { ColunaListagem } from '@/componentes/base/tipos'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore } from '@/stores/casamentos'
-import { ROTULOS_FASE, TEXTOS_CASAMENTOS, VARIANTE_FASE } from '@/textos/casamentos'
+import { ROTULOS_FASE, TEXTOS_CASAMENTOS, VARIANTE_FASE, resumoListaCasamentos } from '@/textos/casamentos'
 import type { CasamentoResumoDto, SituacaoListagemCasamentos } from '@/tipos/casamentos'
 import { contemTexto } from '@/utilitarios/busca'
 import { formatarDataCalendario, formatarNomesCasal } from '@/utilitarios/formatacao'
@@ -57,6 +57,13 @@ const emArquivados = computed(() => situacaoDaRota.value === 'Arquivados')
 const itensFiltrados = computed(() =>
   store.itens.filter((casamento) => contemTexto(busca.value, casamento.nomePrimeiraPessoa, casamento.nomeSegundaPessoa)),
 )
+
+const resumo = computed(() => {
+  if (store.carregando || store.falha || store.itens.length === 0) {
+    return null
+  }
+  return resumoListaCasamentos(itensFiltrados.value.length, store.itens.length, situacaoDaRota.value)
+})
 
 const mensagemErro = computed(() => {
   if (!store.falha) {
@@ -110,6 +117,18 @@ async function alternarArquivamento(casamento: CasamentoResumoDto) {
       :titulo="TEXTOS_CASAMENTOS.listaTitulo"
       :descricao="TEXTOS_CASAMENTOS.listaDescricao"
     >
+      <template
+        v-if="resumo"
+        #detalhes
+      >
+        <p
+          class="texto-legenda"
+          aria-live="polite"
+          data-teste="resumo-casamentos"
+        >
+          {{ resumo }}
+        </p>
+      </template>
       <template #acoes>
         <Button
           :label="TEXTOS_CASAMENTOS.novoCasamento"
@@ -169,7 +188,7 @@ async function alternarArquivamento(casamento: CasamentoResumoDto) {
       </template>
 
       <template #celula-data="{ item }">
-        <span class="numeros-tabulares">{{ dataComHorario(item) }}</span>
+        <span class="numeros-tabulares casamentos__data">{{ dataComHorario(item) }}</span>
       </template>
 
       <template #celula-fase="{ item }">
@@ -223,16 +242,26 @@ async function alternarArquivamento(casamento: CasamentoResumoDto) {
 .casamentos__link {
   color: var(--p-cor-texto);
   text-decoration: none;
+  border-radius: var(--p-raio-campo);
+}
+
+.casamentos__link :deep(.nomes-casal) {
+  overflow-wrap: normal;
 }
 
 .casamentos__link:hover {
+  color: var(--p-cor-texto);
   text-decoration: underline;
   text-decoration-color: var(--p-cor-primaria);
+}
+
+.casamentos__data {
+  white-space: nowrap;
 }
 
 .casamentos__status {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: var(--p-espaco-1);
+  gap: var(--p-ritmo-campo);
 }
 </style>

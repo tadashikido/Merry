@@ -1,5 +1,5 @@
 import type { VarianteStatus } from '@/componentes/base/tipos'
-import type { FaseCasamento } from '@/tipos/casamentos'
+import type { FaseCasamento, SituacaoListagemCasamentos } from '@/tipos/casamentos'
 import { NOME_PRODUTO } from '@/textos/rotulos'
 
 export const TEXTOS_CASAMENTOS = {
@@ -116,6 +116,20 @@ export function descreverContagem(dias: number): string {
     return 'Foi ontem'
   }
   return `Foi há ${Math.abs(dias).toLocaleString('pt-BR')} dias`
+}
+
+const ADJETIVO_SITUACAO: Record<SituacaoListagemCasamentos, { singular: string; plural: string }> = {
+  Ativos: { singular: 'ativo', plural: 'ativos' },
+  Arquivados: { singular: 'arquivado', plural: 'arquivados' },
+}
+
+export function resumoListaCasamentos(exibidos: number, total: number, situacao: SituacaoListagemCasamentos): string {
+  const singular = total === 1
+  const substantivo = singular ? 'casamento' : 'casamentos'
+  const adjetivo = ADJETIVO_SITUACAO[situacao][singular ? 'singular' : 'plural']
+  const totalFormatado = total.toLocaleString('pt-BR')
+  const quantidade = exibidos === total ? totalFormatado : `${exibidos.toLocaleString('pt-BR')} de ${totalFormatado}`
+  return `${quantidade} ${substantivo} ${adjetivo}`
 }
 
 export function legendaContagemDestaque(dias: number): string {
