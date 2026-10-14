@@ -2,7 +2,7 @@ import { NOME_PRODUTO } from '@/textos/rotulos'
 
 export const TEXTOS_ENTRAR = {
   titulo: 'Entrar',
-  descricao: 'Acesse o painel da sua assessoria.',
+  descricao: 'Use o e-mail e a senha da sua conta.',
   botao: 'Entrar',
   esqueci: 'Esqueci minha senha',
   semConta: 'Ainda não tem conta?',

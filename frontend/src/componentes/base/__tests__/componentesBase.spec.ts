@@ -84,6 +84,30 @@ describe('CampoFormulario', () => {
 
     expect(wrapper.get('input').attributes('aria-describedby')).toBeUndefined()
   })
+
+  it('[COMPONENTE] sem o slot acao-rotulo mantém só o rótulo, sem cabeçalho', () => {
+    const wrapper = montarCampo({})
+
+    expect(wrapper.find('.campo-formulario__cabecalho').exists()).toBe(false)
+    expect(wrapper.get('label').attributes('for')).toBe('email')
+  })
+
+  it('[COMPONENTE] com o slot acao-rotulo põe a ação ao lado do rótulo, fora do label', () => {
+    const wrapper = mount(CampoFormulario, {
+      props: { rotulo: 'Senha', idCampo: 'senha' },
+      slots: {
+        default: (escopo: { id: string }) => h('input', { id: escopo.id }),
+        'acao-rotulo': () => h('a', { href: '/esqueci-senha' }, 'Esqueci minha senha'),
+      },
+      global,
+    })
+
+    const cabecalho = wrapper.get('.campo-formulario__cabecalho')
+    expect(cabecalho.get('label').attributes('for')).toBe('senha')
+    expect(cabecalho.get('a').text()).toBe('Esqueci minha senha')
+    expect(cabecalho.get('label').find('a').exists()).toBe(false)
+    expect(wrapper.findAll('label')).toHaveLength(1)
+  })
 })
 
 describe('Estados', () => {

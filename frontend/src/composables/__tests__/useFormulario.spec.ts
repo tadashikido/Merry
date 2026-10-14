@@ -59,4 +59,39 @@ describe('useFormulario', () => {
     expect(formulario.valores.nome).toBe('')
     expect(formulario.erros).toEqual({})
   })
+
+  it('[UNITÁRIO] não valida ao sair do campo antes da primeira tentativa de envio', () => {
+    const formulario = criarFormulario()
+
+    expect(formulario.tentouEnviar.value).toBe(false)
+    expect(formulario.validarAoSair('nome')).toBe(true)
+    expect(formulario.erros).toEqual({})
+  })
+
+  it('[UNITÁRIO] depois da primeira tentativa revalida ao sair e remove o erro corrigido', () => {
+    const formulario = criarFormulario()
+
+    expect(formulario.validar()).toBe(false)
+    expect(formulario.tentouEnviar.value).toBe(true)
+    expect(formulario.erros.nome).toBe(MENSAGENS_VALIDACAO.obrigatorio)
+
+    formulario.valores.nome = 'Ana'
+    expect(formulario.validarAoSair('nome')).toBe(true)
+    expect(formulario.erros.nome).toBeUndefined()
+
+    formulario.valores.email = 'invalido'
+    expect(formulario.validarAoSair('email')).toBe(false)
+    expect(formulario.erros.email).toBeDefined()
+  })
+
+  it('[UNITÁRIO] redefinir volta ao estado de antes da primeira tentativa', () => {
+    const formulario = criarFormulario()
+    formulario.validar()
+
+    formulario.redefinir()
+
+    expect(formulario.tentouEnviar.value).toBe(false)
+    expect(formulario.validarAoSair('nome')).toBe(true)
+    expect(formulario.erros).toEqual({})
+  })
 })

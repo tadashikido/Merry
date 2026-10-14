@@ -97,7 +97,6 @@ test.describe('Autenticação', () => {
 
   test.describe('Defeitos conhecidos', () => {
     test('clicar em "Esqueci minha senha" logo ao abrir a tela de entrada navega para a recuperação', async ({ page }) => {
-      test.fail(true, 'Bug: a validação no blur do e-mail desloca o layout e o clique no link se perde (tarefa #33).')
       await page.goto('/entrar')
       await page.getByRole('link', { name: 'Esqueci minha senha' }).click()
       await expect(page).toHaveURL(/\/esqueci-senha$/, { timeout: 5_000 })

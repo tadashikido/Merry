@@ -115,4 +115,44 @@ describe('EntrarView', () => {
     expect(useAutenticacaoStore().emailInformado).toBe('renata@exemplo.com')
     await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('esqueci-senha'))
   })
+
+  it('[COMPONENTE] não mostra erro ao sair do e-mail vazio antes de enviar, para não deslocar o link', async () => {
+    await abrir()
+
+    await wrapper!.get('#entrar-email').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] depois de tentar enviar, revalida o e-mail ao sair do campo', async () => {
+    await abrir()
+    await wrapper!.get('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper!.findAll('[data-teste="erro-campo"]')).toHaveLength(2)
+
+    await wrapper!.get('#entrar-email').setValue('renata@exemplo.com')
+    await wrapper!.get('#entrar-email').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.findAll('[data-teste="erro-campo"]')).toHaveLength(1)
+    expect(wrapper!.get('#entrar-email').attributes('aria-invalid')).toBe('false')
+  })
+
+  it('[COMPONENTE] coloca "Esqueci minha senha" na linha do rótulo Senha sem quebrar a associação do rótulo', async () => {
+    await abrir()
+
+    const cabecalho = wrapper!.get('.campo-formulario__cabecalho')
+    expect(cabecalho.get('label').attributes('for')).toBe('entrar-senha')
+    expect(cabecalho.get('label').text()).toBe('Senha')
+    expect(cabecalho.find('[data-teste="link-esqueci-senha"]').exists()).toBe(true)
+    expect(cabecalho.get('label').find('a').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] descreve a tela para assessoria e casal', async () => {
+    await abrir()
+
+    expect(wrapper!.text()).toContain('Use o e-mail e a senha da sua conta.')
+    expect(wrapper!.text()).not.toContain('painel da sua assessoria')
+  })
 })

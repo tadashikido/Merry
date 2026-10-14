@@ -24,7 +24,24 @@ const descritoPor = computed(() => {
     class="campo-formulario"
     :class="{ 'campo-formulario--invalido': invalido }"
   >
+    <div
+      v-if="$slots['acao-rotulo']"
+      class="campo-formulario__cabecalho"
+    >
+      <label
+        class="campo-formulario__rotulo"
+        :for="idCampo"
+      >
+        {{ rotulo }}
+        <span
+          v-if="obrigatorio"
+          class="campo-formulario__obrigatorio"
+        >({{ ROTULOS_CAMPOS.obrigatorio }})</span>
+      </label>
+      <slot name="acao-rotulo" />
+    </div>
     <label
+      v-else
       class="campo-formulario__rotulo"
       :for="idCampo"
     >
@@ -68,6 +85,14 @@ const descritoPor = computed(() => {
   flex-direction: column;
   gap: var(--p-espaco-2);
   min-width: 0;
+}
+
+.campo-formulario__cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-espaco-1) var(--p-ritmo-grupo);
 }
 
 .campo-formulario__rotulo {

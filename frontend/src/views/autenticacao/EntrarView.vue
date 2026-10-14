@@ -90,57 +90,61 @@ function lembrarEmail() {
       :mensagem="mensagem.texto"
     />
     <form
-      class="formulario-autenticacao"
+      class="formulario-entrar pilha pilha--cartao"
       novalidate
       data-teste="formulario-entrar"
       @submit.prevent="enviar"
     >
-      <CampoFormulario
-        v-slot="{ id, invalido, descritoPor }"
-        :rotulo="ROTULOS_CAMPOS_AUTENTICACAO.email"
-        id-campo="entrar-email"
-        :erro="formulario.erros.email"
-      >
-        <InputText
-          :id="id"
-          v-model="formulario.valores.email"
-          type="email"
-          inputmode="email"
-          autocomplete="username"
-          autocapitalize="off"
-          spellcheck="false"
-          :placeholder="ROTULOS_CAMPOS_AUTENTICACAO.exemploEmail"
-          :invalid="invalido"
-          :aria-invalid="invalido"
-          :aria-describedby="descritoPor"
-          :readonly="enviando"
-          @blur="formulario.validarCampo('email')"
-        />
-      </CampoFormulario>
+      <div class="pilha pilha--grupo">
+        <CampoFormulario
+          v-slot="{ id, invalido, descritoPor }"
+          :rotulo="ROTULOS_CAMPOS_AUTENTICACAO.email"
+          id-campo="entrar-email"
+          :erro="formulario.erros.email"
+        >
+          <InputText
+            :id="id"
+            v-model="formulario.valores.email"
+            type="email"
+            inputmode="email"
+            autocomplete="username"
+            autocapitalize="off"
+            spellcheck="false"
+            :placeholder="ROTULOS_CAMPOS_AUTENTICACAO.exemploEmail"
+            :invalid="invalido"
+            :aria-invalid="invalido"
+            :aria-describedby="descritoPor"
+            :readonly="enviando"
+            @blur="formulario.validarAoSair('email')"
+          />
+        </CampoFormulario>
 
-      <CampoFormulario
-        v-slot="{ id, invalido, descritoPor }"
-        :rotulo="ROTULOS_CAMPOS_AUTENTICACAO.senha"
-        id-campo="entrar-senha"
-        :erro="formulario.erros.senha"
-      >
-        <CampoSenha
-          :id="id"
-          v-model="formulario.valores.senha"
-          :invalido="invalido"
-          :descrito-por="descritoPor"
-          autocomplete="current-password"
-        />
-      </CampoFormulario>
-
-      <RouterLink
-        class="formulario-autenticacao__link-secundario"
-        :to="{ name: 'esqueci-senha' }"
-        data-teste="link-esqueci-senha"
-        @click="lembrarEmail"
-      >
-        {{ TEXTOS_ENTRAR.esqueci }}
-      </RouterLink>
+        <CampoFormulario
+          :rotulo="ROTULOS_CAMPOS_AUTENTICACAO.senha"
+          id-campo="entrar-senha"
+          :erro="formulario.erros.senha"
+        >
+          <template #acao-rotulo>
+            <RouterLink
+              class="formulario-entrar__esqueci"
+              :to="{ name: 'esqueci-senha' }"
+              data-teste="link-esqueci-senha"
+              @click="lembrarEmail"
+            >
+              {{ TEXTOS_ENTRAR.esqueci }}
+            </RouterLink>
+          </template>
+          <template #default="{ id, invalido, descritoPor }">
+            <CampoSenha
+              :id="id"
+              v-model="formulario.valores.senha"
+              :invalido="invalido"
+              :descrito-por="descritoPor"
+              autocomplete="current-password"
+            />
+          </template>
+        </CampoFormulario>
+      </div>
 
       <Button
         type="submit"
@@ -164,15 +168,15 @@ function lembrarEmail() {
 </template>
 
 <style scoped>
-.formulario-autenticacao {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
+.formulario-entrar__esqueci {
+  font-size: var(--p-fonte-tamanho-controle);
 }
 
-.formulario-autenticacao__link-secundario {
-  align-self: flex-end;
-  margin-top: calc(var(--p-espaco-3) * -1);
-  font-size: var(--p-fonte-tamanho-controle);
+@media (pointer: coarse) {
+  .formulario-entrar__esqueci {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--p-dimensao-alvo-toque);
+  }
 }
 </style>

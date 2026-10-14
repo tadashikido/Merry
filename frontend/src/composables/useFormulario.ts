@@ -1,4 +1,4 @@
-import { computed, reactive, type UnwrapRef } from 'vue'
+import { computed, reactive, ref, type UnwrapRef } from 'vue'
 
 import type { RegraValidacao } from '@/utilitarios/validacao'
 
@@ -7,6 +7,7 @@ export type RegrasFormulario<T extends object> = Partial<Record<keyof T, RegraVa
 export function useFormulario<T extends Record<string, unknown>>(valoresIniciais: T, regras: RegrasFormulario<T>) {
   const valores = reactive({ ...valoresIniciais })
   const erros = reactive<Partial<Record<keyof T, string>>>({})
+  const tentouEnviar = ref(false)
 
   function validarCampo(campo: keyof T): boolean {
     const regrasCampo = regras[campo] ?? []
@@ -21,7 +22,12 @@ export function useFormulario<T extends Record<string, unknown>>(valoresIniciais
     return mensagem === null
   }
 
+  function validarAoSair(campo: keyof T): boolean {
+    return tentouEnviar.value ? validarCampo(campo) : true
+  }
+
   function validar(): boolean {
+    tentouEnviar.value = true
     const campos = Object.keys(regras) as (keyof T)[]
     return campos.map((campo) => validarCampo(campo)).every(Boolean)
   }
@@ -32,6 +38,7 @@ export function useFormulario<T extends Record<string, unknown>>(valoresIniciais
 
   function redefinir() {
     Object.assign(valores, valoresIniciais)
+    tentouEnviar.value = false
     for (const campo of Object.keys(erros)) {
       delete (erros as Record<string, string>)[campo]
     }
@@ -47,6 +54,8 @@ export function useFormulario<T extends Record<string, unknown>>(valoresIniciais
     erros: erros as Partial<Record<keyof T, string>>,
     validar,
     validarCampo,
+    validarAoSair,
+    tentouEnviar,
     limparErro,
     redefinir,
     primeiroCampoInvalido,
