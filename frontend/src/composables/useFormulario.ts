@@ -26,6 +26,11 @@ export function useFormulario<T extends Record<string, unknown>>(valoresIniciais
     return tentouEnviar.value ? validarCampo(campo) : true
   }
 
+  function revalidarAoDigitar(campo: keyof T): boolean {
+    const temErro = Boolean((erros as Partial<Record<keyof T, string>>)[campo])
+    return tentouEnviar.value && temErro ? validarCampo(campo) : true
+  }
+
   function validar(): boolean {
     tentouEnviar.value = true
     const campos = Object.keys(regras) as (keyof T)[]
@@ -55,6 +60,7 @@ export function useFormulario<T extends Record<string, unknown>>(valoresIniciais
     validar,
     validarCampo,
     validarAoSair,
+    revalidarAoDigitar,
     tentouEnviar,
     limparErro,
     redefinir,

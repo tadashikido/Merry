@@ -94,4 +94,32 @@ describe('useFormulario', () => {
     expect(formulario.validarAoSair('nome')).toBe(true)
     expect(formulario.erros).toEqual({})
   })
+
+  it('[UNITÁRIO] não revalida ao digitar antes da primeira tentativa de envio', () => {
+    const formulario = criarFormulario()
+
+    formulario.valores.email = 'invalido'
+
+    expect(formulario.revalidarAoDigitar('email')).toBe(true)
+    expect(formulario.erros).toEqual({})
+  })
+
+  it('[UNITÁRIO] depois da tentativa, revalida ao digitar só o campo que já tem erro', () => {
+    const formulario = criarFormulario()
+    formulario.valores.nome = 'Ana'
+    formulario.validar()
+    expect(formulario.erros.email).toBe(MENSAGENS_VALIDACAO.obrigatorio)
+
+    formulario.valores.email = 'invalido'
+    expect(formulario.revalidarAoDigitar('email')).toBe(false)
+    expect(formulario.erros.email).toBe(MENSAGENS_VALIDACAO.email)
+
+    formulario.valores.email = 'ana@exemplo.com'
+    expect(formulario.revalidarAoDigitar('email')).toBe(true)
+    expect(formulario.erros.email).toBeUndefined()
+
+    formulario.valores.nome = ''
+    expect(formulario.revalidarAoDigitar('nome')).toBe(true)
+    expect(formulario.erros.nome).toBeUndefined()
+  })
 })

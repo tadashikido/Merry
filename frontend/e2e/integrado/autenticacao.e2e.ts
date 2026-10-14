@@ -103,7 +103,6 @@ test.describe('Autenticação', () => {
     })
 
     test('corrigir a senha e clicar em "Criar conta" envia o cadastro', async ({ page, request }) => {
-      test.fail(true, 'Bug: ao sair do campo de senha a mensagem de erro some, o botão sobe e o clique se perde (tarefa #33).')
       const existente = novaAssessoria()
       await cadastrarAssessoria(request, existente)
       await page.goto('/cadastro')

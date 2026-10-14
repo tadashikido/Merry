@@ -119,13 +119,13 @@ async function enviar() {
     </MensagemFormulario>
 
     <form
-      class="formulario-autenticacao"
+      class="formulario-cadastro pilha pilha--bloco"
       novalidate
       data-teste="formulario-cadastro"
       @submit.prevent="enviar"
     >
-      <fieldset class="formulario-autenticacao__grupo">
-        <legend class="formulario-autenticacao__legenda">
+      <fieldset class="formulario-cadastro__grupo pilha pilha--grupo">
+        <legend class="formulario-cadastro__legenda texto-rotulo">
           {{ TEXTOS_CADASTRO.grupoAssessoria }}
         </legend>
         <CampoFormulario
@@ -144,13 +144,14 @@ async function enviar() {
             :aria-invalid="invalido"
             :aria-describedby="descritoPor"
             :readonly="enviando"
-            @blur="formulario.validarCampo('nomeAssessoria')"
+            @update:model-value="formulario.revalidarAoDigitar('nomeAssessoria')"
+            @blur="formulario.validarAoSair('nomeAssessoria')"
           />
         </CampoFormulario>
       </fieldset>
 
-      <fieldset class="formulario-autenticacao__grupo">
-        <legend class="formulario-autenticacao__legenda">
+      <fieldset class="formulario-cadastro__grupo pilha pilha--grupo">
+        <legend class="formulario-cadastro__legenda texto-rotulo">
           {{ TEXTOS_CADASTRO.grupoAcesso }}
         </legend>
         <CampoFormulario
@@ -168,7 +169,8 @@ async function enviar() {
             :aria-invalid="invalido"
             :aria-describedby="descritoPor"
             :readonly="enviando"
-            @blur="formulario.validarCampo('nome')"
+            @update:model-value="formulario.revalidarAoDigitar('nome')"
+            @blur="formulario.validarAoSair('nome')"
           />
         </CampoFormulario>
 
@@ -192,7 +194,8 @@ async function enviar() {
             :aria-invalid="invalido"
             :aria-describedby="descritoPor"
             :readonly="enviando"
-            @blur="formulario.validarCampo('email')"
+            @update:model-value="formulario.revalidarAoDigitar('email')"
+            @blur="formulario.validarAoSair('email')"
           />
         </CampoFormulario>
 
@@ -209,12 +212,13 @@ async function enviar() {
             :descrito-por="descritoPor"
             autocomplete="new-password"
             com-requisitos
-            @blur="formulario.validarCampo('senha')"
+            @update:model-value="formulario.revalidarAoDigitar('senha')"
+            @blur="formulario.validarAoSair('senha')"
           />
         </CampoFormulario>
       </fieldset>
 
-      <div class="formulario-autenticacao__acao">
+      <div class="pilha pilha--campo">
         <Button
           type="submit"
           :label="TEXTOS_CADASTRO.botao"
@@ -222,7 +226,7 @@ async function enviar() {
           :aria-busy="enviando"
           data-teste="enviar"
         />
-        <p class="formulario-autenticacao__apoio">
+        <p class="formulario-cadastro__apoio texto-legenda">
           {{ TEXTOS_CADASTRO.apoio }}
         </p>
       </div>
@@ -241,38 +245,18 @@ async function enviar() {
 </template>
 
 <style scoped>
-.formulario-autenticacao {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
-}
-
-.formulario-autenticacao__grupo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
-  min-width: 0;
+.formulario-cadastro__grupo {
   padding: 0;
   margin: 0;
   border: 0;
 }
 
-.formulario-autenticacao__legenda {
+.formulario-cadastro__legenda {
   padding: 0;
-  margin-bottom: var(--p-espaco-4);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto);
+  margin-bottom: var(--p-ritmo-grupo);
 }
 
-.formulario-autenticacao__acao {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-3);
-}
-
-.formulario-autenticacao__apoio {
-  font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-apoio);
+.formulario-cadastro__apoio {
   text-align: center;
 }
 </style>

@@ -104,4 +104,57 @@ describe('CadastroView', () => {
     expect(wrapper!.text()).toContain('Use entre 2 e 120 caracteres.')
     expect(document.activeElement?.id).toBe('cadastro-nomeAssessoria')
   })
+
+  it('[COMPONENTE] não mostra erro ao sair de um campo vazio antes de enviar', async () => {
+    await abrir()
+
+    await wrapper!.get('#cadastro-nomeAssessoria').trigger('blur')
+    await wrapper!.get('#cadastro-senha').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] depois de tentar enviar, o erro da senha some enquanto a senha forte é digitada', async () => {
+    await abrir()
+    await preencher('fraca')
+    await wrapper!.get('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper!.get('#cadastro-senha').attributes('aria-invalid')).toBe('true')
+
+    await wrapper!.get('#cadastro-senha').setValue('senhaForte1')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+    expect(wrapper!.get('#cadastro-senha').attributes('aria-invalid')).toBe('false')
+  })
+
+  it('[COMPONENTE] depois de tentar enviar, sair de um campo ainda inválido mantém o erro', async () => {
+    await abrir()
+    await wrapper!.get('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper!.findAll('[data-teste="erro-campo"]')).toHaveLength(4)
+
+    await wrapper!.get('#cadastro-nome').setValue('Renata')
+    await wrapper!.get('#cadastro-nome').trigger('blur')
+    await wrapper!.get('#cadastro-email').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.findAll('[data-teste="erro-campo"]')).toHaveLength(3)
+    expect(wrapper!.get('#cadastro-email').attributes('aria-invalid')).toBe('true')
+  })
+
+  it('[COMPONENTE] organiza grupos e ação com as primitivas de ritmo do Nossia', async () => {
+    await abrir()
+
+    const formulario = wrapper!.get('[data-teste="formulario-cadastro"]')
+    expect(formulario.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    const grupos = formulario.findAll('fieldset')
+    expect(grupos).toHaveLength(2)
+    for (const grupo of grupos) {
+      expect(grupo.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--grupo']))
+      expect(grupo.get('legend').classes()).toContain('texto-rotulo')
+    }
+    expect(formulario.get('p.texto-legenda').text()).toBe(TEXTOS_CADASTRO.apoio)
+  })
 })
