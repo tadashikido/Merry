@@ -8,6 +8,7 @@ import PainelInicioView from '@/views/painel/PainelInicioView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { TEXTOS_PAINEL } from '@/textos/autenticacao'
+import { PASSOS_ONBOARDING, PASSOS_PRIMEIRO_ACESSO } from '@/textos/proximosPassos'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { ID_CASAMENTO, chamadas, quando, resumoCasamento, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
@@ -46,7 +47,9 @@ describe('PainelInicioView', () => {
     expect(wrapper.text()).toContain('Albuquerque Assessoria')
     const primeiroAcesso = wrapper.get('[data-teste="estado-primeiro-acesso"]')
     expect(primeiroAcesso.text()).toContain(TEXTOS_PAINEL.primeiroAcessoTitulo)
-    expect(primeiroAcesso.findAll('[data-teste="passo-primeiro-acesso"]').map((passo) => passo.text())).toEqual(['1Dados do casamento', '2Convidar o casal', '3Checklist', '4Convidados'])
+    expect(primeiroAcesso.findAll('[data-teste="passo-primeiro-acesso"]').map((passo) => passo.text())).toEqual(PASSOS_PRIMEIRO_ACESSO.map((rotulo, indice) => `${indice + 1}${rotulo}`))
+    expect(PASSOS_PRIMEIRO_ACESSO).toEqual(['Dados do casamento', ...PASSOS_ONBOARDING.map((passo) => passo.rotulo)])
+    expect(PASSOS_PRIMEIRO_ACESSO).toEqual(['Dados do casamento', 'Convidar o casal', 'Aplicar o checklist', 'Cadastrar convidados', 'Enviar convites'])
     expect(primeiroAcesso.get('[aria-current="step"]').text()).toContain('Dados do casamento')
     expect(wrapper.find('[data-teste="novo-casamento"]').exists()).toBe(false)
     expect(wrapper.find('[data-teste="estado-vazio"]').exists()).toBe(false)

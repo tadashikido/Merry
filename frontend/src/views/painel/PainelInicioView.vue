@@ -19,6 +19,7 @@ import { useFinanceiroStore } from '@/stores/financeiro'
 import { useTarefasStore } from '@/stores/tarefas'
 import { TEXTOS_PAINEL } from '@/textos/autenticacao'
 import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
+import { PASSOS_PRIMEIRO_ACESSO } from '@/textos/proximosPassos'
 import { primeiroNome } from '@/utilitarios/formatacao'
 
 const autenticacao = useAutenticacaoStore()
@@ -36,7 +37,7 @@ const exibirPendencias = computed(
   () => !autenticacao.ehCasal && casamentos.carregado && !casamentos.falha && casamentos.itens.length > 0,
 )
 
-const passosPrimeiroAcesso: PassoPrimeiroAcesso[] = TEXTOS_PAINEL.primeiroAcessoPassos.map((rotulo, indice) => ({
+const passosPrimeiroAcesso: PassoPrimeiroAcesso[] = PASSOS_PRIMEIRO_ACESSO.map((rotulo, indice) => ({
   chave: `passo-${indice}`,
   rotulo,
   concluido: false,

@@ -81,7 +81,6 @@ export const TEXTOS_PAINEL = {
   menuInicio: 'Dashboard',
   primeiroAcessoTitulo: `Boas-vindas ao ${NOME_PRODUTO}.`,
   primeiroAcessoTexto: 'Vamos configurar seu primeiro casamento. Leva uns 5 minutos.',
-  primeiroAcessoPassos: ['Dados do casamento', 'Convidar o casal', 'Checklist', 'Convidados'],
   saudacao: (primeiroNome: string) => `Olá, ${primeiroNome}`,
   sair: 'Sair',
   contaConectada: 'Conta conectada',

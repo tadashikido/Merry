@@ -16,6 +16,8 @@ public interface IConviteRepository
 
     Task<ResumoConvidados> ObterResumoAsync(Guid casamentoId, CancellationToken cancelamento);
 
+    Task<ResumoEnvioConvites> ObterResumoEnvioAsync(Guid casamentoId, CancellationToken cancelamento);
+
     Task<IReadOnlyList<IdentificacaoConvidado>> ListarIdentificacoesAsync(Guid casamentoId, CancellationToken cancelamento);
 
     void Adicionar(Convite convite);

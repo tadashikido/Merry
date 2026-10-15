@@ -153,6 +153,7 @@ public sealed class AcessoCasalApiTestes : IsolamentoOrganizacaoTestesBase, IDis
     [InlineData("PUT", "/api/casamentos/{c}")]
     [InlineData("POST", "/api/casamentos/{c}/arquivar")]
     [InlineData("POST", "/api/casamentos/{c}/restaurar")]
+    [InlineData("GET", "/api/casamentos/{c}/proximos-passos")]
     [InlineData("GET", "/api/casamentos/{c}/acessos-casal")]
     [InlineData("POST", "/api/casamentos/{c}/acessos-casal")]
     [InlineData("POST", "/api/casamentos/{c}/acessos-casal/{a}/reenvio")]

@@ -276,6 +276,11 @@ public class ConviteServiceTestes
             return Task.FromResult(Resumo);
         }
 
+        public Task<ResumoEnvioConvites> ObterResumoEnvioAsync(Guid casamentoId, CancellationToken cancelamento)
+        {
+            return Task.FromResult(ResumoEnvioConvites.Vazio);
+        }
+
         public void Adicionar(Convite convite)
         {
             Itens.Add(convite);
