@@ -622,6 +622,10 @@ namespace Casamento.Infraestrutura.Persistencia.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("organizacao_id");
 
+                    b.Property<int>("QuantidadeCobrancas")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantidade_cobrancas");
+
                     b.Property<DateTimeOffset?>("RespondidoEm")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("respondido_em");
@@ -631,6 +635,10 @@ namespace Casamento.Infraestrutura.Persistencia.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("status_envio");
+
+                    b.Property<DateTimeOffset?>("UltimaCobrancaEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ultima_cobranca_em");
 
                     b.Property<uint>("Versao")
                         .IsConcurrencyToken()
@@ -650,6 +658,8 @@ namespace Casamento.Infraestrutura.Persistencia.Migrations
                     b.ToTable("convites", null, t =>
                         {
                             t.HasCheckConstraint("ck_convites_limite_acompanhantes", "limite_acompanhantes BETWEEN 0 AND 10");
+
+                            t.HasCheckConstraint("ck_convites_quantidade_cobrancas", "quantidade_cobrancas >= 0");
 
                             t.HasCheckConstraint("ck_convites_status_envio", "status_envio IN ('NaoEnviado', 'Enviado', 'Visualizado')");
                         });

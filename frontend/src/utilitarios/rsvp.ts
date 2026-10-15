@@ -1,3 +1,4 @@
+import { TEXTOS_COBRANCA } from '@/textos/confirmacoes'
 import { TEXTOS_ENVIO_CONVITE } from '@/textos/rsvp'
 import type { CasamentoDto, DataCalendario } from '@/tipos/casamentos'
 import type { ConviteDto } from '@/tipos/convidados'
@@ -55,6 +56,21 @@ export function montarMensagemConvite(
   url: string,
 ): string {
   return TEXTOS_ENVIO_CONVITE.mensagemPronta({
+    nomeConvite: convite.nome,
+    primeiro: casamento.nomePrimeiraPessoa,
+    segundo: casamento.nomeSegundaPessoa,
+    data: formatarDataCalendarioExtenso(casamento.data),
+    dataLimite: formatarDiaMes(casamento.dataLimiteRsvpEfetiva),
+    url,
+  })
+}
+
+export function montarMensagemLembrete(
+  casamento: Pick<CasamentoDto, 'nomePrimeiraPessoa' | 'nomeSegundaPessoa' | 'data' | 'dataLimiteRsvpEfetiva'>,
+  convite: Pick<ConviteDto, 'nome'>,
+  url: string,
+): string {
+  return TEXTOS_COBRANCA.mensagemLembrete({
     nomeConvite: convite.nome,
     primeiro: casamento.nomePrimeiraPessoa,
     segundo: casamento.nomeSegundaPessoa,

@@ -23,6 +23,17 @@ public class AcessoRsvpRepository : IAcessoRsvpRepository
         return _contexto.AcessosRsvp.FirstOrDefaultAsync(acesso => acesso.ConviteId == conviteId, cancelamento);
     }
 
+    public async Task<IReadOnlySet<Guid>> ListarConvitesComLinkAsync(Guid casamentoId, CancellationToken cancelamento)
+    {
+        var identificadores = await _contexto.AcessosRsvp
+            .AsNoTracking()
+            .Where(acesso => acesso.CasamentoId == casamentoId)
+            .Select(acesso => acesso.ConviteId)
+            .ToListAsync(cancelamento);
+
+        return identificadores.ToHashSet();
+    }
+
     public void Adicionar(AcessoRsvp acesso)
     {
         _contexto.AcessosRsvp.Add(acesso);

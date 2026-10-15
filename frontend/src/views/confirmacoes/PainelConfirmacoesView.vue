@@ -18,6 +18,7 @@ import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import ResumoCardapio from '@/componentes/base/ResumoCardapio.vue'
 import ResumoContagem from '@/componentes/base/ResumoContagem.vue'
 import type { ColunaListagem, LinhaCardapio } from '@/componentes/base/tipos'
+import DialogoCobrancaPendentes from '@/componentes/confirmacoes/DialogoCobrancaPendentes.vue'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useEnvioConvite, type ConviteParaEnvio } from '@/composables/useEnvioConvite'
 import { useNotificacao } from '@/composables/useNotificacao'
@@ -26,7 +27,7 @@ import { useConfirmacoesStore } from '@/stores/confirmacoes'
 import { useRestricoesAlimentaresStore } from '@/stores/restricoesAlimentares'
 import { TEXTOS_AREA_CASAL } from '@/textos/acessoCasal'
 import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
-import { TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
+import { TEXTOS_COBRANCA, TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
 import { ROTULOS_STATUS_ENVIO } from '@/textos/convidados'
 import { ROTULOS_TIPO_RESTRICAO, TEXTOS_DADOS_SENSIVEIS } from '@/textos/dadosSensiveis'
 import { ROTULOS_ACOES } from '@/textos/rotulos'
@@ -35,7 +36,7 @@ import type { ConvitePendenteDto } from '@/tipos/confirmacoes'
 import { baixarTexto } from '@/utilitarios/arquivo'
 import { gerarCsvBuffet, nomeArquivoBuffet } from '@/utilitarios/exportacaoBuffet'
 import { formatarDataCalendarioComDiaSemana, formatarNomesCasal } from '@/utilitarios/formatacao'
-import { filtrarPendentes, segmentosEnvio, textoEstimativa } from '@/utilitarios/painelConfirmacoes'
+import { filaCobranca, filtrarPendentes, segmentosEnvio, textoEstimativa } from '@/utilitarios/painelConfirmacoes'
 import { itensResumoConvidados } from '@/utilitarios/resumoConvidados'
 
 interface LinhaPendente extends Record<string, unknown> {
@@ -58,6 +59,7 @@ const notificacao = useNotificacao()
 
 const busca = ref('')
 const exportando = ref(false)
+const cobrancaAberta = ref(false)
 
 const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
 const painel = computed(() => (store.casamentoId === props.id ? store.painel : null))
@@ -144,7 +146,11 @@ const envio = useEnvioConvite({
   arquivado: () => arquivado.value,
   aoAlterar: recarregar,
 })
-const { conviteEmAndamento, confirmacaoLink, executandoConfirmacao, itensMenuLink } = envio
+const { conviteEmAndamento, confirmacaoLink, executandoConfirmacao, itensMenuLink, anuncioCobranca } = envio
+
+const fila = computed(() => filaCobranca(painel.value?.pendentes ?? []))
+const prazoEncerrado = computed(() => painel.value !== null && !painel.value.prazo.aceitaRespostas)
+const podeCobrar = computed(() => !arquivado.value && !prazoEncerrado.value && fila.value.length > 0)
 
 function paraEnvio(pendente: ConvitePendenteDto): ConviteParaEnvio {
   return { id: pendente.conviteId, nome: pendente.nome, statusEnvio: pendente.statusEnvio, telefone: pendente.telefone }
@@ -154,6 +160,7 @@ watch(
   () => props.id,
   (id) => {
     busca.value = ''
+    cobrancaAberta.value = false
     void casamentos.obter(id)
     void store.carregar(id)
     if (!autenticacao.ehCasal) {
@@ -431,6 +438,28 @@ function importar() {
               <span class="confirmacoes__quantidade numeros-tabulares">({{ painel.pendentes.length }})</span>
             </h2>
 
+            <div
+              v-if="podeCobrar"
+              class="confirmacoes__cobrar"
+            >
+              <Button
+                :label="TEXTOS_COBRANCA.acaoAbrir(fila.length)"
+                icon="ie ie-mensagem"
+                severity="secondary"
+                outlined
+                aria-haspopup="dialog"
+                data-teste="abrir-cobranca"
+                @click="cobrancaAberta = true"
+              />
+            </div>
+            <p
+              v-else-if="prazoEncerrado && !arquivado && painel.pendentes.length > 0"
+              class="confirmacoes__aviso-cobranca"
+              data-teste="cobranca-prazo-encerrado"
+            >
+              {{ TEXTOS_COBRANCA.prazoEncerrado }}
+            </p>
+
             <MensagemFormulario
               v-if="painel.pendentes.length === 0"
               variante="sucesso"
@@ -493,6 +522,17 @@ function importar() {
         </template>
       </div>
 
+      <DialogoCobrancaPendentes
+        v-model:visivel="cobrancaAberta"
+        :fila="fila"
+        :casamento="casamento"
+        :convite-em-andamento="conviteEmAndamento"
+        :anuncio="anuncioCobranca"
+        @whatsapp="envio.enviarLembreteWhatsApp(paraEnvio($event))"
+        @copiar="envio.copiarLembrete(paraEnvio($event))"
+        @registrar="envio.registrarCobranca(paraEnvio($event))"
+      />
+
       <DialogoConfirmacao
         :visivel="confirmacaoLink !== null"
         :titulo="confirmacaoLink?.acao === 'revogar' ? TEXTOS_ENVIO_CONVITE.confirmarRevogarTitulo : TEXTOS_ENVIO_CONVITE.confirmarRegenerarTitulo"
@@ -544,6 +584,21 @@ function importar() {
   display: flex;
   flex-direction: column;
   gap: var(--p-espaco-3);
+}
+
+.confirmacoes__cobrar {
+  display: flex;
+}
+
+.confirmacoes__aviso-cobranca {
+  font-size: var(--p-fonte-tamanho-controle);
+  color: var(--p-cor-texto-apoio);
+}
+
+@media (max-width: 639px) {
+  .confirmacoes__cobrar > * {
+    flex: 1 1 100%;
+  }
 }
 
 .confirmacoes__titulo-secao {

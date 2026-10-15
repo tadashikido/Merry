@@ -28,4 +28,7 @@ public sealed record ConvitePendenteDto(
     string StatusEnvio,
     string? Telefone,
     IReadOnlyList<string> PessoasPendentes,
-    int TotalPessoas);
+    int TotalPessoas,
+    bool Cobravel = false,
+    DateTimeOffset? UltimaCobrancaEm = null,
+    int QuantidadeCobrancas = 0);

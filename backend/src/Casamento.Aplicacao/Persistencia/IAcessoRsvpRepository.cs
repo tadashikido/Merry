@@ -8,6 +8,8 @@ public interface IAcessoRsvpRepository
 
     Task<AcessoRsvp?> ObterPorConviteAsync(Guid conviteId, CancellationToken cancelamento);
 
+    Task<IReadOnlySet<Guid>> ListarConvitesComLinkAsync(Guid casamentoId, CancellationToken cancelamento);
+
     void Adicionar(AcessoRsvp acesso);
 
     void Remover(AcessoRsvp acesso);

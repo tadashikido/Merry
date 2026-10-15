@@ -38,6 +38,10 @@ public class Convite : IPertenceCasamento
 
     public DateTimeOffset? RespondidoEm { get; private set; }
 
+    public DateTimeOffset? UltimaCobrancaEm { get; private set; }
+
+    public int QuantidadeCobrancas { get; private set; }
+
     public DateTimeOffset CriadoEm { get; private set; }
 
     public DateTimeOffset AtualizadoEm { get; private set; }
@@ -88,6 +92,24 @@ public class Convite : IPertenceCasamento
         StatusEnvio = StatusEnvioConvite.Enviado;
         AtualizadoEm = agora;
         return true;
+    }
+
+    public bool PodeSerCobrado()
+    {
+        return StatusEnvio != StatusEnvioConvite.NaoEnviado
+            && _convidados.Exists(convidado => convidado.Resposta == RespostaRsvp.Pendente);
+    }
+
+    public void RegistrarCobranca(DateTimeOffset agora)
+    {
+        if (!PodeSerCobrado())
+        {
+            throw new RegraNegocioException(MensagensConvidados.ConviteNaoCobravel);
+        }
+
+        UltimaCobrancaEm = agora;
+        QuantidadeCobrancas++;
+        AtualizadoEm = agora;
     }
 
     public bool MarcarVisualizado(DateTimeOffset agora)

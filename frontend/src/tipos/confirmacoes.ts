@@ -27,6 +27,15 @@ export interface ConvitePendenteDto {
   telefone: string | null
   pessoasPendentes: string[]
   totalPessoas: number
+  cobravel: boolean
+  ultimaCobrancaEm: string | null
+  quantidadeCobrancas: number
+}
+
+export interface CobrancaRsvpDto {
+  conviteId: string
+  ultimaCobrancaEm: string
+  quantidadeCobrancas: number
 }
 
 export interface PainelConfirmacoesDto {
