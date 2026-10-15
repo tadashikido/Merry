@@ -12,6 +12,7 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import type { FalhaCasamento } from '@/stores/casamentos'
@@ -72,6 +73,7 @@ const formulario = useFormulario(
     observacoes: [regraTamanho(LIMITES_FORNECEDOR.observacoesMaximo, TEXTOS_FORNECEDORES.erroObservacoes)],
   },
 )
+const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 const idCampo = (campo: Campo) => `fornecedor-${campo}`
 const titulo = computed(() => (edicao.value ? TEXTOS_FORNECEDORES.editarTitulo : TEXTOS_FORNECEDORES.novoTitulo))
@@ -102,6 +104,7 @@ async function carregar() {
     instagram: fornecedor.instagram ? `@${fornecedor.instagram}` : '',
     observacoes: fornecedor.observacoes ?? '',
   })
+  formulario.fixarEstadoInicial()
 }
 
 onMounted(async () => {
@@ -176,11 +179,13 @@ async function enviar() {
     return
   }
 
+  liberarSaida()
   notificacao.sucesso(edicao.value ? TEXTOS_FORNECEDORES.toastSalvo : TEXTOS_FORNECEDORES.toastAdicionado(resultado.valor.nomeEmpresa))
   await roteador.replace({ name: 'fornecedor', params: { fornecedorId: resultado.valor.id } })
 }
 
 function cancelar() {
+  liberarSaida()
   if (props.fornecedorId) {
     void roteador.push({ name: 'fornecedor', params: { fornecedorId: props.fornecedorId } })
     return

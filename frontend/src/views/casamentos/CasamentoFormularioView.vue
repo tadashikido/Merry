@@ -12,6 +12,7 @@ import DialogoConfirmacao from '@/componentes/base/DialogoConfirmacao.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore } from '@/stores/casamentos'
@@ -98,6 +99,7 @@ const formulario = useFormulario(
     observacoes: [textoOpcional(LIMITES_CASAMENTO.observacoes)],
   },
 )
+const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 const idCampo = (campo: Campo) => `casamento-${campo}`
 
@@ -133,6 +135,7 @@ function preencher(casamento: CasamentoDto) {
     convidadosEstimados: casamento.convidadosEstimados === null ? '' : String(casamento.convidadosEstimados),
     observacoes: casamento.observacoes ?? '',
   })
+  formulario.fixarEstadoInicial()
 }
 
 watch(
@@ -198,6 +201,7 @@ async function enviar() {
   const resultado = props.id ? await store.atualizar(props.id, request) : await store.criar(request)
 
   if (resultado.ok) {
+    liberarSaida()
     notificacao.sucesso(edicao.value ? MENSAGENS_PADRAO.salvoComSucesso : TEXTOS_CASAMENTOS.criado)
     const horarioMudou =
       edicao.value && horarioAnterior !== undefined && resultado.valor.horario !== null && horarioAnterior !== resultado.valor.horario
@@ -327,6 +331,7 @@ async function concluirRecalculoHorarios(recalcular: boolean) {
 }
 
 function cancelar() {
+  liberarSaida()
   if (props.id) {
     void roteador.push({ name: 'casamento', params: { id: props.id } })
     return

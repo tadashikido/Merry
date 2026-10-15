@@ -1,13 +1,23 @@
 import { computed, reactive, ref, type UnwrapRef } from 'vue'
 
+import { useRastreioAlteracoes } from '@/composables/useAlteracoesNaoSalvas'
 import type { RegraValidacao } from '@/utilitarios/validacao'
 
 export type RegrasFormulario<T extends object> = Partial<Record<keyof T, RegraValidacao[]>>
 
-export function useFormulario<T extends Record<string, unknown>>(valoresIniciais: T, regras: RegrasFormulario<T>) {
+export interface OpcoesFormulario {
+  estadoAdicional?: () => unknown
+}
+
+export function useFormulario<T extends Record<string, unknown>>(
+  valoresIniciais: T,
+  regras: RegrasFormulario<T>,
+  opcoes: OpcoesFormulario = {},
+) {
   const valores = reactive({ ...valoresIniciais })
   const erros = reactive<Partial<Record<keyof T, string>>>({})
   const tentouEnviar = ref(false)
+  const { temAlteracoes, fixarEstadoInicial } = useRastreioAlteracoes(() => [valores, opcoes.estadoAdicional?.() ?? null])
 
   function validarCampo(campo: keyof T): boolean {
     const regrasCampo = regras[campo] ?? []
@@ -47,6 +57,7 @@ export function useFormulario<T extends Record<string, unknown>>(valoresIniciais
     for (const campo of Object.keys(erros)) {
       delete (erros as Record<string, string>)[campo]
     }
+    fixarEstadoInicial()
   }
 
   const primeiroCampoInvalido = computed(() => {
@@ -65,5 +76,7 @@ export function useFormulario<T extends Record<string, unknown>>(valoresIniciais
     limparErro,
     redefinir,
     primeiroCampoInvalido,
+    temAlteracoes,
+    fixarEstadoInicial,
   }
 }

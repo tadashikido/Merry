@@ -13,6 +13,13 @@ export const MENSAGENS_PADRAO = {
   exclusaoMensagem: 'Essa ação não pode ser desfeita.',
 } as const
 
+export const TEXTOS_ALTERACOES_NAO_SALVAS = {
+  titulo: 'Descartar alterações?',
+  mensagem: 'Você fez alterações que ainda não foram salvas. Se sair agora, elas serão perdidas.',
+  descartar: 'Descartar alterações',
+  continuar: 'Continuar editando',
+} as const
+
 export function tituloExclusao(nomeItem: string): string {
   return `Excluir “${nomeItem}”?`
 }

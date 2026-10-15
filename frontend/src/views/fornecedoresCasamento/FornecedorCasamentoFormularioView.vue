@@ -16,6 +16,7 @@ import DialogoConfirmacao from '@/componentes/base/DialogoConfirmacao.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore, type FalhaCasamento } from '@/stores/casamentos'
@@ -88,6 +89,7 @@ const formulario = useFormulario(
     notasInternas: [tamanhoMaximo(LIMITES_VINCULO.notasMaximo)],
   },
 )
+const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 statusAtual = () => formulario.valores.status
 
@@ -137,6 +139,7 @@ function preencher(dados: FornecedorCasamentoDto) {
     valorContratado: dados.valorContratado,
     notasInternas: dados.notasInternas ?? '',
   })
+  formulario.fixarEstadoInicial()
 }
 
 async function carregarVinculo() {
@@ -234,6 +237,7 @@ async function enviar() {
     return
   }
 
+  liberarSaida()
   notificacao.sucesso(
     edicao.value
       ? TEXTOS_FORNECEDORES_CASAMENTO.toastSalvo
@@ -243,6 +247,7 @@ async function enviar() {
 }
 
 function cancelar() {
+  liberarSaida()
   void roteador.push({ name: 'casamento-fornecedores', params: { id: props.id } })
 }
 
