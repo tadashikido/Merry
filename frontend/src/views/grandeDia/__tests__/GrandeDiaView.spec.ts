@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import type { Mock } from 'vitest'
@@ -312,5 +314,81 @@ describe('GrandeDiaView — leitura, fases e estados', { timeout: 20_000 }, () =
     await abrir(SESSAO_EXEMPLO, () => respostaProblema(404, { title: 'Não encontrado' }))
     expect(wrapper!.text()).toContain(TEXTOS_GRANDE_DIA.naoEncontradoTitulo)
     expect(wrapper!.get('[data-teste="voltar"]').text()).toBe(TEXTOS_GRANDE_DIA.voltarCasamentos)
+  })
+})
+
+const cssView = (() => {
+  const fonte = readFileSync(resolve(__dirname, '../GrandeDiaView.vue'), 'utf-8')
+  return fonte.slice(fonte.indexOf('<style scoped>'))
+})()
+
+describe('GrandeDiaView — layout reestruturado', { timeout: 20_000 }, () => {
+  it('[COMPONENTE] no dia, com pendências, usa a superfície ampla com painel, lateral e a ação como último bloco', async () => {
+    await abrir(SESSAO_EXEMPLO, () => respostaJson(grandeDia()))
+
+    const superficie = wrapper!.get('[data-teste="superficie-operacao"]')
+    expect(superficie.classes()).toEqual(expect.arrayContaining(['superficie-operacao--ampla', 'grande-dia-superficie']))
+    const envelope = wrapper!.get('[data-teste="grande-dia"]')
+    expect(envelope.classes()).toEqual(expect.arrayContaining(['grande-dia--com-lateral', 'grande-dia--com-acao']))
+    expect(envelope.get('.grande-dia__topo').find('[data-teste="relogio-operacao"]').exists()).toBe(true)
+    expect(envelope.get('.grande-dia__painel').attributes('data-teste')).toBe('painel-agora-proximo')
+    const lateral = envelope.get('.grande-dia__lateral')
+    expect(lateral.find('[data-teste="grande-dia-sem-marcar"]').exists()).toBe(true)
+    expect(lateral.find('[data-teste="grande-dia-feitos"]').exists()).toBe(true)
+    const filhos = Array.from(envelope.element.children)
+    expect(filhos[filhos.length - 1]?.getAttribute('data-teste')).toBe('barra-acao-fixa')
+    expect(filhos[filhos.length - 2]?.classList.contains('grande-dia__rodape')).toBe(true)
+  })
+
+  it('[COMPONENTE] no dia, sem itens pendentes nem feitos, não cria coluna lateral', async () => {
+    const semPendencias = grandeDia({
+      itens: [itemGrandeDia({ id: 'c' }), itemGrandeDia({ id: 'f', inicio: '17:15', termino: '18:00', atividade: 'Fotos com a família', fornecedor: null, situacao: 'Proximo' })],
+    })
+    await abrir(SESSAO_EXEMPLO, () => respostaJson(semPendencias))
+
+    const envelope = wrapper!.get('[data-teste="grande-dia"]')
+    expect(envelope.classes()).not.toContain('grande-dia--com-lateral')
+    expect(envelope.find('.grande-dia__lateral').exists()).toBe(false)
+    expect(envelope.find('[data-teste="cartao-agora"]').exists()).toBe(true)
+  })
+
+  it('[SEGURANÇA] casal no dia não recebe a área de ação principal', async () => {
+    await abrir(SESSAO_CASAL, () => respostaJson(grandeDia({ somenteLeitura: true })))
+
+    const envelope = wrapper!.get('[data-teste="grande-dia"]')
+    expect(envelope.classes()).not.toContain('grande-dia--com-acao')
+    expect(envelope.find('[data-teste="barra-acao-fixa"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] antes do dia agrupa o roteiro por dia na grade, sem lateral', async () => {
+    const antes = grandeDia({
+      momento: { agora: '2027-05-03T10:12:00', fase: 'AntesDoDia', diasParaOCasamento: 12 },
+      itens: [
+        itemGrandeDia({ id: 'e', dia: 'Vespera', data: '2027-05-14', inicio: '19:00', atividade: 'Ensaio', situacao: 'Depois' }),
+        itemGrandeDia({ id: 'c', situacao: 'Depois' }),
+      ],
+    })
+    await abrir(SESSAO_EXEMPLO, () => respostaJson(antes))
+
+    const envelope = wrapper!.get('[data-teste="grande-dia"]')
+    expect(envelope.classes()).not.toContain('grande-dia--com-lateral')
+    const roteiro = envelope.get('.grande-dia__roteiro')
+    expect(roteiro.findAll('section')).toHaveLength(2)
+    expect(envelope.get('.grande-dia__fase').find('[data-teste="faixa-fase-dia"]').exists()).toBe(true)
+  })
+
+  it('[UNITÁRIO] o estilo usa container queries, o ritmo da fundação e nenhum valor solto', () => {
+    expect(cssView).toContain('container: grande-dia / inline-size')
+    expect(cssView).toContain('@container grande-dia (min-width: 60rem)')
+    expect(cssView).toContain('@container grande-dia (min-width: 40rem)')
+    expect(cssView).toMatch(/grid-template-columns: minmax\(0, 3fr\) minmax\(20rem, 2fr\)/)
+    expect(cssView).toContain('repeat(auto-fit, minmax(min(22rem, 100%), 1fr))')
+    expect(cssView).toContain('var(--p-ritmo-cartao)')
+    expect(cssView).not.toMatch(/#[0-9a-fA-F]{3,8}/)
+    expect(cssView).not.toMatch(/\d+px(?! solid)/)
+    expect(cssView).not.toMatch(/margin:\s*-|calc\(-/)
+    expect(cssView).not.toContain('box-shadow')
+    expect(cssView).not.toContain('gradient')
+    expect(cssView).not.toContain('max-width')
   })
 })

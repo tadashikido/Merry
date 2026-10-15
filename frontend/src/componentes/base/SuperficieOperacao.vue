@@ -1,6 +1,11 @@
+<script setup lang="ts">
+withDefaults(defineProps<{ ampla?: boolean }>(), { ampla: false })
+</script>
+
 <template>
   <section
     class="superficie-operacao tema-operacao"
+    :class="{ 'superficie-operacao--ampla': ampla }"
     data-teste="superficie-operacao"
   >
     <slot />
@@ -19,5 +24,15 @@
   font-size: var(--p-fonte-tamanho-corpo);
   background: var(--p-cor-operacao-fundo);
   border-radius: var(--p-raio-folha);
+}
+
+.superficie-operacao--ampla {
+  max-width: none;
+}
+
+@media (min-width: 1024px) {
+  .superficie-operacao--ampla {
+    padding: var(--p-ritmo-bloco);
+  }
 }
 </style>

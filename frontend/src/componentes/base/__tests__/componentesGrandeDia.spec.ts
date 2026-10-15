@@ -111,6 +111,17 @@ describe('LinhaProximo, LinhaOperacao e FaixaFaseDia', () => {
     expect(wrapper.classes()).toEqual(expect.arrayContaining(['superficie-operacao', 'tema-operacao']))
   })
 
+  it('[COMPONENTE] SuperficieOperacao só fica ampla quando pedido', () => {
+    expect(mount(SuperficieOperacao).classes()).not.toContain('superficie-operacao--ampla')
+    expect(mount(SuperficieOperacao, { props: { ampla: true } }).classes()).toContain('superficie-operacao--ampla')
+  })
+
+  it('[UNITÁRIO] a lateral de pendências mantém contraste de texto sobre a superfície de operação', () => {
+    expect(razaoContraste(cores.operacaoTexto, cores.operacaoSuperficie)).toBeGreaterThanOrEqual(4.5)
+    expect(razaoContraste(cores.operacaoApoio, cores.operacaoSuperficie)).toBeGreaterThanOrEqual(4.5)
+    expect(razaoContraste(cores.operacaoSucesso, cores.operacaoSuperficie)).toBeGreaterThanOrEqual(4.5)
+  })
+
   it('[COMPONENTE] BarraAcaoFixa aceita a variante de operação', () => {
     const wrapper = mount(BarraAcaoFixa, { props: { variante: 'operacao' }, slots: { default: () => h('button', 'Marcar') } })
     expect(wrapper.classes()).toContain('barra-acao-fixa--operacao')

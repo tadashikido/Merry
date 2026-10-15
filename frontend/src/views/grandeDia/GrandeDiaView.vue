@@ -52,6 +52,8 @@ const podeMarcar = computed(() => dados.value !== null && !dados.value.somenteLe
 const itensPainel = computed(() => (dados.value ? itensPainelDoGrandeDia(dados.value.itens, dados.value.horarioCerimonia) : []))
 const distribuicao = computed(() => distribuirPainel(itensPainel.value))
 const grupos = computed(() => agruparRoteiro(dados.value?.itens ?? []))
+const temLateral = computed(() => distribuicao.value.semMarcar.length > 0 || distribuicao.value.feitos.length > 0)
+const temAcaoPrincipal = computed(() => podeMarcar.value && distribuicao.value.principal !== null)
 const horaCarga = computed(() => (store.carregadoEm ? formatarHora(store.carregadoEm) : ''))
 
 const momento = computed(() => {
@@ -168,7 +170,10 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
 
 <template>
   <LayoutPainelUsuario>
-    <template v-if="falha?.tipo === 'naoEncontrado'">
+    <div
+      v-if="falha?.tipo === 'naoEncontrado'"
+      class="pilha pilha--grupo"
+    >
       <EstadoErro
         :titulo="TEXTOS_GRANDE_DIA.naoEncontradoTitulo"
         :mensagem="TEXTOS_GRANDE_DIA.naoEncontradoTexto"
@@ -181,9 +186,13 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
       >
         {{ autenticacao.casamentoDoCasal ? TEXTOS_GRANDE_DIA.voltarNossoCasamento : TEXTOS_GRANDE_DIA.voltarCasamentos }}
       </RouterLink>
-    </template>
+    </div>
 
-    <SuperficieOperacao v-else>
+    <SuperficieOperacao
+      v-else
+      class="grande-dia-superficie"
+      ampla
+    >
       <EstadoCarregando
         v-if="store.carregando && !dados"
         variante="cartao"
@@ -200,37 +209,51 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
         @tentar-novamente="store.carregar(id)"
       />
 
-      <template v-else-if="dados">
-        <CabecalhoOperacao
-          :primeiro="dados.nomePrimeiraPessoa"
-          :segundo="dados.nomeSegundaPessoa"
-          :data="dados.data"
-          :filtro="TEXTOS_GRANDE_DIA.subtitulo"
-          :locais="locais"
-        />
+      <div
+        v-else-if="dados"
+        class="grande-dia"
+        :class="{
+          'grande-dia--com-lateral': noDia && temLateral,
+          'grande-dia--com-acao': temAcaoPrincipal,
+        }"
+        data-teste="grande-dia"
+      >
+        <div class="grande-dia__topo">
+          <div class="grande-dia__identificacao">
+            <CabecalhoOperacao
+              :primeiro="dados.nomePrimeiraPessoa"
+              :segundo="dados.nomeSegundaPessoa"
+              :data="dados.data"
+              :filtro="TEXTOS_GRANDE_DIA.subtitulo"
+              :locais="locais"
+            />
 
-        <RelogioOperacao
-          :hora="momento?.hora ?? ''"
-          :selo="selo"
-          :ao-vivo="noDia"
-        />
+            <RelogioOperacao
+              class="grande-dia__relogio"
+              :hora="momento?.hora ?? ''"
+              :selo="selo"
+              :ao-vivo="noDia"
+            />
+          </div>
 
-        <MensagemFormulario
-          v-if="dados.arquivado"
-          variante="alerta"
-          :mensagem="TEXTOS_GRANDE_DIA.arquivadoAcao"
-          data-teste="grande-dia-arquivado"
-        />
+          <MensagemFormulario
+            v-if="dados.arquivado"
+            variante="alerta"
+            :mensagem="TEXTOS_GRANDE_DIA.arquivadoAcao"
+            data-teste="grande-dia-arquivado"
+          />
 
-        <MensagemFormulario
-          v-if="store.semConexao"
-          variante="alerta"
-          :mensagem="TEXTOS_GRANDE_DIA.semConexao(horaCarga)"
-          data-teste="grande-dia-sem-conexao"
-        />
+          <MensagemFormulario
+            v-if="store.semConexao"
+            variante="alerta"
+            :mensagem="TEXTOS_GRANDE_DIA.semConexao(horaCarga)"
+            data-teste="grande-dia-sem-conexao"
+          />
+        </div>
 
         <EstadoVazio
           v-if="dados.itens.length === 0"
+          class="grande-dia__painel"
           icone="cronograma"
           :titulo="TEXTOS_GRANDE_DIA.vazioTitulo"
           :descricao="autenticacao.ehCasal ? TEXTOS_GRANDE_DIA.vazioTextoCasal : TEXTOS_GRANDE_DIA.vazioTexto"
@@ -251,6 +274,7 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
 
         <template v-else-if="noDia">
           <PainelAgoraProximo
+            class="grande-dia__painel"
             :itens="itensPainel"
             :minuto-atual="minutoAtual"
             prefixo="grande-dia"
@@ -280,118 +304,128 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
             </template>
           </PainelAgoraProximo>
 
-          <section
-            v-if="distribuicao.semMarcar.length > 0"
-            class="grande-dia__bloco"
-            aria-labelledby="grande-dia-sem-marcar"
-            data-teste="grande-dia-sem-marcar"
+          <div
+            v-if="temLateral"
+            class="grande-dia__lateral"
           >
-            <h2
-              id="grande-dia-sem-marcar"
-              class="grande-dia__titulo"
+            <section
+              v-if="distribuicao.semMarcar.length > 0"
+              class="grande-dia__bloco"
+              aria-labelledby="grande-dia-sem-marcar"
+              data-teste="grande-dia-sem-marcar"
             >
-              {{ TEXTOS_GRANDE_DIA.semMarcar(distribuicao.semMarcar.length) }}
-            </h2>
-            <ul class="grande-dia__lista">
-              <LinhaOperacao
-                v-for="item in distribuicao.semMarcar"
-                :key="item.chave"
-                :inicio="item.inicio"
-                :atividade="item.atividade"
+              <h2
+                id="grande-dia-sem-marcar"
+                class="grande-dia__titulo"
               >
-                <template
-                  v-if="podeMarcar"
-                  #acoes
+                {{ TEXTOS_GRANDE_DIA.semMarcar(distribuicao.semMarcar.length) }}
+              </h2>
+              <ul class="grande-dia__lista">
+                <LinhaOperacao
+                  v-for="item in distribuicao.semMarcar"
+                  :key="item.chave"
+                  :inicio="item.inicio"
+                  :atividade="item.atividade"
                 >
-                  <Button
-                    :label="TEXTOS_GRANDE_DIA.marcarFeitoCurto"
-                    :aria-label="TEXTOS_GRANDE_DIA.marcarFeitoAria(item.atividade)"
-                    icon="ie ie-concluir"
-                    severity="secondary"
-                    outlined
-                    size="small"
-                    :loading="store.itemEmAcao === item.chave"
-                    data-teste="grande-dia-feito-pendente"
-                    @click="concluir(item)"
-                  />
-                </template>
-              </LinhaOperacao>
-            </ul>
-          </section>
+                  <template
+                    v-if="podeMarcar"
+                    #acoes
+                  >
+                    <Button
+                      :label="TEXTOS_GRANDE_DIA.marcarFeitoCurto"
+                      :aria-label="TEXTOS_GRANDE_DIA.marcarFeitoAria(item.atividade)"
+                      icon="ie ie-concluir"
+                      severity="secondary"
+                      outlined
+                      size="small"
+                      :loading="store.itemEmAcao === item.chave"
+                      data-teste="grande-dia-feito-pendente"
+                      @click="concluir(item)"
+                    />
+                  </template>
+                </LinhaOperacao>
+              </ul>
+            </section>
 
-          <details
-            v-if="distribuicao.feitos.length > 0"
-            class="grande-dia__feitos"
-            data-teste="grande-dia-feitos"
-          >
-            <summary class="grande-dia__resumo">
-              {{ TEXTOS_GRANDE_DIA.feitos(distribuicao.feitos.length) }}
-            </summary>
-            <ul class="grande-dia__lista">
-              <LinhaOperacao
-                v-for="item in distribuicao.feitos"
-                :key="item.chave"
-                :inicio="item.inicio"
-                :atividade="item.atividade"
-                :detalhe="feitoAs(item)"
-                concluido
-              >
-                <template
-                  v-if="podeMarcar"
-                  #acoes
+            <details
+              v-if="distribuicao.feitos.length > 0"
+              class="grande-dia__feitos"
+              data-teste="grande-dia-feitos"
+            >
+              <summary class="grande-dia__resumo">
+                {{ TEXTOS_GRANDE_DIA.feitos(distribuicao.feitos.length) }}
+              </summary>
+              <ul class="grande-dia__lista">
+                <LinhaOperacao
+                  v-for="item in distribuicao.feitos"
+                  :key="item.chave"
+                  :inicio="item.inicio"
+                  :atividade="item.atividade"
+                  :detalhe="feitoAs(item)"
+                  concluido
                 >
-                  <Button
-                    :label="TEXTOS_GRANDE_DIA.reabrir"
-                    :aria-label="TEXTOS_GRANDE_DIA.reabrirAria(item.atividade)"
-                    severity="secondary"
-                    text
-                    size="small"
-                    :loading="store.itemEmAcao === item.chave"
-                    data-teste="grande-dia-reabrir"
-                    @click="reabrir(item)"
-                  />
-                </template>
-              </LinhaOperacao>
-            </ul>
-          </details>
+                  <template
+                    v-if="podeMarcar"
+                    #acoes
+                  >
+                    <Button
+                      :label="TEXTOS_GRANDE_DIA.reabrir"
+                      :aria-label="TEXTOS_GRANDE_DIA.reabrirAria(item.atividade)"
+                      severity="secondary"
+                      text
+                      size="small"
+                      :loading="store.itemEmAcao === item.chave"
+                      data-teste="grande-dia-reabrir"
+                      @click="reabrir(item)"
+                    />
+                  </template>
+                </LinhaOperacao>
+              </ul>
+            </details>
+          </div>
         </template>
 
-        <template v-else>
+        <div
+          v-else
+          class="grande-dia__painel grande-dia__fase"
+        >
           <FaixaFaseDia
             :titulo="fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.antesTitulo : TEXTOS_GRANDE_DIA.depoisTitulo"
             :texto="fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.antesTexto : TEXTOS_GRANDE_DIA.depoisTexto"
           />
-          <section
-            v-for="grupo in grupos"
-            :key="grupo.dia"
-            class="grande-dia__bloco"
-            :aria-labelledby="`grande-dia-roteiro-${grupo.dia}`"
-            :data-teste="`grande-dia-roteiro-${grupo.dia}`"
-          >
-            <h2
-              :id="`grande-dia-roteiro-${grupo.dia}`"
-              class="grande-dia__titulo"
+          <div class="grande-dia__roteiro">
+            <section
+              v-for="grupo in grupos"
+              :key="grupo.dia"
+              class="grande-dia__bloco"
+              :aria-labelledby="`grande-dia-roteiro-${grupo.dia}`"
+              :data-teste="`grande-dia-roteiro-${grupo.dia}`"
             >
-              {{ grupo.titulo }}
-            </h2>
-            <ol class="grande-dia__lista">
-              <ItemRoteiro
-                v-for="item in grupo.itens"
-                :key="item.id"
-                :inicio="item.inicio"
-                :termino="item.termino"
-                :termina-em-outro-dia="item.terminaEmOutroDia"
-                :atividade="item.atividade"
-                :local="item.local"
-                :responsavel="item.responsavel"
-                :fornecedor="item.fornecedor?.nomeEmpresa ?? null"
-                :instrucoes="item.instrucoes"
-                :concluido="item.status === 'Concluido'"
-                :cerimonia="ehHorarioDaCerimonia(item, dados.horarioCerimonia)"
-              />
-            </ol>
-          </section>
-        </template>
+              <h2
+                :id="`grande-dia-roteiro-${grupo.dia}`"
+                class="grande-dia__titulo"
+              >
+                {{ grupo.titulo }}
+              </h2>
+              <ol class="grande-dia__lista">
+                <ItemRoteiro
+                  v-for="item in grupo.itens"
+                  :key="item.id"
+                  :inicio="item.inicio"
+                  :termino="item.termino"
+                  :termina-em-outro-dia="item.terminaEmOutroDia"
+                  :atividade="item.atividade"
+                  :local="item.local"
+                  :responsavel="item.responsavel"
+                  :fornecedor="item.fornecedor?.nomeEmpresa ?? null"
+                  :instrucoes="item.instrucoes"
+                  :concluido="item.status === 'Concluido'"
+                  :cerimonia="ehHorarioDaCerimonia(item, dados.horarioCerimonia)"
+                />
+              </ol>
+            </section>
+          </div>
+        </div>
 
         <footer class="grande-dia__rodape">
           <p
@@ -416,6 +450,7 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
 
         <BarraAcaoFixa
           v-if="podeMarcar && distribuicao.principal"
+          class="grande-dia__acao"
           variante="operacao"
         >
           <Button
@@ -427,20 +462,61 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
             @click="concluir(distribuicao.principal)"
           />
         </BarraAcaoFixa>
-      </template>
+      </div>
     </SuperficieOperacao>
   </LayoutPainelUsuario>
 </template>
 
 <style scoped>
+.grande-dia-superficie {
+  container: grande-dia / inline-size;
+}
+
+.grande-dia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-cartao);
+  min-width: 0;
+}
+
 .grande-dia__voltar {
   align-self: flex-start;
+}
+
+.grande-dia__topo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-grupo);
+  min-width: 0;
+}
+
+.grande-dia__identificacao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-grupo);
+  min-width: 0;
+}
+
+.grande-dia__lateral,
+.grande-dia__fase {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-cartao);
+  min-width: 0;
+}
+
+.grande-dia__roteiro {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  gap: var(--p-ritmo-cartao) var(--p-ritmo-bloco);
+  align-items: start;
 }
 
 .grande-dia__bloco {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
+  min-width: 0;
 }
 
 .grande-dia__titulo,
@@ -475,10 +551,10 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
 .grande-dia__rodape {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
   align-items: center;
   justify-content: space-between;
-  padding-top: var(--p-espaco-4);
+  padding-top: var(--p-ritmo-grupo);
   border-top: 1px solid var(--p-cor-operacao-divisoria);
 }
 
@@ -487,5 +563,73 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
   font-size: var(--p-fonte-tamanho-controle);
   font-variant-numeric: tabular-nums;
   color: var(--p-cor-operacao-apoio);
+}
+
+@container grande-dia (min-width: 40rem) {
+  .grande-dia__rodape {
+    order: 1;
+  }
+}
+
+@container grande-dia (min-width: 60rem) {
+  .grande-dia__identificacao {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0;
+    align-items: end;
+  }
+
+  .grande-dia__relogio {
+    align-self: stretch;
+    align-items: flex-end;
+    padding-left: var(--p-ritmo-bloco);
+    padding-bottom: var(--p-espaco-5);
+    border-bottom: 1px solid var(--p-cor-operacao-divisoria);
+  }
+
+  .grande-dia--com-lateral {
+    display: grid;
+    grid-template-areas:
+      'topo topo'
+      'painel lateral'
+      'rodape rodape';
+    grid-template-columns: minmax(0, 3fr) minmax(20rem, 2fr);
+    gap: var(--p-ritmo-bloco);
+    align-items: start;
+  }
+
+  .grande-dia--com-lateral.grande-dia--com-acao {
+    grid-template-areas:
+      'topo topo'
+      'painel lateral'
+      'acao lateral'
+      'vago lateral'
+      'rodape rodape';
+    grid-template-rows: auto auto auto 1fr auto;
+    row-gap: var(--p-ritmo-cartao);
+  }
+
+  .grande-dia--com-lateral .grande-dia__topo {
+    grid-area: topo;
+  }
+
+  .grande-dia--com-lateral .grande-dia__painel {
+    grid-area: painel;
+  }
+
+  .grande-dia--com-lateral .grande-dia__lateral {
+    grid-area: lateral;
+    padding: var(--p-ritmo-cartao);
+    background: var(--p-cor-operacao-superficie);
+    border-radius: var(--p-raio-painel);
+  }
+
+  .grande-dia--com-lateral .grande-dia__rodape {
+    grid-area: rodape;
+  }
+
+  .grande-dia--com-lateral .grande-dia__acao {
+    grid-area: acao;
+  }
 }
 </style>
