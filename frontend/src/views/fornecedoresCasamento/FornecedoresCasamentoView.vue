@@ -22,7 +22,7 @@ import { useFornecedoresCasamentoStore } from '@/stores/fornecedoresCasamento'
 import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
 import { TEXTOS_PARCELAS_FORNECEDOR } from '@/textos/financeiro'
-import { TEXTOS_CONTRATO, TEXTOS_FORNECEDORES_CASAMENTO } from '@/textos/fornecedoresCasamento'
+import { TEXTOS_CONTRATO, TEXTOS_FORNECEDORES_CASAMENTO, TEXTOS_RESUMO_ORCAMENTO } from '@/textos/fornecedoresCasamento'
 import type { FornecedorCasamentoDto, ResultadoImportacaoFornecedoresDto } from '@/tipos/fornecedoresCasamento'
 import { formatarDataCalendarioComDiaSemana, formatarNomesCasal } from '@/utilitarios/formatacao'
 import { agruparVinculosPorCategoria } from '@/utilitarios/fornecedoresCasamento'
@@ -231,7 +231,7 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
         </template>
       </CabecalhoPagina>
 
-      <div class="fornecedores-casamento">
+      <div class="fornecedores-casamento pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado && !visaoDoCasal"
           variante="alerta"
@@ -289,88 +289,99 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
           </template>
         </EstadoVazio>
 
-        <template v-else-if="lista">
-          <ResumoOrcamento :resumo="lista.resumo" />
-
-          <div
-            class="fornecedores-casamento__painel"
-            data-teste="lista-vinculos"
+        <div
+          v-else-if="lista"
+          class="fornecedores-casamento__corpo"
+        >
+          <aside
+            class="fornecedores-casamento__lateral"
+            :aria-label="TEXTOS_RESUMO_ORCAMENTO.titulo"
+            data-teste="lateral-orcamento"
           >
-            <section
-              v-for="grupo in grupos"
-              :key="grupo.categoria"
-              class="fornecedores-casamento__grupo"
-              :aria-labelledby="`grupo-vinculos-${grupo.categoria}`"
-              :data-teste="`grupo-${grupo.categoria}`"
+            <ResumoOrcamento :resumo="lista.resumo" />
+          </aside>
+
+          <div class="fornecedores-casamento__principal pilha pilha--bloco">
+            <div
+              class="fornecedores-casamento__grupos pilha pilha--cartao"
+              data-teste="lista-vinculos"
             >
-              <h2
-                :id="`grupo-vinculos-${grupo.categoria}`"
-                class="fornecedores-casamento__titulo-grupo"
-              >
-                {{ ROTULOS_CATEGORIA_FORNECEDOR[grupo.categoria] }}
-                <span class="fornecedores-casamento__contagem">{{ TEXTOS_FORNECEDORES_CASAMENTO.quantidadeGrupo(grupo.vinculos.length) }}</span>
-              </h2>
-              <ul
-                class="fornecedores-casamento__lista"
+              <section
+                v-for="grupo in grupos"
+                :key="grupo.categoria"
+                class="fornecedores-casamento__grupo pilha pilha--campo"
                 :aria-labelledby="`grupo-vinculos-${grupo.categoria}`"
+                :data-teste="`grupo-${grupo.categoria}`"
               >
-                <LinhaFornecedorCasamento
-                  v-for="vinculo in grupo.vinculos"
-                  :key="vinculo.id"
-                  :nome-empresa="vinculo.fornecedor.nomeEmpresa"
-                  :status="vinculo.status"
-                  :servico="vinculo.servico"
-                  :valor-orcado="vinculo.valorOrcado"
-                  :valor-contratado="vinculo.valorContratado"
-                  :possui-contrato="vinculo.contrato !== null"
-                  :destino="destinoEdicao(vinculo)"
-                  :fornecedor-arquivado="vinculo.fornecedor.arquivado && !visaoDoCasal"
-                  :telefone="vinculo.fornecedor.telefone"
-                  :email="vinculo.fornecedor.email"
-                  :site="vinculo.fornecedor.site"
-                  :instagram="vinculo.fornecedor.instagram"
-                  :parcelas="vinculo.parcelas ?? null"
+                <h2
+                  :id="`grupo-vinculos-${grupo.categoria}`"
+                  class="fornecedores-casamento__titulo-grupo texto-rotulo"
                 >
-                  <template
-                    v-if="podeGerenciar"
-                    #acoes
+                  {{ ROTULOS_CATEGORIA_FORNECEDOR[grupo.categoria] }}
+                  <span class="fornecedores-casamento__contagem">{{ TEXTOS_FORNECEDORES_CASAMENTO.quantidadeGrupo(grupo.vinculos.length) }}</span>
+                </h2>
+                <ul
+                  class="fornecedores-casamento__lista cartao"
+                  :aria-labelledby="`grupo-vinculos-${grupo.categoria}`"
+                >
+                  <LinhaFornecedorCasamento
+                    v-for="vinculo in grupo.vinculos"
+                    :key="vinculo.id"
+                    :nome-empresa="vinculo.fornecedor.nomeEmpresa"
+                    :status="vinculo.status"
+                    :servico="vinculo.servico"
+                    :valor-orcado="vinculo.valorOrcado"
+                    :valor-contratado="vinculo.valorContratado"
+                    :possui-contrato="vinculo.contrato !== null"
+                    :destino="destinoEdicao(vinculo)"
+                    :fornecedor-arquivado="vinculo.fornecedor.arquivado && !visaoDoCasal"
+                    :telefone="vinculo.fornecedor.telefone"
+                    :email="vinculo.fornecedor.email"
+                    :site="vinculo.fornecedor.site"
+                    :instagram="vinculo.fornecedor.instagram"
+                    :parcelas="vinculo.parcelas ?? null"
                   >
-                    <MenuAcoes
-                      :itens="acoesDoVinculo(vinculo)"
-                      :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.maisAcoes"
-                      :rotulo-acessivel="TEXTOS_FORNECEDORES_CASAMENTO.maisAcoesAria(vinculo.fornecedor.nomeEmpresa)"
-                      :desabilitado="vinculoEmAndamento !== null"
-                      somente-icone
-                      @selecionar="executarAcao(vinculo, $event)"
-                    />
-                  </template>
-                  <template
-                    v-else-if="vinculo.contrato"
-                    #acoes
-                  >
-                    <Button
-                      :label="TEXTOS_FORNECEDORES_CASAMENTO.menuBaixar"
-                      icon="ie ie-exportar"
-                      severity="secondary"
-                      text
-                      :loading="vinculoEmAndamento === vinculo.id"
-                      :aria-label="TEXTOS_CONTRATO.baixarAria(vinculo.fornecedor.nomeEmpresa, 'PDF')"
-                      data-teste="baixar-contrato-linha"
-                      @click="baixar(vinculo)"
-                    />
-                  </template>
-                </LinhaFornecedorCasamento>
-              </ul>
-            </section>
-          </div>
+                    <template
+                      v-if="podeGerenciar"
+                      #acoes
+                    >
+                      <MenuAcoes
+                        :itens="acoesDoVinculo(vinculo)"
+                        :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.maisAcoes"
+                        :rotulo-acessivel="TEXTOS_FORNECEDORES_CASAMENTO.maisAcoesAria(vinculo.fornecedor.nomeEmpresa)"
+                        :desabilitado="vinculoEmAndamento !== null"
+                        somente-icone
+                        @selecionar="executarAcao(vinculo, $event)"
+                      />
+                    </template>
+                    <template
+                      v-else-if="vinculo.contrato"
+                      #acoes
+                    >
+                      <Button
+                        :label="TEXTOS_FORNECEDORES_CASAMENTO.menuBaixar"
+                        icon="ie ie-exportar"
+                        severity="secondary"
+                        text
+                        :loading="vinculoEmAndamento === vinculo.id"
+                        :aria-label="TEXTOS_CONTRATO.baixarAria(vinculo.fornecedor.nomeEmpresa, 'PDF')"
+                        data-teste="baixar-contrato-linha"
+                        @click="baixar(vinculo)"
+                      />
+                    </template>
+                  </LinhaFornecedorCasamento>
+                </ul>
+              </section>
+            </div>
 
-          <p
-            v-if="visaoDoCasal"
-            class="fornecedores-casamento__rodape"
-          >
-            {{ TEXTOS_FORNECEDORES_CASAMENTO.rodapeCasal }}
-          </p>
-        </template>
+            <p
+              v-if="visaoDoCasal"
+              class="fornecedores-casamento__rodape texto-legenda"
+            >
+              {{ TEXTOS_FORNECEDORES_CASAMENTO.rodapeCasal }}
+            </p>
+          </div>
+        </div>
       </div>
 
       <DialogoImportarFornecedores
@@ -408,59 +419,76 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
 
 <style scoped>
 .fornecedores-casamento {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
-  max-width: var(--p-dimensao-largura-ampla);
+  --fornecedores-casamento-largura-lateral: 22rem;
+
+  container: fornecedores-casamento / inline-size;
 }
 
 .fornecedores-casamento__acoes-vazio {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
-.fornecedores-casamento__painel {
-  background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
+.fornecedores-casamento__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'lateral'
+    'principal';
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
 }
 
-.fornecedores-casamento__grupo + .fornecedores-casamento__grupo {
-  border-top: 1px solid var(--p-cor-borda);
+.fornecedores-casamento__lateral {
+  grid-area: lateral;
+  min-width: 0;
+}
+
+.fornecedores-casamento__principal {
+  grid-area: principal;
+  min-width: 0;
 }
 
 .fornecedores-casamento .fornecedores-casamento__titulo-grupo {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   margin: 0;
-  padding: var(--p-espaco-4) var(--p-espaco-4) var(--p-espaco-1);
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto-secundario);
 }
 
 .fornecedores-casamento__contagem {
   font-weight: var(--p-fonte-peso-regular);
-  color: var(--p-cor-texto-apoio);
+  letter-spacing: normal;
+  text-transform: none;
 }
 
-.fornecedores-casamento__lista {
+.fornecedores-casamento .fornecedores-casamento__lista {
   margin: 0;
   padding: 0;
+  container: lista-vinculos / inline-size;
 }
 
 .fornecedores-casamento__rodape {
   margin: 0;
-  font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-apoio);
 }
 
 .fornecedores-casamento__voltar {
   display: inline-block;
-  margin-top: var(--p-espaco-4);
+  margin-top: var(--p-ritmo-grupo);
+}
+
+@container fornecedores-casamento (min-width: 64rem) {
+  .fornecedores-casamento__corpo {
+    grid-template-columns: minmax(0, 1fr) var(--fornecedores-casamento-largura-lateral);
+    grid-template-areas: 'principal lateral';
+  }
+
+  .fornecedores-casamento__lateral {
+    position: sticky;
+    top: var(--p-ritmo-bloco);
+  }
 }
 </style>

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import type { Mock } from 'vitest'
@@ -16,7 +18,7 @@ import { resumoFornecedor } from '@/__tests__/auxiliaresFornecedores'
 import { ID_VINCULO, arquivoPdf, florista, listaVinculos, vinculoExemplo } from '@/__tests__/auxiliaresFornecedoresCasamento'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
-import { TEXTOS_CONTRATO, TEXTOS_FORNECEDORES_CASAMENTO } from '@/textos/fornecedoresCasamento'
+import { TEXTOS_CONTRATO, TEXTOS_FORNECEDORES_CASAMENTO, TEXTOS_RESUMO_ORCAMENTO } from '@/textos/fornecedoresCasamento'
 import type { SessaoDto } from '@/tipos/api'
 import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, resumoCasamento, type Rota } from '../../casamentos/__tests__/auxiliaresCasamentos'
 
@@ -325,6 +327,83 @@ describe('FornecedoresCasamentoView — casal', () => {
     expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES_CASAMENTO.vazioCasalTitulo)
     expect(wrapper.find('[data-teste="adicionar-fornecedor-vazio"]').exists()).toBe(false)
     expect(wrapper.find('[data-teste="importar-fornecedores-vazio"]').exists()).toBe(false)
+  })
+})
+
+const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
+const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
+
+describe('FornecedoresCasamentoView — reestruturação Nossia', () => {
+  it('[COMPONENTE] resumo fica num aside rotulado antes da lista; grupos usam rótulo e cartão', async () => {
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA, () => respostaJson(listaVinculos([vinculoExemplo(), florista()]))),
+    )
+    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/fornecedores`)
+
+    const lateral = wrapper.get('[data-teste="lateral-orcamento"]')
+    expect(lateral.element.tagName).toBe('ASIDE')
+    expect(lateral.attributes('aria-label')).toBe(TEXTOS_RESUMO_ORCAMENTO.titulo)
+    expect(lateral.find('[data-teste="resumo-orcamento"]').exists()).toBe(true)
+
+    const corpo = wrapper.get('.fornecedores-casamento__corpo')
+    const lista = wrapper.get('[data-teste="lista-vinculos"]')
+    expect(corpo.element.contains(lista.element)).toBe(true)
+    expect(lateral.element.compareDocumentPosition(lista.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    const titulo = wrapper.get('[data-teste="grupo-Buffet"] h2')
+    expect(titulo.classes()).toContain('texto-rotulo')
+    expect(titulo.text()).toContain(TEXTOS_FORNECEDORES_CASAMENTO.quantidadeGrupo(1))
+    const listaGrupo = wrapper.get('[data-teste="grupo-Buffet"] ul')
+    expect(listaGrupo.classes()).toContain('cartao')
+    expect(listaGrupo.attributes('aria-labelledby')).toBe('grupo-vinculos-Buffet')
+    expect(wrapper.get('[data-teste="grupo-Decoracao"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--campo']))
+  })
+
+  it('[COMPONENTE] rodapé do casal usa a legenda da fundação', async () => {
+    rotear(
+      fetchSimulado,
+      SESSAO_CASAL,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ observacoes: null }))),
+      quando('GET', ROTA, () => respostaJson(listaVinculos([vinculoExemplo({ notasInternas: null })], { somenteLeitura: true }))),
+    )
+    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/fornecedores`)
+
+    const rodape = wrapper.get('.fornecedores-casamento__rodape')
+    expect(rodape.classes()).toContain('texto-legenda')
+    expect(rodape.text()).toBe(TEXTOS_FORNECEDORES_CASAMENTO.rodapeCasal)
+  })
+
+  it('[UNITÁRIO] a view não tem largura própria, usa só o ritmo e abre a lateral por contêiner', () => {
+    const estilo = estiloDe(lerFonte('views/fornecedoresCasamento/FornecedoresCasamentoView.vue'))
+
+    expect(estilo).not.toMatch(/max-width/)
+    expect(estilo).not.toMatch(/--p-espaco-/)
+    expect(estilo).not.toMatch(/margin[^:]*:\s*-/)
+    expect(estilo).toMatch(/container:\s*fornecedores-casamento\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/container:\s*lista-vinculos\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/@container fornecedores-casamento \(min-width: 64rem\)/)
+    expect(estilo).toMatch(/grid-template-areas:\s*'principal lateral'/)
+  })
+
+  it('[UNITÁRIO] ResumoOrcamento compacta só quando o próprio contêiner é estreito e mantém as cores da régua', () => {
+    const estilo = estiloDe(lerFonte('componentes/base/ResumoOrcamento.vue'))
+
+    expect(estilo).toMatch(/container:\s*resumo-orcamento\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/@container resumo-orcamento \(max-width: 30rem\)/)
+    expect(estilo).toMatch(/\.resumo-orcamento__camada--pago\s*\{\s*background:\s*var\(--p-cor-primaria-escura\)/)
+    expect(estilo).toMatch(/\.resumo-orcamento__camada--a-pagar\s*\{\s*background:\s*var\(--p-cor-acento\)/)
+    expect(estilo.indexOf('@container resumo-orcamento')).toBeGreaterThan(estilo.indexOf('@media (min-width: 640px)'))
+  })
+
+  it('[UNITÁRIO] LinhaFornecedorCasamento empilha numa lista estreita e usa o ritmo no espaçamento interno', () => {
+    const estilo = estiloDe(lerFonte('componentes/base/LinhaFornecedorCasamento.vue'))
+
+    expect(estilo).toMatch(/padding:\s*var\(--p-ritmo-grupo\) var\(--p-ritmo-cartao\)/)
+    expect(estilo).toMatch(/@container lista-vinculos \(max-width: 47\.99rem\)/)
+    expect(estilo.indexOf('@container lista-vinculos')).toBeGreaterThan(estilo.indexOf('@media (min-width: 1024px)'))
   })
 })
 
