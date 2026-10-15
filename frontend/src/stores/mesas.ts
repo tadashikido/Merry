@@ -9,11 +9,40 @@ import {
   type FalhaCasamento,
   type ResultadoCasamento,
 } from '@/stores/casamentos'
+import { useExclusoesAdiadasStore } from '@/stores/exclusoesAdiadas'
 import type { MapaMesasDto, MesaDto, SalvarMesaRequest } from '@/tipos/mesas'
 
 export function caminhoMesas(casamentoId: string, ...segmentos: string[]): string {
   const base = `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/mesas`
   return segmentos.length === 0 ? base : `${base}/${segmentos.map(encodeURIComponent).join('/')}`
+}
+
+export function escopoMesas(casamentoId: string): string {
+  return `mesas:${casamentoId}`
+}
+
+export function ocultarMesas(mapa: MapaMesasDto, ids: Set<string>): MapaMesasDto {
+  const removidas = mapa.mesas.filter((mesa) => ids.has(mesa.id))
+  if (removidas.length === 0) {
+    return mapa
+  }
+  const desalocadas = mapa.pessoas.filter((pessoa) => pessoa.mesaId !== null && ids.has(pessoa.mesaId)).length
+  return {
+    ...mapa,
+    mesas: mapa.mesas.filter((mesa) => !ids.has(mesa.id)),
+    pessoas: mapa.pessoas.map((pessoa) =>
+      pessoa.mesaId !== null && ids.has(pessoa.mesaId) ? { ...pessoa, mesaId: null } : pessoa,
+    ),
+    totais: {
+      ...mapa.totais,
+      mesas: mapa.totais.mesas - removidas.length,
+      capacidadeTotal: mapa.totais.capacidadeTotal - removidas.reduce((soma, mesa) => soma + mesa.capacidade, 0),
+      acomodados: mapa.totais.acomodados - desalocadas,
+      lugaresLivres:
+        mapa.totais.lugaresLivres - removidas.reduce((soma, mesa) => soma + Math.max(mesa.capacidade - mesa.ocupacao, 0), 0),
+      semMesa: mapa.totais.semMesa + desalocadas,
+    },
+  }
 }
 
 async function executar<T>(acao: () => Promise<T>): Promise<ResultadoCasamento<T>> {
@@ -25,6 +54,7 @@ async function executar<T>(acao: () => Promise<T>): Promise<ResultadoCasamento<T
 }
 
 export const useMesasStore = defineStore('mesas', () => {
+  const exclusoes = useExclusoesAdiadasStore()
   const casamentoId = ref<string | null>(null)
   const mapa = ref<MapaMesasDto | null>(null)
   const carregando = ref(false)
@@ -41,7 +71,7 @@ export const useMesasStore = defineStore('mesas', () => {
     try {
       const resposta = await requisitar<MapaMesasDto>(caminhoMesas(id))
       if (casamentoId.value === id) {
-        mapa.value = resposta
+        mapa.value = ocultarPendentes(id, resposta)
       }
     } catch (erro) {
       if (casamentoId.value === id) {
@@ -55,10 +85,18 @@ export const useMesasStore = defineStore('mesas', () => {
     }
   }
 
+  function ocultarPendentes(id: string, atual: MapaMesasDto): MapaMesasDto {
+    return ocultarMesas(atual, exclusoes.chavesPendentes(escopoMesas(id)))
+  }
+
   function aplicarMapa(id: string, novo: MapaMesasDto) {
     if (casamentoId.value === id) {
-      mapa.value = novo
+      mapa.value = ocultarPendentes(id, novo)
     }
+  }
+
+  function efetivarPendentes(id: string): Promise<void> {
+    return exclusoes.efetivarEscopo(escopoMesas(id))
   }
 
   async function aposFalha<T>(id: string, resultado: ResultadoCasamento<T>): Promise<ResultadoCasamento<T>> {
@@ -69,6 +107,7 @@ export const useMesasStore = defineStore('mesas', () => {
   }
 
   async function criarMesa(id: string, dados: SalvarMesaRequest): Promise<ResultadoCasamento<MesaDto>> {
+    await efetivarPendentes(id)
     const resultado = await executar(() => requisitar<MesaDto>(caminhoMesas(id), { metodo: 'POST', corpo: dados }))
     if (resultado.ok) {
       await carregar(id)
@@ -77,6 +116,7 @@ export const useMesasStore = defineStore('mesas', () => {
   }
 
   async function atualizarMesa(id: string, mesaId: string, dados: SalvarMesaRequest): Promise<ResultadoCasamento<MesaDto>> {
+    await efetivarPendentes(id)
     const resultado = await executar(() =>
       requisitar<MesaDto>(caminhoMesas(id, mesaId), { metodo: 'PUT', corpo: dados }),
     )
@@ -97,7 +137,50 @@ export const useMesasStore = defineStore('mesas', () => {
     return aposFalha(id, resultado)
   }
 
+  async function recarregarSeAtual(id: string): Promise<void> {
+    if (casamentoId.value === id) {
+      await carregar(id)
+    }
+  }
+
+  function removerMesaComDesfazer(id: string, mesaId: string, aoFalhar?: (falha: FalhaCasamento) => void) {
+    let falhaEfetivacao: FalhaCasamento | null = null
+    exclusoes.agendar({
+      escopo: escopoMesas(id),
+      chave: mesaId,
+      efetivar: async () => {
+        const resultado = await executar(() => requisitar<void>(caminhoMesas(id, mesaId), { metodo: 'DELETE', manterAtiva: true }))
+        if (!resultado.ok) {
+          falhaEfetivacao = resultado.falha
+        }
+        await recarregarSeAtual(id)
+        return resultado.ok
+      },
+      aoFalhar: () => {
+        if (falhaEfetivacao) {
+          aoFalhar?.(falhaEfetivacao)
+        }
+      },
+    })
+    if (casamentoId.value === id && mapa.value) {
+      mapa.value = ocultarPendentes(id, mapa.value)
+    }
+  }
+
+  async function desfazerRemocaoMesa(id: string, mesaId: string): Promise<boolean> {
+    if (!exclusoes.desfazer(escopoMesas(id), mesaId)) {
+      return false
+    }
+    await recarregarSeAtual(id)
+    return true
+  }
+
+  function concluirRemocaoMesa(id: string, mesaId: string): Promise<void> {
+    return exclusoes.efetivar(escopoMesas(id), mesaId)
+  }
+
   async function sentar(id: string, mesaId: string, convidadosIds: string[]): Promise<ResultadoCasamento<MapaMesasDto>> {
+    await efetivarPendentes(id)
     const resultado = await executar(() =>
       requisitar<MapaMesasDto>(caminhoMesas(id, mesaId, 'pessoas'), { metodo: 'POST', corpo: { convidadosIds } }),
     )
@@ -109,6 +192,7 @@ export const useMesasStore = defineStore('mesas', () => {
   }
 
   async function retirar(id: string, convidadosIds: string[]): Promise<ResultadoCasamento<MapaMesasDto>> {
+    await efetivarPendentes(id)
     const resultado = await executar(() =>
       requisitar<MapaMesasDto>(caminhoMesas(id, 'retirada'), { metodo: 'POST', corpo: { convidadosIds } }),
     )
@@ -120,6 +204,7 @@ export const useMesasStore = defineStore('mesas', () => {
   }
 
   async function dispensarAvisos(id: string, convidadosIds: string[]): Promise<ResultadoCasamento<MapaMesasDto>> {
+    await efetivarPendentes(id)
     const resultado = await executar(() =>
       requisitar<MapaMesasDto>(caminhoMesas(id, 'avisos-saida', 'dispensa'), { metodo: 'POST', corpo: { convidadosIds } }),
     )
@@ -156,6 +241,9 @@ export const useMesasStore = defineStore('mesas', () => {
     criarMesa,
     atualizarMesa,
     removerMesa,
+    removerMesaComDesfazer,
+    desfazerRemocaoMesa,
+    concluirRemocaoMesa,
     sentar,
     retirar,
     dispensarAvisos,

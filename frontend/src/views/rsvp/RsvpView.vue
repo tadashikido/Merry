@@ -584,15 +584,26 @@ function alterarResposta() {
                   data-teste="rsvp-nome-acompanhante"
                 />
               </CampoFormulario>
-              <SelectButton
-                v-model="item.faixaEtaria"
-                :options="opcoesFaixa"
-                option-label="rotulo"
-                option-value="valor"
-                :allow-empty="false"
-                :aria-label="TEXTOS_RSVP.faixaAcompanhante"
-                data-teste="rsvp-faixa-acompanhante"
-              />
+              <div
+                class="rsvp__opcoes"
+                role="group"
+                :aria-labelledby="`rsvp-faixa-acompanhante-${indice}-rotulo`"
+              >
+                <span
+                  :id="`rsvp-faixa-acompanhante-${indice}-rotulo`"
+                  class="rsvp__rotulo-opcoes"
+                  data-teste="rsvp-rotulo-faixa-acompanhante"
+                >{{ TEXTOS_RSVP.faixaAcompanhante }}</span>
+                <SelectButton
+                  v-model="item.faixaEtaria"
+                  :options="opcoesFaixa"
+                  option-label="rotulo"
+                  option-value="valor"
+                  :allow-empty="false"
+                  :aria-labelledby="`rsvp-faixa-acompanhante-${indice}-rotulo`"
+                  data-teste="rsvp-faixa-acompanhante"
+                />
+              </div>
               <SeletorRestricaoAlimentar
                 v-model="item.restricao"
                 :nome="item.nome.trim() || TEXTOS_LISTA_ACOMPANHANTES.rotuloItem(indice + 1)"
@@ -672,6 +683,18 @@ function alterarResposta() {
 .rsvp__nota {
   font-size: var(--p-fonte-tamanho-controle);
   color: var(--p-cor-texto-quente);
+}
+
+.rsvp__opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-espaco-2);
+}
+
+.rsvp__rotulo-opcoes {
+  font-size: var(--p-fonte-tamanho-controle);
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-texto);
 }
 
 .rsvp__resumo .rsvp__nota {

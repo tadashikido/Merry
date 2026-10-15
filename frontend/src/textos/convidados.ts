@@ -73,6 +73,8 @@ export const TEXTOS_CONVIDADOS = {
   voltarConvidados: 'Voltar para convidados',
   voltarCasamentos: 'Voltar para casamentos',
   salvo: (nome: string) => `Convite “${nome}” salvo.`,
+  restaurado: (nome: string) => `Convite “${nome}” restaurado.`,
+  erroExcluir: (nome: string) => `Não foi possível excluir “${nome}”. Tente de novo.`,
   confirmarExclusaoTexto: (quantidade: number) =>
     quantidade === 1
       ? 'A pessoa deste convite também será excluída.'

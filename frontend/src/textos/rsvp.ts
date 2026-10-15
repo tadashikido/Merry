@@ -27,7 +27,7 @@ export const TEXTOS_RSVP = {
   acompanhantesLimite: (limite: number) => `Você pode levar até ${pessoas(limite)}.`,
   nomeAcompanhante: 'Nome do acompanhante',
   placeholderNome: 'Nome e sobrenome',
-  faixaAcompanhante: 'Idade',
+  faixaAcompanhante: 'Faixa etária',
   adulto: 'Adulto',
   criancaOpcao: 'Criança',
   acompanhantesRetirados: 'Os acompanhantes foram retirados porque ninguém do convite vai.',

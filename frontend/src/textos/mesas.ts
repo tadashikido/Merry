@@ -94,6 +94,8 @@ export const TEXTOS_MESAS = {
   mesaCriada: (rotulo: string) => `${rotulo} criada.`,
   mesaSalva: (rotulo: string) => `${rotulo} salva.`,
   mesaExcluida: (rotulo: string) => `${rotulo} foi excluída.`,
+  mesaRestaurada: (rotulo: string) => `${rotulo} restaurada.`,
+  erroExcluirMesa: (rotulo: string) => `Não foi possível excluir ${rotulo}. Tente de novo.`,
   excluirConsequencia: (ocupados: number) =>
     ocupados === 0
       ? 'Esta mesa está vazia.'

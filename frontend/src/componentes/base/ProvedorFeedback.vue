@@ -28,8 +28,17 @@ function iconeDe(mensagem: MensagemToast): string {
 }
 
 function desfazer(mensagem: MensagemToast, fechar: () => void) {
+  const acao = mensagem.data?.desfazer
+  void acao?.()
   fechar()
-  void mensagem.data?.desfazer?.()
+}
+
+function habilitarPausaNoHover() {
+  return undefined
+}
+
+function aoFecharToast(evento: { message: MensagemToast }) {
+  void evento.message.data?.aoFechar?.()
 }
 </script>
 
@@ -38,6 +47,10 @@ function desfazer(mensagem: MensagemToast, fechar: () => void) {
     position="bottom-right"
     :breakpoints="pontosQuebraToast"
     class="provedor-toast"
+    :on-mouse-enter="habilitarPausaNoHover"
+    :on-mouse-leave="habilitarPausaNoHover"
+    @close="aoFecharToast"
+    @life-end="aoFecharToast"
   >
     <template #container="{ message, closeCallback }">
       <div

@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
+import type { AcaoDesfazer, AcaoFechamento } from '@/composables/useNotificacao'
 import { MENSAGENS_PADRAO, mensagemExcluido } from '@/textos/mensagens'
 
 export interface OpcoesConfirmarExclusao {
@@ -9,6 +10,14 @@ export interface OpcoesConfirmarExclusao {
   mensagemSucesso?: string
   aoConfirmar: () => void | Promise<void>
   aoCancelar?: () => void
+  desfazer?: AcaoDesfazer
+  aoFecharAviso?: AcaoFechamento
+}
+
+export interface AvisoExclusao {
+  mensagem: string
+  desfazer?: AcaoDesfazer
+  aoFechar?: AcaoFechamento
 }
 
 export type ResultadoExclusao = 'excluido' | 'falhou' | 'ignorado'
@@ -20,6 +29,14 @@ export const useConfirmacaoExclusaoStore = defineStore('confirmacaoExclusao', ()
   const mensagem = ref('')
   const mensagemSucesso = ref('')
   let operacaoAtual: OpcoesConfirmarExclusao | null = null
+
+  function avisoAtual(): AvisoExclusao {
+    return {
+      mensagem: mensagemSucesso.value,
+      desfazer: operacaoAtual?.desfazer,
+      aoFechar: operacaoAtual?.aoFecharAviso,
+    }
+  }
 
   function solicitar(opcoes: OpcoesConfirmarExclusao) {
     if (executando.value) {
@@ -60,5 +77,5 @@ export const useConfirmacaoExclusaoStore = defineStore('confirmacaoExclusao', ()
     operacao?.aoCancelar?.()
   }
 
-  return { visivel, executando, nomeItem, mensagem, mensagemSucesso, solicitar, confirmar, cancelar }
+  return { visivel, executando, nomeItem, mensagem, mensagemSucesso, avisoAtual, solicitar, confirmar, cancelar }
 })

@@ -134,8 +134,8 @@ describe('ConvidadosView', { timeout: 20_000 }, () => {
     await wrapper!.get('[data-teste="abrir-restricoes"]').trigger('click')
     await flushPromises()
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('restricoes-alimentares'))
-  })
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('restricoes-alimentares'), { timeout: 5000 })
+  }, 20_000)
 
   it('[COMPONENTE] filtro de resposta esconde pessoas de outra resposta sem nova requisição', async () => {
     rotearFetch(fetchSimulado, ...rotasPadrao())
@@ -221,7 +221,7 @@ describe('ConvidadosView', { timeout: 20_000 }, () => {
     expect(wrapper!.text()).toContain(TEXTOS_CONVIDADOS.semAcesso)
   })
 
-  it('[INTEGRAÇÃO] excluir pede confirmação, envia DELETE e recarrega a lista', async () => {
+  it('[INTEGRAÇÃO] excluir pede confirmação, some na hora e envia DELETE só quando o aviso fecha', async () => {
     let listaAtual = lista()
     rotearFetch(
       fetchSimulado,
@@ -239,11 +239,66 @@ describe('ConvidadosView', { timeout: 20_000 }, () => {
     expect(confirmacao.visivel).toBe(true)
     expect(confirmacao.nomeItem).toBe('Família Souza')
     expect(confirmacao.mensagem).toBe('As 2 pessoas deste convite também serão excluídas.')
+    const aviso = confirmacao.avisoAtual()
+    expect(aviso.mensagem).toBe('“Família Souza” foi excluído.')
     await confirmacao.confirmar()
+    await flushPromises()
+
+    expect(wrapper!.text()).not.toContain('Família Souza')
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_CONVITE}`)).toHaveLength(0)
+
+    await aviso.aoFechar!()
     await flushPromises()
 
     expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_CONVITE}`)).toHaveLength(1)
     expect(wrapper!.text()).not.toContain('Família Souza')
+  })
+
+  it('[INTEGRAÇÃO] desfazer a exclusão devolve o convite com as pessoas e não envia DELETE', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_CONVITES, () => respostaJson(lista())),
+      quando('DELETE', `${ROTA_CONVITES}/${ID_CONVITE}`, () => respostaVazia()),
+    )
+    await abrir(`/casamentos/${ID_CASAMENTO}/convidados`)
+
+    await wrapper!.findAll('[data-teste="excluir-convite"]')[0]!.trigger('click')
+    const confirmacao = useConfirmacaoExclusaoStore()
+    const aviso = confirmacao.avisoAtual()
+    await confirmacao.confirmar()
+    await flushPromises()
+    expect(wrapper!.text()).not.toContain('Família Souza')
+
+    await aviso.desfazer!()
+    await aviso.aoFechar!()
+    await flushPromises()
+
+    expect(wrapper!.text()).toContain('Família Souza')
+    expect(wrapper!.text()).toContain('Carla Souza')
+    expect(wrapper!.text()).toContain('Pedro Souza')
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_CONVITE}`)).toHaveLength(0)
+  })
+
+  it('[SEGURANÇA] sem permissão na efetivação o convite volta para a lista', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_CONVITES, () => respostaJson(lista())),
+      quando('DELETE', `${ROTA_CONVITES}/${ID_CONVITE}`, () => respostaProblema(403)),
+    )
+    await abrir(`/casamentos/${ID_CASAMENTO}/convidados`)
+
+    await wrapper!.findAll('[data-teste="excluir-convite"]')[0]!.trigger('click')
+    const confirmacao = useConfirmacaoExclusaoStore()
+    const aviso = confirmacao.avisoAtual()
+    await confirmacao.confirmar()
+    await flushPromises()
+    await aviso.aoFechar!()
+    await flushPromises()
+
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_CONVITE}`)).toHaveLength(1)
+    expect(wrapper!.text()).toContain('Família Souza')
   })
 
   it('[COMPONENTE] adicionar convite navega para o formulário', async () => {
@@ -425,6 +480,35 @@ describe('ConviteFormularioView', { timeout: 20_000 }, () => {
     const corpo = corpoDaChamada(chamadas(fetchSimulado, 'PUT', `${ROTA_CONVITES}/${ID_CONVITE}`)[0]!) as { convidados: { id: string | null; resposta: string }[] }
     expect(corpo.convidados).toHaveLength(1)
     expect(corpo.convidados[0]).toMatchObject({ id: 'p1', resposta: 'Confirmado' })
+  })
+
+  it('[INTEGRAÇÃO] excluir pela edição volta para a lista sem o convite e desfazer o devolve sem DELETE', async () => {
+    rotearFetch(
+      fetchSimulado,
+      ...rotasPadrao(),
+      quando('GET', `${ROTA_CONVITES}/${ID_CONVITE}`, () => respostaJson(convite())),
+      quando('DELETE', `${ROTA_CONVITES}/${ID_CONVITE}`, () => respostaVazia()),
+    )
+    const { montagem } = await abrir(`/casamentos/${ID_CASAMENTO}/convidados/${ID_CONVITE}/editar`)
+
+    await wrapper!.get('[data-teste="excluir-convite"]').trigger('click')
+    const confirmacao = useConfirmacaoExclusaoStore()
+    const aviso = confirmacao.avisoAtual()
+    expect(aviso.desfazer).toBeTypeOf('function')
+    await confirmacao.confirmar()
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-convidados'), { timeout: 5000 })
+    await flushPromises()
+
+    await vi.waitFor(() => expect(wrapper!.text()).toContain('Marcos Lima'), { timeout: 5000 })
+    expect(wrapper!.text()).not.toContain('Família Souza')
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_CONVITE}`)).toHaveLength(0)
+
+    await aviso.desfazer!()
+    await aviso.aoFechar!()
+    await flushPromises()
+
+    expect(wrapper!.text()).toContain('Família Souza')
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_CONVITE}`)).toHaveLength(0)
   })
 
   it('[SEGURANÇA] convite inexistente ou de outra organização mostra "Convite não encontrado"', async () => {

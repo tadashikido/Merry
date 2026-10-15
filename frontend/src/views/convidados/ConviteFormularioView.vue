@@ -18,6 +18,7 @@ import type { TextosListaRepetivel } from '@/componentes/base/tipos'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useAlteracoesNaoSalvas, useRastreioAlteracoes } from '@/composables/useAlteracoesNaoSalvas'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
+import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { useConvidadosStore, type FalhaConvidados } from '@/stores/convidados'
@@ -67,6 +68,7 @@ const store = useConvidadosStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
 const { confirmarExclusao } = useConfirmarExclusao()
+const { desfazerExclusao } = useDesfazerExclusao()
 
 const edicao = computed(() => Boolean(props.conviteId))
 const carregandoConvite = ref(false)
@@ -369,17 +371,20 @@ function excluir() {
   if (!convite) {
     return
   }
+  const casamentoId = props.id
   confirmarExclusao({
     nomeItem: convite.nome,
     mensagem: TEXTOS_CONVIDADOS.confirmarExclusaoTexto(convite.convidados.length),
     aoConfirmar: async () => {
-      const resultado = await store.remover(props.id, convite.id)
-      if (!resultado.ok) {
-        throw new Error(resultado.falha.mensagem ?? resultado.falha.tipo)
-      }
+      store.removerComDesfazer(casamentoId, convite.id, (falha) => {
+        notificacao.erro(falha.tipo === 'semPermissao' ? TEXTOS_CONVIDADOS.semPermissao : TEXTOS_CONVIDADOS.erroExcluir(convite.nome))
+      })
       liberarSaida()
-      await roteador.replace({ name: 'casamento-convidados', params: { id: props.id } })
+      await roteador.replace({ name: 'casamento-convidados', params: { id: casamentoId } })
     },
+    desfazer: () =>
+      desfazerExclusao(() => store.desfazerRemocao(casamentoId, convite.id), TEXTOS_CONVIDADOS.restaurado(convite.nome)),
+    aoFecharAviso: () => store.concluirRemocao(casamentoId, convite.id),
   })
 }
 </script>

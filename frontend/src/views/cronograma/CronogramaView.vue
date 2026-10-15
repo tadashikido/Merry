@@ -19,6 +19,7 @@ import DialogoSalvarModeloCronograma from '@/componentes/cronograma/DialogoSalva
 import PainelAplicarModeloCronograma from '@/componentes/cronograma/PainelAplicarModeloCronograma.vue'
 import PainelLinksCronograma from '@/componentes/cronograma/PainelLinksCronograma.vue'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
+import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useCasamentosStore } from '@/stores/casamentos'
@@ -43,6 +44,7 @@ const casamentos = useCasamentosStore()
 const store = useCronogramaStore()
 const notificacao = useNotificacao()
 const { confirmarExclusao } = useConfirmarExclusao()
+const { desfazerExclusao } = useDesfazerExclusao()
 
 const dialogoVisivel = ref(false)
 const itemEmEdicao = ref<ItemCronogramaDto | null>(null)
@@ -186,17 +188,19 @@ async function recalcularHorarios() {
 function excluir(item: ItemCronogramaDto) {
   dialogoVisivel.value = false
   ultimoFocado.value = null
+  const casamentoId = props.id
   confirmarExclusao({
     nomeItem: item.atividade,
     mensagem: TEXTOS_CRONOGRAMA.confirmarExcluir,
     mensagemSucesso: TEXTOS_CRONOGRAMA.sucessoExcluido,
-    aoConfirmar: async () => {
-      const resultado = await store.remover(props.id, item.id)
-      if (!resultado.ok) {
-        notificacao.erro(resultado.falha.mensagem ?? TEXTOS_CRONOGRAMA.erroSalvar)
-        throw new Error(resultado.falha.mensagem ?? resultado.falha.tipo)
-      }
+    aoConfirmar: () => {
+      store.removerComDesfazer(casamentoId, item.id, (falha) => {
+        notificacao.erro(falha.mensagem ?? TEXTOS_CRONOGRAMA.erroExcluir(item.atividade))
+      })
     },
+    desfazer: () =>
+      desfazerExclusao(() => store.desfazerRemocao(casamentoId, item.id), TEXTOS_CRONOGRAMA.sucessoRestaurado(item.atividade)),
+    aoFecharAviso: () => store.concluirRemocao(casamentoId, item.id),
   })
 }
 </script>

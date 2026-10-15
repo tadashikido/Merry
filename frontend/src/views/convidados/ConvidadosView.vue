@@ -18,6 +18,7 @@ import ResumoContagem from '@/componentes/base/ResumoContagem.vue'
 import type { ColunaListagem } from '@/componentes/base/tipos'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
+import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
 import { useEnvioConvite, type ConviteParaEnvio } from '@/composables/useEnvioConvite'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore } from '@/stores/casamentos'
@@ -68,6 +69,7 @@ const store = useConvidadosStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
 const { confirmarExclusao } = useConfirmarExclusao()
+const { desfazerExclusao } = useDesfazerExclusao()
 
 const envio = useEnvioConvite({
   casamentoId: () => props.id,
@@ -205,19 +207,18 @@ function abrirRestricoes() {
 }
 
 function excluir(convite: ConviteDto) {
+  const casamentoId = props.id
   confirmarExclusao({
     nomeItem: convite.nome,
     mensagem: TEXTOS_CONVIDADOS.confirmarExclusaoTexto(convite.convidados.length),
-    aoConfirmar: async () => {
-      const resultado = await store.remover(props.id, convite.id)
-      if (!resultado.ok) {
-        if (resultado.falha.tipo === 'semPermissao') {
-          notificacao.erro(TEXTOS_CONVIDADOS.semPermissao)
-        }
-        throw new Error(resultado.falha.mensagem ?? resultado.falha.tipo)
-      }
-      await store.carregar(props.id)
+    aoConfirmar: () => {
+      store.removerComDesfazer(casamentoId, convite.id, (falha) => {
+        notificacao.erro(falha.tipo === 'semPermissao' ? TEXTOS_CONVIDADOS.semPermissao : TEXTOS_CONVIDADOS.erroExcluir(convite.nome))
+      })
     },
+    desfazer: () =>
+      desfazerExclusao(() => store.desfazerRemocao(casamentoId, convite.id), TEXTOS_CONVIDADOS.restaurado(convite.nome)),
+    aoFecharAviso: () => store.concluirRemocao(casamentoId, convite.id),
   })
 }
 </script>
