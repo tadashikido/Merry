@@ -6,7 +6,7 @@ import Drawer from 'primevue/drawer'
 
 import NavegacaoCasamento from './NavegacaoCasamento.vue'
 import RailNavegacao from './RailNavegacao.vue'
-import type { ContextoCasamento, ContextoVisual, GrupoNavegacaoCasamento, ItemRail } from './tipos'
+import type { ContextoCasamento, ContextoVisual, GrupoNavegacaoCasamento, ItemRail, OpcaoSeletorCasamento } from './tipos'
 import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
 import { useTelaPequena } from '@/composables/useTelaPequena'
 import { ROTULOS_ACOES, ROTULOS_NAVEGACAO } from '@/textos/rotulos'
@@ -18,9 +18,13 @@ const props = withDefaults(
     gruposCasamento?: GrupoNavegacaoCasamento[] | null
     contextoCasamento?: ContextoCasamento | null
     contexto?: ContextoVisual
+    casamentoId?: string | null
+    opcoesSeletor?: OpcaoSeletorCasamento[] | null
   }>(),
-  { gruposCasamento: null, contextoCasamento: null, contexto: 'assessoria' },
+  { gruposCasamento: null, contextoCasamento: null, contexto: 'assessoria', casamentoId: null, opcoesSeletor: null },
 )
+
+const emit = defineEmits<{ trocarCasamento: [id: string] }>()
 
 defineSlots<{
   default(): unknown
@@ -95,6 +99,9 @@ watch(telaPequena, (pequena) => {
       <NavegacaoCasamento
         :casamento="contextoCasamento"
         :grupos="gruposCasamento"
+        :casamento-id="casamentoId"
+        :opcoes-seletor="opcoesSeletor"
+        @trocar-casamento="emit('trocarCasamento', $event)"
       />
     </aside>
 
@@ -122,6 +129,10 @@ watch(telaPequena, (pequena) => {
           <NavegacaoCasamento
             :casamento="contextoCasamento"
             :grupos="gruposCasamento"
+            :casamento-id="casamentoId"
+            :opcoes-seletor="opcoesSeletor"
+            anexar-seletor="self"
+            @trocar-casamento="emit('trocarCasamento', $event)"
           />
         </div>
         <div

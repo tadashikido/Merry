@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -130,15 +130,7 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <CabecalhoPagina :titulo="titulo">
-      <template #trilha>
-        <RouterLink :to="{ name: 'modelos-checklist' }">
-          {{ TEXTOS_MODELOS_CHECKLIST.titulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <span aria-current="page">{{ titulo }}</span>
-      </template>
-    </CabecalhoPagina>
+    <CabecalhoPagina :titulo="titulo" />
 
     <div class="formulario-modelo__area">
       <EstadoCarregando

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
@@ -284,19 +284,8 @@ function excluir() {
     <CabecalhoPagina
       :titulo="titulo"
       :descricao="nomeModelo ? TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia(referencia) : undefined"
-    >
-      <template #trilha>
-        <RouterLink :to="{ name: 'modelos-cronograma' }">
-          {{ TEXTOS_MODELOS_CRONOGRAMA.titulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <RouterLink :to="{ name: 'modelo-cronograma', params: { modeloId } }">
-          {{ nomeModelo || TEXTOS_MODELOS_CRONOGRAMA.titulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <span aria-current="page">{{ titulo }}</span>
-      </template>
-    </CabecalhoPagina>
+      :rotulos-trilha="{ 'modelo-cronograma': nomeModelo || TEXTOS_MODELOS_CRONOGRAMA.titulo }"
+    />
 
     <div class="formulario-item-cronograma__area">
       <EstadoCarregando

@@ -76,6 +76,10 @@ export const useCasamentosStore = defineStore('casamentos', () => {
   const carregandoAtual = ref(false)
   const falhaAtual = ref<FalhaCasamento | null>(null)
 
+  const ativos = ref<CasamentoResumoDto[]>([])
+  const ativosCarregados = ref(false)
+  const carregandoAtivos = ref(false)
+
   const proximos = computed(() =>
     situacao.value === 'Ativos'
       ? itens.value.filter((casamento) => !casamento.arquivado && casamento.diasRestantes >= 0).slice(0, LIMITE_PROXIMOS)
@@ -93,6 +97,9 @@ export const useCasamentosStore = defineStore('casamentos', () => {
         itens.value = resposta
         carregado.value = true
       }
+      if (novaSituacao === 'Ativos') {
+        definirAtivos(resposta)
+      }
     } catch (erro) {
       if (situacao.value === novaSituacao) {
         itens.value = []
@@ -103,6 +110,48 @@ export const useCasamentosStore = defineStore('casamentos', () => {
         carregando.value = false
       }
     }
+  }
+
+  function definirAtivos(lista: CasamentoResumoDto[]) {
+    ativos.value = lista.filter((casamento) => !casamento.arquivado)
+    ativosCarregados.value = true
+  }
+
+  let ativosEmAndamento: Promise<void> | null = null
+
+  function garantirAtivos(): Promise<void> {
+    if (ativosCarregados.value) {
+      return Promise.resolve()
+    }
+    if (ativosEmAndamento) {
+      return ativosEmAndamento
+    }
+    const promessa = buscarAtivos().finally(() => {
+      if (ativosEmAndamento === promessa) {
+        ativosEmAndamento = null
+      }
+    })
+    ativosEmAndamento = promessa
+    return promessa
+  }
+
+  async function buscarAtivos(): Promise<void> {
+    carregandoAtivos.value = true
+    try {
+      const resposta = await requisitar<CasamentoResumoDto[]>(`${ROTA_CASAMENTOS}?situacao=Ativos`)
+      if (ativosEmAndamento) {
+        definirAtivos(resposta)
+      }
+    } catch {
+      ativos.value = []
+    } finally {
+      carregandoAtivos.value = false
+    }
+  }
+
+  function invalidarAtivos() {
+    ativosEmAndamento = null
+    ativosCarregados.value = false
   }
 
   let obtencaoEmAndamento: { id: string; promessa: Promise<void> } | null = null
@@ -142,6 +191,7 @@ export const useCasamentosStore = defineStore('casamentos', () => {
       const casamento = await acao()
       atual.value = casamento
       substituirNaLista(casamento)
+      invalidarAtivos()
       return { ok: true, valor: casamento }
     } catch (erro) {
       return { ok: false, falha: interpretarFalhaCasamento(erro) }
@@ -200,6 +250,9 @@ export const useCasamentosStore = defineStore('casamentos', () => {
     atual.value = null
     carregandoAtual.value = false
     falhaAtual.value = null
+    invalidarAtivos()
+    ativos.value = []
+    carregandoAtivos.value = false
   }
 
   return {
@@ -211,9 +264,14 @@ export const useCasamentosStore = defineStore('casamentos', () => {
     atual,
     carregandoAtual,
     falhaAtual,
+    ativos,
+    ativosCarregados,
+    carregandoAtivos,
     proximos,
     carregar,
     obter,
+    garantirAtivos,
+    invalidarAtivos,
     criar,
     atualizar,
     arquivar,

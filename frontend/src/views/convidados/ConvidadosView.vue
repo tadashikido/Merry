@@ -23,7 +23,6 @@ import { useEnvioConvite, type ConviteParaEnvio } from '@/composables/useEnvioCo
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { useConvidadosStore } from '@/stores/convidados'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { TEXTOS_MESAS } from '@/textos/mesas'
 import { TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
 import { TEXTOS_DADOS_SENSIVEIS } from '@/textos/dadosSensiveis'
@@ -245,19 +244,6 @@ function excluir(convite: ConviteDto) {
         :titulo="TEXTOS_CONVIDADOS.listaTitulo"
         :descricao="descricao"
       >
-        <template #trilha>
-          <template v-if="!autenticacao.ehCasal">
-            <RouterLink :to="{ name: 'casamentos' }">
-              {{ TEXTOS_CASAMENTOS.listaTitulo }}
-            </RouterLink>
-            <span aria-hidden="true"> / </span>
-          </template>
-          <RouterLink :to="{ name: 'casamento', params: { id } }">
-            {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ TEXTOS_CONVIDADOS.listaTitulo }}</span>
-        </template>
         <template #acoes>
           <Button
             v-if="!mensagemErroLista"

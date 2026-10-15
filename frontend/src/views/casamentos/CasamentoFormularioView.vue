@@ -346,15 +346,7 @@ function cancelar() {
       <CabecalhoPagina
         :titulo="titulo"
         :descricao="descricao"
-      >
-        <template #trilha>
-          <RouterLink :to="{ name: 'casamentos' }">
-            {{ TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ titulo }}</span>
-        </template>
-      </CabecalhoPagina>
+      />
 
       <div class="pilha pilha--cartao">
         <EstadoCarregando

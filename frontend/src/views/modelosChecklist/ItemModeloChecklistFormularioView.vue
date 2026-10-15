@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
@@ -198,19 +198,8 @@ function alterarSentido() {
     <CabecalhoPagina
       :titulo="titulo"
       :descricao="nomeModelo || undefined"
-    >
-      <template #trilha>
-        <RouterLink :to="{ name: 'modelos-checklist' }">
-          {{ TEXTOS_MODELOS_CHECKLIST.titulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <RouterLink :to="{ name: 'modelo-checklist', params: { modeloId } }">
-          {{ nomeModelo || TEXTOS_MODELOS_CHECKLIST.titulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <span aria-current="page">{{ titulo }}</span>
-      </template>
-    </CabecalhoPagina>
+      :rotulos-trilha="{ 'modelo-checklist': nomeModelo || TEXTOS_MODELOS_CHECKLIST.titulo }"
+    />
 
     <div class="formulario-item__area">
       <EstadoCarregando

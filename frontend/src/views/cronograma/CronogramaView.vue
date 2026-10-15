@@ -227,19 +227,6 @@ function excluir(item: ItemCronogramaDto) {
         :titulo="TEXTOS_CRONOGRAMA.titulo"
         :descricao="descricao"
       >
-        <template #trilha>
-          <template v-if="!autenticacao.ehCasal">
-            <RouterLink :to="{ name: 'casamentos' }">
-              {{ TEXTOS_CASAMENTOS.listaTitulo }}
-            </RouterLink>
-            <span aria-hidden="true"> / </span>
-          </template>
-          <RouterLink :to="{ name: 'casamento', params: { id } }">
-            {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ TEXTOS_CRONOGRAMA.titulo }}</span>
-        </template>
         <template
           v-if="arquivado"
           #detalhes

@@ -26,7 +26,6 @@ import { useCasamentosStore } from '@/stores/casamentos'
 import { useConfirmacoesStore } from '@/stores/confirmacoes'
 import { useRestricoesAlimentaresStore } from '@/stores/restricoesAlimentares'
 import { TEXTOS_AREA_CASAL } from '@/textos/acessoCasal'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { TEXTOS_COBRANCA, TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
 import { ROTULOS_STATUS_ENVIO } from '@/textos/convidados'
 import { ROTULOS_TIPO_RESTRICAO, TEXTOS_DADOS_SENSIVEIS } from '@/textos/dadosSensiveis'
@@ -240,19 +239,6 @@ function importar() {
         :titulo="TEXTOS_CONFIRMACOES.titulo"
         :descricao="descricao"
       >
-        <template #trilha>
-          <template v-if="!autenticacao.ehCasal">
-            <RouterLink :to="{ name: 'casamentos' }">
-              {{ TEXTOS_CASAMENTOS.listaTitulo }}
-            </RouterLink>
-            <span aria-hidden="true"> / </span>
-          </template>
-          <RouterLink :to="{ name: 'casamento', params: { id } }">
-            {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ TEXTOS_CONFIRMACOES.titulo }}</span>
-        </template>
         <template #acoes>
           <template v-if="painel && !semConvites && !autenticacao.ehCasal">
             <Button

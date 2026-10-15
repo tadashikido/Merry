@@ -22,7 +22,6 @@ import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore, type FalhaCasamento } from '@/stores/casamentos'
 import { useFornecedoresStore } from '@/stores/fornecedores'
 import { useFornecedoresCasamentoStore } from '@/stores/fornecedoresCasamento'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
 import {
   ROTULOS_STATUS_FORNECEDOR_CASAMENTO,
@@ -322,19 +321,7 @@ async function removerContrato() {
     <CabecalhoPagina
       :titulo="titulo"
       :descricao="nomes || undefined"
-    >
-      <template #trilha>
-        <RouterLink :to="{ name: 'casamentos' }">
-          {{ TEXTOS_CASAMENTOS.listaTitulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <RouterLink :to="{ name: 'casamento-fornecedores', params: { id } }">
-          {{ TEXTOS_FORNECEDORES_CASAMENTO.titulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <span aria-current="page">{{ titulo }}</span>
-      </template>
-    </CabecalhoPagina>
+    />
 
     <div class="formulario-vinculo__area">
       <EstadoCarregando

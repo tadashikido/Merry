@@ -21,7 +21,6 @@ import { useCasamentosStore } from '@/stores/casamentos'
 import { useChecklistStore } from '@/stores/checklist'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { COMPLEMENTO_MARCO_CHECKLIST, ROTULOS_MARCO_CHECKLIST, TEXTOS_CHECKLIST } from '@/textos/checklist'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { ROTULOS_STATUS_TAREFA, TEXTOS_TAREFAS } from '@/textos/tarefas'
 import type { AplicacaoModeloChecklistDto } from '@/tipos/checklist'
 import type { StatusTarefa, TarefaDto } from '@/tipos/tarefas'
@@ -311,17 +310,6 @@ async function recalcular() {
         :titulo="TEXTOS_CHECKLIST.titulo"
         :descricao="descricao"
       >
-        <template #trilha>
-          <RouterLink :to="{ name: 'casamentos' }">
-            {{ TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <RouterLink :to="{ name: 'casamento', params: { id } }">
-            {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ TEXTOS_CHECKLIST.titulo }}</span>
-        </template>
         <template
           v-if="dados && !semChecklist && !arquivado && !painelAberto"
           #acoes

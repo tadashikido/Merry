@@ -25,7 +25,6 @@ import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { useFinanceiroStore } from '@/stores/financeiro'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { TEXTOS_COMPROVANTE, TEXTOS_FINANCEIRO, TEXTOS_PARCELA } from '@/textos/financeiro'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
 import type { FornecedorFinanceiroDto, ParcelaDto, ResultadoPagamento } from '@/tipos/financeiro'
@@ -383,19 +382,6 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
         :titulo="TEXTOS_FINANCEIRO.titulo"
         :descricao="descricao"
       >
-        <template #trilha>
-          <template v-if="!autenticacao.ehCasal">
-            <RouterLink :to="{ name: 'casamentos' }">
-              {{ TEXTOS_CASAMENTOS.listaTitulo }}
-            </RouterLink>
-            <span aria-hidden="true"> / </span>
-          </template>
-          <RouterLink :to="{ name: 'casamento', params: { id } }">
-            {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ TEXTOS_FINANCEIRO.titulo }}</span>
-        </template>
         <template
           v-if="podeGerenciar && contratados.length > 0"
           #acoes

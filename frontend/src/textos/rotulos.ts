@@ -22,6 +22,10 @@ export const ROTULOS_NAVEGACAO = {
   rotuloCasamento: 'Casamento',
   quandoCasamento: (data: string, contagem: string) => `${data} · ${contagem.charAt(0).toLowerCase()}${contagem.slice(1)}`,
   trilha: 'Você está em',
+  trocarCasamento: 'Trocar de casamento',
+  buscarCasamento: 'Buscar casal',
+  nenhumCasamento: 'Nenhum casal encontrado',
+  casamentoGenerico: 'Casamento',
 } as const
 
 export const ROTULOS_LISTAGEM = {

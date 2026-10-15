@@ -2,13 +2,29 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 
-import type { ContextoCasamento, GrupoNavegacaoCasamento } from './tipos'
+import SeletorCasamento from './SeletorCasamento.vue'
+import type { ContextoCasamento, GrupoNavegacaoCasamento, OpcaoSeletorCasamento } from './tipos'
 import NomesCasal from '@/componentes/base/NomesCasal.vue'
 import { descreverContagem } from '@/textos/casamentos'
 import { ROTULOS_NAVEGACAO } from '@/textos/rotulos'
 import { formatarDataCalendarioCurta } from '@/utilitarios/formatacao'
 
-const props = defineProps<{ casamento: ContextoCasamento | null; grupos: GrupoNavegacaoCasamento[] }>()
+const props = withDefaults(
+  defineProps<{
+    casamento: ContextoCasamento | null
+    grupos: GrupoNavegacaoCasamento[]
+    casamentoId?: string | null
+    opcoesSeletor?: OpcaoSeletorCasamento[] | null
+    anexarSeletor?: 'body' | 'self'
+  }>(),
+  { casamentoId: null, opcoesSeletor: null, anexarSeletor: 'body' },
+)
+
+const emit = defineEmits<{ trocarCasamento: [id: string] }>()
+
+const exibirSeletor = computed(
+  () => props.casamento !== null && props.casamentoId !== null && (props.opcoesSeletor ?? []).some((opcao) => opcao.id !== props.casamentoId),
+)
 
 const quando = computed(() =>
   props.casamento
@@ -28,7 +44,15 @@ const quando = computed(() =>
       data-teste="navegacao-casamento-cabecalho"
     >
       <span class="navegacao-casamento__rotulo">{{ ROTULOS_NAVEGACAO.rotuloCasamento }}</span>
-      <template v-if="casamento">
+      <SeletorCasamento
+        v-if="exibirSeletor && casamento && casamentoId"
+        :casamento-id="casamentoId"
+        :casamento="casamento"
+        :opcoes="opcoesSeletor ?? []"
+        :anexar-em="anexarSeletor"
+        @trocar="emit('trocarCasamento', $event)"
+      />
+      <template v-else-if="casamento">
         <NomesCasal
           class="navegacao-casamento__nomes"
           :primeiro="casamento.nomePrimeiraPessoa"

@@ -13,11 +13,9 @@ import IndicadorEtapas from '@/componentes/base/IndicadorEtapas.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import type { TextosEnvioArquivo } from '@/componentes/base/tipos'
 import PreviaImportacao from '@/componentes/convidados/PreviaImportacao.vue'
-import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { useImportacaoConvidadosStore } from '@/stores/importacaoConvidados'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
 import { EXPLICACAO_COLUNAS, ROTULOS_COLUNA_IMPORTACAO, TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
 import type { FalhaConvidados } from '@/stores/convidados'
@@ -36,8 +34,6 @@ const ID_TITULO_ETAPA = 'importacao-titulo-etapa'
 const ID_ARQUIVO = 'importacao-arquivo'
 
 const props = defineProps<{ id: string }>()
-
-const autenticacao = useAutenticacaoStore()
 
 const casamentos = useCasamentosStore()
 const store = useImportacaoConvidadosStore()
@@ -240,25 +236,7 @@ function importarOutra() {
       <CabecalhoPagina
         :titulo="TEXTOS_IMPORTACAO.titulo"
         :descricao="TEXTOS_IMPORTACAO.subtitulo"
-      >
-        <template #trilha>
-          <template v-if="!autenticacao.ehCasal">
-            <RouterLink :to="{ name: 'casamentos' }">
-              {{ TEXTOS_CASAMENTOS.listaTitulo }}
-            </RouterLink>
-            <span aria-hidden="true"> / </span>
-          </template>
-          <RouterLink :to="{ name: 'casamento', params: { id } }">
-            {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <RouterLink :to="{ name: 'casamento-convidados', params: { id } }">
-            {{ TEXTOS_CONVIDADOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ TEXTOS_IMPORTACAO.trilha }}</span>
-        </template>
-      </CabecalhoPagina>
+      />
 
       <EstadoCarregando
         v-if="casamentos.carregandoAtual && !casamento"

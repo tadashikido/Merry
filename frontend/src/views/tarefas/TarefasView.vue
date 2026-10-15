@@ -19,7 +19,6 @@ import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { useTarefasStore } from '@/stores/tarefas'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import {
   ROTULOS_CATEGORIA_TAREFA,
   ROTULOS_RESPONSAVEL_TAREFA,
@@ -345,19 +344,6 @@ function novaTarefa() {
         :titulo="titulo"
         :descricao="descricao"
       >
-        <template #trilha>
-          <template v-if="!autenticacao.ehCasal">
-            <RouterLink :to="{ name: 'casamentos' }">
-              {{ TEXTOS_CASAMENTOS.listaTitulo }}
-            </RouterLink>
-            <span aria-hidden="true"> / </span>
-          </template>
-          <RouterLink :to="{ name: 'casamento', params: { id } }">
-            {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ TEXTOS_TAREFAS.titulo }}</span>
-        </template>
         <template
           v-if="detalhes"
           #detalhes

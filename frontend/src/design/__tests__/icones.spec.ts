@@ -9,7 +9,7 @@ const css = readFileSync(resolve(process.cwd(), 'src/estilos/icones.css'), 'utf-
 describe('iconografia', () => {
   it('[UNITÁRIO] todo ícone do catálogo tem classe com SVG de traço 1,6 em grade 24', () => {
     for (const nome of NOMES_ICONES) {
-      const bloco = new RegExp(`\\.ie-${nome} \\{\\n  --ie-forma: url\\("data:image/svg\\+xml,([^"]+)"\\);`).exec(css)
+      const bloco = new RegExp(`\\.ie-${nome} \\{\\r?\\n  --ie-forma: url\\("data:image/svg\\+xml,([^"]+)"\\);`).exec(css)
       expect(bloco?.[0] ?? nome).toContain(`.ie-${nome} {`)
       const svg = decodeURIComponent(bloco![1]!)
       expect(svg).toContain("viewBox='0 0 24 24'")
