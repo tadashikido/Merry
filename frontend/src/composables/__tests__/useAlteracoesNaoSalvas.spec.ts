@@ -9,7 +9,9 @@ import { RouterView, createMemoryHistory, createRouter, type Router } from 'vue-
 import ProvedorFeedback from '@/componentes/base/ProvedorFeedback.vue'
 import { useAlteracoesNaoSalvas, useRastreioAlteracoes } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
+import { SESSAO_EXEMPLO } from '@/__tests__/auxiliaresAutenticacao'
 import { useAlteracoesNaoSalvasStore } from '@/stores/alteracoesNaoSalvas'
+import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { TEXTOS_ALTERACOES_NAO_SALVAS } from '@/textos/mensagens'
 
 const alterado = ref(false)
@@ -32,6 +34,9 @@ let wrapper: VueWrapper | undefined
 async function montar(): Promise<Router> {
   const pinia = createPinia()
   setActivePinia(pinia)
+  const autenticacao = useAutenticacaoStore()
+  autenticacao.tokenAcesso = SESSAO_EXEMPLO.tokenAcesso
+  autenticacao.usuario = SESSAO_EXEMPLO.usuario
   const roteador = createRouter({
     history: createMemoryHistory(),
     routes: [
@@ -188,6 +193,21 @@ describe('useAlteracoesNaoSalvas — proteção de saída', () => {
     expect(dispararSaidaDaAba().defaultPrevented).toBe(true)
     liberar()
     expect(dispararSaidaDaAba().defaultPrevented).toBe(false)
+  })
+
+  it('[SEGURANÇA] sem sessão (logout ou sessão encerrada) não segura a pessoa na tela', async () => {
+    const roteador = await montar()
+    alterado.value = true
+    const autenticacao = useAutenticacaoStore()
+    autenticacao.tokenAcesso = null
+    autenticacao.usuario = null
+
+    expect(dispararSaidaDaAba().defaultPrevented).toBe(false)
+    await roteador.push('/destino')
+    await flushPromises()
+
+    expect(roteador.currentRoute.value.path).toBe('/destino')
+    expect(useAlteracoesNaoSalvasStore().visivel).toBe(false)
   })
 
   it('[COMPONENTE] remove o listener de beforeunload ao sair da tela', async () => {

@@ -9,6 +9,7 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import ProvedorFeedback from '@/componentes/base/ProvedorFeedback.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useAlteracoesNaoSalvasStore } from '@/stores/alteracoesNaoSalvas'
+import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { TEXTOS_ALTERACOES_NAO_SALVAS } from '@/textos/mensagens'
 import type { ConviteDto, ListaConvitesDto } from '@/tipos/convidados'
 import { ID_CASAMENTO, casamentoCompleto, chamadas, quando, rotearFetch, type Rota } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
@@ -215,6 +216,18 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
     await navegacao
     await flushPromises()
     expect(roteador.currentRoute.value.name).toBe('casamento')
+  })
+
+  it('[SEGURANÇA] sair da conta com alterações pendentes leva à tela de entrada sem diálogo', async () => {
+    rotearFetch(fetchSimulado, ...rotasTarefas(quando('POST', '/api/autenticacao/sair', () => respostaJson({}))))
+    const { roteador } = await abrir(CAMINHO_NOVA_TAREFA)
+    await wrapper!.get('[data-teste="campo-titulo"]').setValue('Dados que não devem ficar na tela')
+
+    await useAutenticacaoStore().sair()
+    await flushPromises()
+
+    await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('entrar'), { timeout: 10000 })
+    expect(dialogoAberto()).toBe(false)
   })
 
   it('[COMPONENTE] fechar ou recarregar a aba com alterações aciona o aviso nativo', async () => {

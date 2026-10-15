@@ -2,6 +2,7 @@ import { computed, onBeforeUnmount, onMounted, ref, toValue, type MaybeRefOrGett
 import { onBeforeRouteLeave } from 'vue-router'
 
 import { useAlteracoesNaoSalvasStore } from '@/stores/alteracoesNaoSalvas'
+import { useAutenticacaoStore } from '@/stores/autenticacao'
 
 function serializar(estado: unknown): string {
   return JSON.stringify(estado) ?? ''
@@ -21,10 +22,11 @@ export function useRastreioAlteracoes(obterEstado: () => unknown) {
 
 export function useAlteracoesNaoSalvas(temAlteracoes: MaybeRefOrGetter<boolean>) {
   const store = useAlteracoesNaoSalvasStore()
+  const autenticacao = useAutenticacaoStore()
   let saidaLiberada = false
 
   function protegido(): boolean {
-    return !saidaLiberada && toValue(temAlteracoes)
+    return !saidaLiberada && autenticacao.autenticado && toValue(temAlteracoes)
   }
 
   function aoSairDaPagina(evento: BeforeUnloadEvent) {
