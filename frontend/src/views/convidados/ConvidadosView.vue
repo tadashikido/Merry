@@ -143,9 +143,9 @@ const linhas = computed<LinhaConvite[]>(() =>
 )
 
 const colunas: ColunaListagem<LinhaConvite>[] = [
-  { campo: 'nome', titulo: TEXTOS_CONVIDADOS.colunaConvite, principal: true, largura: '38%' },
-  { campo: 'grupo', titulo: TEXTOS_CONVIDADOS.colunaGrupo, largura: '16%' },
-  { campo: 'envio', titulo: TEXTOS_ENVIO_CONVITE.colunaEnvio, largura: '11rem' },
+  { campo: 'nome', titulo: TEXTOS_CONVIDADOS.colunaConvite, principal: true, largura: '32%' },
+  { campo: 'grupo', titulo: TEXTOS_CONVIDADOS.colunaGrupo, largura: '14%' },
+  { campo: 'envio', titulo: TEXTOS_ENVIO_CONVITE.colunaEnvio, largura: '9rem' },
   { campo: 'acompanhantes', titulo: TEXTOS_CONVIDADOS.colunaAcompanhantes, ocultarNoTablet: true, largura: '8rem' },
 ]
 
@@ -586,7 +586,6 @@ function excluir(convite: ConviteDto) {
 
 .convidados__grupo {
   overflow-wrap: break-word;
-  hyphens: auto;
 }
 
 .convidados__lista :deep(.p-selectbutton) {
@@ -627,7 +626,6 @@ function excluir(convite: ConviteDto) {
 .convidados__respondido {
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-texto-apoio);
-  white-space: nowrap;
 }
 
 .convidados__voltar {
@@ -635,9 +633,15 @@ function excluir(convite: ConviteDto) {
   margin-top: var(--p-ritmo-grupo);
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 640px) and (max-width: 1023px) {
   .convidados__lista :deep(.listagem__tabela .convidados__whatsapp .p-button-label) {
     display: none;
+  }
+
+  .convidados__lista :deep(.listagem__tabela .listagem__acoes-linha) {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: end;
   }
 }
 </style>

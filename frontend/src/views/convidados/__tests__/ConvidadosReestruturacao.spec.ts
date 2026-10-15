@@ -209,14 +209,18 @@ describe('ConvidadosView — reestruturação Nossia', { timeout: 20_000 }, () =
 
   it('[UNITÁRIO] colunas reservam largura e o nome do convite mantém a quebra de linha', () => {
     const fonte = lerFonte('../ConvidadosView.vue')
-    expect(fonte).toContain("{ campo: 'nome', titulo: TEXTOS_CONVIDADOS.colunaConvite, principal: true, largura: '38%' }")
-    expect(fonte).toContain("largura: '16%'")
-    expect(fonte).toContain("largura: '11rem'")
+    expect(fonte).toContain("{ campo: 'nome', titulo: TEXTOS_CONVIDADOS.colunaConvite, principal: true, largura: '32%' }")
+    expect(fonte).toContain("largura: '14%'")
+    expect(fonte).toContain("largura: '9rem'")
     expect(fonte).toContain("ocultarNoTablet: true, largura: '8rem'")
 
     const estilo = estiloDaView()
     expect(estilo).toMatch(/\.convidados__nome-convite \{[^}]*overflow-wrap: anywhere;/)
     expect(estilo).toMatch(/\.convidados__lista :deep\(\.p-selectbutton\) \{[^}]*flex-wrap: wrap;/)
+    expect(estilo).toMatch(/@media \(min-width: 640px\) and \(max-width: 1023px\) \{\s*\.convidados__lista :deep\(\.listagem__tabela \.convidados__whatsapp \.p-button-label\) \{\s*display: none;/)
+    expect(estilo).toMatch(/\.listagem__acoes-linha\) \{\s*display: grid;\s*grid-template-columns: repeat\(2, auto\);/)
+    expect(estilo).not.toContain('hyphens')
+    expect(estilo).not.toContain('nowrap')
   })
 
   it('[UNITÁRIO] estilos só usam tokens de ritmo, sem px soltos nem margens negativas', () => {
