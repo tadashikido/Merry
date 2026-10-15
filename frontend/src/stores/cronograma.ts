@@ -130,7 +130,7 @@ export const useCronogramaStore = defineStore('cronograma', () => {
       escopo: escopoCronograma(id),
       chave: itemId,
       efetivar: async () => {
-        const resultado = await executar(() => requisitar<void>(caminhoCronograma(id, itemId), { metodo: 'DELETE' }))
+        const resultado = await executar(() => requisitar<void>(caminhoCronograma(id, itemId), { metodo: 'DELETE', manterAtiva: true }))
         if (!resultado.ok) {
           falhaEfetivacao = resultado.falha
         }

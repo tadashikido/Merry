@@ -32,6 +32,10 @@ function desfazer(mensagem: MensagemToast, fechar: () => void) {
   fechar()
 }
 
+function habilitarPausaNoHover() {
+  return undefined
+}
+
 function aoFecharToast(evento: { message: MensagemToast }) {
   void evento.message.data?.aoFechar?.()
 }
@@ -42,6 +46,8 @@ function aoFecharToast(evento: { message: MensagemToast }) {
     position="bottom-right"
     :breakpoints="pontosQuebraToast"
     class="provedor-toast"
+    :on-mouse-enter="habilitarPausaNoHover"
+    :on-mouse-leave="habilitarPausaNoHover"
     @close="aoFecharToast"
     @life-end="aoFecharToast"
   >

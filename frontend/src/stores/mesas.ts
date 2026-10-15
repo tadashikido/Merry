@@ -149,7 +149,7 @@ export const useMesasStore = defineStore('mesas', () => {
       escopo: escopoMesas(id),
       chave: mesaId,
       efetivar: async () => {
-        const resultado = await executar(() => requisitar<void>(caminhoMesas(id, mesaId), { metodo: 'DELETE' }))
+        const resultado = await executar(() => requisitar<void>(caminhoMesas(id, mesaId), { metodo: 'DELETE', manterAtiva: true }))
         if (!resultado.ok) {
           falhaEfetivacao = resultado.falha
         }

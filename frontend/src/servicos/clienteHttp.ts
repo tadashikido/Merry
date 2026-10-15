@@ -8,6 +8,7 @@ export interface OpcoesRequisicao {
   corpo?: unknown
   tempoLimiteMs?: number
   anonima?: boolean
+  manterAtiva?: boolean
 }
 
 export interface ProvedorAutenticacao {
@@ -129,6 +130,7 @@ async function executar<T>(
       body: corpoFormulario ?? (opcoes.corpo === undefined ? undefined : JSON.stringify(opcoes.corpo)),
       credentials: 'same-origin',
       signal: controlador.signal,
+      ...(opcoes.manterAtiva ? { keepalive: true } : {}),
     })
   } catch (erro) {
     if (erro instanceof DOMException && erro.name === 'AbortError') {

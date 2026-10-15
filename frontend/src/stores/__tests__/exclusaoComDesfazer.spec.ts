@@ -135,6 +135,39 @@ describe('exclusão com desfazer — convites', () => {
     expect(await store.desfazerRemocao(CASAMENTO, ID_SOUZA)).toBe(false)
   })
 
+  it('[INTEGRAÇÃO] totais do painel descontam o convite pendente e voltam ao desfazer', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_CONVITES, () => respostaJson(listaConvites())),
+      quando('GET', `${ROTA_CONVITES}/totais`, () => respostaJson(TOTAIS)),
+    )
+    const store = useConvidadosStore()
+    await Promise.all([store.carregar(CASAMENTO), store.carregarTotais(CASAMENTO)])
+
+    store.removerComDesfazer(CASAMENTO, ID_SOUZA)
+    expect(store.totais?.convites).toBe(1)
+    await store.carregarTotais(CASAMENTO)
+    expect(store.totais).toEqual(descontarConvite(TOTAIS, conviteSouza()))
+
+    await store.desfazerRemocao(CASAMENTO, ID_SOUZA)
+    expect(store.totais).toEqual(TOTAIS)
+  })
+
+  it('[INTEGRAÇÃO] a efetivação pede keepalive para sobreviver ao fechamento da aba', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_CONVITES, () => respostaJson(listaConvites())),
+      quando('DELETE', `${ROTA_CONVITES}/${ID_SOUZA}`, () => respostaVazia()),
+    )
+    const store = useConvidadosStore()
+    await store.carregar(CASAMENTO)
+    store.removerComDesfazer(CASAMENTO, ID_SOUZA)
+
+    await store.concluirRemocao(CASAMENTO, ID_SOUZA)
+
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_SOUZA}`)[0]![1]).toMatchObject({ keepalive: true })
+  })
+
   it('[SEGURANÇA] permissão negada na efetivação devolve o convite e repassa a falha', async () => {
     rotearFetch(
       fetchSimulado,

@@ -233,6 +233,33 @@ describe('confirmação de exclusão e toast', () => {
     }
   })
 
+  it('[COMPONENTE] ponteiro sobre o toast pausa o tempo e a exclusão só é concluída depois de sair', async () => {
+    vi.useFakeTimers()
+    try {
+      const { wrapper, api } = montarHarness()
+      montado = wrapper
+      const aoFechar = vi.fn()
+
+      api.sucesso('“Família Souza” foi excluído.', { desfazer: vi.fn(), aoFechar })
+      await flushPromises()
+      const mensagem = elemento('[data-teste="toast"]')!.closest('[role="alert"]')!
+
+      vi.advanceTimersByTime(DURACAO_TOAST_SUCESSO - 1000)
+      mensagem.dispatchEvent(new MouseEvent('mouseenter'))
+      vi.advanceTimersByTime(DURACAO_TOAST_SUCESSO * 3)
+      await flushPromises()
+      expect(aoFechar).not.toHaveBeenCalled()
+      expect(elemento('[data-teste="toast-desfazer"]')).not.toBeNull()
+
+      mensagem.dispatchEvent(new MouseEvent('mouseleave'))
+      vi.advanceTimersByTime(DURACAO_TOAST_SUCESSO + 10)
+      await flushPromises()
+      expect(aoFechar).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('[COMPONENTE] exclusão confirmada com desfazer mostra o toast com Desfazer e repassa o fechamento', async () => {
     const { wrapper, api } = montarHarness()
     montado = wrapper

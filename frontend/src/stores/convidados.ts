@@ -80,6 +80,8 @@ export const useConvidadosStore = defineStore('convidados', () => {
   const carregando = ref(false)
   const falha = ref<FalhaConvidados | null>(null)
 
+  const convitesOcultos = new Map<string, ConviteDto>()
+
   const casamentoIdTotais = ref<string | null>(null)
   const totais = ref<TotaisConvidadosDto | null>(null)
   const carregandoTotais = ref(false)
@@ -123,6 +125,13 @@ export const useConvidadosStore = defineStore('convidados', () => {
     }
   }
 
+  function descontarOcultos(id: string, atual: TotaisConvidadosDto): TotaisConvidadosDto {
+    const pendentes = exclusoes.chavesPendentes(escopoConvites(id))
+    return [...convitesOcultos.entries()]
+      .filter(([conviteId]) => pendentes.has(conviteId))
+      .reduce((parcial, [, convite]) => descontarConvite(parcial, convite), atual)
+  }
+
   async function carregarTotais(id: string): Promise<void> {
     if (casamentoIdTotais.value !== id) {
       totais.value = null
@@ -134,7 +143,7 @@ export const useConvidadosStore = defineStore('convidados', () => {
     try {
       const resposta = await requisitar<TotaisConvidadosDto>(`${rotaConvites(id)}/totais`)
       if (casamentoIdTotais.value === id) {
-        totais.value = resposta
+        totais.value = descontarOcultos(id, resposta)
       }
     } catch (erro) {
       if (casamentoIdTotais.value === id) {
@@ -199,9 +208,13 @@ export const useConvidadosStore = defineStore('convidados', () => {
       escopo: escopoConvites(id),
       chave: conviteId,
       efetivar: async () => {
-        const resultado = await remover(id, conviteId)
+        const resultado = await executar(id, () =>
+          requisitar<void>(rotaConvites(id, conviteId), { metodo: 'DELETE', manterAtiva: true }),
+        )
+        convitesOcultos.delete(conviteId)
         if (!resultado.ok) {
           falhaEfetivacao = resultado.falha
+          await recarregarTotaisSeAtuais(id)
         }
         await recarregarSeAtual(id)
         return resultado.ok
@@ -212,6 +225,13 @@ export const useConvidadosStore = defineStore('convidados', () => {
         }
       },
     })
+    const convite = casamentoId.value === id ? lista.value?.convites.find((atual) => atual.id === conviteId) : undefined
+    if (convite) {
+      convitesOcultos.set(conviteId, convite)
+      if (casamentoIdTotais.value === id && totais.value) {
+        totais.value = descontarConvite(totais.value, convite)
+      }
+    }
     if (casamentoId.value === id && lista.value) {
       lista.value = ocultarPendentes(id, lista.value)
     }
@@ -221,8 +241,15 @@ export const useConvidadosStore = defineStore('convidados', () => {
     if (!exclusoes.desfazer(escopoConvites(id), conviteId)) {
       return false
     }
-    await recarregarSeAtual(id)
+    convitesOcultos.delete(conviteId)
+    await Promise.all([recarregarSeAtual(id), recarregarTotaisSeAtuais(id)])
     return true
+  }
+
+  async function recarregarTotaisSeAtuais(id: string): Promise<void> {
+    if (casamentoIdTotais.value === id) {
+      await carregarTotais(id)
+    }
   }
 
   function concluirRemocao(id: string, conviteId: string): Promise<void> {
@@ -282,6 +309,7 @@ export const useConvidadosStore = defineStore('convidados', () => {
   }
 
   function limpar() {
+    convitesOcultos.clear()
     casamentoId.value = null
     lista.value = null
     carregando.value = false
