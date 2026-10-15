@@ -17,6 +17,7 @@ export const TEXTOS_CONVIDADOS = {
   listaTitulo: 'Convidados',
   listaRotulo: 'Lista de convites',
   resumoRotulo: 'Totais de convidados',
+  atalhosRotulo: 'Atalhos dos convidados',
   adicionarConvite: 'Adicionar convite',
   novoConviteTitulo: 'Novo convite',
   editarConviteTitulo: 'Editar convite',

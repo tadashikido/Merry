@@ -143,10 +143,10 @@ const linhas = computed<LinhaConvite[]>(() =>
 )
 
 const colunas: ColunaListagem<LinhaConvite>[] = [
-  { campo: 'nome', titulo: TEXTOS_CONVIDADOS.colunaConvite, principal: true },
-  { campo: 'grupo', titulo: TEXTOS_CONVIDADOS.colunaGrupo },
-  { campo: 'envio', titulo: TEXTOS_ENVIO_CONVITE.colunaEnvio },
-  { campo: 'acompanhantes', titulo: TEXTOS_CONVIDADOS.colunaAcompanhantes, ocultarNoTablet: true },
+  { campo: 'nome', titulo: TEXTOS_CONVIDADOS.colunaConvite, principal: true, largura: '38%' },
+  { campo: 'grupo', titulo: TEXTOS_CONVIDADOS.colunaGrupo, largura: '16%' },
+  { campo: 'envio', titulo: TEXTOS_ENVIO_CONVITE.colunaEnvio, largura: '11rem' },
+  { campo: 'acompanhantes', titulo: TEXTOS_CONVIDADOS.colunaAcompanhantes, ocultarNoTablet: true, largura: '8rem' },
 ]
 
 const mensagemErroLista = computed(() => {
@@ -155,6 +155,10 @@ const mensagemErroLista = computed(() => {
   }
   return falha.value.tipo === 'semPermissao' ? TEXTOS_CONVIDADOS.semAcesso : TEXTOS_CONVIDADOS.erroCarregar
 })
+
+const exibirVisao = computed(
+  () => !mensagemErroLista.value || (store.carregando && !lista.value) || (lista.value?.totais.convites ?? 0) > 0,
+)
 
 watch(
   () => props.id,
@@ -246,33 +250,6 @@ function excluir(convite: ConviteDto) {
       >
         <template #acoes>
           <Button
-            v-if="!mensagemErroLista"
-            :label="TEXTOS_CONFIRMACOES.acaoAbrir"
-            icon="ie ie-confirmacoes"
-            severity="secondary"
-            text
-            data-teste="abrir-confirmacoes"
-            @click="abrirPainel"
-          />
-          <Button
-            v-if="!mensagemErroLista"
-            :label="TEXTOS_MESAS.acaoAbrir"
-            icon="ie ie-mesa"
-            severity="secondary"
-            text
-            data-teste="abrir-mesas"
-            @click="abrirMesas"
-          />
-          <Button
-            v-if="!mensagemErroLista && !autenticacao.ehCasal"
-            :label="TEXTOS_DADOS_SENSIVEIS.acaoLista"
-            icon="ie ie-checklist"
-            severity="secondary"
-            text
-            data-teste="abrir-restricoes"
-            @click="abrirRestricoes"
-          />
-          <Button
             v-if="!arquivado && !mensagemErroLista"
             :label="TEXTOS_IMPORTACAO.acaoImportar"
             icon="ie ie-importar"
@@ -291,7 +268,7 @@ function excluir(convite: ConviteDto) {
         </template>
       </CabecalhoPagina>
 
-      <div class="convidados">
+      <div class="convidados pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado"
           variante="informacao"
@@ -299,204 +276,246 @@ function excluir(convite: ConviteDto) {
           data-teste="aviso-arquivado"
         />
 
-        <EstadoCarregando
-          v-if="store.carregando && !lista"
-          variante="cartao"
-          :linhas="1"
-        />
-        <ResumoContagem
-          v-else-if="lista && lista.totais.convites > 0"
-          :itens="itensResumoConvidados(lista.totais)"
-          :rotulo="TEXTOS_CONVIDADOS.resumoRotulo"
+        <div
+          v-if="exibirVisao"
+          class="convidados__visao pilha pilha--grupo"
         >
-          <template #rodape>
-            {{ complementoResumoConvidados(lista.totais, lista.convidadosEstimados) }}
-          </template>
-        </ResumoContagem>
+          <EstadoCarregando
+            v-if="store.carregando && !lista"
+            variante="cartao"
+            :linhas="1"
+          />
+          <ResumoContagem
+            v-else-if="lista && lista.totais.convites > 0"
+            :itens="itensResumoConvidados(lista.totais)"
+            :rotulo="TEXTOS_CONVIDADOS.resumoRotulo"
+          >
+            <template #rodape>
+              {{ complementoResumoConvidados(lista.totais, lista.convidadosEstimados) }}
+            </template>
+          </ResumoContagem>
 
-        <ListagemDados
-          v-model:busca="busca"
-          :itens="linhas"
-          :colunas="colunas"
-          chave="id"
-          :rotulo="TEXTOS_CONVIDADOS.listaRotulo"
-          :carregando="store.carregando && !lista"
-          :erro="mensagemErroLista"
-          :placeholder-busca="TEXTOS_CONVIDADOS.buscaPlaceholder"
-          :filtros-ativos="temFiltros"
-          :titulo-vazio="TEXTOS_CONVIDADOS.vazioTitulo"
-          :descricao-vazio="TEXTOS_CONVIDADOS.vazioTexto"
-          @tentar-novamente="store.carregar(id)"
-          @limpar-filtros="limparFiltros"
-        >
-          <template #filtros>
-            <Select
-              v-model="grupo"
-              :options="opcoesGrupo"
-              option-label="rotulo"
-              option-value="chave"
-              :aria-label="TEXTOS_CONVIDADOS.filtroGrupo"
-              :disabled="!lista || lista.convites.length === 0"
-              data-teste="filtro-grupo"
+          <nav
+            v-if="!mensagemErroLista"
+            class="convidados__atalhos"
+            :aria-label="TEXTOS_CONVIDADOS.atalhosRotulo"
+            data-teste="atalhos-convidados"
+          >
+            <Button
+              :label="TEXTOS_CONFIRMACOES.acaoAbrir"
+              icon="ie ie-confirmacoes"
+              severity="secondary"
+              text
+              data-teste="abrir-confirmacoes"
+              @click="abrirPainel"
             />
-            <SelectButton
-              v-model="resposta"
-              :options="opcoesResposta"
-              option-label="rotulo"
-              option-value="valor"
-              :allow-empty="false"
-              :aria-label="TEXTOS_CONVIDADOS.filtroResposta"
-              :disabled="!lista || lista.convites.length === 0"
-              data-teste="filtro-resposta"
+            <Button
+              :label="TEXTOS_MESAS.acaoAbrir"
+              icon="ie ie-mesa"
+              severity="secondary"
+              text
+              data-teste="abrir-mesas"
+              @click="abrirMesas"
             />
-          </template>
+            <Button
+              v-if="!autenticacao.ehCasal"
+              :label="TEXTOS_DADOS_SENSIVEIS.acaoLista"
+              icon="ie ie-checklist"
+              severity="secondary"
+              text
+              data-teste="abrir-restricoes"
+              @click="abrirRestricoes"
+            />
+          </nav>
+        </div>
 
-          <template #acao-vazio>
-            <div
-              v-if="!arquivado"
-              class="convidados__acoes-vazio"
-            >
+        <div class="convidados__lista pilha pilha--grupo">
+          <ListagemDados
+            v-model:busca="busca"
+            :itens="linhas"
+            :colunas="colunas"
+            chave="id"
+            :rotulo="TEXTOS_CONVIDADOS.listaRotulo"
+            :carregando="store.carregando && !lista"
+            :erro="mensagemErroLista"
+            :placeholder-busca="TEXTOS_CONVIDADOS.buscaPlaceholder"
+            :filtros-ativos="temFiltros"
+            :titulo-vazio="TEXTOS_CONVIDADOS.vazioTitulo"
+            :descricao-vazio="TEXTOS_CONVIDADOS.vazioTexto"
+            @tentar-novamente="store.carregar(id)"
+            @limpar-filtros="limparFiltros"
+          >
+            <template #filtros>
+              <Select
+                v-model="grupo"
+                :options="opcoesGrupo"
+                option-label="rotulo"
+                option-value="chave"
+                :aria-label="TEXTOS_CONVIDADOS.filtroGrupo"
+                :disabled="!lista || lista.convites.length === 0"
+                data-teste="filtro-grupo"
+              />
+              <SelectButton
+                v-model="resposta"
+                :options="opcoesResposta"
+                option-label="rotulo"
+                option-value="valor"
+                :allow-empty="false"
+                :aria-label="TEXTOS_CONVIDADOS.filtroResposta"
+                :disabled="!lista || lista.convites.length === 0"
+                data-teste="filtro-resposta"
+              />
+            </template>
+
+            <template #acao-vazio>
+              <div
+                v-if="!arquivado"
+                class="convidados__vazio pilha pilha--campo"
+              >
+                <div class="convidados__acoes-vazio">
+                  <Button
+                    :label="TEXTOS_CONVIDADOS.adicionarConvite"
+                    severity="secondary"
+                    outlined
+                    @click="adicionar"
+                  />
+                  <Button
+                    :label="TEXTOS_IMPORTACAO.acaoImportar"
+                    icon="ie ie-importar"
+                    severity="secondary"
+                    text
+                    data-teste="importar-planilha-vazio"
+                    @click="importarPlanilha"
+                  />
+                </div>
+                <p class="convidados__dica-importar texto-legenda">
+                  {{ TEXTOS_IMPORTACAO.vazioImportar }}
+                </p>
+              </div>
+            </template>
+
+            <template #celula-nome="{ item }">
+              <div class="convidados__convite">
+                <span class="convidados__nome-convite">{{ item.nome }}</span>
+                <ul class="convidados__pessoas">
+                  <li
+                    v-for="convidado in item.filtrado.convidadosVisiveis"
+                    :key="convidado.id"
+                    class="convidados__pessoa"
+                    data-teste="pessoa-convite"
+                  >
+                    <span class="convidados__nome-pessoa">{{ convidado.nome }}</span>
+                    <BadgeStatus
+                      v-if="convidado.acompanhante"
+                      :texto="TEXTOS_ENVIO_CONVITE.acompanhante"
+                      variante="informacao"
+                    />
+                    <BadgeStatus
+                      v-if="convidado.possuiRestricao"
+                      :texto="TEXTOS_DADOS_SENSIVEIS.badgeLista"
+                      variante="informacao"
+                      data-teste="pessoa-restricao"
+                    />
+                    <BadgeStatus
+                      v-if="convidado.faixaEtaria === 'Crianca'"
+                      :texto="TEXTOS_CONVIDADOS.crianca"
+                    />
+                    <BadgeStatus
+                      :texto="ROTULOS_RESPOSTA[convidado.resposta]"
+                      :variante="VARIANTE_RESPOSTA[convidado.resposta]"
+                    />
+                    <span
+                      v-if="convidado.resposta === 'Confirmado' && lista?.mesas"
+                      class="convidados__mesa"
+                      data-teste="mesa-pessoa"
+                    >{{ mesaDaPessoa(convidado.mesaId) ?? TEXTOS_MESAS.semMesa }}</span>
+                  </li>
+                </ul>
+                <span
+                  v-if="item.filtrado.convidadosOcultos > 0"
+                  class="convidados__ocultos texto-legenda"
+                  data-teste="pessoas-ocultas"
+                >{{ TEXTOS_CONVIDADOS.outrasPessoas(item.filtrado.convidadosOcultos) }}</span>
+              </div>
+            </template>
+
+            <template #celula-grupo="{ item }">
+              <span class="convidados__grupo">{{ item.grupo ?? TEXTOS_CONVIDADOS.semGrupo }}</span>
+            </template>
+
+            <template #celula-envio="{ item }">
+              <div class="convidados__envio">
+                <BadgeStatus
+                  :texto="ROTULOS_STATUS_ENVIO[item.filtrado.convite.statusEnvio]"
+                  :variante="VARIANTE_STATUS_ENVIO[item.filtrado.convite.statusEnvio]"
+                />
+                <span
+                  v-if="item.filtrado.convite.respondidoEm"
+                  class="convidados__respondido"
+                  data-teste="respondido-em"
+                >{{ TEXTOS_ENVIO_CONVITE.respondidoEm(formatarData(item.filtrado.convite.respondidoEm)) }}</span>
+              </div>
+            </template>
+
+            <template #celula-acompanhantes="{ item }">
+              <span class="numeros-tabulares">{{ TEXTOS_CONVIDADOS.acompanhantesValor(item.acompanhantes) }}</span>
+            </template>
+
+            <template #acoes-linha="{ item }">
               <Button
-                :label="TEXTOS_CONVIDADOS.adicionarConvite"
+                v-if="!arquivado"
+                :label="TEXTOS_ENVIO_CONVITE.enviarWhatsAppCurto"
+                :aria-label="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.enviarWhatsApp, item.nome)"
+                :title="TEXTOS_ENVIO_CONVITE.enviarWhatsApp"
+                class="convidados__whatsapp"
+                icon="ie ie-whatsapp"
                 severity="secondary"
                 outlined
-                @click="adicionar"
+                :loading="conviteEmAndamento === item.id"
+                :disabled="conviteEmAndamento !== null && conviteEmAndamento !== item.id"
+                data-teste="enviar-whatsapp"
+                @click="envio.enviarWhatsApp(paraEnvio(item.filtrado.convite))"
+              />
+              <MenuAcoes
+                :itens="itensMenuLink()"
+                :rotulo="TEXTOS_ENVIO_CONVITE.maisAcoes"
+                :rotulo-acessivel="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.maisAcoes, item.nome)"
+                :desabilitado="conviteEmAndamento !== null"
+                somente-icone
+                @selecionar="envio.executarAcaoLink(paraEnvio(item.filtrado.convite), $event)"
               />
               <Button
-                :label="TEXTOS_IMPORTACAO.acaoImportar"
-                icon="ie ie-importar"
+                v-if="!arquivado"
+                :aria-label="TEXTOS_CONVIDADOS.acaoComNome(TEXTOS_CONVIDADOS.editar, item.nome)"
+                :title="TEXTOS_CONVIDADOS.editar"
+                icon="ie ie-editar"
                 severity="secondary"
                 text
-                data-teste="importar-planilha-vazio"
-                @click="importarPlanilha"
+                data-teste="editar-convite"
+                @click="editar(item.filtrado.convite)"
               />
-            </div>
-            <p
-              v-if="!arquivado"
-              class="convidados__dica-importar"
-            >
-              {{ TEXTOS_IMPORTACAO.vazioImportar }}
-            </p>
-          </template>
-
-          <template #celula-nome="{ item }">
-            <div class="convidados__convite">
-              <span class="convidados__nome-convite">{{ item.nome }}</span>
-              <ul class="convidados__pessoas">
-                <li
-                  v-for="convidado in item.filtrado.convidadosVisiveis"
-                  :key="convidado.id"
-                  class="convidados__pessoa"
-                  data-teste="pessoa-convite"
-                >
-                  <span>{{ convidado.nome }}</span>
-                  <BadgeStatus
-                    v-if="convidado.acompanhante"
-                    :texto="TEXTOS_ENVIO_CONVITE.acompanhante"
-                    variante="informacao"
-                  />
-                  <BadgeStatus
-                    v-if="convidado.possuiRestricao"
-                    :texto="TEXTOS_DADOS_SENSIVEIS.badgeLista"
-                    variante="informacao"
-                    data-teste="pessoa-restricao"
-                  />
-                  <BadgeStatus
-                    v-if="convidado.faixaEtaria === 'Crianca'"
-                    :texto="TEXTOS_CONVIDADOS.crianca"
-                  />
-                  <BadgeStatus
-                    :texto="ROTULOS_RESPOSTA[convidado.resposta]"
-                    :variante="VARIANTE_RESPOSTA[convidado.resposta]"
-                  />
-                  <span
-                    v-if="convidado.resposta === 'Confirmado' && lista?.mesas"
-                    class="convidados__mesa"
-                    data-teste="mesa-pessoa"
-                  >{{ mesaDaPessoa(convidado.mesaId) ?? TEXTOS_MESAS.semMesa }}</span>
-                </li>
-              </ul>
-              <span
-                v-if="item.filtrado.convidadosOcultos > 0"
-                class="convidados__ocultos"
-                data-teste="pessoas-ocultas"
-              >{{ TEXTOS_CONVIDADOS.outrasPessoas(item.filtrado.convidadosOcultos) }}</span>
-            </div>
-          </template>
-
-          <template #celula-grupo="{ item }">
-            {{ item.grupo ?? TEXTOS_CONVIDADOS.semGrupo }}
-          </template>
-
-          <template #celula-envio="{ item }">
-            <div class="convidados__envio">
-              <BadgeStatus
-                :texto="ROTULOS_STATUS_ENVIO[item.filtrado.convite.statusEnvio]"
-                :variante="VARIANTE_STATUS_ENVIO[item.filtrado.convite.statusEnvio]"
+              <Button
+                v-if="!arquivado"
+                :aria-label="TEXTOS_CONVIDADOS.acaoComNome(TEXTOS_CONVIDADOS.excluir, item.nome)"
+                :title="TEXTOS_CONVIDADOS.excluir"
+                icon="ie ie-excluir"
+                severity="secondary"
+                text
+                data-teste="excluir-convite"
+                @click="excluir(item.filtrado.convite)"
               />
-              <span
-                v-if="item.filtrado.convite.respondidoEm"
-                class="convidados__respondido"
-                data-teste="respondido-em"
-              >{{ TEXTOS_ENVIO_CONVITE.respondidoEm(formatarData(item.filtrado.convite.respondidoEm)) }}</span>
-            </div>
-          </template>
+            </template>
+          </ListagemDados>
 
-          <template #celula-acompanhantes="{ item }">
-            <span class="numeros-tabulares">{{ TEXTOS_CONVIDADOS.acompanhantesValor(item.acompanhantes) }}</span>
-          </template>
-
-          <template #acoes-linha="{ item }">
-            <Button
-              v-if="!arquivado"
-              :label="TEXTOS_ENVIO_CONVITE.enviarWhatsApp"
-              :aria-label="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.enviarWhatsApp, item.nome)"
-              icon="ie ie-whatsapp"
-              severity="secondary"
-              outlined
-              :loading="conviteEmAndamento === item.id"
-              :disabled="conviteEmAndamento !== null && conviteEmAndamento !== item.id"
-              data-teste="enviar-whatsapp"
-              @click="envio.enviarWhatsApp(paraEnvio(item.filtrado.convite))"
-            />
-            <MenuAcoes
-              :itens="itensMenuLink()"
-              :rotulo="TEXTOS_ENVIO_CONVITE.maisAcoes"
-              :rotulo-acessivel="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.maisAcoes, item.nome)"
-              :desabilitado="conviteEmAndamento !== null"
-              @selecionar="envio.executarAcaoLink(paraEnvio(item.filtrado.convite), $event)"
-            />
-            <Button
-              v-if="!arquivado"
-              :label="TEXTOS_CONVIDADOS.editar"
-              :aria-label="TEXTOS_CONVIDADOS.acaoComNome(TEXTOS_CONVIDADOS.editar, item.nome)"
-              icon="ie ie-editar"
-              severity="secondary"
-              text
-              data-teste="editar-convite"
-              @click="editar(item.filtrado.convite)"
-            />
-            <Button
-              v-if="!arquivado"
-              :label="TEXTOS_CONVIDADOS.excluir"
-              :aria-label="TEXTOS_CONVIDADOS.acaoComNome(TEXTOS_CONVIDADOS.excluir, item.nome)"
-              icon="ie ie-excluir"
-              severity="secondary"
-              text
-              data-teste="excluir-convite"
-              @click="excluir(item.filtrado.convite)"
-            />
-          </template>
-        </ListagemDados>
-
-        <p
-          v-if="lista && lista.convites.length > 0"
-          class="convidados__resultados"
-          aria-live="polite"
-          data-teste="contador-resultados"
-        >
-          {{ TEXTOS_CONVIDADOS.resultados(linhas.length) }}
-        </p>
+          <p
+            v-if="lista && lista.convites.length > 0"
+            class="convidados__resultados texto-legenda"
+            aria-live="polite"
+            data-teste="contador-resultados"
+          >
+            {{ TEXTOS_CONVIDADOS.resultados(linhas.length) }}
+          </p>
+        </div>
       </div>
 
       <DialogoConfirmacao
@@ -516,21 +535,22 @@ function excluir(convite: ConviteDto) {
 </template>
 
 <style scoped>
-.convidados {
+.convidados__atalhos {
   display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--p-ritmo-campo);
 }
 
 .convidados__convite {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   min-width: 0;
 }
 
 .convidados__nome-convite {
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   color: var(--p-cor-texto);
   overflow-wrap: anywhere;
 }
@@ -548,10 +568,30 @@ function excluir(convite: ConviteDto) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-2);
+  gap: var(--p-espaco-1) var(--p-ritmo-campo);
   font-size: var(--p-fonte-tamanho-controle);
   color: var(--p-cor-texto);
+}
+
+.convidados__pessoas,
+.convidados__grupo,
+.convidados__ocultos {
+  font-weight: var(--p-fonte-peso-regular);
+}
+
+.convidados__nome-pessoa {
+  min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.convidados__grupo {
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.convidados__lista :deep(.p-selectbutton) {
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .convidados__mesa {
@@ -560,23 +600,21 @@ function excluir(convite: ConviteDto) {
 }
 
 .convidados__ocultos,
-.convidados__resultados {
+.convidados__resultados,
+.convidados__dica-importar {
   margin: 0;
-  font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-apoio);
+}
+
+.convidados__vazio {
+  align-items: center;
+  text-align: center;
 }
 
 .convidados__acoes-vazio {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--p-espaco-3);
-}
-
-.convidados__dica-importar {
-  margin: var(--p-espaco-2) 0 0;
-  font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-apoio);
+  gap: var(--p-ritmo-campo);
 }
 
 .convidados__envio {
@@ -587,13 +625,19 @@ function excluir(convite: ConviteDto) {
 }
 
 .convidados__respondido {
-  font-size: var(--p-fonte-tamanho-controle);
+  font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-texto-apoio);
   white-space: nowrap;
 }
 
 .convidados__voltar {
   display: inline-block;
-  margin-top: var(--p-espaco-4);
+  margin-top: var(--p-ritmo-grupo);
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .convidados__lista :deep(.listagem__tabela .convidados__whatsapp .p-button-label) {
+    display: none;
+  }
 }
 </style>
