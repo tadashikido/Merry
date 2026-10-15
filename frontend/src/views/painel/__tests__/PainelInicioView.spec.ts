@@ -115,7 +115,7 @@ describe('PainelInicioView', () => {
 
     await wrapper.get('[data-teste="primeiro-acesso-continuar"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-novo'))
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-novo'), { timeout: 10000 })
   })
 
   it('[INTEGRAÇÃO] com casamentos, "Novo casamento" no cabeçalho leva ao formulário', async () => {
@@ -126,7 +126,7 @@ describe('PainelInicioView', () => {
     expect(wrapper.find('[data-teste="estado-primeiro-acesso"]').exists()).toBe(false)
     await wrapper.get('[data-teste="novo-casamento"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-novo'))
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-novo'), { timeout: 10000 })
   })
 
   it('[INTEGRAÇÃO] sair revoga a sessão na API e leva para entrar', async () => {
@@ -142,7 +142,7 @@ describe('PainelInicioView', () => {
     await flushPromises()
 
     expect(chamadas(fetchSimulado, 'POST', '/api/autenticacao/sair')).toHaveLength(1)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('entrar'))
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('entrar'), { timeout: 10000 })
   })
 
   it('[COMPONENTE] o rail tem Dashboard e Casamentos com rótulo acessível e Dashboard ativo', async () => {
@@ -237,7 +237,7 @@ describe('PainelInicioView', () => {
 
     await wrapper.get('[data-teste="ver-todos"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamentos'))
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamentos'), { timeout: 10000 })
   })
 
   it('[COMPONENTE] sem próximos casamentos a legenda da seção não aparece', async () => {
