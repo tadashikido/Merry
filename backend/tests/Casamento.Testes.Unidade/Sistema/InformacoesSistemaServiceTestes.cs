@@ -13,7 +13,7 @@ public class InformacoesSistemaServiceTestes
 
         var informacoes = service.Obter();
 
-        Assert.Equal("Enlace", informacoes.Nome);
+        Assert.Equal("Nossia", informacoes.Nome);
     }
 
     [Fact]

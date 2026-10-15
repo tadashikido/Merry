@@ -7,7 +7,7 @@ namespace Casamento.Testes.Unidade.Fornecedores;
 
 public sealed class ArmazenamentoArquivosDiscoTestes : IDisposable
 {
-    private readonly string _raiz = Path.Combine(Path.GetTempPath(), "enlace-testes-unidade", Guid.NewGuid().ToString("N"));
+    private readonly string _raiz = Path.Combine(Path.GetTempPath(), "nossia-testes-unidade", Guid.NewGuid().ToString("N"));
     private readonly ArmazenamentoArquivosDisco _armazenamento;
 
     public ArmazenamentoArquivosDiscoTestes()

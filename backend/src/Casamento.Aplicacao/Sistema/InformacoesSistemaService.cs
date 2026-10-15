@@ -4,7 +4,6 @@ namespace Casamento.Aplicacao.Sistema;
 
 public class InformacoesSistemaService : IInformacoesSistemaService
 {
-    public const string NomeSistema = "Enlace";
     private const string VersaoPadrao = "0.0.0";
 
     private readonly Assembly? _assemblyAplicacao;
@@ -21,7 +20,7 @@ public class InformacoesSistemaService : IInformacoesSistemaService
 
     public InformacoesSistemaDto Obter()
     {
-        return new InformacoesSistemaDto(NomeSistema, ObterVersao());
+        return new InformacoesSistemaDto(Marca.Nome, ObterVersao());
     }
 
     private string ObterVersao()

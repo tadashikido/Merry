@@ -26,7 +26,7 @@ public class PipelineApiTestes : IClassFixture<FabricaApiSemBanco>
         Assert.Equal("application/json", resposta.Content.Headers.ContentType?.MediaType);
         var informacoes = await resposta.Content.ReadFromJsonAsync<InformacoesSistemaDto>();
         Assert.NotNull(informacoes);
-        Assert.Equal("Enlace", informacoes.Nome);
+        Assert.Equal("Nossia", informacoes.Nome);
         Assert.False(string.IsNullOrWhiteSpace(informacoes.Versao));
     }
 

@@ -40,15 +40,14 @@ services:
       DadosSensiveis__ChaveCifragem: ${DADOS_SENSIVEIS_CHAVE:?defina DADOS_SENSIVEIS_CHAVE no .env (openssl rand -base64 32)}
       Autenticacao__UrlFrontend: https://${DOMINIO}
       Email__Remetente: ${EMAIL_REMETENTE:?defina EMAIL_REMETENTE no .env}
-      Email__NomeRemetente: ${EMAIL_NOME_REMETENTE:-Enlace}
       Email__Smtp__Host: ${SMTP_HOST:?defina SMTP_HOST no .env}
       Email__Smtp__Porta: ${SMTP_PORTA:-587}
       Email__Smtp__UsarSsl: ${SMTP_USAR_SSL:-true}
       Email__Smtp__Usuario: ${SMTP_USUARIO:-}
       Email__Smtp__Senha: ${SMTP_SENHA:-}
-      ArmazenamentoArquivos__Diretorio: /var/lib/enlace/arquivos
+      ArmazenamentoArquivos__Diretorio: /var/lib/nossia/arquivos
     volumes:
-      - arquivos-enlace:/var/lib/enlace/arquivos
+      - arquivos-enlace:/var/lib/nossia/arquivos
     depends_on:
       db:
         condition: service_healthy

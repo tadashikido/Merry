@@ -6,8 +6,6 @@ public class OpcoesEmail
 
     public string Remetente { get; set; } = string.Empty;
 
-    public string NomeRemetente { get; set; } = "Enlace";
-
     public OpcoesSmtp Smtp { get; set; } = new();
 }
 
