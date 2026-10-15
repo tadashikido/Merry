@@ -14,6 +14,7 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import type { FalhaCasamento } from '@/stores/casamentos'
@@ -67,7 +68,9 @@ const formulario = useFormulario(
     dias: [(valor: unknown): string | null => diasValidos(typeof valor === 'number' ? valor : null, sentido.value)],
     descricao: [descricaoTarefa],
   },
+  { estadoAdicional: () => sentido.value },
 )
+const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 const idCampo = (campo: Campo | 'sentido') => `item-modelo-${campo}`
 const titulo = computed(() => (edicao.value ? TEXTOS_ITEM_MODELO.formEditar : TEXTOS_ITEM_MODELO.formNovo))
@@ -103,6 +106,7 @@ async function carregar() {
     categoria: item.categoria,
     descricao: item.descricao ?? '',
   })
+  formulario.fixarEstadoInicial()
 }
 
 onMounted(async () => {
@@ -172,11 +176,13 @@ async function enviar() {
     return
   }
 
+  liberarSaida()
   notificacao.sucesso(edicao.value ? TEXTOS_ITEM_MODELO.toastSalvo : TEXTOS_ITEM_MODELO.toastCriado)
   await roteador.replace({ name: 'modelo-checklist', params: { modeloId: props.modeloId } })
 }
 
 function cancelar() {
+  liberarSaida()
   void roteador.push({ name: 'modelo-checklist', params: { modeloId: props.modeloId } })
 }
 

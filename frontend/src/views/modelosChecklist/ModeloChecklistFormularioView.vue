@@ -11,6 +11,7 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import type { FalhaCasamento } from '@/stores/casamentos'
@@ -40,6 +41,7 @@ const formulario = useFormulario(
   { nome: '', descricao: '' },
   { nome: [obrigatorio, nomeModelo], descricao: [descricaoModelo] },
 )
+const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 const idCampo = (campo: Campo) => `modelo-${campo}`
 const titulo = computed(() => (edicao.value ? TEXTOS_MODELOS_CHECKLIST.formEditar : TEXTOS_MODELOS_CHECKLIST.formNovo))
@@ -58,6 +60,7 @@ async function carregar() {
   }
   formulario.valores.nome = resultado.valor.nome
   formulario.valores.descricao = resultado.valor.descricao ?? ''
+  formulario.fixarEstadoInicial()
 }
 
 onMounted(async () => {
@@ -110,11 +113,13 @@ async function enviar() {
     return
   }
 
+  liberarSaida()
   notificacao.sucesso(edicao.value ? TEXTOS_MODELOS_CHECKLIST.toastSalvo : TEXTOS_MODELOS_CHECKLIST.toastCriado)
   await roteador.replace({ name: 'modelo-checklist', params: { modeloId: resultado.valor.id } })
 }
 
 function cancelar() {
+  liberarSaida()
   if (props.modeloId) {
     void roteador.push({ name: 'modelo-checklist', params: { modeloId: props.modeloId } })
     return

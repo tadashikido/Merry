@@ -16,6 +16,7 @@ import ListaNaoCopiado from '@/componentes/base/ListaNaoCopiado.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import NomesCasal from '@/componentes/base/NomesCasal.vue'
 import OpcaoCopia from '@/componentes/base/OpcaoCopia.vue'
+import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import type { FalhaCasamento } from '@/stores/casamentos'
@@ -81,6 +82,7 @@ const formulario = useFormulario(
     localRecepcao: [textoOpcional(LIMITES_CASAMENTO.local)],
   },
 )
+const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 const idCampo = (campo: Campo | 'origem' | 'copiarTarefas' | 'copiarFornecedores' | 'copiarCronograma') => `duplicacao-${campo}`
 
@@ -318,6 +320,7 @@ async function enviar() {
   enviando.value = false
 
   if (resultado.ok) {
+    liberarSaida()
     notificacao.sucesso(
       TEXTOS_DUPLICACAO_CASAMENTO.sucesso(
         resultado.valor.tarefasCopiadas,
@@ -357,6 +360,7 @@ async function enviar() {
 }
 
 function cancelar() {
+  liberarSaida()
   if (origemVeioDaRota.value && origemId.value) {
     void roteador.push({ name: 'casamento', params: { id: origemId.value } })
     return

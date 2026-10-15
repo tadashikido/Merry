@@ -16,6 +16,7 @@ import ListaRepetivel from '@/componentes/base/ListaRepetivel.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import type { TextosListaRepetivel } from '@/componentes/base/tipos'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
+import { useAlteracoesNaoSalvas, useRastreioAlteracoes } from '@/composables/useAlteracoesNaoSalvas'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore } from '@/stores/casamentos'
@@ -79,6 +80,8 @@ const dados = reactive({ nome: '', grupo: '', limiteAcompanhantes: 0 })
 const erros = reactive<Record<string, string>>({})
 const pessoas = ref<PessoaFormulario[]>([])
 let sequencia = 0
+const rastreio = useRastreioAlteracoes(() => montarRequest())
+const { liberarSaida } = useAlteracoesNaoSalvas(rastreio.temAlteracoes)
 
 const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
 const nomes = computed(() =>
@@ -209,6 +212,7 @@ function preencher(convite: ConviteDto) {
       resposta: convidado.resposta,
     }),
   )
+  rastreio.fixarEstadoInicial()
 }
 
 async function carregarConvite() {
@@ -229,6 +233,7 @@ async function carregarConvite() {
 
 onMounted(async () => {
   pessoas.value = [novaPessoa()]
+  rastreio.fixarEstadoInicial()
   if (casamentos.atual?.id !== props.id) {
     void casamentos.obter(props.id)
   }
@@ -286,6 +291,7 @@ function montarRequest(): SalvarConviteRequest {
 }
 
 function voltarParaLista() {
+  liberarSaida()
   void roteador.push({ name: 'casamento-convidados', params: { id: props.id } })
 }
 
@@ -350,6 +356,7 @@ async function enviar() {
   enviando.value = false
 
   if (resultado.ok) {
+    liberarSaida()
     notificacao.sucesso(TEXTOS_CONVIDADOS.salvo(resultado.valor.nome))
     await roteador.replace({ name: 'casamento-convidados', params: { id: props.id } })
     return
@@ -370,6 +377,7 @@ function excluir() {
       if (!resultado.ok) {
         throw new Error(resultado.falha.mensagem ?? resultado.falha.tipo)
       }
+      liberarSaida()
       await roteador.replace({ name: 'casamento-convidados', params: { id: props.id } })
     },
   })

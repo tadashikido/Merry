@@ -14,6 +14,7 @@ import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
+import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import type { FalhaCasamento } from '@/stores/casamentos'
@@ -96,7 +97,9 @@ const formulario = useFormulario(
     responsavel: [tamanhoMaximo(LIMITES_CRONOGRAMA.responsavel)],
     instrucoes: [tamanhoMaximo(LIMITES_CRONOGRAMA.texto)],
   },
+  { estadoAdicional: () => opcaoLocal.value },
 )
+const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 lerInicio = () => formulario.valores.inicio
 
@@ -153,6 +156,7 @@ async function carregar() {
     categoriaFornecedor: item.categoriaFornecedor,
     instrucoes: item.instrucoes ?? '',
   })
+  formulario.fixarEstadoInicial()
 }
 
 onMounted(async () => {
@@ -239,14 +243,17 @@ async function salvar(continuar: boolean) {
     opcaoLocal.value = 'Outro'
     formulario.valores.dia = dia
     formulario.valores.inicio = proximo
+    formulario.fixarEstadoInicial()
     await focarElemento(idCampo('inicio'))
     return
   }
 
+  liberarSaida()
   await roteador.replace({ name: 'modelo-cronograma', params: { modeloId: props.modeloId }, query: { item: resultado.valor.id } })
 }
 
 function cancelar() {
+  liberarSaida()
   void roteador.push({ name: 'modelo-cronograma', params: { modeloId: props.modeloId } })
 }
 
@@ -265,6 +272,7 @@ function excluir() {
         notificacao.erro(TEXTOS_MODELOS_CRONOGRAMA.erroExcluir)
         throw new Error(resultado.falha.tipo)
       }
+      liberarSaida()
       await roteador.replace({ name: 'modelo-cronograma', params: { modeloId: props.modeloId } })
     },
   })

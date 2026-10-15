@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Toast from 'primevue/toast'
 
+import DialogoAlteracoesNaoSalvas from './DialogoAlteracoesNaoSalvas.vue'
 import DialogoExclusao from './DialogoExclusao.vue'
 import { breakpoints } from '@/design/tokens'
 import type { DadosToast } from '@/composables/useNotificacao'
@@ -83,6 +84,7 @@ function desfazer(mensagem: MensagemToast, fechar: () => void) {
     </template>
   </Toast>
   <DialogoExclusao />
+  <DialogoAlteracoesNaoSalvas />
 </template>
 
 <style>

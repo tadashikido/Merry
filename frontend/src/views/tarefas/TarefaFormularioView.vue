@@ -13,6 +13,7 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore, type FalhaCasamento } from '@/stores/casamentos'
@@ -70,7 +71,9 @@ const formulario = useFormulario(
     prazo: [prazoTarefa],
     descricao: [descricaoTarefa],
   },
+  { estadoAdicional: () => status.value },
 )
+const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 const idCampo = (campo: Campo | 'status') => `tarefa-${campo}`
 
@@ -96,6 +99,7 @@ function preencher(tarefa: TarefaDto) {
     categoria: tarefa.categoria,
     descricao: tarefa.descricao ?? '',
   })
+  formulario.fixarEstadoInicial()
 }
 
 async function carregarTarefa() {
@@ -195,11 +199,13 @@ async function enviar() {
   }
 
   enviando.value = false
+  liberarSaida()
   notificacao.sucesso(edicao.value ? TEXTOS_TAREFAS.toastSalva : TEXTOS_TAREFAS.toastCriada)
   await roteador.replace({ name: 'casamento-tarefas', params: { id: props.id } })
 }
 
 function cancelar() {
+  liberarSaida()
   void roteador.push({ name: 'casamento-tarefas', params: { id: props.id } })
 }
 </script>
