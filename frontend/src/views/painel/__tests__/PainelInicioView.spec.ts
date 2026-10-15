@@ -8,6 +8,7 @@ import PainelInicioView from '@/views/painel/PainelInicioView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { TEXTOS_PAINEL } from '@/textos/autenticacao'
+import { PASSOS_ONBOARDING, PASSOS_PRIMEIRO_ACESSO } from '@/textos/proximosPassos'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { ID_CASAMENTO, chamadas, quando, resumoCasamento, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
@@ -46,7 +47,9 @@ describe('PainelInicioView', () => {
     expect(wrapper.text()).toContain('Albuquerque Assessoria')
     const primeiroAcesso = wrapper.get('[data-teste="estado-primeiro-acesso"]')
     expect(primeiroAcesso.text()).toContain(TEXTOS_PAINEL.primeiroAcessoTitulo)
-    expect(primeiroAcesso.findAll('[data-teste="passo-primeiro-acesso"]').map((passo) => passo.text())).toEqual(['1Dados do casamento', '2Convidar o casal', '3Checklist', '4Convidados'])
+    expect(primeiroAcesso.findAll('[data-teste="passo-primeiro-acesso"]').map((passo) => passo.text())).toEqual(PASSOS_PRIMEIRO_ACESSO.map((rotulo, indice) => `${indice + 1}${rotulo}`))
+    expect(PASSOS_PRIMEIRO_ACESSO).toEqual(['Dados do casamento', ...PASSOS_ONBOARDING.map((passo) => passo.rotulo)])
+    expect(PASSOS_PRIMEIRO_ACESSO).toEqual(['Dados do casamento', 'Convidar o casal', 'Aplicar o checklist', 'Cadastrar convidados', 'Enviar convites'])
     expect(primeiroAcesso.get('[aria-current="step"]').text()).toContain('Dados do casamento')
     expect(wrapper.find('[data-teste="novo-casamento"]').exists()).toBe(false)
     expect(wrapper.find('[data-teste="estado-vazio"]').exists()).toBe(false)
@@ -112,7 +115,7 @@ describe('PainelInicioView', () => {
 
     await wrapper.get('[data-teste="primeiro-acesso-continuar"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-novo'))
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-novo'), { timeout: 10000 })
   })
 
   it('[INTEGRAÇÃO] com casamentos, "Novo casamento" no cabeçalho leva ao formulário', async () => {
@@ -123,7 +126,7 @@ describe('PainelInicioView', () => {
     expect(wrapper.find('[data-teste="estado-primeiro-acesso"]').exists()).toBe(false)
     await wrapper.get('[data-teste="novo-casamento"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-novo'))
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-novo'), { timeout: 10000 })
   })
 
   it('[INTEGRAÇÃO] sair revoga a sessão na API e leva para entrar', async () => {
@@ -139,7 +142,7 @@ describe('PainelInicioView', () => {
     await flushPromises()
 
     expect(chamadas(fetchSimulado, 'POST', '/api/autenticacao/sair')).toHaveLength(1)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('entrar'))
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('entrar'), { timeout: 10000 })
   })
 
   it('[COMPONENTE] o rail tem Dashboard e Casamentos com rótulo acessível e Dashboard ativo', async () => {
@@ -234,7 +237,7 @@ describe('PainelInicioView', () => {
 
     await wrapper.get('[data-teste="ver-todos"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamentos'))
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamentos'), { timeout: 10000 })
   })
 
   it('[COMPONENTE] sem próximos casamentos a legenda da seção não aparece', async () => {

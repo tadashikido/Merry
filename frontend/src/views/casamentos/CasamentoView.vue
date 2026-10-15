@@ -15,6 +15,7 @@ import NomesCasal from '@/componentes/base/NomesCasal.vue'
 import BlocoAcessoCasal from '@/componentes/acessoCasal/BlocoAcessoCasal.vue'
 import BlocoAlertasPagamentos from '@/componentes/base/BlocoAlertasPagamentos.vue'
 import BlocoConvidados from '@/componentes/convidados/BlocoConvidados.vue'
+import BlocoProximosPassos from '@/componentes/casamentos/BlocoProximosPassos.vue'
 import type { ItemDetalhe } from '@/componentes/base/tipos'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
@@ -274,6 +275,11 @@ async function desfazerArquivamento(id: string) {
             </RouterLink>
           </MensagemFormulario>
         </div>
+
+        <BlocoProximosPassos
+          v-if="!autenticacao.ehCasal && !casamento.arquivado"
+          :casamento-id="casamento.id"
+        />
 
         <div
           class="casamento__resumo"

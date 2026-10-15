@@ -16,7 +16,7 @@ import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAcessoCasalStore } from '@/stores/acessoCasal'
 import type { FalhaCasamento } from '@/stores/casamentos'
-import { ROTULOS_SITUACAO_ACESSO, TEXTOS_ACESSO_CASAL } from '@/textos/acessoCasal'
+import { ID_TITULO_ACESSO_CASAL, ROTULOS_SITUACAO_ACESSO, TEXTOS_ACESSO_CASAL } from '@/textos/acessoCasal'
 import { LIMITE_ACESSOS_CASAL, type AcessoCasalDto, type SituacaoAcessoCasal } from '@/tipos/acessoCasal'
 import { focarElemento } from '@/utilitarios/foco'
 import { formatarData } from '@/utilitarios/formatacao'
@@ -212,13 +212,14 @@ function alterarVisibilidadeDialogo(visivel: boolean) {
 <template>
   <section
     class="acesso-casal"
-    aria-labelledby="titulo-acesso-casal"
+    :aria-labelledby="ID_TITULO_ACESSO_CASAL"
     data-teste="bloco-acesso-casal"
   >
     <div class="acesso-casal__cabecalho">
       <h2
-        id="titulo-acesso-casal"
+        :id="ID_TITULO_ACESSO_CASAL"
         class="acesso-casal__titulo"
+        tabindex="-1"
       >
         {{ TEXTOS_ACESSO_CASAL.titulo }}
       </h2>

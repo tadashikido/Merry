@@ -40,6 +40,7 @@ public static class ConfiguracaoAplicacao
         servicos.AddScoped<IContextoIsolamento, ContextoIsolamentoRequisicao>();
         servicos.AddScoped<ICasamentoService, CasamentoService>();
         servicos.AddScoped<IDuplicacaoCasamentoService, DuplicacaoCasamentoService>();
+        servicos.AddScoped<IProximosPassosCasamentoService, ProximosPassosCasamentoService>();
         servicos.AddScoped<IConviteService, ConviteService>();
         servicos.AddScoped<IImportacaoConvidadosService, ImportacaoConvidadosService>();
         servicos.AddScoped<ILinkRsvpService, LinkRsvpService>();

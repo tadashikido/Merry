@@ -69,6 +69,19 @@ public class ConviteRepository : IConviteRepository
             acompanhantes);
     }
 
+    public async Task<ResumoEnvioConvites> ObterResumoEnvioAsync(Guid casamentoId, CancellationToken cancelamento)
+    {
+        var convites = _contexto.Convites.Where(convite => convite.CasamentoId == casamentoId);
+        var possuiConvites = await convites.AnyAsync(cancelamento);
+        if (!possuiConvites)
+        {
+            return ResumoEnvioConvites.Vazio;
+        }
+
+        var possuiEnviados = await convites.AnyAsync(convite => convite.StatusEnvio != StatusEnvioConvite.NaoEnviado, cancelamento);
+        return new ResumoEnvioConvites(true, possuiEnviados);
+    }
+
     public async Task<IReadOnlyList<IdentificacaoConvidado>> ListarIdentificacoesAsync(Guid casamentoId, CancellationToken cancelamento)
     {
         return await _contexto.Convidados

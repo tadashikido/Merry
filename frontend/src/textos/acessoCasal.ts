@@ -1,6 +1,8 @@
 import type { SituacaoAcessoCasal } from '@/tipos/acessoCasal'
 import type { VarianteStatus } from '@/componentes/base/tipos'
 
+export const ID_TITULO_ACESSO_CASAL = 'titulo-acesso-casal'
+
 export const TEXTOS_ACESSO_CASAL = {
   titulo: 'Acesso do casal',
   descricao: 'Convide até duas pessoas do casal para cuidar da lista de convidados.',

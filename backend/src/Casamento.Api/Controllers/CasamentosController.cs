@@ -12,10 +12,12 @@ namespace Casamento.Api.Controllers;
 public class CasamentosController : ControllerBase
 {
     private readonly ICasamentoService _casamentoService;
+    private readonly IProximosPassosCasamentoService _proximosPassosService;
 
-    public CasamentosController(ICasamentoService casamentoService)
+    public CasamentosController(ICasamentoService casamentoService, IProximosPassosCasamentoService proximosPassosService)
     {
         _casamentoService = casamentoService;
+        _proximosPassosService = proximosPassosService;
     }
 
     [HttpGet]
@@ -39,6 +41,18 @@ public class CasamentosController : ControllerBase
     public async Task<ActionResult<CasamentoDto>> Obter(Guid id, CancellationToken cancelamento)
     {
         return Ok(await _casamentoService.ObterAsync(id, cancelamento));
+    }
+
+    [HttpGet("{id:guid}/proximos-passos")]
+    [Authorize(Policy = PoliticasAutorizacao.GerenciarCasamentos)]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [ProducesResponseType(typeof(ProximosPassosCasamentoDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ProximosPassosCasamentoDto>> ObterProximosPassos(Guid id, CancellationToken cancelamento)
+    {
+        return Ok(await _proximosPassosService.ObterAsync(id, cancelamento));
     }
 
     [HttpPost]

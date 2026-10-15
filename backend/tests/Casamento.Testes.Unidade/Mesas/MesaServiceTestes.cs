@@ -310,6 +310,11 @@ public class MesaServiceTestes
             return Task.FromResult(new ResumoConvidados([], 0, 0));
         }
 
+        public Task<ResumoEnvioConvites> ObterResumoEnvioAsync(Guid casamentoId, CancellationToken cancelamento)
+        {
+            return Task.FromResult(ResumoEnvioConvites.Vazio);
+        }
+
         public Task<IReadOnlyList<IdentificacaoConvidado>> ListarIdentificacoesAsync(Guid casamentoId, CancellationToken cancelamento)
         {
             IReadOnlyList<IdentificacaoConvidado> resultado = [];
