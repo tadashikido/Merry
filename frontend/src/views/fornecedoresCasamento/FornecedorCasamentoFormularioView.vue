@@ -318,12 +318,15 @@ async function removerContrato() {
 
 <template>
   <LayoutPainelUsuario>
-    <CabecalhoPagina
-      :titulo="titulo"
-      :descricao="nomes || undefined"
-    />
+    <div
+      class="formulario-vinculo"
+      :class="{ 'pagina-formulario': !edicao }"
+    >
+      <CabecalhoPagina
+        :titulo="titulo"
+        :descricao="nomes || undefined"
+      />
 
-    <div class="formulario-vinculo__area">
       <EstadoCarregando
         v-if="carregandoVinculo"
         variante="formulario"
@@ -346,257 +349,294 @@ async function removerContrato() {
         @tentar-novamente="carregarVinculo"
       />
 
-      <template v-else>
-        <MensagemFormulario
-          v-if="arquivado"
-          variante="alerta"
-          :mensagem="TEXTOS_FORNECEDORES_CASAMENTO.arquivado"
-          data-teste="aviso-arquivado"
-        />
-        <MensagemFormulario
-          v-if="mensagemErro"
-          :mensagem="mensagemErro"
-          data-teste="erro-formulario"
-        />
+      <div
+        v-else
+        class="formulario-vinculo__corpo"
+      >
+        <div class="formulario-vinculo__principal pilha pilha--cartao">
+          <MensagemFormulario
+            v-if="arquivado"
+            variante="alerta"
+            :mensagem="TEXTOS_FORNECEDORES_CASAMENTO.arquivado"
+            data-teste="aviso-arquivado"
+          />
+          <MensagemFormulario
+            v-if="mensagemErro"
+            :mensagem="mensagemErro"
+            data-teste="erro-formulario"
+          />
 
-        <form
-          class="formulario-vinculo"
-          novalidate
-          data-teste="formulario-vinculo"
-          @submit.prevent="enviar"
-        >
-          <CampoFormulario
-            v-if="!edicao"
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoFornecedor"
-            :id-campo="idCampo('fornecedorId')"
-            obrigatorio
-            :erro="formulario.erros.fornecedorId"
+          <form
+            class="pilha pilha--bloco"
+            novalidate
+            data-teste="formulario-vinculo"
+            @submit.prevent="enviar"
           >
-            <p
-              v-if="base.carregandoLista && !base.lista"
-              class="formulario-vinculo__apoio"
+            <fieldset
+              class="formulario-vinculo__grupo pilha pilha--grupo"
+              data-teste="grupo-fornecedor"
             >
-              {{ TEXTOS_FORNECEDORES_CASAMENTO.carregandoFornecedores }}
-            </p>
-            <p
-              v-else-if="base.falhaLista"
-              class="formulario-vinculo__apoio"
-              data-teste="erro-base"
-            >
-              {{ TEXTOS_FORNECEDORES_CASAMENTO.erroFornecedores }}
-            </p>
-            <p
-              v-else-if="gruposFornecedores.length === 0"
-              class="formulario-vinculo__apoio"
-              data-teste="sem-disponiveis"
-            >
-              {{ semDisponiveisTexto }}
-            </p>
-            <Select
-              v-else
-              v-model="formulario.valores.fornecedorId"
-              :input-id="idEntrada"
-              :options="gruposFornecedores"
-              option-label="rotulo"
-              option-value="valor"
-              option-group-label="rotulo"
-              option-group-children="itens"
-              filter
-              :placeholder="TEXTOS_FORNECEDORES_CASAMENTO.placeholderFornecedor"
-              :invalid="invalido"
-              :aria-describedby="descritoPor"
-              :disabled="enviando"
-              data-teste="campo-fornecedor"
-              @change="formulario.validarCampo('fornecedorId')"
-            />
-            <RouterLink
-              :to="{ name: 'fornecedor-novo' }"
-              class="formulario-vinculo__link"
-              data-teste="cadastrar-na-base"
-            >
-              {{ TEXTOS_FORNECEDORES_CASAMENTO.linkCadastrar }}
-            </RouterLink>
-            <p
-              v-if="fornecedorEscolhido"
-              class="formulario-vinculo__apoio"
-              data-teste="fornecedor-escolhido"
-            >
-              {{ ROTULOS_CATEGORIA_FORNECEDOR[fornecedorEscolhido.categoria] }}
-            </p>
-          </CampoFormulario>
+              <legend class="formulario-vinculo__legenda texto-rotulo">
+                {{ TEXTOS_FORNECEDORES_CASAMENTO.grupoFornecedor }}
+              </legend>
 
-          <div
-            v-else-if="vinculo"
-            class="formulario-vinculo__fixo"
-            data-teste="fornecedor-fixo"
-          >
-            <span class="formulario-vinculo__rotulo">{{ TEXTOS_FORNECEDORES_CASAMENTO.campoFornecedor }}</span>
-            <span class="formulario-vinculo__empresa">{{ vinculo.fornecedor.nomeEmpresa }}</span>
-            <span class="formulario-vinculo__apoio">{{ ROTULOS_CATEGORIA_FORNECEDOR[vinculo.fornecedor.categoria] }}</span>
-          </div>
+              <CampoFormulario
+                v-if="!edicao"
+                :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoFornecedor"
+                :id-campo="idCampo('fornecedorId')"
+                obrigatorio
+                :erro="formulario.erros.fornecedorId"
+              >
+                <template #acao-rotulo>
+                  <RouterLink
+                    :to="{ name: 'fornecedor-novo' }"
+                    class="formulario-vinculo__link"
+                    data-teste="cadastrar-na-base"
+                  >
+                    {{ TEXTOS_FORNECEDORES_CASAMENTO.linkCadastrar }}
+                  </RouterLink>
+                </template>
+                <template #default="{ id: idEntrada, invalido, descritoPor }">
+                  <p
+                    v-if="base.carregandoLista && !base.lista"
+                    class="formulario-vinculo__apoio"
+                  >
+                    {{ TEXTOS_FORNECEDORES_CASAMENTO.carregandoFornecedores }}
+                  </p>
+                  <p
+                    v-else-if="base.falhaLista"
+                    class="formulario-vinculo__apoio"
+                    data-teste="erro-base"
+                  >
+                    {{ TEXTOS_FORNECEDORES_CASAMENTO.erroFornecedores }}
+                  </p>
+                  <p
+                    v-else-if="gruposFornecedores.length === 0"
+                    class="formulario-vinculo__apoio"
+                    data-teste="sem-disponiveis"
+                  >
+                    {{ semDisponiveisTexto }}
+                  </p>
+                  <Select
+                    v-else
+                    v-model="formulario.valores.fornecedorId"
+                    :input-id="idEntrada"
+                    :options="gruposFornecedores"
+                    option-label="rotulo"
+                    option-value="valor"
+                    option-group-label="rotulo"
+                    option-group-children="itens"
+                    filter
+                    :placeholder="TEXTOS_FORNECEDORES_CASAMENTO.placeholderFornecedor"
+                    :invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :disabled="enviando"
+                    data-teste="campo-fornecedor"
+                    @change="formulario.validarAoSair('fornecedorId')"
+                  />
+                  <p
+                    v-if="fornecedorEscolhido"
+                    class="texto-legenda"
+                    data-teste="fornecedor-escolhido"
+                  >
+                    {{ ROTULOS_CATEGORIA_FORNECEDOR[fornecedorEscolhido.categoria] }}
+                  </p>
+                </template>
+              </CampoFormulario>
 
-          <CampoFormulario
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoServico"
-            :id-campo="idCampo('servico')"
-            :erro="formulario.erros.servico"
-          >
-            <InputText
-              :id="idEntrada"
-              v-model="formulario.valores.servico"
-              autocomplete="off"
-              :maxlength="LIMITES_VINCULO.servicoMaximo"
-              :placeholder="TEXTOS_FORNECEDORES_CASAMENTO.placeholderServico"
-              :invalid="invalido"
-              :aria-invalid="invalido"
-              :aria-describedby="descritoPor"
-              :readonly="enviando"
-              data-teste="campo-servico"
-              @blur="formulario.validarCampo('servico')"
-            />
-          </CampoFormulario>
+              <div
+                v-else-if="vinculo"
+                class="formulario-vinculo__fixo pilha pilha--campo"
+                data-teste="fornecedor-fixo"
+              >
+                <span class="formulario-vinculo__empresa">{{ vinculo.fornecedor.nomeEmpresa }}</span>
+                <span class="texto-legenda">{{ ROTULOS_CATEGORIA_FORNECEDOR[vinculo.fornecedor.categoria] }}</span>
+              </div>
+            </fieldset>
 
-          <CampoFormulario
-            v-slot="{ id: idEntrada, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoStatus"
-            :id-campo="idCampo('status')"
-            obrigatorio
-            :erro="formulario.erros.status"
-          >
-            <div class="formulario-vinculo__trilho">
-              <SelectButton
-                :id="idEntrada"
-                v-model="formulario.valores.status"
-                :options="opcoesStatus"
-                option-label="rotulo"
-                option-value="valor"
-                :allow-empty="false"
-                :aria-label="TEXTOS_FORNECEDORES_CASAMENTO.campoStatus"
-                :aria-describedby="descritoPor"
-                :disabled="enviando"
-                data-teste="campo-status"
-                @change="formulario.validarCampo('valorContratado')"
-              />
+            <fieldset
+              class="formulario-vinculo__grupo pilha pilha--grupo"
+              data-teste="grupo-contratacao"
+            >
+              <legend class="formulario-vinculo__legenda texto-rotulo">
+                {{ TEXTOS_FORNECEDORES_CASAMENTO.grupoContratacao }}
+              </legend>
+
+              <CampoFormulario
+                v-slot="{ id: idEntrada, invalido, descritoPor }"
+                :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoServico"
+                :id-campo="idCampo('servico')"
+                :erro="formulario.erros.servico"
+              >
+                <InputText
+                  :id="idEntrada"
+                  v-model="formulario.valores.servico"
+                  autocomplete="off"
+                  :maxlength="LIMITES_VINCULO.servicoMaximo"
+                  :placeholder="TEXTOS_FORNECEDORES_CASAMENTO.placeholderServico"
+                  :invalid="invalido"
+                  :aria-invalid="invalido"
+                  :aria-describedby="descritoPor"
+                  :readonly="enviando"
+                  data-teste="campo-servico"
+                  @update:model-value="formulario.revalidarAoDigitar('servico')"
+                  @blur="formulario.validarAoSair('servico')"
+                />
+              </CampoFormulario>
+
+              <CampoFormulario
+                v-slot="{ id: idEntrada, descritoPor }"
+                :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoStatus"
+                :id-campo="idCampo('status')"
+                obrigatorio
+                :erro="formulario.erros.status"
+              >
+                <div class="formulario-vinculo__trilho">
+                  <SelectButton
+                    :id="idEntrada"
+                    v-model="formulario.valores.status"
+                    :options="opcoesStatus"
+                    option-label="rotulo"
+                    option-value="valor"
+                    :allow-empty="false"
+                    :aria-label="TEXTOS_FORNECEDORES_CASAMENTO.campoStatus"
+                    :aria-describedby="descritoPor"
+                    :disabled="enviando"
+                    data-teste="campo-status"
+                    @change="formulario.validarAoSair('valorContratado')"
+                  />
+                </div>
+              </CampoFormulario>
+
+              <div class="formulario-vinculo__colunas">
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoOrcado"
+                  :id-campo="idCampo('valorOrcado')"
+                  :erro="formulario.erros.valorOrcado"
+                >
+                  <InputNumber
+                    v-model="formulario.valores.valorOrcado"
+                    :input-id="idEntrada"
+                    mode="currency"
+                    currency="BRL"
+                    locale="pt-BR"
+                    :min="0"
+                    :max="LIMITES_VINCULO.valorMaximo"
+                    :allow-empty="true"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    data-teste="campo-orcado"
+                    @update:model-value="formulario.revalidarAoDigitar('valorOrcado')"
+                    @blur="formulario.validarAoSair('valorOrcado')"
+                  />
+                </CampoFormulario>
+
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoContratado"
+                  :id-campo="idCampo('valorContratado')"
+                  :obrigatorio="formulario.valores.status === 'Contratado'"
+                  :dica="TEXTOS_FORNECEDORES_CASAMENTO.ajudaContratado"
+                  :erro="formulario.erros.valorContratado"
+                >
+                  <InputNumber
+                    v-model="formulario.valores.valorContratado"
+                    :input-id="idEntrada"
+                    mode="currency"
+                    currency="BRL"
+                    locale="pt-BR"
+                    :min="0"
+                    :max="LIMITES_VINCULO.valorMaximo"
+                    :allow-empty="true"
+                    :aria-required="formulario.valores.status === 'Contratado'"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    data-teste="campo-contratado"
+                    @update:model-value="formulario.revalidarAoDigitar('valorContratado')"
+                    @blur="formulario.validarAoSair('valorContratado')"
+                  />
+                </CampoFormulario>
+              </div>
+
+              <CampoFormulario
+                v-slot="{ id: idEntrada, invalido, descritoPor }"
+                :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoNotas"
+                :id-campo="idCampo('notasInternas')"
+                :dica="TEXTOS_FORNECEDORES_CASAMENTO.ajudaNotas(formulario.valores.notasInternas.length, LIMITES_VINCULO.notasMaximo)"
+                :erro="formulario.erros.notasInternas"
+              >
+                <Textarea
+                  :id="idEntrada"
+                  v-model="formulario.valores.notasInternas"
+                  rows="3"
+                  auto-resize
+                  :maxlength="LIMITES_VINCULO.notasMaximo"
+                  :invalid="invalido"
+                  :aria-invalid="invalido"
+                  :aria-describedby="descritoPor"
+                  :readonly="enviando"
+                  data-teste="campo-notas"
+                  @update:model-value="formulario.revalidarAoDigitar('notasInternas')"
+                  @blur="formulario.validarAoSair('notasInternas')"
+                />
+              </CampoFormulario>
+            </fieldset>
+
+            <div class="pilha pilha--grupo">
+              <div class="formulario-vinculo__acoes">
+                <Button
+                  type="submit"
+                  :label="rotuloSalvar"
+                  :loading="enviando"
+                  :aria-busy="enviando"
+                  :disabled="arquivado"
+                  data-teste="salvar-vinculo"
+                />
+                <Button
+                  type="button"
+                  :label="TEXTOS_FORNECEDORES_CASAMENTO.cancelar"
+                  severity="secondary"
+                  text
+                  :disabled="enviando"
+                  data-teste="cancelar"
+                  @click="cancelar"
+                />
+              </div>
+              <p
+                v-if="!edicao"
+                class="texto-legenda"
+                data-teste="contrato-depois"
+              >
+                {{ TEXTOS_CONTRATO.antesDeSalvar }}
+              </p>
             </div>
-          </CampoFormulario>
+          </form>
+        </div>
 
-          <div class="formulario-vinculo__linha">
-            <CampoFormulario
-              v-slot="{ id: idEntrada, invalido, descritoPor }"
-              :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoOrcado"
-              :id-campo="idCampo('valorOrcado')"
-              :erro="formulario.erros.valorOrcado"
-            >
-              <InputNumber
-                v-model="formulario.valores.valorOrcado"
-                :input-id="idEntrada"
-                mode="currency"
-                currency="BRL"
-                locale="pt-BR"
-                :min="0"
-                :max="LIMITES_VINCULO.valorMaximo"
-                :allow-empty="true"
-                :invalid="invalido"
-                :aria-invalid="invalido"
-                :aria-describedby="descritoPor"
-                :readonly="enviando"
-                data-teste="campo-orcado"
-                @blur="formulario.validarCampo('valorOrcado')"
-              />
-            </CampoFormulario>
-
-            <CampoFormulario
-              v-slot="{ id: idEntrada, invalido, descritoPor }"
-              :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoContratado"
-              :id-campo="idCampo('valorContratado')"
-              :obrigatorio="formulario.valores.status === 'Contratado'"
-              :dica="TEXTOS_FORNECEDORES_CASAMENTO.ajudaContratado"
-              :erro="formulario.erros.valorContratado"
-            >
-              <InputNumber
-                v-model="formulario.valores.valorContratado"
-                :input-id="idEntrada"
-                mode="currency"
-                currency="BRL"
-                locale="pt-BR"
-                :min="0"
-                :max="LIMITES_VINCULO.valorMaximo"
-                :allow-empty="true"
-                :aria-required="formulario.valores.status === 'Contratado'"
-                :invalid="invalido"
-                :aria-invalid="invalido"
-                :aria-describedby="descritoPor"
-                :readonly="enviando"
-                data-teste="campo-contratado"
-                @blur="formulario.validarCampo('valorContratado')"
-              />
-            </CampoFormulario>
-          </div>
-
-          <CampoFormulario
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES_CASAMENTO.campoNotas"
-            :id-campo="idCampo('notasInternas')"
-            :dica="TEXTOS_FORNECEDORES_CASAMENTO.ajudaNotas(formulario.valores.notasInternas.length, LIMITES_VINCULO.notasMaximo)"
-            :erro="formulario.erros.notasInternas"
-          >
-            <Textarea
-              :id="idEntrada"
-              v-model="formulario.valores.notasInternas"
-              rows="3"
-              auto-resize
-              :maxlength="LIMITES_VINCULO.notasMaximo"
-              :invalid="invalido"
-              :aria-invalid="invalido"
-              :aria-describedby="descritoPor"
-              :readonly="enviando"
-              data-teste="campo-notas"
-              @blur="formulario.validarCampo('notasInternas')"
-            />
-          </CampoFormulario>
-
-          <div class="formulario-vinculo__acoes">
-            <Button
-              type="submit"
-              :label="rotuloSalvar"
-              :loading="enviando"
-              :aria-busy="enviando"
-              :disabled="arquivado"
-              data-teste="salvar-vinculo"
-            />
-            <Button
-              type="button"
-              :label="TEXTOS_FORNECEDORES_CASAMENTO.cancelar"
-              severity="secondary"
-              text
-              :disabled="enviando"
-              data-teste="cancelar"
-              @click="cancelar"
-            />
-          </div>
-        </form>
-
-        <AnexoContrato
+        <aside
           v-if="edicao && vinculo"
-          :nome-empresa="vinculo.fornecedor.nomeEmpresa"
-          :contrato="vinculo.contrato"
-          :editavel="!arquivado"
-          :enviando="enviandoContrato"
-          :ocupado="enviandoContrato || removendoContrato || enviando"
-          :erro="erroContrato"
-          @selecionar="enviarContrato"
-          @baixar="baixarContrato"
-          @remover="confirmandoRemocaoContrato = true"
-        />
-        <p
-          v-else-if="!edicao"
-          class="formulario-vinculo__apoio"
-          data-teste="contrato-depois"
+          class="formulario-vinculo__lateral"
+          :aria-label="TEXTOS_FORNECEDORES_CASAMENTO.lateralContrato"
+          data-teste="lateral-contrato"
         >
-          {{ TEXTOS_CONTRATO.antesDeSalvar }}
-        </p>
-      </template>
+          <AnexoContrato
+            :nome-empresa="vinculo.fornecedor.nomeEmpresa"
+            :contrato="vinculo.contrato"
+            :editavel="!arquivado"
+            :enviando="enviandoContrato"
+            :ocupado="enviandoContrato || removendoContrato || enviando"
+            :erro="erroContrato"
+            @selecionar="enviarContrato"
+            @baixar="baixarContrato"
+            @remover="confirmandoRemocaoContrato = true"
+          />
+        </aside>
+      </div>
     </div>
 
     <DialogoConfirmacao
@@ -614,23 +654,47 @@ async function removerContrato() {
 </template>
 
 <style scoped>
-.formulario-vinculo__area {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
-  max-width: var(--p-dimensao-largura-leitura);
-}
-
 .formulario-vinculo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+  container: formulario-vinculo / inline-size;
 }
 
-.formulario-vinculo__linha {
+.formulario-vinculo__corpo {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-espaco-6);
+  grid-template-areas:
+    'principal'
+    'lateral';
+  gap: var(--p-ritmo-bloco);
+}
+
+.formulario-vinculo__principal {
+  grid-area: principal;
+  min-width: 0;
+}
+
+.formulario-vinculo__lateral {
+  grid-area: lateral;
+  min-width: 0;
+  padding-top: var(--p-ritmo-bloco);
+  border-top: 1px solid var(--p-cor-borda);
+}
+
+.formulario-vinculo__grupo {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.formulario-vinculo__legenda {
+  padding: 0;
+  margin-bottom: var(--p-ritmo-grupo);
+}
+
+.formulario-vinculo__colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
 }
 
 .formulario-vinculo__trilho {
@@ -638,38 +702,28 @@ async function removerContrato() {
   overflow-x: auto;
 }
 
-.formulario-vinculo__fixo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-1);
-}
-
-.formulario-vinculo__rotulo {
-  font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto);
-}
-
 .formulario-vinculo__empresa {
-  font-size: var(--p-fonte-tamanho-titulo);
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-leve);
+  line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-texto);
+  overflow-wrap: anywhere;
 }
 
 .formulario-vinculo__apoio {
-  margin: 0;
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-texto-apoio);
 }
 
 .formulario-vinculo__link {
-  align-self: flex-start;
   font-size: var(--p-fonte-tamanho-apoio);
 }
 
 .formulario-vinculo__acoes {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .formulario-vinculo__acoes :deep(.p-button) {
@@ -677,13 +731,30 @@ async function removerContrato() {
 }
 
 @media (min-width: 640px) {
-  .formulario-vinculo__linha {
+  .formulario-vinculo__colunas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
   }
 
   .formulario-vinculo__acoes {
     flex-direction: row;
+    gap: var(--p-ritmo-grupo);
+  }
+}
+
+@container formulario-vinculo (min-width: 64rem) {
+  .formulario-vinculo__corpo {
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(20rem, 28rem);
+    grid-template-areas: 'principal lateral';
+    align-items: start;
+  }
+
+  .formulario-vinculo__lateral {
+    align-self: stretch;
+    padding-top: 0;
+    padding-inline-start: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

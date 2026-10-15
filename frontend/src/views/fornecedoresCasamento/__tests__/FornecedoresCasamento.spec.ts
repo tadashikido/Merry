@@ -526,3 +526,121 @@ describe('FornecedorCasamentoFormularioView', () => {
     expect(wrapper.find('[data-teste="contrato-anexado"]').exists()).toBe(false)
   })
 })
+
+describe('FornecedorCasamentoFormularioView — reestruturação Nossia', () => {
+  it('[COMPONENTE] adicionar usa a largura de formulário, fieldsets com rótulo e o link de cadastro ao lado do rótulo', async () => {
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA, () => respostaJson(listaVinculos([vinculoExemplo()]))),
+      quando('GET', '/api/fornecedores', () => respostaJson([resumoFornecedor({ id: 'f2', categoria: 'Decoracao', nomeEmpresa: 'Florista Jardim' })])),
+    )
+    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/fornecedores/novo`)
+
+    expect(wrapper.get('.formulario-vinculo').classes()).toContain('pagina-formulario')
+    expect(wrapper.get('[data-teste="formulario-vinculo"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    const grupoFornecedor = wrapper.get('[data-teste="grupo-fornecedor"]')
+    expect(grupoFornecedor.element.tagName).toBe('FIELDSET')
+    expect(grupoFornecedor.get('legend').classes()).toContain('texto-rotulo')
+    expect(grupoFornecedor.get('legend').text()).toBe(TEXTOS_FORNECEDORES_CASAMENTO.grupoFornecedor)
+    expect(wrapper.get('[data-teste="grupo-contratacao"] legend').text()).toBe(TEXTOS_FORNECEDORES_CASAMENTO.grupoContratacao)
+    expect(wrapper.get('[data-teste="grupo-contratacao"]').find('[data-teste="campo-notas"]').exists()).toBe(true)
+    expect(wrapper.get('.campo-formulario__cabecalho').find('[data-teste="cadastrar-na-base"]').exists()).toBe(true)
+    expect(wrapper.get('[data-teste="contrato-depois"]').classes()).toContain('texto-legenda')
+    expect(wrapper.find('[data-teste="lateral-contrato"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] editar abre o contrato num aside rotulado depois do formulário e destaca o fornecedor fixo', async () => {
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_VINCULO, () => respostaJson(vinculoExemplo({ contrato: CONTRATO }))),
+    )
+    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/fornecedores/${ID_VINCULO}/editar`)
+
+    expect(wrapper.get('.formulario-vinculo').classes()).not.toContain('pagina-formulario')
+    const lateral = wrapper.get('[data-teste="lateral-contrato"]')
+    expect(lateral.element.tagName).toBe('ASIDE')
+    expect(lateral.attributes('aria-label')).toBe(TEXTOS_FORNECEDORES_CASAMENTO.lateralContrato)
+    expect(lateral.find('[data-teste="anexo-contrato"]').exists()).toBe(true)
+    const formulario = wrapper.get('[data-teste="formulario-vinculo"]')
+    expect(formulario.element.compareDocumentPosition(lateral.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    const fixo = wrapper.get('[data-teste="fornecedor-fixo"]')
+    expect(fixo.get('.formulario-vinculo__empresa').text()).toBe('Buffet São João')
+    expect(fixo.get('.texto-legenda').text()).toBe('Buffet')
+  })
+
+  it('[COMPONENTE] não mostra erro antes da primeira tentativa e limpa o erro ao digitar um valor válido', async () => {
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_VINCULO, () => respostaJson(vinculoExemplo())),
+    )
+    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/fornecedores/${ID_VINCULO}/editar`)
+
+    const situacao = wrapper.getComponent({ name: 'SelectButton' })
+    situacao.vm.$emit('update:modelValue', 'Contratado')
+    situacao.vm.$emit('change', { value: 'Contratado' })
+    await wrapper.get('[data-teste="campo-servico"]').trigger('blur')
+    await flushPromises()
+    expect(wrapper.text()).not.toContain(TEXTOS_FORNECEDORES_CASAMENTO.erroContratadoSemValor)
+    expect(wrapper.find('[data-teste="erro-campo"]').exists()).toBe(false)
+
+    await wrapper.get('[data-teste="formulario-vinculo"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES_CASAMENTO.erroContratadoSemValor)
+
+    wrapper.findAllComponents({ name: 'InputNumber' })[1]!.vm.$emit('update:modelValue', 18500)
+    await flushPromises()
+    expect(wrapper.text()).not.toContain(TEXTOS_FORNECEDORES_CASAMENTO.erroContratadoSemValor)
+  })
+
+  it('[COMPONENTE] voltar a situação para Cotação depois da tentativa tira a exigência do valor contratado', async () => {
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_VINCULO, () => respostaJson(vinculoExemplo({ status: 'Contratado' }))),
+    )
+    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/fornecedores/${ID_VINCULO}/editar`)
+
+    await wrapper.get('[data-teste="formulario-vinculo"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES_CASAMENTO.erroContratadoSemValor)
+
+    const situacao = wrapper.getComponent({ name: 'SelectButton' })
+    situacao.vm.$emit('update:modelValue', 'Cotacao')
+    situacao.vm.$emit('change', { value: 'Cotacao' })
+    await flushPromises()
+    expect(wrapper.text()).not.toContain(TEXTOS_FORNECEDORES_CASAMENTO.erroContratadoSemValor)
+  })
+
+  it('[UNITÁRIO] a view não tem largura nem espaçamento próprios e abre a lateral por contêiner', () => {
+    const fonte = lerFonte('views/fornecedoresCasamento/FornecedorCasamentoFormularioView.vue')
+    const estilo = estiloDe(fonte)
+
+    expect(estilo).not.toMatch(/max-width:(?!\s*100%)/)
+    expect(estilo).not.toMatch(/--p-espaco-/)
+    expect(estilo).not.toMatch(/margin[^:]*:\s*-/)
+    expect(estilo).not.toMatch(/(gap|padding|margin)[^;]*\d+px/)
+    expect(estilo).toMatch(/container:\s*formulario-vinculo\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/@container formulario-vinculo \(min-width: 64rem\)/)
+    expect(estilo).toMatch(/grid-template-areas:\s*'principal lateral'/)
+    expect(estilo).toMatch(/minmax\(0, var\(--p-dimensao-largura-formulario\)\)/)
+    expect(fonte).not.toMatch(/validarCampo\(/)
+    expect(fonte).toMatch(/revalidarAoDigitar\('valorContratado'\)/)
+  })
+
+  it('[UNITÁRIO] AnexoContrato usa o ritmo e decide as colunas pelo próprio contêiner', () => {
+    const estilo = estiloDe(lerFonte('componentes/base/AnexoContrato.vue'))
+
+    expect(estilo).not.toMatch(/--p-espaco-/)
+    expect(estilo).not.toMatch(/@media/)
+    expect(estilo).toMatch(/container:\s*anexo-contrato\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/@container anexo-contrato \(min-width: 36rem\)/)
+  })
+})

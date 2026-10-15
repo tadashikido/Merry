@@ -143,7 +143,8 @@ function selecionar(arquivo: File) {
 .anexo-contrato {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-grupo);
+  container: anexo-contrato / inline-size;
 }
 
 .anexo-contrato .anexo-contrato__titulo {
@@ -154,9 +155,9 @@ function selecionar(arquivo: File) {
 .anexo-contrato__arquivo {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
   align-items: center;
-  padding: var(--p-espaco-4);
+  padding: var(--p-ritmo-grupo);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
@@ -170,7 +171,7 @@ function selecionar(arquivo: File) {
 .anexo-contrato__dados {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-1);
+  gap: var(--p-ritmo-campo);
   min-width: 0;
 }
 
@@ -190,7 +191,7 @@ function selecionar(arquivo: File) {
   display: flex;
   grid-column: 1 / -1;
   flex-wrap: wrap;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .anexo-contrato__acoes :deep(.p-button),
@@ -208,7 +209,7 @@ function selecionar(arquivo: File) {
   color: var(--p-cor-erro-texto);
 }
 
-@media (min-width: 640px) {
+@container anexo-contrato (min-width: 36rem) {
   .anexo-contrato__arquivo {
     grid-template-columns: auto minmax(0, 1fr) auto;
   }
