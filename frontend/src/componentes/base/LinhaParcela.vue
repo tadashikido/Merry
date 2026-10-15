@@ -180,7 +180,7 @@ const tom = computed(() => {
 .linha-parcela__dia {
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
 }
 
@@ -213,7 +213,7 @@ const tom = computed(() => {
 
 .linha-parcela__titulo {
   font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   overflow-wrap: anywhere;
 }
 
@@ -235,7 +235,7 @@ const tom = computed(() => {
   grid-area: valor;
   justify-self: end;
   font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   white-space: nowrap;
 }
 

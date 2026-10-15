@@ -114,6 +114,8 @@ export const PARES_CONTRASTE: ParContraste[] = [
   { descricao: 'Financeiro: traço da linha do hoje sobre superfície', frente: cores.erro, fundo: cores.superficie, nivel: 'componente' },
   { descricao: 'Financeiro: camada paga junto da camada a pagar', frente: cores.primariaEscura, fundo: cores.acento, nivel: 'componente' },
   { descricao: 'Financeiro: total pago (serifa) sobre superfície', frente: cores.primaria, fundo: cores.superficie, nivel: 'textoGrande' },
+  { descricao: 'Financeiro: hachura do orçamento livre sobre trilho', frente: cores.bordaCampo, fundo: cores.trilho, nivel: 'componente' },
+  { descricao: 'Financeiro: indicador vencido sobre superfície', frente: cores.erroTexto, fundo: cores.superficie, nivel: 'textoGrande' },
   { descricao: 'Operação: texto sobre fundo', frente: cores.operacaoTexto, fundo: cores.operacaoFundo, nivel: 'texto' },
   { descricao: 'Operação: apoio sobre fundo', frente: cores.operacaoApoio, fundo: cores.operacaoFundo, nivel: 'texto' },
   { descricao: 'Operação: texto sobre superfície', frente: cores.operacaoTexto, fundo: cores.operacaoSuperficie, nivel: 'texto' },

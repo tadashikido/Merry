@@ -160,7 +160,8 @@ async function gerar() {
             :aria-describedby="descritoPor"
             :readonly="executando"
             data-teste="campo-quantidade"
-            @blur="formulario.validarCampo('quantidade')"
+            @update:model-value="formulario.revalidarAoDigitar('quantidade')"
+            @blur="formulario.validarAoSair('quantidade')"
           />
         </CampoFormulario>
 
@@ -183,7 +184,8 @@ async function gerar() {
             :aria-describedby="descritoPor"
             :readonly="executando"
             data-teste="campo-primeiro-vencimento"
-            @blur="formulario.validarCampo('primeiroVencimento')"
+            @update:model-value="formulario.revalidarAoDigitar('primeiroVencimento')"
+            @blur="formulario.validarAoSair('primeiroVencimento')"
           />
         </CampoFormulario>
       </div>
@@ -211,7 +213,8 @@ async function gerar() {
           :aria-describedby="descritoPor"
           :readonly="executando"
           data-teste="campo-valor-total"
-          @blur="formulario.validarCampo('valorTotal')"
+          @update:model-value="formulario.revalidarAoDigitar('valorTotal')"
+          @blur="formulario.validarAoSair('valorTotal')"
         />
       </CampoFormulario>
 
@@ -296,20 +299,20 @@ async function gerar() {
 .dialogo-gerar__formulario {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
 }
 
 .dialogo-gerar__linha {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
 }
 
 .dialogo-gerar__previa {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
-  padding: var(--p-espaco-4);
+  gap: var(--p-ritmo-campo);
+  padding: var(--p-ritmo-grupo);
   background: var(--p-cor-superficie-sutil);
   border: 1px solid var(--p-cor-divisoria);
   border-radius: var(--p-raio-controle);
@@ -317,10 +320,13 @@ async function gerar() {
 
 .dialogo-gerar .dialogo-gerar__previa-titulo {
   margin: 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto-secundario);
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-medio);
+  line-height: 1.33;
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
+  color: var(--p-cor-texto-apoio);
 }
 
 .dialogo-gerar__lista {
@@ -344,8 +350,8 @@ async function gerar() {
 }
 
 .dialogo-gerar__item--ultima .dialogo-gerar__valor {
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-primaria);
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-texto);
 }
 
 .dialogo-gerar__numero {

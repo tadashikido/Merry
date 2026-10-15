@@ -91,6 +91,27 @@ const faixaAlertas = computed(() => {
     texto: TEXTOS_FINANCEIRO.faixaAlertas(alertas.totalVencidas, formatarMoeda(alertas.valorVencidas), alertas.totalProximas),
   }
 })
+const indicadores = computed(() => {
+  const atual = financeiro.value
+  if (!atual) {
+    return []
+  }
+  const vencido = atual.resumo.totalVencido ?? 0
+  const temVencido = paraCentavos(vencido) > 0
+  const aParcelar = deCentavos(somarCentavos(contratados.value.map((fornecedor) => Math.max(fornecedor.saldoAParcelar, 0))))
+  return [
+    { chave: 'pago', rotulo: TEXTOS_FINANCEIRO.indicadorPago, valor: formatarMoeda(atual.resumo.totalPago ?? 0), apoio: TEXTOS_FINANCEIRO.apoioPago, alerta: false },
+    { chave: 'a-pagar', rotulo: TEXTOS_FINANCEIRO.indicadorAPagar, valor: formatarMoeda(atual.resumo.totalPendente ?? 0), apoio: TEXTOS_FINANCEIRO.apoioAPagar, alerta: false },
+    {
+      chave: 'vencido',
+      rotulo: TEXTOS_FINANCEIRO.indicadorVencido,
+      valor: formatarMoeda(vencido),
+      apoio: temVencido ? TEXTOS_FINANCEIRO.apoioVencidas(atual.alertas.totalVencidas) : TEXTOS_FINANCEIRO.apoioEmDia,
+      alerta: temVencido,
+    },
+    { chave: 'a-parcelar', rotulo: TEXTOS_FINANCEIRO.indicadorAParcelar, valor: formatarMoeda(aParcelar), apoio: TEXTOS_FINANCEIRO.apoioAParcelar, alerta: false },
+  ]
+})
 const descricao = computed(() =>
   casamento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(casamento.value.data)}` : undefined,
 )
@@ -395,7 +416,7 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
         </template>
       </CabecalhoPagina>
 
-      <div class="financeiro">
+      <div class="financeiro pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado && !visaoDoCasal"
           variante="informacao"
@@ -444,11 +465,6 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
         </template>
 
         <template v-else-if="financeiro">
-          <ResumoOrcamento
-            :resumo="financeiro.resumo"
-            exibir-pagamentos
-          />
-
           <MensagemFormulario
             v-if="faixaAlertas"
             :variante="faixaAlertas.variante"
@@ -456,358 +472,394 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
             data-teste="faixa-alertas"
           />
 
-          <SelectButton
-            v-model="visao"
-            class="financeiro__visao"
-            :options="opcoesVisao"
-            option-label="rotulo"
-            option-value="valor"
-            :allow-empty="false"
-            :aria-label="TEXTOS_FINANCEIRO.alternanciaRotulo"
-            data-teste="alternar-visao"
-          />
-
-          <section
-            v-if="visao === 'vencimento'"
-            class="financeiro__painel"
-            aria-labelledby="titulo-livro"
-            data-teste="livro-vencimentos"
+          <ul
+            class="financeiro__indicadores grade grade--indicadores"
+            :aria-label="TEXTOS_FINANCEIRO.indicadoresRotulo"
+            data-teste="indicadores-financeiro"
           >
-            <h2
-              id="titulo-livro"
-              class="financeiro__titulo-painel"
+            <li
+              v-for="indicador in indicadores"
+              :key="indicador.chave"
+              class="financeiro__indicador cartao pilha pilha--campo"
+              :data-teste="`indicador-${indicador.chave}`"
             >
-              {{ TEXTOS_FINANCEIRO.livroTitulo }}
-            </h2>
+              <span class="texto-rotulo">{{ indicador.rotulo }}</span>
+              <span
+                class="financeiro__indicador-valor numeros-tabulares"
+                :class="{ 'financeiro__indicador-valor--alerta': indicador.alerta }"
+                data-teste="indicador-valor"
+              >{{ indicador.valor }}</span>
+              <span class="financeiro__indicador-apoio">{{ indicador.apoio }}</span>
+            </li>
+          </ul>
 
-            <EstadoVazio
-              v-if="semParcelas"
-              icone="calendario"
-              :titulo="TEXTOS_FINANCEIRO.vazioLivro"
-              :descricao="podeGerenciar ? TEXTOS_FINANCEIRO.vazioLivroTexto : undefined"
-              data-teste="livro-vazio"
-            />
-
-            <template v-else>
-              <div
-                v-if="livro.vencidas.length > 0"
-                class="financeiro__grupo"
-                data-teste="grupo-vencidas"
-              >
-                <h3
-                  id="grupo-vencidas"
-                  class="financeiro__titulo-grupo"
-                >
-                  {{ TEXTOS_FINANCEIRO.grupoVencidas }}
-                </h3>
-                <ul
-                  class="financeiro__lista"
-                  aria-labelledby="grupo-vencidas"
-                >
-                  <LinhaParcela
-                    v-for="parcela in livro.vencidas"
-                    :key="parcela.id"
-                    :nome-empresa="parcela.nomeEmpresa"
-                    :numero="parcela.numero"
-                    :total="parcela.totalParcelas"
-                    :valor="parcela.valor"
-                    :vencimento="parcela.vencimento"
-                    :situacao="parcela.situacao"
-                    :dias-para-vencimento="parcela.diasParaVencimento"
-                    :vence-em-breve="parcela.venceEmBreve"
-                    :observacao="parcela.observacao"
-                  >
-                    <template
-                      v-if="podeGerenciar"
-                      #acoes
-                    >
-                      <MenuAcoes
-                        :itens="acoesDaParcela(parcela)"
-                        :rotulo="TEXTOS_FINANCEIRO.maisAcoes"
-                        :rotulo-acessivel="TEXTOS_FINANCEIRO.maisAcoesAria(parcela.numero, parcela.totalParcelas, parcela.nomeEmpresa)"
-                        :desabilitado="parcelaEmAndamento !== null"
-                        somente-icone
-                        @selecionar="executarAcao(parcela, parcela.nomeEmpresa, $event)"
-                      />
-                    </template>
-                  </LinhaParcela>
-                </ul>
-              </div>
-
-              <LinhaHoje :hoje="financeiro.hoje" />
-
-              <div
-                v-for="grupo in [
-                  { chave: 'proximas', titulo: TEXTOS_FINANCEIRO.grupoProximas, itens: livro.proximas },
-                  { chave: 'depois', titulo: TEXTOS_FINANCEIRO.grupoDepois, itens: livro.depois },
-                ].filter((item) => item.itens.length > 0)"
-                :key="grupo.chave"
-                class="financeiro__grupo"
-                :data-teste="`grupo-${grupo.chave}`"
-              >
-                <h3
-                  :id="`grupo-${grupo.chave}`"
-                  class="financeiro__titulo-grupo"
-                >
-                  {{ grupo.titulo }}
-                </h3>
-                <ul
-                  class="financeiro__lista"
-                  :aria-labelledby="`grupo-${grupo.chave}`"
-                >
-                  <LinhaParcela
-                    v-for="parcela in grupo.itens"
-                    :key="parcela.id"
-                    :nome-empresa="parcela.nomeEmpresa"
-                    :numero="parcela.numero"
-                    :total="parcela.totalParcelas"
-                    :valor="parcela.valor"
-                    :vencimento="parcela.vencimento"
-                    :situacao="parcela.situacao"
-                    :dias-para-vencimento="parcela.diasParaVencimento"
-                    :vence-em-breve="parcela.venceEmBreve"
-                    :observacao="parcela.observacao"
-                  >
-                    <template
-                      v-if="podeGerenciar"
-                      #acoes
-                    >
-                      <MenuAcoes
-                        :itens="acoesDaParcela(parcela)"
-                        :rotulo="TEXTOS_FINANCEIRO.maisAcoes"
-                        :rotulo-acessivel="TEXTOS_FINANCEIRO.maisAcoesAria(parcela.numero, parcela.totalParcelas, parcela.nomeEmpresa)"
-                        :desabilitado="parcelaEmAndamento !== null"
-                        somente-icone
-                        @selecionar="executarAcao(parcela, parcela.nomeEmpresa, $event)"
-                      />
-                    </template>
-                  </LinhaParcela>
-                </ul>
-              </div>
-
-              <div
-                v-if="livro.pagas.length > 0"
-                class="financeiro__grupo"
-                data-teste="grupo-pagas"
-              >
-                <h3 class="financeiro__titulo-grupo">
-                  <button
-                    type="button"
-                    class="financeiro__alternar-pagas"
-                    :aria-expanded="pagasAbertas"
-                    aria-controls="lista-pagas"
-                    data-teste="alternar-pagas"
-                    @click="pagasAbertas = !pagasAbertas"
-                  >
-                    <span
-                      class="ie ie-seta-baixo financeiro__seta"
-                      :class="{ 'financeiro__seta--aberta': pagasAbertas }"
-                      aria-hidden="true"
-                    />
-                    {{ TEXTOS_FINANCEIRO.grupoPagas(livro.pagas.length, formatarMoeda(deCentavos(totalPagasCentavos))) }}
-                  </button>
-                </h3>
-                <ul
-                  v-show="pagasAbertas"
-                  id="lista-pagas"
-                  class="financeiro__lista"
-                >
-                  <LinhaParcela
-                    v-for="parcela in livro.pagas"
-                    :key="parcela.id"
-                    :nome-empresa="parcela.nomeEmpresa"
-                    :numero="parcela.numero"
-                    :total="parcela.totalParcelas"
-                    :valor="parcela.valor"
-                    :vencimento="parcela.vencimento"
-                    :situacao="parcela.situacao"
-                    :dias-para-vencimento="parcela.diasParaVencimento"
-                    :paga-em="parcela.pagaEm"
-                    :observacao="parcela.observacao"
-                    :possui-comprovante="parcela.comprovante !== null"
-                  >
-                    <template
-                      v-if="podeGerenciar"
-                      #acoes
-                    >
-                      <MenuAcoes
-                        :itens="acoesDaParcela(parcela)"
-                        :rotulo="TEXTOS_FINANCEIRO.maisAcoes"
-                        :rotulo-acessivel="TEXTOS_FINANCEIRO.maisAcoesAria(parcela.numero, parcela.totalParcelas, parcela.nomeEmpresa)"
-                        :desabilitado="parcelaEmAndamento !== null"
-                        somente-icone
-                        @selecionar="executarAcao(parcela, parcela.nomeEmpresa, $event)"
-                      />
-                    </template>
-                    <template
-                      v-else-if="parcela.comprovante"
-                      #acoes
-                    >
-                      <Button
-                        :label="TEXTOS_PARCELA.baixarComprovante"
-                        icon="ie ie-exportar"
-                        severity="secondary"
-                        text
-                        :loading="parcelaEmAndamento === parcela.id"
-                        :aria-label="baixarAria(parcela, parcela.nomeEmpresa)"
-                        data-teste="baixar-comprovante"
-                        @click="baixar(parcela)"
-                      />
-                    </template>
-                  </LinhaParcela>
-                </ul>
-              </div>
-            </template>
-          </section>
-
-          <div
-            v-else
-            class="financeiro__fornecedores"
-            data-teste="visao-fornecedores"
-          >
-            <p
-              v-if="contratados.length === 0"
-              class="financeiro__nota"
+          <div class="financeiro__corpo">
+            <aside
+              class="financeiro__lateral"
+              :aria-label="TEXTOS_FINANCEIRO.lateralRotulo"
+              data-teste="lateral-orcamento"
             >
-              {{ TEXTOS_FINANCEIRO.vazioSemContratadoTexto }}
-              <RouterLink :to="{ name: 'casamento-fornecedores', params: { id } }">
-                {{ TEXTOS_FINANCEIRO.irFornecedores }}
-              </RouterLink>
-            </p>
-            <section
-              v-for="fornecedor in [...contratados, ...cancelados]"
-              :key="fornecedor.fornecedorCasamentoId"
-              class="financeiro__painel"
-              :aria-labelledby="`fornecedor-${fornecedor.fornecedorCasamentoId}`"
-              :data-teste="`fornecedor-${fornecedor.fornecedorCasamentoId}`"
-            >
-              <div class="financeiro__cabecalho-fornecedor">
-                <div class="financeiro__identidade">
-                  <h2
-                    :id="`fornecedor-${fornecedor.fornecedorCasamentoId}`"
-                    class="financeiro__titulo-painel"
-                  >
-                    {{ fornecedor.nomeEmpresa }}
-                  </h2>
-                  <span class="financeiro__categoria">{{ ROTULOS_CATEGORIA_FORNECEDOR[fornecedor.categoria] }}<template v-if="fornecedor.servico"> · {{ fornecedor.servico }}</template></span>
-                </div>
-                <BadgeStatus
-                  v-if="fornecedor.status === 'Cancelado'"
-                  :texto="TEXTOS_FINANCEIRO.rotuloCancelado"
-                  variante="neutro"
-                />
-                <span
-                  v-else
-                  class="financeiro__pago-de numeros-tabulares"
-                  data-teste="fornecedor-pago-de"
-                >{{ pagoDe(fornecedor) }}</span>
-              </div>
+              <ResumoOrcamento
+                :resumo="financeiro.resumo"
+                exibir-pagamentos
+              />
+            </aside>
 
-              <p
-                v-if="fornecedor.status === 'Cancelado'"
-                class="financeiro__nota financeiro__nota--recuada"
-              >
-                {{ TEXTOS_FINANCEIRO.cancelado }}
-              </p>
-              <MensagemFormulario
-                v-else-if="saldo(fornecedor)"
-                class="financeiro__aviso-saldo"
-                variante="alerta"
-                :mensagem="saldo(fornecedor) ?? ''"
-                data-teste="aviso-saldo"
+            <div class="financeiro__principal pilha pilha--cartao">
+              <SelectButton
+                v-model="visao"
+                class="financeiro__visao"
+                :options="opcoesVisao"
+                option-label="rotulo"
+                option-value="valor"
+                :allow-empty="false"
+                :aria-label="TEXTOS_FINANCEIRO.alternanciaRotulo"
+                data-teste="alternar-visao"
               />
 
-              <div
-                v-if="podeGerenciar && fornecedor.status === 'Contratado'"
-                class="financeiro__acoes-fornecedor"
-                role="group"
-                :aria-label="TEXTOS_FINANCEIRO.acoesFornecedorAria(fornecedor.nomeEmpresa)"
+              <section
+                v-if="visao === 'vencimento'"
+                class="financeiro__painel"
+                aria-labelledby="titulo-livro"
+                data-teste="livro-vencimentos"
               >
-                <Button
-                  :label="TEXTOS_FINANCEIRO.gerarParcelas"
-                  icon="ie ie-calendario"
-                  severity="secondary"
-                  outlined
-                  :disabled="paraCentavos(fornecedor.saldoAParcelar) <= 0"
-                  data-teste="gerar-parcelas"
-                  @click="fornecedorGerador = fornecedor"
+                <h2
+                  id="titulo-livro"
+                  class="financeiro__titulo-painel"
+                >
+                  {{ TEXTOS_FINANCEIRO.livroTitulo }}
+                </h2>
+
+                <EstadoVazio
+                  v-if="semParcelas"
+                  icone="calendario"
+                  :titulo="TEXTOS_FINANCEIRO.vazioLivro"
+                  :descricao="podeGerenciar ? TEXTOS_FINANCEIRO.vazioLivroTexto : undefined"
+                  data-teste="livro-vazio"
                 />
-                <Button
-                  :label="TEXTOS_FINANCEIRO.adicionarParcela"
-                  icon="ie ie-mais"
-                  severity="secondary"
-                  text
-                  data-teste="adicionar-parcela-fornecedor"
-                  @click="adicionarParcela(fornecedor.fornecedorCasamentoId)"
-                />
+
+                <template v-else>
+                  <div
+                    v-if="livro.vencidas.length > 0"
+                    class="financeiro__grupo"
+                    data-teste="grupo-vencidas"
+                  >
+                    <h3
+                      id="grupo-vencidas"
+                      class="financeiro__titulo-grupo texto-rotulo"
+                    >
+                      {{ TEXTOS_FINANCEIRO.grupoVencidas }}
+                    </h3>
+                    <ul
+                      class="financeiro__lista"
+                      aria-labelledby="grupo-vencidas"
+                    >
+                      <LinhaParcela
+                        v-for="parcela in livro.vencidas"
+                        :key="parcela.id"
+                        :nome-empresa="parcela.nomeEmpresa"
+                        :numero="parcela.numero"
+                        :total="parcela.totalParcelas"
+                        :valor="parcela.valor"
+                        :vencimento="parcela.vencimento"
+                        :situacao="parcela.situacao"
+                        :dias-para-vencimento="parcela.diasParaVencimento"
+                        :vence-em-breve="parcela.venceEmBreve"
+                        :observacao="parcela.observacao"
+                      >
+                        <template
+                          v-if="podeGerenciar"
+                          #acoes
+                        >
+                          <MenuAcoes
+                            :itens="acoesDaParcela(parcela)"
+                            :rotulo="TEXTOS_FINANCEIRO.maisAcoes"
+                            :rotulo-acessivel="TEXTOS_FINANCEIRO.maisAcoesAria(parcela.numero, parcela.totalParcelas, parcela.nomeEmpresa)"
+                            :desabilitado="parcelaEmAndamento !== null"
+                            somente-icone
+                            @selecionar="executarAcao(parcela, parcela.nomeEmpresa, $event)"
+                          />
+                        </template>
+                      </LinhaParcela>
+                    </ul>
+                  </div>
+
+                  <LinhaHoje :hoje="financeiro.hoje" />
+
+                  <div
+                    v-for="grupo in [
+                      { chave: 'proximas', titulo: TEXTOS_FINANCEIRO.grupoProximas, itens: livro.proximas },
+                      { chave: 'depois', titulo: TEXTOS_FINANCEIRO.grupoDepois, itens: livro.depois },
+                    ].filter((item) => item.itens.length > 0)"
+                    :key="grupo.chave"
+                    class="financeiro__grupo"
+                    :data-teste="`grupo-${grupo.chave}`"
+                  >
+                    <h3
+                      :id="`grupo-${grupo.chave}`"
+                      class="financeiro__titulo-grupo texto-rotulo"
+                    >
+                      {{ grupo.titulo }}
+                    </h3>
+                    <ul
+                      class="financeiro__lista"
+                      :aria-labelledby="`grupo-${grupo.chave}`"
+                    >
+                      <LinhaParcela
+                        v-for="parcela in grupo.itens"
+                        :key="parcela.id"
+                        :nome-empresa="parcela.nomeEmpresa"
+                        :numero="parcela.numero"
+                        :total="parcela.totalParcelas"
+                        :valor="parcela.valor"
+                        :vencimento="parcela.vencimento"
+                        :situacao="parcela.situacao"
+                        :dias-para-vencimento="parcela.diasParaVencimento"
+                        :vence-em-breve="parcela.venceEmBreve"
+                        :observacao="parcela.observacao"
+                      >
+                        <template
+                          v-if="podeGerenciar"
+                          #acoes
+                        >
+                          <MenuAcoes
+                            :itens="acoesDaParcela(parcela)"
+                            :rotulo="TEXTOS_FINANCEIRO.maisAcoes"
+                            :rotulo-acessivel="TEXTOS_FINANCEIRO.maisAcoesAria(parcela.numero, parcela.totalParcelas, parcela.nomeEmpresa)"
+                            :desabilitado="parcelaEmAndamento !== null"
+                            somente-icone
+                            @selecionar="executarAcao(parcela, parcela.nomeEmpresa, $event)"
+                          />
+                        </template>
+                      </LinhaParcela>
+                    </ul>
+                  </div>
+
+                  <div
+                    v-if="livro.pagas.length > 0"
+                    class="financeiro__grupo"
+                    data-teste="grupo-pagas"
+                  >
+                    <h3 class="financeiro__titulo-grupo texto-rotulo">
+                      <button
+                        type="button"
+                        class="financeiro__alternar-pagas"
+                        :aria-expanded="pagasAbertas"
+                        aria-controls="lista-pagas"
+                        data-teste="alternar-pagas"
+                        @click="pagasAbertas = !pagasAbertas"
+                      >
+                        <span
+                          class="ie ie-seta-baixo financeiro__seta"
+                          :class="{ 'financeiro__seta--aberta': pagasAbertas }"
+                          aria-hidden="true"
+                        />
+                        {{ TEXTOS_FINANCEIRO.grupoPagas(livro.pagas.length, formatarMoeda(deCentavos(totalPagasCentavos))) }}
+                      </button>
+                    </h3>
+                    <ul
+                      v-show="pagasAbertas"
+                      id="lista-pagas"
+                      class="financeiro__lista"
+                    >
+                      <LinhaParcela
+                        v-for="parcela in livro.pagas"
+                        :key="parcela.id"
+                        :nome-empresa="parcela.nomeEmpresa"
+                        :numero="parcela.numero"
+                        :total="parcela.totalParcelas"
+                        :valor="parcela.valor"
+                        :vencimento="parcela.vencimento"
+                        :situacao="parcela.situacao"
+                        :dias-para-vencimento="parcela.diasParaVencimento"
+                        :paga-em="parcela.pagaEm"
+                        :observacao="parcela.observacao"
+                        :possui-comprovante="parcela.comprovante !== null"
+                      >
+                        <template
+                          v-if="podeGerenciar"
+                          #acoes
+                        >
+                          <MenuAcoes
+                            :itens="acoesDaParcela(parcela)"
+                            :rotulo="TEXTOS_FINANCEIRO.maisAcoes"
+                            :rotulo-acessivel="TEXTOS_FINANCEIRO.maisAcoesAria(parcela.numero, parcela.totalParcelas, parcela.nomeEmpresa)"
+                            :desabilitado="parcelaEmAndamento !== null"
+                            somente-icone
+                            @selecionar="executarAcao(parcela, parcela.nomeEmpresa, $event)"
+                          />
+                        </template>
+                        <template
+                          v-else-if="parcela.comprovante"
+                          #acoes
+                        >
+                          <Button
+                            :label="TEXTOS_PARCELA.baixarComprovante"
+                            icon="ie ie-exportar"
+                            severity="secondary"
+                            text
+                            :loading="parcelaEmAndamento === parcela.id"
+                            :aria-label="baixarAria(parcela, parcela.nomeEmpresa)"
+                            data-teste="baixar-comprovante"
+                            @click="baixar(parcela)"
+                          />
+                        </template>
+                      </LinhaParcela>
+                    </ul>
+                  </div>
+                </template>
+              </section>
+
+              <div
+                v-else
+                class="financeiro__fornecedores pilha pilha--cartao"
+                data-teste="visao-fornecedores"
+              >
+                <p
+                  v-if="contratados.length === 0"
+                  class="financeiro__nota"
+                >
+                  {{ TEXTOS_FINANCEIRO.vazioSemContratadoTexto }}
+                  <RouterLink :to="{ name: 'casamento-fornecedores', params: { id } }">
+                    {{ TEXTOS_FINANCEIRO.irFornecedores }}
+                  </RouterLink>
+                </p>
+                <section
+                  v-for="fornecedor in [...contratados, ...cancelados]"
+                  :key="fornecedor.fornecedorCasamentoId"
+                  class="financeiro__painel"
+                  :aria-labelledby="`fornecedor-${fornecedor.fornecedorCasamentoId}`"
+                  :data-teste="`fornecedor-${fornecedor.fornecedorCasamentoId}`"
+                >
+                  <div class="financeiro__cabecalho-fornecedor">
+                    <div class="financeiro__identidade">
+                      <h2
+                        :id="`fornecedor-${fornecedor.fornecedorCasamentoId}`"
+                        class="financeiro__titulo-painel"
+                      >
+                        {{ fornecedor.nomeEmpresa }}
+                      </h2>
+                      <span class="financeiro__categoria">{{ ROTULOS_CATEGORIA_FORNECEDOR[fornecedor.categoria] }}<template v-if="fornecedor.servico"> · {{ fornecedor.servico }}</template></span>
+                    </div>
+                    <BadgeStatus
+                      v-if="fornecedor.status === 'Cancelado'"
+                      :texto="TEXTOS_FINANCEIRO.rotuloCancelado"
+                      variante="neutro"
+                    />
+                    <span
+                      v-else
+                      class="financeiro__pago-de numeros-tabulares"
+                      data-teste="fornecedor-pago-de"
+                    >{{ pagoDe(fornecedor) }}</span>
+                  </div>
+
+                  <p
+                    v-if="fornecedor.status === 'Cancelado'"
+                    class="financeiro__nota financeiro__nota--recuada"
+                  >
+                    {{ TEXTOS_FINANCEIRO.cancelado }}
+                  </p>
+                  <MensagemFormulario
+                    v-else-if="saldo(fornecedor)"
+                    class="financeiro__aviso-saldo"
+                    variante="alerta"
+                    :mensagem="saldo(fornecedor) ?? ''"
+                    data-teste="aviso-saldo"
+                  />
+
+                  <div
+                    v-if="podeGerenciar && fornecedor.status === 'Contratado'"
+                    class="financeiro__acoes-fornecedor"
+                    role="group"
+                    :aria-label="TEXTOS_FINANCEIRO.acoesFornecedorAria(fornecedor.nomeEmpresa)"
+                  >
+                    <Button
+                      :label="TEXTOS_FINANCEIRO.gerarParcelas"
+                      icon="ie ie-calendario"
+                      severity="secondary"
+                      outlined
+                      :disabled="paraCentavos(fornecedor.saldoAParcelar) <= 0"
+                      data-teste="gerar-parcelas"
+                      @click="fornecedorGerador = fornecedor"
+                    />
+                    <Button
+                      :label="TEXTOS_FINANCEIRO.adicionarParcela"
+                      icon="ie ie-mais"
+                      severity="secondary"
+                      text
+                      data-teste="adicionar-parcela-fornecedor"
+                      @click="adicionarParcela(fornecedor.fornecedorCasamentoId)"
+                    />
+                  </div>
+
+                  <p
+                    v-if="fornecedor.parcelas.length === 0"
+                    class="financeiro__nota financeiro__nota--recuada"
+                  >
+                    {{ TEXTOS_FINANCEIRO.vazioFornecedor }}
+                  </p>
+                  <ul
+                    v-else
+                    class="financeiro__lista"
+                  >
+                    <LinhaParcela
+                      v-for="parcela in fornecedor.parcelas"
+                      :key="parcela.id"
+                      :nome-empresa="fornecedor.nomeEmpresa"
+                      :numero="parcela.numero"
+                      :total="parcela.totalParcelas"
+                      :valor="parcela.valor"
+                      :vencimento="parcela.vencimento"
+                      :situacao="parcela.situacao"
+                      :dias-para-vencimento="parcela.diasParaVencimento"
+                      :vence-em-breve="parcela.venceEmBreve"
+                      :paga-em="parcela.pagaEm"
+                      :observacao="parcela.observacao"
+                      :possui-comprovante="parcela.comprovante !== null"
+                      :historico="fornecedor.status === 'Cancelado'"
+                    >
+                      <template
+                        v-if="podeGerenciar && fornecedor.status === 'Contratado'"
+                        #acoes
+                      >
+                        <MenuAcoes
+                          :itens="acoesDaParcela(parcela)"
+                          :rotulo="TEXTOS_FINANCEIRO.maisAcoes"
+                          :rotulo-acessivel="TEXTOS_FINANCEIRO.maisAcoesAria(parcela.numero, parcela.totalParcelas, fornecedor.nomeEmpresa)"
+                          :desabilitado="parcelaEmAndamento !== null"
+                          somente-icone
+                          @selecionar="executarAcao(parcela, fornecedor.nomeEmpresa, $event)"
+                        />
+                      </template>
+                      <template
+                        v-else-if="parcela.comprovante"
+                        #acoes
+                      >
+                        <Button
+                          :label="TEXTOS_PARCELA.baixarComprovante"
+                          icon="ie ie-exportar"
+                          severity="secondary"
+                          text
+                          :loading="parcelaEmAndamento === parcela.id"
+                          :aria-label="baixarAria(parcela, fornecedor.nomeEmpresa)"
+                          data-teste="baixar-comprovante"
+                          @click="baixar(parcela)"
+                        />
+                      </template>
+                    </LinhaParcela>
+                  </ul>
+                </section>
               </div>
 
               <p
-                v-if="fornecedor.parcelas.length === 0"
-                class="financeiro__nota financeiro__nota--recuada"
+                v-if="visaoDoCasal"
+                class="financeiro__nota"
+                data-teste="rodape-casal"
               >
-                {{ TEXTOS_FINANCEIRO.vazioFornecedor }}
+                {{ TEXTOS_FINANCEIRO.rodapeCasal }}
               </p>
-              <ul
-                v-else
-                class="financeiro__lista"
-              >
-                <LinhaParcela
-                  v-for="parcela in fornecedor.parcelas"
-                  :key="parcela.id"
-                  :nome-empresa="fornecedor.nomeEmpresa"
-                  :numero="parcela.numero"
-                  :total="parcela.totalParcelas"
-                  :valor="parcela.valor"
-                  :vencimento="parcela.vencimento"
-                  :situacao="parcela.situacao"
-                  :dias-para-vencimento="parcela.diasParaVencimento"
-                  :vence-em-breve="parcela.venceEmBreve"
-                  :paga-em="parcela.pagaEm"
-                  :observacao="parcela.observacao"
-                  :possui-comprovante="parcela.comprovante !== null"
-                  :historico="fornecedor.status === 'Cancelado'"
-                >
-                  <template
-                    v-if="podeGerenciar && fornecedor.status === 'Contratado'"
-                    #acoes
-                  >
-                    <MenuAcoes
-                      :itens="acoesDaParcela(parcela)"
-                      :rotulo="TEXTOS_FINANCEIRO.maisAcoes"
-                      :rotulo-acessivel="TEXTOS_FINANCEIRO.maisAcoesAria(parcela.numero, parcela.totalParcelas, fornecedor.nomeEmpresa)"
-                      :desabilitado="parcelaEmAndamento !== null"
-                      somente-icone
-                      @selecionar="executarAcao(parcela, fornecedor.nomeEmpresa, $event)"
-                    />
-                  </template>
-                  <template
-                    v-else-if="parcela.comprovante"
-                    #acoes
-                  >
-                    <Button
-                      :label="TEXTOS_PARCELA.baixarComprovante"
-                      icon="ie ie-exportar"
-                      severity="secondary"
-                      text
-                      :loading="parcelaEmAndamento === parcela.id"
-                      :aria-label="baixarAria(parcela, fornecedor.nomeEmpresa)"
-                      data-teste="baixar-comprovante"
-                      @click="baixar(parcela)"
-                    />
-                  </template>
-                </LinhaParcela>
-              </ul>
-            </section>
+            </div>
           </div>
-
-          <p
-            v-if="visaoDoCasal"
-            class="financeiro__nota"
-            data-teste="rodape-casal"
-          >
-            {{ TEXTOS_FINANCEIRO.rodapeCasal }}
-          </p>
         </template>
       </div>
 
@@ -869,10 +921,57 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
 
 <style scoped>
 .financeiro {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
-  max-width: var(--p-dimensao-largura-ampla);
+  --financeiro-largura-lateral: 22rem;
+  container: financeiro / inline-size;
+}
+
+.financeiro__indicadores {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.financeiro__indicador {
+  padding: var(--p-ritmo-grupo);
+}
+
+.financeiro__indicador-valor {
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-leve);
+  line-height: var(--p-fonte-entrelinha-titulo);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--p-cor-texto);
+}
+
+.financeiro__indicador-valor--alerta {
+  color: var(--p-cor-erro-texto);
+}
+
+.financeiro__indicador-apoio {
+  margin-top: auto;
+  font-size: var(--p-fonte-tamanho-apoio);
+  color: var(--p-cor-texto-apoio);
+}
+
+.financeiro__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'lateral'
+    'principal';
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
+}
+
+.financeiro__lateral {
+  grid-area: lateral;
+  min-width: 0;
+}
+
+.financeiro__principal {
+  grid-area: principal;
 }
 
 .financeiro__visao {
@@ -882,7 +981,7 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
 }
 
 .financeiro__painel {
-  padding: var(--p-espaco-4) 0 var(--p-espaco-2);
+  padding-block: var(--p-ritmo-cartao) var(--p-ritmo-campo);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
@@ -890,24 +989,20 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
 
 .financeiro .financeiro__titulo-painel {
   margin: 0;
-  padding: 0 var(--p-espaco-4);
-  font-family: var(--p-fonte-interface);
+  padding-inline: var(--p-ritmo-grupo);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-leve);
   color: var(--p-cor-texto);
 }
 
 .financeiro__grupo {
-  margin-top: var(--p-espaco-3);
+  margin-top: var(--p-ritmo-grupo);
 }
 
 .financeiro .financeiro__titulo-grupo {
   margin: 0;
-  padding: var(--p-espaco-2) var(--p-espaco-4) 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto-secundario);
+  padding: var(--p-ritmo-campo) var(--p-ritmo-grupo) 0;
 }
 
 .financeiro__lista {
@@ -918,10 +1013,12 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
 .financeiro__alternar-pagas {
   display: inline-flex;
   align-items: center;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   min-height: var(--p-dimensao-alvo-toque);
   padding: 0;
   font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
   color: inherit;
   background: none;
   border: 0;
@@ -937,49 +1034,43 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
   transform: rotate(180deg);
 }
 
-.financeiro__fornecedores {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-4);
-}
-
 .financeiro__cabecalho-fornecedor {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--p-espaco-2) var(--p-espaco-4);
-  padding-right: var(--p-espaco-4);
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
+  padding-inline-end: var(--p-ritmo-grupo);
 }
 
 .financeiro__identidade {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-1);
+  gap: var(--p-ritmo-campo);
 }
 
 .financeiro__categoria {
-  padding: 0 var(--p-espaco-4);
+  padding-inline: var(--p-ritmo-grupo);
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-texto-apoio);
 }
 
 .financeiro__pago-de {
-  padding-left: var(--p-espaco-4);
+  padding-inline-start: var(--p-ritmo-grupo);
   font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-primaria);
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-texto);
 }
 
 .financeiro__aviso-saldo {
-  margin: var(--p-espaco-3) var(--p-espaco-4) 0;
+  margin: var(--p-ritmo-grupo) var(--p-ritmo-grupo) 0;
 }
 
 .financeiro__acoes-fornecedor {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--p-espaco-2);
-  padding: var(--p-espaco-3) var(--p-espaco-4) var(--p-espaco-1);
+  gap: var(--p-ritmo-campo);
+  padding: var(--p-ritmo-grupo) var(--p-ritmo-grupo) 0;
 }
 
 .financeiro__nota {
@@ -989,17 +1080,40 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
 }
 
 .financeiro__nota--recuada {
-  padding: var(--p-espaco-3) var(--p-espaco-4);
+  padding: var(--p-ritmo-grupo);
 }
 
 .financeiro__voltar {
   display: inline-block;
-  margin-top: var(--p-espaco-4);
+  margin-top: var(--p-ritmo-grupo);
 }
 
-@media (min-width: 1024px) {
-  .financeiro__painel {
-    max-width: calc(var(--p-dimensao-largura-leitura) * 1.5);
+@container financeiro (min-width: 48rem) {
+  .financeiro__indicador {
+    padding: var(--p-ritmo-cartao);
+  }
+
+  .financeiro__indicador-valor {
+    white-space: nowrap;
+    font-size: var(--p-fonte-tamanho-pagina-celular);
+  }
+}
+
+@container financeiro (min-width: 56rem) {
+  .financeiro__indicadores {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@container financeiro (min-width: 64rem) {
+  .financeiro__corpo {
+    grid-template-columns: minmax(0, 1fr) var(--financeiro-largura-lateral);
+    grid-template-areas: 'principal lateral';
+  }
+
+  .financeiro__lateral {
+    position: sticky;
+    top: var(--p-ritmo-cartao);
   }
 }
 

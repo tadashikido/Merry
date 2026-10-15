@@ -212,14 +212,14 @@ async function confirmar() {
 .dialogo-pagamento__formulario {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
 }
 
 .dialogo-pagamento__resumo {
   margin: 0;
   padding: var(--p-espaco-3) var(--p-espaco-4);
   font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   background: var(--p-cor-superficie-sutil);
   border: 1px solid var(--p-cor-divisoria);
   border-radius: var(--p-raio-controle);

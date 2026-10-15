@@ -197,7 +197,7 @@ describe('contraste do financeiro', () => {
   it('[UNITÁRIO] os pares novos do financeiro passam no WCAG AA', () => {
     const pares = PARES_CONTRASTE.filter((par) => par.descricao.startsWith('Financeiro'))
 
-    expect(pares).toHaveLength(6)
+    expect(pares).toHaveLength(8)
     expect(pares.every(atendeContraste)).toBe(true)
   })
 })

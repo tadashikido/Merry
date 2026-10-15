@@ -216,7 +216,8 @@ async function salvar() {
           :aria-describedby="descritoPor"
           :readonly="executando"
           data-teste="campo-valor-parcela"
-          @blur="formulario.validarCampo('valor')"
+          @update:model-value="formulario.revalidarAoDigitar('valor')"
+          @blur="formulario.validarAoSair('valor')"
         />
       </CampoFormulario>
 
@@ -240,7 +241,8 @@ async function salvar() {
           :aria-describedby="descritoPor"
           :readonly="executando"
           data-teste="campo-vencimento-parcela"
-          @blur="formulario.validarCampo('vencimento')"
+          @update:model-value="formulario.revalidarAoDigitar('vencimento')"
+          @blur="formulario.validarAoSair('vencimento')"
         />
       </CampoFormulario>
 
@@ -260,7 +262,8 @@ async function salvar() {
           :aria-describedby="descritoPor"
           :readonly="executando"
           data-teste="campo-observacao-parcela"
-          @blur="formulario.validarCampo('observacao')"
+          @update:model-value="formulario.revalidarAoDigitar('observacao')"
+          @blur="formulario.validarAoSair('observacao')"
         />
       </CampoFormulario>
 
@@ -303,7 +306,7 @@ async function salvar() {
 .dialogo-parcela__formulario {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
 }
 
 .dialogo-parcela__saldo {

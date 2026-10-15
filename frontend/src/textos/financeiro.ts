@@ -32,7 +32,7 @@ export const TEXTOS_FINANCEIRO = {
   vazioSemContratadoTexto: 'Marque um fornecedor como contratado para registrar as parcelas.',
   irFornecedores: 'Ir para Fornecedores',
   vazioCasalTitulo: 'A assessoria ainda não registrou pagamentos.',
-  vazioCasalTexto: 'Quando houver parcelas, você acompanha tudo por aqui.',
+  vazioCasalTexto: 'Quando houver parcelas, vocês acompanham tudo por aqui.',
   primeiroAcessoTitulo: 'Organize os pagamentos do casamento',
   primeiroAcessoTexto: 'O Financeiro reúne as parcelas de todos os fornecedores contratados.',
   primeiroAcessoPassos: [
@@ -40,7 +40,7 @@ export const TEXTOS_FINANCEIRO = {
     { chave: 'gerar', rotulo: 'Gere as parcelas do contrato.', concluido: false },
     { chave: 'pagar', rotulo: 'Registre cada pagamento com o comprovante.', concluido: false },
   ],
-  rodapeCasal: 'A assessoria registra os pagamentos. Fale com ela se algo estiver diferente.',
+  rodapeCasal: 'A assessoria registra os pagamentos. Falem com ela se algo estiver diferente.',
   arquivado: 'Este casamento está arquivado. Restaure para registrar pagamentos.',
   cancelado: 'Parcelas mantidas como histórico. Não entram nos totais nem nos alertas.',
   rotuloCancelado: 'Cancelado',
@@ -66,6 +66,17 @@ export const TEXTOS_FINANCEIRO = {
   maisAcoes: 'Mais ações',
   maisAcoesAria: (numero: number, total: number, empresa: string) => `Ações da parcela ${numero}/${total} de ${empresa}`,
   acoesFornecedorAria: (empresa: string) => `Parcelas de ${empresa}`,
+  indicadoresRotulo: 'Resumo dos pagamentos',
+  indicadorPago: 'Pago',
+  apoioPago: 'já registrado',
+  indicadorAPagar: 'A pagar',
+  apoioAPagar: 'parcelas em aberto',
+  indicadorVencido: 'Vencido',
+  apoioVencidas: (quantidade: number) => `${quantidade} ${plural(quantidade, 'parcela vencida', 'parcelas vencidas')}`,
+  apoioEmDia: 'Nada vencido',
+  indicadorAParcelar: 'A parcelar',
+  apoioAParcelar: 'contratado sem parcela',
+  lateralRotulo: 'Orçamento',
 } as const
 
 export const TEXTOS_PARCELA = {

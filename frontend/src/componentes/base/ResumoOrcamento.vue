@@ -312,8 +312,8 @@ const totalExcedente = computed(() =>
   container: resumo-orcamento / inline-size;
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
-  padding: var(--p-espaco-5) var(--p-espaco-4);
+  gap: var(--p-ritmo-campo);
+  padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
@@ -321,10 +321,13 @@ const totalExcedente = computed(() =>
 
 .resumo-orcamento .resumo-orcamento__titulo {
   margin: 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto-secundario);
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-medio);
+  line-height: 1.33;
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
+  color: var(--p-cor-texto-apoio);
 }
 
 .resumo-orcamento__frase {
@@ -338,7 +341,7 @@ const totalExcedente = computed(() =>
 .resumo-orcamento__numero {
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina-celular);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
   font-variant-numeric: lining-nums tabular-nums;
   color: var(--p-cor-primaria);
@@ -366,7 +369,7 @@ const totalExcedente = computed(() =>
 .resumo-orcamento__tabela {
   display: block;
   width: 100%;
-  margin-top: var(--p-espaco-3);
+  margin-top: var(--p-ritmo-campo);
   border-collapse: collapse;
 }
 
@@ -377,7 +380,7 @@ const totalExcedente = computed(() =>
 
 .resumo-orcamento__linha {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(min-content, 1fr) minmax(0, max-content);
   grid-template-areas:
     'categoria contratado'
     'orcado orcado'
@@ -398,7 +401,7 @@ const totalExcedente = computed(() =>
   grid-area: categoria;
   padding: 0;
   font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   text-align: start;
   color: var(--p-cor-texto);
 }
@@ -437,8 +440,18 @@ const totalExcedente = computed(() =>
 .resumo-orcamento__faixa {
   height: var(--p-espaco-3);
   overflow: hidden;
-  background: var(--p-cor-trilho);
   border-radius: var(--p-raio-controle);
+}
+
+.resumo-orcamento__regua--camadas,
+.resumo-orcamento__faixa,
+.resumo-orcamento__amostra--livre {
+  background-color: var(--p-cor-trilho);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--p-cor-borda-campo) 0 1px,
+    transparent 1px var(--p-espaco-1)
+  );
 }
 
 .resumo-orcamento__camada {
@@ -496,8 +509,7 @@ const totalExcedente = computed(() =>
 }
 
 .resumo-orcamento__amostra--livre {
-  background: var(--p-cor-trilho);
-  box-shadow: inset 0 0 0 1px var(--p-cor-borda-controle);
+  box-shadow: inset 0 0 0 1px var(--p-cor-borda-campo);
 }
 
 .resumo-orcamento__regua--excedida .resumo-orcamento__preenchimento {
@@ -528,11 +540,11 @@ const totalExcedente = computed(() =>
 }
 
 .resumo-orcamento__linha--total .resumo-orcamento__valor {
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
 }
 
 .resumo-orcamento__contratado {
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
 }
 
 .resumo-orcamento__de,
@@ -542,7 +554,7 @@ const totalExcedente = computed(() =>
 
 @media (min-width: 640px) {
   .resumo-orcamento {
-    padding: var(--p-espaco-6);
+    padding: var(--p-ritmo-cartao);
   }
 
   .resumo-orcamento__numero {
@@ -572,7 +584,7 @@ const totalExcedente = computed(() =>
   }
 
   .resumo-orcamento__linha {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(min-content, 1fr) minmax(0, max-content);
     grid-template-areas:
       'categoria contratado'
       'orcado orcado'
@@ -581,7 +593,7 @@ const totalExcedente = computed(() =>
   }
 
   .resumo-orcamento__linha--total {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(min-content, 1fr) minmax(0, max-content);
     grid-template-areas:
       'categoria contratado'
       'orcado orcado';
