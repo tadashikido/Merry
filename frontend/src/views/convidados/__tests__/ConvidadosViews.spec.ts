@@ -163,7 +163,9 @@ describe('ConvidadosView', { timeout: 20_000 }, () => {
 
     expect(wrapper!.text()).toContain('Marcos Lima')
     expect(wrapper!.text()).not.toContain('Família Souza')
-    expect(fetchSimulado.mock.calls.some(([url]) => String(url).includes('MÁRCOS') || String(url).includes('?'))).toBe(false)
+    expect(
+      fetchSimulado.mock.calls.some(([url]) => String(url).includes('/convites') && (String(url).includes('MÁRCOS') || String(url).includes('?'))),
+    ).toBe(false)
   })
 
   it('[COMPONENTE] vazio convida a adicionar o primeiro convite', async () => {

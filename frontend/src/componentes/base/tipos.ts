@@ -11,6 +11,12 @@ export const ICONES_STATUS: Record<VarianteStatus, NomeIcone> = {
   informacao: 'informacao',
 }
 
+export interface ItemTrilha {
+  chave: string
+  rotulo: string
+  rota: RouteLocationRaw | null
+}
+
 export interface ColunaListagem<T> {
   campo: keyof T & string
   titulo: string

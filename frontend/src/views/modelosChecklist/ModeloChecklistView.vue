@@ -130,13 +130,6 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
         :titulo="modelo?.nome ?? TEXTOS_MODELOS_CHECKLIST.titulo"
         :descricao="modelo?.descricao ?? undefined"
       >
-        <template #trilha>
-          <RouterLink :to="{ name: 'modelos-checklist' }">
-            {{ TEXTOS_MODELOS_CHECKLIST.titulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ modelo?.nome }}</span>
-        </template>
         <template
           v-if="modelo"
           #detalhes

@@ -176,16 +176,6 @@ async function desfazerArquivamento(id: string) {
         :titulo="nomes"
         tamanho="display"
       >
-        <template
-          v-if="!autenticacao.ehCasal"
-          #trilha
-        >
-          <RouterLink :to="{ name: 'casamentos' }">
-            {{ TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ nomes }}</span>
-        </template>
         <template #titulo>
           <NomesCasal
             :primeiro="casamento.nomePrimeiraPessoa"

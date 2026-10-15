@@ -19,7 +19,6 @@ import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { useFornecedoresCasamentoStore } from '@/stores/fornecedoresCasamento'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
 import { TEXTOS_PARCELAS_FORNECEDOR } from '@/textos/financeiro'
 import { TEXTOS_CONTRATO, TEXTOS_FORNECEDORES_CASAMENTO } from '@/textos/fornecedoresCasamento'
@@ -197,19 +196,6 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
         :titulo="TEXTOS_FORNECEDORES_CASAMENTO.titulo"
         :descricao="descricao"
       >
-        <template #trilha>
-          <template v-if="!autenticacao.ehCasal">
-            <RouterLink :to="{ name: 'casamentos' }">
-              {{ TEXTOS_CASAMENTOS.listaTitulo }}
-            </RouterLink>
-            <span aria-hidden="true"> / </span>
-          </template>
-          <RouterLink :to="{ name: 'casamento', params: { id } }">
-            {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ TEXTOS_FORNECEDORES_CASAMENTO.titulo }}</span>
-        </template>
         <template
           v-if="podeGerenciar && !falha && !semVinculos"
           #acoes

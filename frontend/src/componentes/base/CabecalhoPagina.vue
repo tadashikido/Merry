@@ -1,9 +1,45 @@
 <script setup lang="ts">
+import { computed, inject } from 'vue'
+
+import TrilhaPagina from './TrilhaPagina.vue'
+import type { ItemTrilha } from './tipos'
+import { CHAVE_TRILHA } from '@/layouts/trilha'
 import { ROTULOS_NAVEGACAO } from '@/textos/rotulos'
 
-withDefaults(defineProps<{ titulo: string; descricao?: string; tamanho?: 'pagina' | 'display' }>(), {
-  descricao: undefined,
-  tamanho: 'pagina',
+const props = withDefaults(
+  defineProps<{
+    titulo: string
+    descricao?: string
+    tamanho?: 'pagina' | 'display'
+    rotuloTrilha?: string
+    rotulosTrilha?: Partial<Record<string, string | null | undefined>>
+  }>(),
+  {
+    descricao: undefined,
+    tamanho: 'pagina',
+    rotuloTrilha: undefined,
+    rotulosTrilha: () => ({}),
+  },
+)
+
+const niveisTrilha = inject(CHAVE_TRILHA, null)
+
+const itensTrilha = computed<ItemTrilha[]>(() => {
+  const niveis = niveisTrilha?.value ?? []
+  if (niveis.length < 2) {
+    return []
+  }
+  const ultimo = niveis.length - 1
+  return niveis.map((nivel, indice) => {
+    const atual = indice === ultimo
+    const dinamico = atual ? props.rotuloTrilha : props.rotulosTrilha[nivel.chave]
+    const reserva = atual ? props.titulo : ROTULOS_NAVEGACAO.casamentoGenerico
+    return {
+      chave: nivel.chave,
+      rotulo: dinamico || nivel.rotulo || reserva,
+      rota: atual ? null : nivel.rota,
+    }
+  })
 })
 </script>
 
@@ -13,11 +49,13 @@ withDefaults(defineProps<{ titulo: string; descricao?: string; tamanho?: 'pagina
     :class="`cabecalho-pagina--${tamanho}`"
   >
     <nav
-      v-if="$slots.trilha"
+      v-if="$slots.trilha || itensTrilha.length > 0"
       class="cabecalho-pagina__trilha"
       :aria-label="ROTULOS_NAVEGACAO.trilha"
     >
-      <slot name="trilha" />
+      <slot name="trilha">
+        <TrilhaPagina :itens="itensTrilha" />
+      </slot>
     </nav>
     <div class="cabecalho-pagina__linha">
       <div class="cabecalho-pagina__textos">

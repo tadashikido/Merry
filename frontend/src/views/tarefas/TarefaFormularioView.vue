@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
@@ -17,7 +17,6 @@ import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore, type FalhaCasamento } from '@/stores/casamentos'
 import { useTarefasStore } from '@/stores/tarefas'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import {
   ROTULOS_CATEGORIA_TAREFA,
   ROTULOS_RESPONSAVEL_TAREFA,
@@ -209,19 +208,7 @@ function cancelar() {
     <CabecalhoPagina
       :titulo="titulo"
       :descricao="nomes || undefined"
-    >
-      <template #trilha>
-        <RouterLink :to="{ name: 'casamentos' }">
-          {{ TEXTOS_CASAMENTOS.listaTitulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <RouterLink :to="{ name: 'casamento-tarefas', params: { id } }">
-          {{ TEXTOS_TAREFAS.titulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <span aria-current="page">{{ titulo }}</span>
-      </template>
-    </CabecalhoPagina>
+    />
 
     <div class="formulario-tarefa__area">
       <EstadoCarregando

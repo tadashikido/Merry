@@ -50,3 +50,18 @@ export interface ContextoCasamento {
 }
 
 export type ContextoVisual = 'assessoria' | 'casal'
+
+export interface NivelTrilha {
+  chave: string
+  rotulo: string | null
+  rota: RouteLocationRaw
+}
+
+export interface OpcaoSeletorCasamento {
+  id: string
+  nomePrimeiraPessoa: string
+  nomeSegundaPessoa: string
+  rotulo: string
+  data: DataCalendario
+  diasRestantes: number
+}

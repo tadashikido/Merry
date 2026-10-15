@@ -147,13 +147,6 @@ function arquivarEmVezDeExcluir() {
 
     <template v-else>
       <CabecalhoPagina :titulo="fornecedor?.nomeEmpresa ?? TEXTOS_FORNECEDORES.tituloDetalhe">
-        <template #trilha>
-          <RouterLink :to="{ name: 'fornecedores' }">
-            {{ TEXTOS_FORNECEDORES.titulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ fornecedor?.nomeEmpresa }}</span>
-        </template>
         <template
           v-if="fornecedor"
           #detalhes

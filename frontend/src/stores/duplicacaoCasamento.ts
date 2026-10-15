@@ -42,7 +42,9 @@ export const useDuplicacaoCasamentoStore = defineStore('duplicacaoCasamento', ()
       requisitar<DuplicacaoCasamentoDto>(caminhoDuplicacao(origemId), { metodo: 'POST', corpo: request }),
     )
     if (resultado.ok) {
-      useCasamentosStore().atual = resultado.valor.casamento
+      const casamentos = useCasamentosStore()
+      casamentos.atual = resultado.valor.casamento
+      casamentos.invalidarAtivos()
     }
     return resultado
   }

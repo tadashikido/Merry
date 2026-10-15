@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
 import Button from 'primevue/button'
 
 import LayoutPainelUsuario from '@/layouts/LayoutPainelUsuario.vue'
@@ -20,8 +19,7 @@ import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { useConvidadosStore } from '@/stores/convidados'
 import { useRestricoesAlimentaresStore } from '@/stores/restricoesAlimentares'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
-import { ROTULOS_RESPOSTA, TEXTOS_CONVIDADOS, VARIANTE_RESPOSTA } from '@/textos/convidados'
+import { ROTULOS_RESPOSTA, VARIANTE_RESPOSTA } from '@/textos/convidados'
 import { ROTULOS_ORIGEM_CONSENTIMENTO, ROTULOS_TIPO_RESTRICAO, TEXTOS_DADOS_SENSIVEIS } from '@/textos/dadosSensiveis'
 import type {
   PessoaRestricaoAlimentarDto,
@@ -236,21 +234,6 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
       :titulo="TEXTOS_DADOS_SENSIVEIS.tituloPainel"
       :descricao="TEXTOS_DADOS_SENSIVEIS.descricaoPainel"
     >
-      <template #trilha>
-        <RouterLink :to="{ name: 'casamentos' }">
-          {{ TEXTOS_CASAMENTOS.listaTitulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <RouterLink :to="{ name: 'casamento', params: { id } }">
-          {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <RouterLink :to="{ name: 'casamento-convidados', params: { id } }">
-          {{ TEXTOS_CONVIDADOS.listaTitulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <span aria-current="page">{{ TEXTOS_DADOS_SENSIVEIS.tituloPainel }}</span>
-      </template>
       <template #acoes>
         <Button
           v-if="relatorio && podeRegistrar"

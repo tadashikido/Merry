@@ -27,7 +27,6 @@ import { useTelaPequena } from '@/composables/useTelaPequena'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { useMesasStore } from '@/stores/mesas'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { TEXTOS_MESAS } from '@/textos/mesas'
 import type { FalhaCasamento } from '@/stores/casamentos'
 import type { MesaDto, PessoaMesaDto } from '@/tipos/mesas'
@@ -392,19 +391,6 @@ function acaoCabecalho(chave: string) {
         :titulo="TEXTOS_MESAS.titulo"
         :descricao="descricao"
       >
-        <template #trilha>
-          <template v-if="!autenticacao.ehCasal">
-            <RouterLink :to="{ name: 'casamentos' }">
-              {{ TEXTOS_CASAMENTOS.listaTitulo }}
-            </RouterLink>
-            <span aria-hidden="true"> / </span>
-          </template>
-          <RouterLink :to="{ name: 'casamento', params: { id } }">
-            {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ TEXTOS_MESAS.titulo }}</span>
-        </template>
         <template #acoes>
           <template v-if="mapa && mesas.length > 0">
             <MenuAcoes

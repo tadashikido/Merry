@@ -109,13 +109,6 @@ function editarModelo() {
         :titulo="modelo?.nome ?? TEXTOS_MODELOS_CRONOGRAMA.titulo"
         :descricao="modelo?.descricao ?? undefined"
       >
-        <template #trilha>
-          <RouterLink :to="{ name: 'modelos-cronograma' }">
-            {{ TEXTOS_MODELOS_CRONOGRAMA.titulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-          <span aria-current="page">{{ modelo?.nome }}</span>
-        </template>
         <template
           v-if="modelo"
           #detalhes

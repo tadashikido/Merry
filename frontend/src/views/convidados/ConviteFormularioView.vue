@@ -15,12 +15,10 @@ import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import ListaRepetivel from '@/componentes/base/ListaRepetivel.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import type { TextosListaRepetivel } from '@/componentes/base/tipos'
-import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { useConvidadosStore, type FalhaConvidados } from '@/stores/convidados'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
 import { ROTULOS_FAIXA_ETARIA, ROTULOS_RESPOSTA, TEXTOS_CONVIDADOS } from '@/textos/convidados'
 import { ROTULOS_ACOES } from '@/textos/rotulos'
 import {
@@ -58,8 +56,6 @@ interface PessoaFormulario {
 type CampoPessoa = 'nome' | 'telefone' | 'email' | 'faixaEtaria' | 'resposta'
 
 const props = defineProps<{ id: string; conviteId?: string }>()
-
-const autenticacao = useAutenticacaoStore()
 
 const casamentos = useCasamentosStore()
 const store = useConvidadosStore()
@@ -381,25 +377,7 @@ function excluir() {
     <CabecalhoPagina
       :titulo="titulo"
       :descricao="nomes || undefined"
-    >
-      <template #trilha>
-        <template v-if="!autenticacao.ehCasal">
-          <RouterLink :to="{ name: 'casamentos' }">
-            {{ TEXTOS_CASAMENTOS.listaTitulo }}
-          </RouterLink>
-          <span aria-hidden="true"> / </span>
-        </template>
-        <RouterLink :to="{ name: 'casamento', params: { id } }">
-          {{ nomes || TEXTOS_CASAMENTOS.listaTitulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <RouterLink :to="{ name: 'casamento-convidados', params: { id } }">
-          {{ TEXTOS_CONVIDADOS.listaTitulo }}
-        </RouterLink>
-        <span aria-hidden="true"> / </span>
-        <span aria-current="page">{{ titulo }}</span>
-      </template>
-    </CabecalhoPagina>
+    />
 
     <div class="formulario-convite__area">
       <EstadoCarregando

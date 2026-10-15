@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import LayoutPainel from './LayoutPainel.vue'
 import { ITENS_RAIL_ASSESSORIA, itensRailCasal } from './menuPainel'
 import { gruposNavegacaoCasamento } from './modulosCasamento'
-import type { ContextoCasamento, IndicadorModulo, ModuloCasamento } from './tipos'
+import type { ContextoCasamento, IndicadorModulo, ModuloCasamento, NivelTrilha, OpcaoSeletorCasamento } from './tipos'
+import { CHAVE_TRILHA, destinoTrocaCasamento, montarTrilha } from './trilha'
 import ResumoUsuario from '@/componentes/base/ResumoUsuario.vue'
 import { somenteAssessoria } from '@/router/guardaAutenticacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { TEXTOS_AREA_CASAL } from '@/textos/acessoCasal'
 import { TEXTOS_CHECKLIST } from '@/textos/checklist'
+import { formatarNomesCasal } from '@/utilitarios/formatacao'
 
 const store = useAutenticacaoStore()
 const casamentos = useCasamentosStore()
@@ -71,6 +73,38 @@ const contextoCasamento = computed<ContextoCasamento | null>(() => {
   return atual && atual.id === casamentoId.value ? atual : null
 })
 
+const nomeRotaAtual = computed(() => (typeof rota.name === 'string' ? rota.name : null))
+
+const trilha = computed<NivelTrilha[]>(() => {
+  const atual = contextoCasamento.value
+  return montarTrilha(
+    nomeRotaAtual.value,
+    rota.params,
+    (nome) => roteador.getRoutes().find((registro) => registro.name === nome),
+    {
+      ehCasal: store.ehCasal,
+      rotuloCasamento: atual ? formatarNomesCasal(atual.nomePrimeiraPessoa, atual.nomeSegundaPessoa) : null,
+    },
+  )
+})
+
+provide(CHAVE_TRILHA, trilha)
+
+const exibeSeletor = computed(() => !store.ehCasal && casamentoId.value !== null)
+
+const opcoesSeletor = computed<OpcaoSeletorCasamento[] | null>(() =>
+  exibeSeletor.value
+    ? casamentos.ativos.map((casamento) => ({
+        id: casamento.id,
+        nomePrimeiraPessoa: casamento.nomePrimeiraPessoa,
+        nomeSegundaPessoa: casamento.nomeSegundaPessoa,
+        rotulo: formatarNomesCasal(casamento.nomePrimeiraPessoa, casamento.nomeSegundaPessoa),
+        data: casamento.data,
+        diasRestantes: casamento.diasRestantes,
+      }))
+    : null,
+)
+
 watch(
   casamentoId,
   (id) => {
@@ -80,6 +114,23 @@ watch(
   },
   { immediate: true },
 )
+
+watch(
+  () => exibeSeletor.value && !casamentos.ativosCarregados,
+  (precisaCarregar) => {
+    if (precisaCarregar) {
+      void casamentos.garantirAtivos()
+    }
+  },
+  { immediate: true },
+)
+
+function trocarCasamento(id: string) {
+  if (id === casamentoId.value) {
+    return
+  }
+  void roteador.push(destinoTrocaCasamento(nomeRotaAtual.value, id))
+}
 
 async function sair() {
   saindo.value = true
@@ -94,6 +145,9 @@ async function sair() {
     :grupos-casamento="gruposCasamento"
     :contexto-casamento="contextoCasamento"
     :contexto="store.ehCasal ? 'casal' : 'assessoria'"
+    :casamento-id="casamentoId"
+    :opcoes-seletor="opcoesSeletor"
+    @trocar-casamento="trocarCasamento"
   >
     <template #rodape-menu="{ variante }">
       <ResumoUsuario
