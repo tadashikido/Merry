@@ -145,6 +145,8 @@ export const TEXTOS_TAREFAS = {
   campoDescricao: 'Descrição',
   campoDescricaoDica: (usados: number, limite: number) => `Detalhes que ajudam quem vai fazer. ${usados}/${limite}`,
   campoSituacao: 'Situação',
+  grupoTarefa: 'A tarefa',
+  grupoOrganizacao: 'Organização',
   criar: 'Criar tarefa',
   salvar: 'Salvar alterações',
   cancelar: 'Cancelar',
