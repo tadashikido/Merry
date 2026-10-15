@@ -80,6 +80,8 @@ export const TEXTOS_CRONOGRAMA = {
   sucessoCriado: 'Item adicionado.',
   sucessoSalvo: 'Item salvo.',
   sucessoExcluido: 'Item excluído.',
+  sucessoRestaurado: (atividade: string) => `Item “${atividade}” restaurado.`,
+  erroExcluir: (atividade: string) => `Não foi possível excluir o item “${atividade}”. Tente de novo.`,
   confirmarExcluir: 'O item sai do cronograma.',
   rotuloLinhaIntervalo: (atividade: string, inicio: string, termino: string) => `Editar ${atividade}, das ${inicio} às ${termino}`,
   rotuloLinhaInstante: (atividade: string, inicio: string) => `Editar ${atividade}, às ${inicio}`,

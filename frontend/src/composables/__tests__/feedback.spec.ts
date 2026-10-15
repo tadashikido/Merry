@@ -177,6 +177,81 @@ describe('confirmação de exclusão e toast', () => {
     expect(elemento('[data-teste="toast-desfazer"]')).toBeNull()
   })
 
+  it('[COMPONENTE] fechar o toast pelo X executa a ação de fechamento uma única vez', async () => {
+    const { wrapper, api } = montarHarness()
+    montado = wrapper
+    const aoFechar = vi.fn()
+    const desfazer = vi.fn()
+
+    api.sucesso('“Família Souza” foi excluído.', { desfazer, aoFechar })
+    await flushPromises()
+    document.body.querySelector<HTMLButtonElement>('.toast-enlace__fechar')!.click()
+    await flushPromises()
+
+    expect(aoFechar).toHaveBeenCalledTimes(1)
+    expect(desfazer).not.toHaveBeenCalled()
+    expect(elemento('[data-teste="toast"]')).toBeNull()
+  })
+
+  it('[COMPONENTE] desfazer executa a operação inversa antes da ação de fechamento', async () => {
+    const { wrapper, api } = montarHarness()
+    montado = wrapper
+    const ordem: string[] = []
+
+    api.sucesso('Mesa 4 foi excluída.', {
+      desfazer: () => {
+        ordem.push('desfazer')
+      },
+      aoFechar: () => {
+        ordem.push('fechar')
+      },
+    })
+    await flushPromises()
+    botao('toast-desfazer').click()
+    await flushPromises()
+
+    expect(ordem).toEqual(['desfazer', 'fechar'])
+  })
+
+  it('[COMPONENTE] toast que expira pelo tempo executa a ação de fechamento', async () => {
+    vi.useFakeTimers()
+    try {
+      const { wrapper, api } = montarHarness()
+      montado = wrapper
+      const aoFechar = vi.fn()
+
+      api.sucesso('Item excluído.', { desfazer: vi.fn(), aoFechar })
+      await flushPromises()
+      expect(aoFechar).not.toHaveBeenCalled()
+
+      vi.advanceTimersByTime(DURACAO_TOAST_SUCESSO + 10)
+      await flushPromises()
+
+      expect(aoFechar).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('[COMPONENTE] exclusão confirmada com desfazer mostra o toast com Desfazer e repassa o fechamento', async () => {
+    const { wrapper, api } = montarHarness()
+    montado = wrapper
+    const desfazer = vi.fn()
+    const aoFecharAviso = vi.fn()
+
+    api.confirmarExclusao({ nomeItem: 'Família Souza', aoConfirmar: vi.fn(), desfazer, aoFecharAviso })
+    await flushPromises()
+    botao('confirmar-exclusao').click()
+    await flushPromises()
+
+    expect(document.body.textContent).toContain('“Família Souza” foi excluído.')
+    botao('toast-desfazer').click()
+    await flushPromises()
+
+    expect(desfazer).toHaveBeenCalledTimes(1)
+    expect(aoFecharAviso).toHaveBeenCalledTimes(1)
+  })
+
   it('[UNITÁRIO] mantém erro visível por mais tempo que sucesso', () => {
     expect(DURACAO_TOAST_SUCESSO).toBe(5000)
     expect(DURACAO_TOAST_ERRO).toBeGreaterThan(DURACAO_TOAST_SUCESSO)

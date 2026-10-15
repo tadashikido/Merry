@@ -257,7 +257,7 @@ describe('CronogramaView — assessoria', () => {
     expect(document.body.querySelector('[data-teste="dialogo-item-cronograma"]')).not.toBeNull()
   })
 
-  it('[COMPONENTE] excluir pela folha pede confirmação nomeando a atividade e envia DELETE', async () => {
+  it('[COMPONENTE] excluir pela folha pede confirmação nomeando a atividade e envia DELETE quando o aviso fecha', async () => {
     const montagem = await abrir(
       SESSAO_EXEMPLO,
       () => respostaJson(cronogramaExemplo([CERIMONIA])),
@@ -272,9 +272,42 @@ describe('CronogramaView — assessoria', () => {
     expect(confirmacao.visivel).toBe(true)
     expect(confirmacao.nomeItem).toBe('Cerimônia')
     expect(confirmacao.mensagem).toBe(TEXTOS_CRONOGRAMA.confirmarExcluir)
+    const aviso = confirmacao.avisoAtual()
+    expect(aviso.mensagem).toBe(TEXTOS_CRONOGRAMA.sucessoExcluido)
+    expect(aviso.desfazer).toBeTypeOf('function')
     await confirmacao.confirmar()
     await flushPromises()
+
+    expect(wrapper!.text()).not.toContain('Cerimônia')
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CRONOGRAMA}/c`)).toHaveLength(0)
+
+    await aviso.aoFechar!()
+    await flushPromises()
     expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CRONOGRAMA}/c`)).toHaveLength(1)
+  })
+
+  it('[COMPONENTE] desfazer a exclusão devolve o item sem enviar DELETE', async () => {
+    const montagem = await abrir(
+      SESSAO_EXEMPLO,
+      () => respostaJson(cronogramaExemplo([CERIMONIA])),
+      quando('DELETE', `${ROTA_CRONOGRAMA}/c`, () => respostaVazia(204)),
+    )
+    const confirmacao = useConfirmacaoExclusaoStore(montagem.pinia)
+
+    await wrapper!.get('button[data-teste="linha-cronograma-conteudo"]').trigger('click')
+    await flushPromises()
+    await clicar('[data-teste="excluir-item-cronograma"]')
+    const aviso = confirmacao.avisoAtual()
+    await confirmacao.confirmar()
+    await flushPromises()
+    expect(wrapper!.findAll('button[data-teste="linha-cronograma-conteudo"]')).toHaveLength(0)
+
+    await aviso.desfazer!()
+    await aviso.aoFechar!()
+    await flushPromises()
+
+    expect(wrapper!.findAll('button[data-teste="linha-cronograma-conteudo"]')).toHaveLength(1)
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CRONOGRAMA}/c`)).toHaveLength(0)
   })
 
   it('[COMPONENTE] sem horário da cerimônia mostra dados incompletos com atalho para informar', async () => {

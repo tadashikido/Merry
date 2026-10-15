@@ -11,6 +11,7 @@ export const MENSAGENS_PADRAO = {
   semResultadoTitulo: 'Nenhum resultado para essa busca',
   semResultadoTexto: 'Revise o termo buscado ou limpe os filtros.',
   exclusaoMensagem: 'Essa ação não pode ser desfeita.',
+  exclusaoJaConcluida: 'Essa exclusão já foi concluída e não pode mais ser desfeita.',
 } as const
 
 export function tituloExclusao(nomeItem: string): string {

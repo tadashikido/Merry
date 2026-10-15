@@ -174,6 +174,26 @@ describe('RsvpView', { timeout: 20_000 }, () => {
     })
   })
 
+  it('[COMPONENTE] seletor de faixa etária do acompanhante tem rótulo visível associado', async () => {
+    rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(dados())))
+    await abrir()
+
+    await clicar('[data-teste="rsvp-todos-vao"]')
+    await clicar('[data-teste="adicionar-item"]')
+
+    const rotulo = wrapper!.get('[data-teste="rsvp-rotulo-faixa-acompanhante"]')
+    expect(rotulo.text()).toBe('Faixa etária')
+    expect(rotulo.isVisible()).toBe(true)
+    const idRotulo = rotulo.attributes('id')
+    expect(idRotulo).toBeTruthy()
+    const grupo = wrapper!.get(`[role="group"][aria-labelledby="${idRotulo}"]`)
+    const seletor = grupo.get('[data-teste="rsvp-faixa-acompanhante"]')
+    expect(seletor.attributes('aria-labelledby')).toBe(idRotulo)
+    expect(seletor.attributes('aria-label')).toBeUndefined()
+    expect(seletor.text()).toContain('Adulto')
+    expect(seletor.text()).toContain('Criança')
+  })
+
   it('[COMPONENTE] ninguém vai retira acompanhantes com aviso', async () => {
     rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(dados())))
     await abrir()

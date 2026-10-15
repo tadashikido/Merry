@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
-import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
+import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
+import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import { avisoExemplo, mapaExemplo, MESA_PADRINHOS, MESA_TIOS } from '@/__tests__/auxiliaresMesas'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
+import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
+import { MENSAGENS_PADRAO } from '@/textos/mensagens'
 import { TEXTOS_MESAS } from '@/textos/mesas'
 import type { ListaConvitesDto } from '@/tipos/convidados'
 import type { MapaMesasDto } from '@/tipos/mesas'
@@ -71,7 +74,70 @@ function dialogo(): HTMLElement {
   return document.body.querySelector('[data-teste="dialogo-sentar"]') as HTMLElement
 }
 
+async function excluirMesa(rotulo: string) {
+  const menu = wrapper!
+    .findAllComponents(MenuAcoes)
+    .find((item) => item.attributes('data-teste') === 'menu-mesa' && item.props('rotuloAcessivel') === TEXTOS_MESAS.acoesMesa(rotulo))
+  menu!.vm.$emit('selecionar', 'excluir')
+  await flushPromises()
+  const confirmacao = useConfirmacaoExclusaoStore()
+  const aviso = confirmacao.avisoAtual()
+  await confirmacao.confirmar()
+  await flushPromises()
+  return aviso
+}
+
+function titulosMesas(): string[] {
+  return wrapper!.findAll('[data-teste="mesa"]').map((mesa) => mesa.get('h3').text())
+}
+
 describe('MesasView', { timeout: 30_000 }, () => {
+  it('[COMPONENTE] excluir mesa some na hora, oferece desfazer e desfazer devolve as pessoas sentadas sem DELETE', async () => {
+    rotearFetch(fetchSimulado, ...rotasPadrao(mapaExemplo(), quando('DELETE', `${ROTA_MESAS}/${MESA_PADRINHOS}`, () => respostaVazia())))
+    await abrir()
+
+    const aviso = await excluirMesa('Mesa 2 · Padrinhos')
+
+    expect(aviso.mensagem).toBe(TEXTOS_MESAS.mesaExcluida('Mesa 2 · Padrinhos'))
+    expect(titulosMesas()).toEqual(['Mesa dos noivos', 'Mesa 3 · Tios'])
+    expect(wrapper!.get('[data-teste="coluna-sem-mesa"]').text()).toContain('Rui Fontes')
+
+    await aviso.desfazer!()
+    await aviso.aoFechar!()
+    await flushPromises()
+
+    expect(titulosMesas()).toEqual(['Mesa dos noivos', 'Mesa 2 · Padrinhos', 'Mesa 3 · Tios'])
+    expect(wrapper!.get('[data-teste="coluna-sem-mesa"]').text()).not.toContain('Rui Fontes')
+    expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_MESAS.mesaRestaurada('Mesa 2 · Padrinhos'))
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_MESAS}/${MESA_PADRINHOS}`)).toHaveLength(0)
+  })
+
+  it('[COMPONENTE] fechar o aviso conclui a exclusão e desfazer tardio informa que já foi concluída', async () => {
+    rotearFetch(fetchSimulado, ...rotasPadrao(mapaExemplo(), quando('DELETE', `${ROTA_MESAS}/${MESA_TIOS}`, () => respostaVazia())))
+    await abrir()
+
+    const aviso = await excluirMesa('Mesa 3 · Tios')
+    await aviso.aoFechar!()
+    await flushPromises()
+    await aviso.desfazer!()
+
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_MESAS}/${MESA_TIOS}`)).toHaveLength(1)
+    expect(notificacoes.erro).toHaveBeenCalledWith(MENSAGENS_PADRAO.exclusaoJaConcluida)
+  })
+
+  it('[COMPONENTE] simula falha do servidor ao concluir: mesa volta e mostra erro nomeando a mesa', async () => {
+    rotearFetch(fetchSimulado, ...rotasPadrao(mapaExemplo(), quando('DELETE', `${ROTA_MESAS}/${MESA_TIOS}`, () => respostaProblema(500))))
+    await abrir()
+
+    const aviso = await excluirMesa('Mesa 3 · Tios')
+    expect(titulosMesas()).not.toContain('Mesa 3 · Tios')
+    await aviso.aoFechar!()
+    await flushPromises()
+
+    expect(titulosMesas()).toContain('Mesa 3 · Tios')
+    expect(notificacoes.erro).toHaveBeenCalledWith(TEXTOS_MESAS.erroExcluirMesa('Mesa 3 · Tios'))
+  })
+
   it('[COMPONENTE] mostra totais, sem mesa por convite e mesas na ordem com ocupação, sem dados de saúde', async () => {
     rotearFetch(fetchSimulado, ...rotasPadrao())
     await abrir()

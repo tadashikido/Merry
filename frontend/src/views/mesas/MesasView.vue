@@ -22,6 +22,7 @@ import type { ItemContagem, ItemMenuAcoes } from '@/componentes/base/tipos'
 import DialogoMesa from '@/componentes/mesas/DialogoMesa.vue'
 import DialogoSentarEm from '@/componentes/mesas/DialogoSentarEm.vue'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
+import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useTelaPequena } from '@/composables/useTelaPequena'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
@@ -61,6 +62,7 @@ const store = useMesasStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
 const { confirmarExclusao } = useConfirmarExclusao()
+const { desfazerExclusao } = useDesfazerExclusao()
 const telaPequena = useTelaPequena()
 
 const busca = ref('')
@@ -268,16 +270,18 @@ function acaoMesa(chave: string, mesa: MesaDto) {
     return
   }
   const rotulo = rotuloMesa(mesa)
+  const casamentoId = props.id
   confirmarExclusao({
     nomeItem: rotulo,
     mensagem: TEXTOS_MESAS.excluirConsequencia(mesa.ocupacao),
     mensagemSucesso: TEXTOS_MESAS.mesaExcluida(rotulo),
-    aoConfirmar: async () => {
-      const resultado = await store.removerMesa(props.id, mesa.id)
-      if (!resultado.ok) {
-        throw new Error(resultado.falha.mensagem ?? TEXTOS_MESAS.erroAcao)
-      }
+    aoConfirmar: () => {
+      store.removerMesaComDesfazer(casamentoId, mesa.id, (falha) => {
+        notificacao.erro(falha.tipo === 'semPermissao' ? TEXTOS_MESAS.erroSemPermissaoAcao : TEXTOS_MESAS.erroExcluirMesa(rotulo))
+      })
     },
+    desfazer: () => desfazerExclusao(() => store.desfazerRemocaoMesa(casamentoId, mesa.id), TEXTOS_MESAS.mesaRestaurada(rotulo)),
+    aoFecharAviso: () => store.concluirRemocaoMesa(casamentoId, mesa.id),
   })
 }
 

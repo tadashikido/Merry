@@ -4,7 +4,16 @@ import { defineStore } from 'pinia'
 import { requisitar } from '@/servicos/clienteHttp'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { interpretarFalhaCasamento, ROTA_CASAMENTOS, type FalhaCasamento } from '@/stores/casamentos'
-import type { ConviteDto, ListaConvitesDto, SalvarConviteRequest, TotaisConvidadosDto } from '@/tipos/convidados'
+import { useExclusoesAdiadasStore } from '@/stores/exclusoesAdiadas'
+import type {
+  ConviteDto,
+  FaixaEtaria,
+  ListaConvitesDto,
+  RespostaRsvp,
+  SalvarConviteRequest,
+  TotaisConvidadosDto,
+  TotaisPorFaixaDto,
+} from '@/tipos/convidados'
 import type { LinkRsvpDto } from '@/tipos/rsvp'
 
 export type FalhaConvidados = FalhaCasamento
@@ -33,7 +42,39 @@ export function rotaConvites(casamentoId: string, conviteId?: string): string {
   return conviteId ? `${base}/${encodeURIComponent(conviteId)}` : base
 }
 
+export function escopoConvites(casamentoId: string): string {
+  return `convites:${casamentoId}`
+}
+
+function descontarFaixa(totais: TotaisPorFaixaDto, adultos: number, criancas: number): TotaisPorFaixaDto {
+  return {
+    adultos: totais.adultos - adultos,
+    criancas: totais.criancas - criancas,
+    total: totais.total - adultos - criancas,
+  }
+}
+
+export function descontarConvite(totais: TotaisConvidadosDto, convite: ConviteDto): TotaisConvidadosDto {
+  const contar = (resposta: RespostaRsvp | null, faixa: FaixaEtaria) =>
+    convite.convidados.filter((pessoa) => (resposta === null || pessoa.resposta === resposta) && pessoa.faixaEtaria === faixa).length
+  const acompanhantes = convite.convidados.filter((pessoa) => pessoa.acompanhante).length
+  const adultos = contar(null, 'Adulto')
+  const criancas = contar(null, 'Crianca')
+
+  return {
+    convites: totais.convites - 1,
+    pessoas: totais.pessoas - adultos - criancas,
+    adultos: totais.adultos - adultos,
+    criancas: totais.criancas - criancas,
+    acompanhantesPermitidos: totais.acompanhantesPermitidos - Math.max(0, convite.limiteAcompanhantes - acompanhantes),
+    pendentes: descontarFaixa(totais.pendentes, contar('Pendente', 'Adulto'), contar('Pendente', 'Crianca')),
+    confirmados: descontarFaixa(totais.confirmados, contar('Confirmado', 'Adulto'), contar('Confirmado', 'Crianca')),
+    recusados: descontarFaixa(totais.recusados, contar('Recusado', 'Adulto'), contar('Recusado', 'Crianca')),
+  }
+}
+
 export const useConvidadosStore = defineStore('convidados', () => {
+  const exclusoes = useExclusoesAdiadasStore()
   const casamentoId = ref<string | null>(null)
   const lista = ref<ListaConvitesDto | null>(null)
   const carregando = ref(false)
@@ -55,7 +96,7 @@ export const useConvidadosStore = defineStore('convidados', () => {
     try {
       const resposta = await requisitar<ListaConvitesDto>(rotaConvites(id))
       if (casamentoId.value === id) {
-        lista.value = resposta
+        lista.value = ocultarPendentes(id, resposta)
       }
     } catch (erro) {
       if (casamentoId.value === id) {
@@ -66,6 +107,19 @@ export const useConvidadosStore = defineStore('convidados', () => {
       if (casamentoId.value === id) {
         carregando.value = false
       }
+    }
+  }
+
+  function ocultarPendentes(id: string, atual: ListaConvitesDto): ListaConvitesDto {
+    const pendentes = exclusoes.chavesPendentes(escopoConvites(id))
+    if (pendentes.size === 0) {
+      return atual
+    }
+    const removidos = atual.convites.filter((convite) => pendentes.has(convite.id))
+    return {
+      ...atual,
+      convites: atual.convites.filter((convite) => !pendentes.has(convite.id)),
+      totais: removidos.reduce(descontarConvite, atual.totais),
     }
   }
 
@@ -119,16 +173,60 @@ export const useConvidadosStore = defineStore('convidados', () => {
     }
   }
 
-  function criar(id: string, request: SalvarConviteRequest): Promise<ResultadoConvidados<ConviteDto>> {
+  async function criar(id: string, request: SalvarConviteRequest): Promise<ResultadoConvidados<ConviteDto>> {
+    await exclusoes.efetivarEscopo(escopoConvites(id))
     return executar(id, () => requisitar<ConviteDto>(rotaConvites(id), { metodo: 'POST', corpo: request }))
   }
 
-  function atualizar(id: string, conviteId: string, request: SalvarConviteRequest): Promise<ResultadoConvidados<ConviteDto>> {
+  async function atualizar(id: string, conviteId: string, request: SalvarConviteRequest): Promise<ResultadoConvidados<ConviteDto>> {
+    await exclusoes.efetivarEscopo(escopoConvites(id))
     return executar(id, () => requisitar<ConviteDto>(rotaConvites(id, conviteId), { metodo: 'PUT', corpo: request }))
   }
 
   function remover(id: string, conviteId: string): Promise<ResultadoConvidados<void>> {
     return executar(id, () => requisitar<void>(rotaConvites(id, conviteId), { metodo: 'DELETE' }))
+  }
+
+  async function recarregarSeAtual(id: string): Promise<void> {
+    if (casamentoId.value === id) {
+      await carregar(id)
+    }
+  }
+
+  function removerComDesfazer(id: string, conviteId: string, aoFalhar?: (falha: FalhaConvidados) => void) {
+    let falhaEfetivacao: FalhaConvidados | null = null
+    exclusoes.agendar({
+      escopo: escopoConvites(id),
+      chave: conviteId,
+      efetivar: async () => {
+        const resultado = await remover(id, conviteId)
+        if (!resultado.ok) {
+          falhaEfetivacao = resultado.falha
+        }
+        await recarregarSeAtual(id)
+        return resultado.ok
+      },
+      aoFalhar: () => {
+        if (falhaEfetivacao) {
+          aoFalhar?.(falhaEfetivacao)
+        }
+      },
+    })
+    if (casamentoId.value === id && lista.value) {
+      lista.value = ocultarPendentes(id, lista.value)
+    }
+  }
+
+  async function desfazerRemocao(id: string, conviteId: string): Promise<boolean> {
+    if (!exclusoes.desfazer(escopoConvites(id), conviteId)) {
+      return false
+    }
+    await recarregarSeAtual(id)
+    return true
+  }
+
+  function concluirRemocao(id: string, conviteId: string): Promise<void> {
+    return exclusoes.efetivar(escopoConvites(id), conviteId)
   }
 
   function substituirConvite(id: string, convite: ConviteDto) {
@@ -171,6 +269,7 @@ export const useConvidadosStore = defineStore('convidados', () => {
   }
 
   async function marcarEnviado(id: string, conviteId: string): Promise<ResultadoConvidados<ConviteDto>> {
+    await exclusoes.efetivarEscopo(escopoConvites(id))
     const resultado = await tentar(() => requisitar<ConviteDto>(`${rotaConvites(id, conviteId)}/envio`, { metodo: 'POST' }))
     if (resultado.ok) {
       substituirConvite(id, resultado.valor)
@@ -218,6 +317,9 @@ export const useConvidadosStore = defineStore('convidados', () => {
     criar,
     atualizar,
     remover,
+    removerComDesfazer,
+    desfazerRemocao,
+    concluirRemocao,
     obterOuGerarLinkRsvp,
     consultarLinkRsvp,
     regenerarLinkRsvp,

@@ -26,10 +26,10 @@ const visivel = computed({
 const pontosQuebra = { [`${breakpoints.tablet - 1}px`]: 'calc(100vw - 2rem)' }
 
 async function excluir() {
-  const sucesso = confirmacaoStore.mensagemSucesso
+  const aviso = confirmacaoStore.avisoAtual()
   const resultado = await confirmacaoStore.confirmar()
   if (resultado === 'excluido') {
-    notificacao.sucesso(sucesso)
+    notificacao.sucesso(aviso.mensagem, aviso.desfazer ? { desfazer: aviso.desfazer, aoFechar: aviso.aoFechar } : undefined)
   } else if (resultado === 'falhou') {
     notificacao.erro()
   }
