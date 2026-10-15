@@ -61,6 +61,7 @@ withDefaults(defineProps<{ titulo: string; descricao?: string; tamanho?: 'pagina
   flex-direction: column;
   gap: var(--p-espaco-3);
   margin-bottom: var(--p-espaco-7);
+  container: cabecalho-pagina / inline-size;
 }
 
 .cabecalho-pagina__trilha {
@@ -168,6 +169,13 @@ withDefaults(defineProps<{ titulo: string; descricao?: string; tamanho?: 'pagina
   .cabecalho-pagina--display .cabecalho-pagina__titulo {
     font-size: var(--p-fonte-tamanho-display);
     line-height: var(--p-fonte-entrelinha-display);
+  }
+
+  @container cabecalho-pagina (max-width: 54rem) {
+    .cabecalho-pagina__destaque {
+      padding-left: 0;
+      border-left: 0;
+    }
   }
 }
 </style>

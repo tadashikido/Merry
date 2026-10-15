@@ -172,20 +172,20 @@ function alternar() {
 }
 
 .item-tarefa__anel:not([aria-disabled='true']):hover {
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-sucesso);
 }
 
 .item-tarefa__anel:not([aria-disabled='true']):hover .item-tarefa__marca {
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-sucesso);
   opacity: 1;
 }
 
 .item-tarefa--concluida .item-tarefa__anel {
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-sucesso);
 }
 
 .item-tarefa--concluida .item-tarefa__circulo {
-  background: var(--p-cor-primaria);
+  background: var(--p-cor-sucesso);
 }
 
 .item-tarefa--concluida .item-tarefa__marca,

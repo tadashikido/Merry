@@ -113,6 +113,17 @@ export const TEXTOS_TAREFAS = {
   vazioCasalTitulo: 'Nada esperando por vocês agora.',
   vazioCasalTexto: 'Quando a assessoria combinar algo com vocês, aparece aqui.',
   rodapeCasal: 'A assessoria cuida das demais tarefas do casamento.',
+  progressoTitulo: 'Progresso',
+  progressoTituloCasal: 'Progresso de vocês',
+  progressoLegenda: (concluidas: number, ativas: number) =>
+    `${concluidas} de ${ativas} ${plural(ativas, 'concluída', 'concluídas')}`,
+  progressoLegendaCasal: (concluidas: number, ativas: number) => `Vocês concluíram ${concluidas} de ${ativas}`,
+  progressoAria: (percentual: number, concluidas: number, ativas: number) =>
+    `${percentual}% concluído: ${concluidas} de ${ativas} ${plural(ativas, 'tarefa', 'tarefas')}`,
+  indicadorAbertas: 'Abertas',
+  indicadorAtrasadas: 'Atrasadas',
+  indicadorSemana: 'Esta semana',
+  indicadorCanceladas: 'Canceladas',
   erroTitulo: 'Não foi possível carregar as tarefas.',
   erroTexto: 'Verifique a conexão e tente de novo.',
   semAcesso: 'Você não tem acesso às tarefas deste casamento.',

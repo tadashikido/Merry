@@ -91,6 +91,31 @@ const descricao = computed(() =>
   casamento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(casamento.value.data)}` : undefined,
 )
 
+const progresso = computed(() => {
+  if (!resumo.value) {
+    return null
+  }
+  const ativas = Math.max(0, resumo.value.total - resumo.value.canceladas)
+  const concluidas = Math.min(resumo.value.concluidas, ativas)
+  const percentual = ativas > 0 ? Math.round((concluidas * 100) / ativas) : 0
+  return { ativas, concluidas, percentual }
+})
+
+const indicadores = computed(() => {
+  if (!resumo.value) {
+    return []
+  }
+  const itens: { chave: string; rotulo: string; valor: number; atraso: boolean }[] = [
+    { chave: 'abertas', rotulo: TEXTOS_TAREFAS.indicadorAbertas, valor: resumo.value.abertas, atraso: false },
+    { chave: 'atrasadas', rotulo: TEXTOS_TAREFAS.indicadorAtrasadas, valor: resumo.value.atrasadas, atraso: resumo.value.atrasadas > 0 },
+    { chave: 'semana', rotulo: TEXTOS_TAREFAS.indicadorSemana, valor: resumo.value.estaSemana, atraso: false },
+  ]
+  if (!visaoDoCasal.value) {
+    itens.push({ chave: 'canceladas', rotulo: TEXTOS_TAREFAS.indicadorCanceladas, valor: resumo.value.canceladas, atraso: false })
+  }
+  return itens
+})
+
 const situacoesDisponiveis = computed(() => (visaoDoCasal.value ? SITUACOES_CASAL : [...SITUACOES_FILTRO_TAREFA]))
 const opcoesSituacao = computed(() =>
   situacoesDisponiveis.value.map((valor) => ({
@@ -297,7 +322,10 @@ function novaTarefa() {
 
 <template>
   <LayoutPainelUsuario>
-    <template v-if="falha?.tipo === 'naoEncontrado'">
+    <div
+      v-if="falha?.tipo === 'naoEncontrado'"
+      class="pilha pilha--grupo"
+    >
       <EstadoErro
         :titulo="visaoDoCasal ? TEXTOS_TAREFAS.naoEncontradoCasalTitulo : TEXTOS_TAREFAS.naoEncontradoTitulo"
         :mensagem="TEXTOS_TAREFAS.naoEncontradoTexto"
@@ -310,7 +338,7 @@ function novaTarefa() {
       >
         {{ autenticacao.casamentoDoCasal ? TEXTOS_TAREFAS.voltarNossoCasamento : TEXTOS_TAREFAS.voltarCasamentos }}
       </RouterLink>
-    </template>
+    </div>
 
     <template v-else>
       <CabecalhoPagina
@@ -373,7 +401,7 @@ function novaTarefa() {
         </template>
       </CabecalhoPagina>
 
-      <div class="tarefas">
+      <div class="tarefas pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado"
           variante="alerta"
@@ -423,83 +451,86 @@ function novaTarefa() {
           </template>
         </EstadoVazio>
 
-        <template v-else-if="lista">
-          <div
-            class="tarefas__filtros"
-            data-teste="filtros-tarefas"
-          >
-            <div class="tarefas__trilho">
-              <SelectButton
-                v-model="situacao"
-                :options="opcoesSituacao"
-                option-label="rotulo"
-                option-value="valor"
-                :allow-empty="false"
-                :aria-label="TEXTOS_TAREFAS.filtroSituacao"
-                data-teste="filtro-situacao"
-              />
-            </div>
+        <div
+          v-else-if="lista"
+          class="tarefas__corpo"
+        >
+          <div class="tarefas__principal pilha pilha--cartao">
             <div
-              v-if="!visaoDoCasal"
-              class="tarefas__filtros-secundarios"
+              class="tarefas__filtros"
+              data-teste="filtros-tarefas"
             >
-              <SelectButton
-                v-model="responsavel"
-                :options="opcoesResponsavel"
-                option-label="rotulo"
-                option-value="valor"
-                :allow-empty="false"
-                :aria-label="TEXTOS_TAREFAS.filtroResponsavel"
-                data-teste="filtro-responsavel"
-              />
-              <Select
-                v-model="categoria"
-                :options="opcoesCategoria"
-                option-label="rotulo"
-                option-value="valor"
-                :aria-label="TEXTOS_TAREFAS.filtroCategoria"
-                data-teste="filtro-categoria"
+              <div class="tarefas__trilho">
+                <SelectButton
+                  v-model="situacao"
+                  :options="opcoesSituacao"
+                  option-label="rotulo"
+                  option-value="valor"
+                  :allow-empty="false"
+                  :aria-label="TEXTOS_TAREFAS.filtroSituacao"
+                  data-teste="filtro-situacao"
+                />
+              </div>
+              <div
+                v-if="!visaoDoCasal"
+                class="tarefas__filtros-secundarios"
+              >
+                <SelectButton
+                  v-model="responsavel"
+                  :options="opcoesResponsavel"
+                  option-label="rotulo"
+                  option-value="valor"
+                  :allow-empty="false"
+                  :aria-label="TEXTOS_TAREFAS.filtroResponsavel"
+                  data-teste="filtro-responsavel"
+                />
+                <Select
+                  v-model="categoria"
+                  :options="opcoesCategoria"
+                  option-label="rotulo"
+                  option-value="valor"
+                  :aria-label="TEXTOS_TAREFAS.filtroCategoria"
+                  data-teste="filtro-categoria"
+                />
+              </div>
+            </div>
+
+            <div
+              v-if="tarefasFiltradas.length === 0"
+              class="tarefas__vazio-filtro cartao"
+              data-teste="vazio-filtro"
+            >
+              <p>{{ TEXTOS_TAREFAS.vazioFiltro }}</p>
+              <Button
+                v-if="situacao !== 'todas' || !filtrosSecundariosPadrao"
+                :label="TEXTOS_TAREFAS.verTodas"
+                severity="secondary"
+                text
+                data-teste="ver-todas"
+                @click="limparFiltros"
               />
             </div>
-          </div>
 
-          <div
-            v-if="tarefasFiltradas.length === 0"
-            class="tarefas__vazio-filtro"
-            data-teste="vazio-filtro"
-          >
-            <p>{{ TEXTOS_TAREFAS.vazioFiltro }}</p>
-            <Button
-              v-if="situacao !== 'todas' || !filtrosSecundariosPadrao"
-              :label="TEXTOS_TAREFAS.verTodas"
-              severity="secondary"
-              text
-              data-teste="ver-todas"
-              @click="limparFiltros"
-            />
-          </div>
-
-          <div
-            v-else
-            class="tarefas__painel"
-          >
-            <template v-if="grupos">
+            <div
+              v-else-if="grupos"
+              class="pilha pilha--cartao"
+            >
               <section
                 v-for="grupo in grupos"
                 :key="grupo.horizonte"
-                class="tarefas__grupo"
+                class="tarefas__grupo pilha pilha--campo"
                 :aria-labelledby="`grupo-${grupo.horizonte}`"
                 :data-teste="`grupo-${grupo.horizonte}`"
               >
                 <h2
                   :id="`grupo-${grupo.horizonte}`"
-                  class="tarefas__titulo-grupo"
+                  class="tarefas__titulo-grupo texto-rotulo"
                   :class="{ 'tarefas__titulo-grupo--atraso': grupo.horizonte === 'atrasadas' }"
                 >
                   {{ grupo.rotulo }}
                 </h2>
                 <ul
-                  class="tarefas__lista"
+                  class="tarefas__lista cartao"
                   :aria-labelledby="`grupo-${grupo.horizonte}`"
                 >
                   <ItemTarefa
@@ -532,10 +563,11 @@ function novaTarefa() {
                   </ItemTarefa>
                 </ul>
               </section>
-            </template>
+            </div>
+
             <ul
               v-else
-              class="tarefas__lista"
+              class="tarefas__lista cartao"
               :aria-label="TEXTOS_TAREFAS.listaRotulo"
             >
               <ItemTarefa
@@ -569,13 +601,79 @@ function novaTarefa() {
             </ul>
           </div>
 
-          <p
-            v-if="visaoDoCasal"
-            class="tarefas__rodape"
+          <aside
+            class="tarefas__lateral pilha pilha--grupo"
+            aria-labelledby="titulo-progresso-tarefas"
+            data-teste="lateral-tarefas"
           >
-            {{ TEXTOS_TAREFAS.rodapeCasal }}
-          </p>
-        </template>
+            <div
+              v-if="progresso"
+              class="tarefas__progresso cartao pilha pilha--grupo"
+              data-teste="progresso-tarefas"
+            >
+              <h2
+                id="titulo-progresso-tarefas"
+                class="texto-rotulo"
+              >
+                {{ visaoDoCasal ? TEXTOS_TAREFAS.progressoTituloCasal : TEXTOS_TAREFAS.progressoTitulo }}
+              </h2>
+              <div class="pilha pilha--campo">
+                <p
+                  class="tarefas__percentual"
+                  data-teste="percentual-tarefas"
+                >
+                  {{ progresso.percentual }}%
+                </p>
+                <div
+                  class="tarefas__trilho-progresso"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  :aria-valuenow="progresso.percentual"
+                  :aria-valuetext="TEXTOS_TAREFAS.progressoAria(progresso.percentual, progresso.concluidas, progresso.ativas)"
+                  aria-labelledby="titulo-progresso-tarefas"
+                  data-teste="barra-progresso-tarefas"
+                >
+                  <span
+                    class="tarefas__preenchimento"
+                    :style="{ inlineSize: `${progresso.percentual}%` }"
+                  />
+                </div>
+                <p
+                  class="tarefas__legenda-progresso texto-legenda"
+                  data-teste="legenda-progresso-tarefas"
+                >
+                  {{
+                    visaoDoCasal
+                      ? TEXTOS_TAREFAS.progressoLegendaCasal(progresso.concluidas, progresso.ativas)
+                      : TEXTOS_TAREFAS.progressoLegenda(progresso.concluidas, progresso.ativas)
+                  }}
+                </p>
+              </div>
+              <dl class="tarefas__indicadores">
+                <div
+                  v-for="indicador in indicadores"
+                  :key="indicador.chave"
+                  class="tarefas__indicador"
+                  :class="{ 'tarefas__indicador--atraso': indicador.atraso }"
+                  :data-teste="`indicador-${indicador.chave}`"
+                >
+                  <dt>{{ indicador.rotulo }}</dt>
+                  <dd class="numeros-tabulares">
+                    {{ formatarNumero(indicador.valor) }}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            <p
+              v-if="visaoDoCasal"
+              class="tarefas__rodape texto-legenda"
+            >
+              {{ TEXTOS_TAREFAS.rodapeCasal }}
+            </p>
+          </aside>
+        </div>
       </div>
     </template>
   </LayoutPainelUsuario>
@@ -583,16 +681,28 @@ function novaTarefa() {
 
 <style scoped>
 .tarefas {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
-  max-width: var(--p-dimensao-largura-leitura);
+  --tarefas-largura-lateral: 18rem;
+
+  container: tarefas / inline-size;
+}
+
+.tarefas__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
+}
+
+.tarefas__principal {
+  min-width: 0;
 }
 
 .tarefas__filtros {
   display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-3);
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--p-ritmo-grupo);
   min-width: 0;
 }
 
@@ -605,47 +715,120 @@ function novaTarefa() {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-3);
-}
-
-.tarefas__painel {
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
-  background: var(--p-cor-superficie);
-}
-
-.tarefas__grupo + .tarefas__grupo {
-  border-top: 1px solid var(--p-cor-borda);
+  gap: var(--p-ritmo-grupo);
 }
 
 .tarefas__titulo-grupo {
   margin: 0;
-  padding: var(--p-espaco-4) var(--p-espaco-4) var(--p-espaco-1);
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto-secundario);
 }
 
 .tarefas__titulo-grupo--atraso {
   color: var(--p-cor-erro-texto);
 }
 
-.tarefas__lista {
+.tarefas .tarefas__lista {
   margin: 0;
-  padding: 0 var(--p-espaco-2);
+  padding: var(--p-ritmo-campo) var(--p-ritmo-grupo);
+}
+
+.tarefas__vazio-filtro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
+}
+
+.tarefas__vazio-filtro p {
+  margin: 0;
+  font-size: var(--p-fonte-tamanho-controle);
+  color: var(--p-cor-texto-apoio);
+}
+
+.tarefas__lateral {
+  min-width: 0;
+  container: lateral / inline-size;
+}
+
+.tarefas__progresso h2 {
+  margin: 0;
+}
+
+.tarefas__percentual {
+  margin: 0;
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-pagina);
+  font-weight: var(--p-fonte-peso-leve);
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-sucesso-texto);
+}
+
+.tarefas__trilho-progresso {
+  height: var(--p-ritmo-campo);
+  overflow: hidden;
+  background: var(--p-cor-trilho);
+  border-radius: var(--p-raio-total);
+}
+
+.tarefas__preenchimento {
+  display: block;
+  height: 100%;
+  background: var(--p-cor-sucesso);
+  border-radius: var(--p-raio-total);
+  transition: inline-size var(--p-duracao-lenta) ease-out;
+}
+
+.tarefas__legenda-progresso {
+  margin: 0;
+}
+
+.tarefas__indicadores {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding-top: var(--p-ritmo-grupo);
+  border-top: 1px solid var(--p-cor-divisoria);
+}
+
+.tarefas__indicador {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-ritmo-grupo);
+  padding-block: var(--p-ritmo-campo);
+  font-size: var(--p-fonte-tamanho-controle);
+}
+
+.tarefas__indicador dt {
+  color: var(--p-cor-texto-secundario);
+}
+
+.tarefas__indicador dd {
+  margin: 0;
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-texto);
+}
+
+.tarefas__indicador--atraso dt,
+.tarefas__indicador--atraso dd {
+  color: var(--p-cor-erro-texto);
+}
+
+.tarefas__rodape {
+  margin: 0;
 }
 
 .tarefas__destaque {
   display: flex;
   align-items: baseline;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   margin: 0;
 }
 
 .tarefas__destaque-numero {
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina);
+  font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
   font-variant-numeric: lining-nums tabular-nums;
 }
@@ -661,30 +844,49 @@ function novaTarefa() {
 
 .tarefas__destaque--em-dia {
   align-items: center;
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-sucesso-texto);
 }
 
-.tarefas__vazio-filtro {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--p-espaco-2);
-  padding: var(--p-espaco-6) var(--p-espaco-4);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
-  background: var(--p-cor-superficie);
-  color: var(--p-cor-texto-apoio);
-}
-
-.tarefas__vazio-filtro p,
-.tarefas__rodape {
-  margin: 0;
-  font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-apoio);
+.tarefas__destaque--em-dia .tarefas__destaque-rotulo {
+  color: var(--p-cor-sucesso-texto);
 }
 
 .tarefas__voltar {
-  display: inline-block;
-  margin-top: var(--p-espaco-4);
+  align-self: flex-start;
+}
+
+@container lateral (min-width: 36rem) {
+  .tarefas__progresso {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: var(--p-ritmo-bloco);
+  }
+
+  .tarefas__progresso > .tarefas__indicadores {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    padding-top: 0;
+    padding-left: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-left: 1px solid var(--p-cor-divisoria);
+  }
+}
+
+@container tarefas (min-width: 64rem) {
+  .tarefas__corpo {
+    grid-template-columns: minmax(0, 1fr) var(--tarefas-largura-lateral);
+  }
+
+  .tarefas__lateral {
+    position: sticky;
+    top: var(--p-ritmo-bloco);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarefas__preenchimento {
+    transition: none;
+  }
 }
 </style>

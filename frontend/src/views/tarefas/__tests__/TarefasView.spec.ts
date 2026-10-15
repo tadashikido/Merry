@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import type { Mock } from 'vitest'
@@ -501,5 +503,144 @@ describe('Dashboard — pendências de tarefas', () => {
     const comErro = await abrir('/')
     expect(comErro.wrapper.get('[data-teste="bloco-pendencias-tarefas"]').text()).toContain(TEXTOS_TAREFAS.dashErro)
     expect(comErro.wrapper.find('[data-teste="proximos-casamentos"]').exists()).toBe(true)
+  })
+})
+
+const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
+const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
+
+describe('TarefasView — reestruturação Nossia', () => {
+  it('[COMPONENTE] assessoria vê a lateral de progresso derivada do resumo, sem contar canceladas', async () => {
+    const cancelada = tarefaExemplo({ id: 'x', titulo: 'Contratar segundo fotógrafo', status: 'Cancelada' })
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([ATRASADA, SEMANA, SEM_PRAZO, CONCLUIDA, cancelada]))),
+    )
+
+    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+
+    const lateral = wrapper.get('[data-teste="lateral-tarefas"]')
+    expect(lateral.element.tagName).toBe('ASIDE')
+    expect(lateral.attributes('aria-labelledby')).toBe('titulo-progresso-tarefas')
+    expect(lateral.get('#titulo-progresso-tarefas').text()).toBe(TEXTOS_TAREFAS.progressoTitulo)
+    expect(lateral.get('[data-teste="percentual-tarefas"]').text()).toBe('25%')
+    expect(lateral.get('[data-teste="legenda-progresso-tarefas"]').text()).toBe('1 de 4 concluídas')
+
+    const barra = lateral.get('[data-teste="barra-progresso-tarefas"]')
+    expect(barra.attributes('role')).toBe('progressbar')
+    expect(barra.attributes('aria-valuenow')).toBe('25')
+    expect(barra.attributes('aria-valuemin')).toBe('0')
+    expect(barra.attributes('aria-valuemax')).toBe('100')
+    expect(barra.attributes('aria-valuetext')).toBe('25% concluído: 1 de 4 tarefas')
+    expect(barra.get('span').attributes('style')).toContain('inline-size: 25%')
+
+    expect(lateral.get('[data-teste="indicador-abertas"] dd').text()).toBe('3')
+    expect(lateral.get('[data-teste="indicador-atrasadas"] dd').text()).toBe('1')
+    expect(lateral.get('[data-teste="indicador-atrasadas"]').classes()).toContain('tarefas__indicador--atraso')
+    expect(lateral.get('[data-teste="indicador-semana"] dd').text()).toBe('1')
+    expect(lateral.get('[data-teste="indicador-canceladas"] dd').text()).toBe('1')
+    expect(lateral.text()).not.toContain(TEXTOS_TAREFAS.rodapeCasal)
+  })
+
+  it('[COMPONENTE] grupos usam rótulo da fundação e listas em cartão, com a lista antes da lateral', async () => {
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_TAREFAS, () => respostaJson(listaPadrao())),
+    )
+
+    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+
+    expect(wrapper.get('#grupo-atrasadas').classes()).toEqual(expect.arrayContaining(['texto-rotulo', 'tarefas__titulo-grupo--atraso']))
+    expect(wrapper.get('#grupo-semana').classes()).not.toContain('tarefas__titulo-grupo--atraso')
+    expect(wrapper.get('[data-teste="grupo-atrasadas"] ul').classes()).toContain('cartao')
+
+    const filhos = Array.from(wrapper.get('.tarefas__corpo').element.children)
+    expect(filhos[0]?.classList.contains('tarefas__principal')).toBe(true)
+    expect(filhos[1]?.getAttribute('data-teste')).toBe('lateral-tarefas')
+  })
+
+  it('[COMPONENTE] casal vê o progresso no plural, sem canceladas, e o rodapé dentro da lateral', async () => {
+    rotear(
+      fetchSimulado,
+      SESSAO_CASAL,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ observacoes: null }))),
+      quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([ATRASADA, CONCLUIDA], { somenteDoCasal: true }))),
+    )
+
+    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+
+    const lateral = wrapper.get('[data-teste="lateral-tarefas"]')
+    expect(lateral.get('#titulo-progresso-tarefas').text()).toBe(TEXTOS_TAREFAS.progressoTituloCasal)
+    expect(lateral.get('[data-teste="percentual-tarefas"]').text()).toBe('50%')
+    expect(lateral.get('[data-teste="legenda-progresso-tarefas"]').text()).toBe('Vocês concluíram 1 de 2')
+    expect(lateral.find('[data-teste="indicador-canceladas"]').exists()).toBe(false)
+    expect(lateral.text()).toContain(TEXTOS_TAREFAS.rodapeCasal)
+  })
+
+  it('[COMPONENTE] sem tarefas, com erro de serviço ou sem permissão a lateral não aparece', async () => {
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([]))),
+    )
+    const vazio = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    expect(vazio.wrapper.find('[data-teste="estado-vazio"]').exists()).toBe(true)
+    expect(vazio.wrapper.find('[data-teste="lateral-tarefas"]').exists()).toBe(false)
+    vazio.wrapper.unmount()
+    wrapper = undefined
+
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_TAREFAS, () => respostaProblema(500, { title: 'Erro interno.' })),
+    )
+    const erro = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    expect(erro.wrapper.text()).toContain(TEXTOS_TAREFAS.erroTitulo)
+    expect(erro.wrapper.find('[data-teste="lateral-tarefas"]').exists()).toBe(false)
+    erro.wrapper.unmount()
+    wrapper = undefined
+
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_TAREFAS, () => respostaProblema(403, { title: 'Acesso negado.' })),
+    )
+    const negado = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    expect(negado.wrapper.text()).toContain(TEXTOS_TAREFAS.semAcesso)
+    expect(negado.wrapper.find('[data-teste="lateral-tarefas"]').exists()).toBe(false)
+  })
+
+  it('[UNITÁRIO] estilos usam o ritmo da fundação, sem largura de leitura, com lateral por container query', () => {
+    const estiloView = estiloDe(lerFonte('views/tarefas/TarefasView.vue'))
+    expect(estiloView).not.toMatch(/--p-espaco-/)
+    expect(estiloView).not.toMatch(/--p-dimensao-largura-leitura/)
+    expect(estiloView).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
+    expect(estiloView).not.toMatch(/--p-cor-primaria/)
+    expect(estiloView).toMatch(/container: tarefas \/ inline-size/)
+    expect(estiloView).toMatch(/@container tarefas \(min-width: 64rem\) \{\s*\.tarefas__corpo \{\s*grid-template-columns: minmax\(0, 1fr\) var\(--tarefas-largura-lateral\)/)
+    expect(estiloView).toMatch(/\.tarefas__preenchimento \{[^}]*background: var\(--p-cor-sucesso\)/)
+    expect(estiloView).toMatch(/\.tarefas__destaque--em-dia \{[^}]*color: var\(--p-cor-sucesso-texto\)/)
+  })
+
+  it('[UNITÁRIO] ItemTarefa concluído usa verde-alecrim e nunca a cor primária', () => {
+    const estiloItem = estiloDe(lerFonte('componentes/base/ItemTarefa.vue'))
+    expect(estiloItem).not.toMatch(/--p-cor-primaria/)
+    expect(estiloItem).toMatch(/\.item-tarefa--concluida \.item-tarefa__circulo \{[^}]*background: var\(--p-cor-sucesso\)/)
+    expect(estiloItem).toMatch(/\.item-tarefa--concluida \.item-tarefa__anel \{[^}]*color: var\(--p-cor-sucesso\)/)
+  })
+
+  it('[UNITÁRIO] CabecalhoPagina só desenha o fio do destaque quando há largura para texto e destaque lado a lado', () => {
+    const estiloCabecalho = estiloDe(lerFonte('componentes/base/CabecalhoPagina.vue'))
+    expect(estiloCabecalho).toMatch(/\.cabecalho-pagina \{[^}]*container: cabecalho-pagina \/ inline-size/)
+    const desktop = estiloCabecalho.slice(estiloCabecalho.indexOf('@media (min-width: 1024px)'))
+    expect(desktop).toMatch(/border-left: 1px solid var\(--p-cor-borda\)/)
+    expect(desktop).toMatch(/@container cabecalho-pagina \(max-width: 54rem\) \{\s*\.cabecalho-pagina__destaque \{\s*padding-left: 0;\s*border-left: 0;/)
   })
 })
