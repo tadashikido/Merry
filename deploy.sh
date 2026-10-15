@@ -64,7 +64,7 @@ principal() {
   dominio=$(ler_variavel_env DOMINIO)
   [ -n "$dominio" ] || falhar "DOMINIO não definido no .env"
 
-  echo "🚀 Deploy Enlace iniciado ($alvo)"
+  echo "🚀 Deploy Nossia iniciado ($alvo)"
 
   local anterior
   anterior=$(git rev-parse HEAD)

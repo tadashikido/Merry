@@ -14,6 +14,6 @@ WORKDIR /app
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
 COPY --from=build /publicacao .
-RUN mkdir -p /var/lib/enlace/arquivos && chown $APP_UID /var/lib/enlace/arquivos && chmod 700 /var/lib/enlace/arquivos
+RUN mkdir -p /var/lib/nossia/arquivos && chown $APP_UID /var/lib/nossia/arquivos && chmod 700 /var/lib/nossia/arquivos
 USER $APP_UID
 ENTRYPOINT ["dotnet", "Casamento.Api.dll"]

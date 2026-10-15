@@ -20,7 +20,7 @@ public class FabricaApi : WebApplicationFactory<Program>
 
     public FabricaApi(string stringConexao, string ambiente = "Testes", IReadOnlyDictionary<string, string?>? configuracoesAdicionais = null)
     {
-        DiretorioArquivos = Path.Combine(Path.GetTempPath(), "enlace-testes-arquivos", Guid.NewGuid().ToString("N"));
+        DiretorioArquivos = Path.Combine(Path.GetTempPath(), "nossia-testes-arquivos", Guid.NewGuid().ToString("N"));
         _stringConexao = stringConexao;
         _ambiente = ambiente;
         _configuracoesAdicionais = configuracoesAdicionais ?? new Dictionary<string, string?>();

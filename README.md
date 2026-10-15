@@ -173,7 +173,7 @@ Nenhum segredo é versionado. Variáveis relevantes:
 | `RetencaoDadosSensiveis__DiasAposCasamento` | dias após a data do casamento para apagar restrições e necessidades especiais (padrão 30; 1 a 365) |
 | `RetencaoDadosSensiveis__IntervaloMinutos` / `RetencaoDadosSensiveis__Habilitada` | intervalo do job de retenção (padrão 360) e liga/desliga (padrão `true`) |
 | `Autenticacao__UrlFrontend` | URL pública do frontend usada no link de redefinição de senha (obrigatória) |
-| `Email__Remetente`, `Email__Smtp__Host`, `Email__Smtp__Porta`, `Email__Smtp__UsarSsl`, `Email__Smtp__Usuario`, `Email__Smtp__Senha` | SMTP de envio (em desenvolvimento, o Mailpit do compose) |
-| `ArmazenamentoArquivos__Diretorio` | caminho **absoluto** onde a API guarda os contratos em PDF dos fornecedores (obrigatória). Fora do diretório da aplicação e nunca servido como estático; no `docker-compose`, volume `arquivos-enlace` em `/var/lib/enlace/arquivos`. Inclua o diretório no backup |
+| `Email__Remetente`, `Email__Smtp__Host`, `Email__Smtp__Porta`, `Email__Smtp__UsarSsl`, `Email__Smtp__Usuario`, `Email__Smtp__Senha` | SMTP de envio (em desenvolvimento, o Mailpit do compose). O nome de exibição do remetente é sempre a marca Nossia e não é configurável |
+| `ArmazenamentoArquivos__Diretorio` | caminho **absoluto** onde a API guarda os contratos em PDF dos fornecedores (obrigatória). Fora do diretório da aplicação e nunca servido como estático; no `docker-compose`, volume `arquivos-enlace` em `/var/lib/nossia/arquivos` (o volume mantém o nome legado para não desanexar os arquivos já gravados). Inclua o diretório no backup |
 | `LimitesRequisicao__<politica>__Limite` / `__JanelaSegundos` | rate limiting de `entrar`, `cadastro`, `recuperacao` e `renovar` por IP; `contrato` (envio de contrato, padrão 20/60 s) por usuário |
 | `VITE_API_URL` | URL base da API no frontend (vazio = mesma origem) |

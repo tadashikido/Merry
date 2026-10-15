@@ -32,9 +32,9 @@ services:
       Email__Smtp__Host: email
       Email__Smtp__Porta: "1025"
       Email__Smtp__UsarSsl: "false"
-      ArmazenamentoArquivos__Diretorio: /var/lib/enlace/arquivos
+      ArmazenamentoArquivos__Diretorio: /var/lib/nossia/arquivos
     volumes:
-      - arquivos-enlace:/var/lib/enlace/arquivos
+      - arquivos-enlace:/var/lib/nossia/arquivos
     ports:
       - "127.0.0.1:${API_PORTA:-5080}:8080"
     depends_on:

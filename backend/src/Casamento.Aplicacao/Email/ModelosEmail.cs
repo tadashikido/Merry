@@ -1,10 +1,11 @@
 using System.Text.Encodings.Web;
+using Casamento.Aplicacao.Sistema;
 
 namespace Casamento.Aplicacao.Email;
 
 public static class ModelosEmail
 {
-    public const string AssuntoRedefinicaoSenha = "Redefinição de senha — Enlace";
+    public const string AssuntoRedefinicaoSenha = "Redefinição de senha — " + Marca.Nome;
 
     public static string AssuntoConviteAcessoCasal(string nomesCasal) => $"Convite para acompanhar o casamento de {nomesCasal}";
 

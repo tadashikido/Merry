@@ -3,6 +3,7 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
 using Casamento.Aplicacao.Email;
+using Casamento.Aplicacao.Sistema;
 using Microsoft.Extensions.Options;
 
 namespace Casamento.Infraestrutura.Email;
@@ -18,17 +19,7 @@ public class EnvioEmailSmtpService : IEnvioEmailService
 
     public async Task EnviarAsync(MensagemEmail mensagem, CancellationToken cancelamento)
     {
-        using var email = new MailMessage
-        {
-            From = new MailAddress(_opcoes.Remetente, _opcoes.NomeRemetente, Encoding.UTF8),
-            Subject = mensagem.Assunto,
-            SubjectEncoding = Encoding.UTF8,
-            Body = mensagem.CorpoTexto,
-            BodyEncoding = Encoding.UTF8,
-            IsBodyHtml = false,
-        };
-        email.To.Add(new MailAddress(mensagem.Destinatario, mensagem.NomeDestinatario, Encoding.UTF8));
-        email.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(mensagem.CorpoHtml, Encoding.UTF8, MediaTypeNames.Text.Html));
+        using var email = MontarMensagem(mensagem);
 
         using var cliente = new SmtpClient(_opcoes.Smtp.Host, _opcoes.Smtp.Porta)
         {
@@ -42,5 +33,24 @@ public class EnvioEmailSmtpService : IEnvioEmailService
         }
 
         await cliente.SendMailAsync(email, cancelamento);
+    }
+
+    public MailMessage MontarMensagem(MensagemEmail mensagem)
+    {
+        ArgumentNullException.ThrowIfNull(mensagem);
+
+        var email = new MailMessage
+        {
+            From = new MailAddress(_opcoes.Remetente, Marca.Nome, Encoding.UTF8),
+            Subject = mensagem.Assunto,
+            SubjectEncoding = Encoding.UTF8,
+            Body = mensagem.CorpoTexto,
+            BodyEncoding = Encoding.UTF8,
+            IsBodyHtml = false,
+        };
+        email.To.Add(new MailAddress(mensagem.Destinatario, mensagem.NomeDestinatario, Encoding.UTF8));
+        email.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(mensagem.CorpoHtml, Encoding.UTF8, MediaTypeNames.Text.Html));
+
+        return email;
     }
 }
