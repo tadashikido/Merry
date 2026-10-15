@@ -167,7 +167,7 @@ const resumoParcelas = computed(() => {
     'extras extras';
   gap: var(--p-espaco-2) var(--p-espaco-3);
   align-items: center;
-  padding: var(--p-espaco-3) var(--p-espaco-4);
+  padding: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
   list-style: none;
 }
 
@@ -286,6 +286,33 @@ a.linha-vinculo__nome:hover {
 
   .linha-vinculo__acoes {
     align-self: center;
+  }
+}
+
+@container lista-vinculos (max-width: 47.99rem) {
+  .linha-vinculo {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'identidade acoes'
+      'valores valores'
+      'extras extras';
+    gap: var(--p-espaco-2) var(--p-espaco-3);
+  }
+
+  .linha-vinculo__valores {
+    flex-direction: row;
+  }
+
+  .linha-vinculo__valor {
+    justify-content: flex-start;
+  }
+
+  .linha-vinculo__extras {
+    justify-content: flex-start;
+  }
+
+  .linha-vinculo__acoes {
+    align-self: start;
   }
 }
 </style>
