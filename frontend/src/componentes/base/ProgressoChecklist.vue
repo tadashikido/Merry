@@ -72,7 +72,7 @@ const textoAcessivel = computed(() =>
 .progresso-checklist {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-campo);
   min-width: 0;
 }
 
@@ -80,23 +80,23 @@ const textoAcessivel = computed(() =>
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--p-espaco-1) var(--p-espaco-4);
+  gap: var(--p-espaco-1) var(--p-ritmo-grupo);
   margin: 0;
 }
 
 .progresso-checklist__percentual {
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina);
-  font-weight: var(--p-fonte-peso-medio);
+  font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-sucesso-texto);
 }
 
 .progresso-checklist__frase {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--p-espaco-1);
   font-size: var(--p-fonte-tamanho-controle);
   color: var(--p-cor-texto-secundario);
 }
@@ -107,7 +107,7 @@ const textoAcessivel = computed(() =>
 }
 
 .progresso-checklist__trilho {
-  height: 6px;
+  height: var(--p-ritmo-campo);
   overflow: hidden;
   background: var(--p-cor-trilho);
   border-radius: var(--p-raio-total);
@@ -116,7 +116,7 @@ const textoAcessivel = computed(() =>
 .progresso-checklist__preenchimento {
   display: block;
   height: 100%;
-  background: var(--p-cor-primaria);
+  background: var(--p-cor-sucesso);
   border-radius: var(--p-raio-total);
   transition: inline-size var(--p-duracao-lenta) ease-out;
 }

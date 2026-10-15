@@ -116,6 +116,8 @@ export const TEXTOS_CHECKLIST = {
   tituloDocumento: (nomes: string) => `Checklist · ${nomes}`,
   subtitulo: 'Tarefas criadas a partir de modelos, com prazos pela data do casamento.',
   progressoRotulo: 'Progresso do checklist',
+  progressoTitulo: 'Progresso',
+  porMarcoTitulo: 'Por marco',
   progresso: (concluidas: number, consideradas: number) =>
     `${numero(concluidas)} de ${numero(consideradas)} ${plural(consideradas, 'concluída', 'concluídas')}`,
   canceladas: (quantidade: number) =>

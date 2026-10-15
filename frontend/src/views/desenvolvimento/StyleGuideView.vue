@@ -2786,7 +2786,7 @@ const regras = [
         Checklist
       </h2>
       <p class="guia__texto">
-        ReguaMarcos é o elemento memorável do checklist: agrupa itens pela distância até o dia do casamento (12 meses, 6 meses, 3 meses, 30 dias, reta final, no dia, depois). O número do marco usa a serifa editorial, como os demais números editoriais; o complemento e a contagem ficam em texto de apoio. Uma linha vertical liga os marcos em ordem; o nó do marco preenche em terracota quando todas as tarefas dele estão encerradas. No celular a régua empilha (rótulo acima da lista). Marcos sem itens não aparecem. A lista de cada marco usa ItemModeloChecklist (no modelo) ou ItemTarefa (no casamento).
+        ReguaMarcos é o elemento memorável do checklist: agrupa itens pela distância até o dia do casamento (12 meses, 6 meses, 3 meses, 30 dias, reta final, no dia, depois). O número do marco usa a fonte de exibição em peso leve; o complemento e a contagem ficam em texto de apoio. Uma linha vertical liga os marcos em ordem; o nó do marco preenche em verde-alecrim quando todas as tarefas dele estão encerradas. No celular a régua empilha (rótulo acima da lista). Marcos sem itens não aparecem. A lista de cada marco usa ItemModeloChecklist (no modelo) ou ItemTarefa (no casamento).
       </p>
       <h3 class="guia__subtitulo">
         Progresso do checklist

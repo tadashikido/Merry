@@ -288,7 +288,10 @@ async function recalcular() {
 
 <template>
   <LayoutPainelUsuario>
-    <template v-if="falha?.tipo === 'naoEncontrado'">
+    <div
+      v-if="falha?.tipo === 'naoEncontrado'"
+      class="pilha pilha--grupo"
+    >
       <EstadoErro
         :titulo="TEXTOS_TAREFAS.naoEncontradoTitulo"
         :mensagem="TEXTOS_TAREFAS.naoEncontradoTexto"
@@ -301,7 +304,7 @@ async function recalcular() {
       >
         {{ TEXTOS_TAREFAS.voltarCasamentos }}
       </RouterLink>
-    </template>
+    </div>
 
     <template v-else>
       <CabecalhoPagina
@@ -336,7 +339,7 @@ async function recalcular() {
         </template>
       </CabecalhoPagina>
 
-      <div class="checklist">
+      <div class="checklist pilha pilha--bloco">
         <EstadoCarregando
           v-if="store.carregando && !dados"
           variante="lista"
@@ -359,18 +362,6 @@ async function recalcular() {
         />
 
         <template v-else-if="dados">
-          <section
-            class="checklist__progresso"
-            :aria-label="TEXTOS_CHECKLIST.progressoRotulo"
-          >
-            <ProgressoChecklist
-              :percentual="dados.progresso.percentual"
-              :concluidas="dados.progresso.concluidas"
-              :consideradas="dados.progresso.consideradas"
-              :canceladas="dados.progresso.canceladas"
-            />
-          </section>
-
           <MensagemFormulario
             v-if="arquivado"
             variante="alerta"
@@ -394,162 +385,218 @@ async function recalcular() {
             />
           </MensagemFormulario>
 
-          <EstadoVazio
-            v-if="semChecklist"
-            icone="concluido"
-            :titulo="TEXTOS_CHECKLIST.vazioTitulo"
-            :descricao="TEXTOS_CHECKLIST.vazioTexto"
-          />
-
-          <section
-            v-if="mostrarPainel"
-            id="painel-aplicar-modelo"
-            class="checklist__aplicar"
-            aria-labelledby="titulo-aplicar-modelo"
-            data-teste="painel-aplicar"
-          >
-            <h2
-              id="titulo-aplicar-modelo"
-              class="checklist__titulo-aplicar"
+          <div class="checklist__corpo">
+            <aside
+              class="checklist__lateral pilha pilha--grupo"
+              aria-labelledby="titulo-progresso-checklist"
+              data-teste="lateral-checklist"
             >
-              {{ semChecklist ? TEXTOS_CHECKLIST.aplicarTitulo : TEXTOS_CHECKLIST.aplicarOutroTitulo }}
-            </h2>
-
-            <p
-              v-if="modelos.lista && modelos.lista.length === 0"
-              class="checklist__sem-modelos"
-              data-teste="sem-modelos"
-            >
-              {{ TEXTOS_CHECKLIST.semModelos }}
-              <RouterLink :to="{ name: 'modelos-checklist' }">
-                {{ TEXTOS_CHECKLIST.irParaModelos }}
-              </RouterLink>
-            </p>
-
-            <template v-else>
-              <div class="checklist__campo">
-                <label
-                  for="checklist-modelo"
-                  class="checklist__rotulo"
-                >{{ TEXTOS_CHECKLIST.campoModelo }}</label>
-                <Select
-                  v-model="modeloSelecionado"
-                  input-id="checklist-modelo"
-                  :options="opcoesModelos"
-                  option-label="rotulo"
-                  option-value="valor"
-                  :loading="modelos.carregandoLista"
-                  :disabled="aplicando"
-                  data-teste="campo-modelo"
-                />
-              </div>
-
-              <div
-                class="checklist__previa"
-                aria-live="polite"
-                data-teste="previa-aplicacao"
+              <section
+                class="checklist__progresso cartao pilha pilha--grupo"
+                :aria-label="TEXTOS_CHECKLIST.progressoRotulo"
               >
-                <p v-if="carregandoPrevia">
-                  {{ TEXTOS_CHECKLIST.previaCarregando }}
-                </p>
-                <p v-else-if="erroPrevia">
-                  {{ TEXTOS_CHECKLIST.previaErro }}
-                </p>
-                <MensagemFormulario
-                  v-else-if="previa?.excedeLimite"
-                  :mensagem="TEXTOS_CHECKLIST.previaLimite(previa.tarefasNoCasamento, previa.tarefasCriadas)"
-                  data-teste="previa-limite"
-                />
-                <template v-else>
-                  <p
-                    v-for="linha in mensagemPrevia"
-                    :key="linha"
+                <div class="checklist__progresso-geral pilha pilha--grupo">
+                  <h2
+                    id="titulo-progresso-checklist"
+                    class="texto-rotulo"
                   >
-                    {{ linha }}
-                  </p>
-                </template>
-              </div>
+                    {{ TEXTOS_CHECKLIST.progressoTitulo }}
+                  </h2>
+                  <ProgressoChecklist
+                    :percentual="dados.progresso.percentual"
+                    :concluidas="dados.progresso.concluidas"
+                    :consideradas="dados.progresso.consideradas"
+                    :canceladas="dados.progresso.canceladas"
+                  />
+                </div>
 
-              <MensagemFormulario
-                v-if="erroAplicacao"
-                :mensagem="erroAplicacao"
-                data-teste="erro-aplicacao"
+                <div
+                  v-if="marcos.length > 0"
+                  class="checklist__por-marco pilha pilha--campo"
+                  data-teste="progresso-por-marco"
+                >
+                  <h3
+                    id="titulo-por-marco"
+                    class="texto-rotulo"
+                  >
+                    {{ TEXTOS_CHECKLIST.porMarcoTitulo }}
+                  </h3>
+                  <dl
+                    class="checklist__marcos"
+                    aria-labelledby="titulo-por-marco"
+                  >
+                    <div
+                      v-for="marco in marcos"
+                      :key="marco.chave"
+                      class="checklist__marco"
+                      :class="{ 'checklist__marco--concluido': marco.concluido }"
+                      :data-teste="`resumo-marco-${marco.chave}`"
+                    >
+                      <dt>{{ marco.rotulo }}</dt>
+                      <dd class="numeros-tabulares">
+                        {{ marco.detalhe }}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </section>
+
+              <RouterLink
+                v-if="!semChecklist"
+                class="checklist__ver-tarefas"
+                :to="{ name: 'casamento-tarefas', params: { id } }"
+                data-teste="ver-tarefas"
+              >
+                {{ TEXTOS_CHECKLIST.verTarefas }}
+              </RouterLink>
+            </aside>
+
+            <div class="checklist__principal pilha pilha--cartao">
+              <EstadoVazio
+                v-if="semChecklist"
+                icone="concluido"
+                :titulo="TEXTOS_CHECKLIST.vazioTitulo"
+                :descricao="TEXTOS_CHECKLIST.vazioTexto"
               />
 
-              <div class="checklist__acoes-aplicar">
-                <Button
-                  :label="TEXTOS_CHECKLIST.aplicar"
-                  :loading="aplicando"
-                  :disabled="!podeAplicar"
-                  data-teste="aplicar-modelo"
-                  @click="aplicar"
-                />
-                <Button
-                  v-if="!semChecklist"
-                  :label="TEXTOS_TAREFAS.cancelar"
-                  severity="secondary"
-                  text
-                  :disabled="aplicando"
-                  data-teste="fechar-aplicar"
-                  @click="painelAberto = false"
-                />
-              </div>
-            </template>
-          </section>
-
-          <div
-            v-if="!semChecklist"
-            class="checklist__painel"
-          >
-            <ReguaMarcos
-              :marcos="marcos"
-              :rotulo="TEXTOS_CHECKLIST.regua"
-            >
-              <template #marco="{ marco, idTitulo }">
-                <ul
-                  class="checklist__lista"
-                  :aria-labelledby="idTitulo"
+              <section
+                v-if="mostrarPainel"
+                id="painel-aplicar-modelo"
+                class="checklist__aplicar cartao pilha pilha--grupo"
+                aria-labelledby="titulo-aplicar-modelo"
+                data-teste="painel-aplicar"
+              >
+                <h2
+                  id="titulo-aplicar-modelo"
+                  class="checklist__titulo-aplicar"
                 >
-                  <ItemTarefa
-                    v-for="tarefa in tarefasDoMarco(marco.chave)"
-                    :key="tarefa.id"
-                    :titulo="tarefa.titulo"
-                    :metadados="metadadosTarefa(tarefa, false)"
-                    :badge="badgeTarefa(tarefa)"
-                    :concluida="tarefa.status === 'Concluida'"
-                    :cancelada="tarefa.status === 'Cancelada'"
-                    :pode-alternar="!arquivado"
-                    :alternando="tarefaEmAndamento === tarefa.id"
-                    :rotulo-alternar="rotuloAlternar(tarefa)"
-                    @alternar="alternar(tarefa)"
-                  >
-                    <template
-                      v-if="!arquivado"
-                      #acoes
-                    >
-                      <MenuAcoes
-                        :itens="acoesTarefa"
-                        :rotulo="TEXTOS_TAREFAS.maisAcoes"
-                        :rotulo-acessivel="TEXTOS_TAREFAS.maisAcoesAria(tarefa.titulo)"
-                        :desabilitado="tarefaEmAndamento !== null"
-                        somente-icone
-                        @selecionar="executarAcao(tarefa)"
-                      />
-                    </template>
-                  </ItemTarefa>
-                </ul>
-              </template>
-            </ReguaMarcos>
-          </div>
+                  {{ semChecklist ? TEXTOS_CHECKLIST.aplicarTitulo : TEXTOS_CHECKLIST.aplicarOutroTitulo }}
+                </h2>
 
-          <RouterLink
-            v-if="!semChecklist"
-            class="checklist__ver-tarefas"
-            :to="{ name: 'casamento-tarefas', params: { id } }"
-            data-teste="ver-tarefas"
-          >
-            {{ TEXTOS_CHECKLIST.verTarefas }}
-          </RouterLink>
+                <p
+                  v-if="modelos.lista && modelos.lista.length === 0"
+                  class="checklist__sem-modelos"
+                  data-teste="sem-modelos"
+                >
+                  {{ TEXTOS_CHECKLIST.semModelos }}
+                  <RouterLink :to="{ name: 'modelos-checklist' }">
+                    {{ TEXTOS_CHECKLIST.irParaModelos }}
+                  </RouterLink>
+                </p>
+
+                <template v-else>
+                  <div class="checklist__campo pilha pilha--campo">
+                    <label
+                      for="checklist-modelo"
+                      class="checklist__rotulo"
+                    >{{ TEXTOS_CHECKLIST.campoModelo }}</label>
+                    <Select
+                      v-model="modeloSelecionado"
+                      input-id="checklist-modelo"
+                      :options="opcoesModelos"
+                      option-label="rotulo"
+                      option-value="valor"
+                      :loading="modelos.carregandoLista"
+                      :disabled="aplicando"
+                      data-teste="campo-modelo"
+                    />
+                  </div>
+
+                  <div
+                    class="checklist__previa"
+                    aria-live="polite"
+                    data-teste="previa-aplicacao"
+                  >
+                    <p v-if="carregandoPrevia">
+                      {{ TEXTOS_CHECKLIST.previaCarregando }}
+                    </p>
+                    <p v-else-if="erroPrevia">
+                      {{ TEXTOS_CHECKLIST.previaErro }}
+                    </p>
+                    <MensagemFormulario
+                      v-else-if="previa?.excedeLimite"
+                      :mensagem="TEXTOS_CHECKLIST.previaLimite(previa.tarefasNoCasamento, previa.tarefasCriadas)"
+                      data-teste="previa-limite"
+                    />
+                    <template v-else>
+                      <p
+                        v-for="linha in mensagemPrevia"
+                        :key="linha"
+                      >
+                        {{ linha }}
+                      </p>
+                    </template>
+                  </div>
+
+                  <MensagemFormulario
+                    v-if="erroAplicacao"
+                    :mensagem="erroAplicacao"
+                    data-teste="erro-aplicacao"
+                  />
+
+                  <div class="checklist__acoes-aplicar">
+                    <Button
+                      :label="TEXTOS_CHECKLIST.aplicar"
+                      :loading="aplicando"
+                      :disabled="!podeAplicar"
+                      data-teste="aplicar-modelo"
+                      @click="aplicar"
+                    />
+                    <Button
+                      v-if="!semChecklist"
+                      :label="TEXTOS_TAREFAS.cancelar"
+                      severity="secondary"
+                      text
+                      :disabled="aplicando"
+                      data-teste="fechar-aplicar"
+                      @click="painelAberto = false"
+                    />
+                  </div>
+                </template>
+              </section>
+
+              <ReguaMarcos
+                v-if="!semChecklist"
+                :marcos="marcos"
+                :rotulo="TEXTOS_CHECKLIST.regua"
+              >
+                <template #marco="{ marco, idTitulo }">
+                  <ul
+                    class="checklist__lista cartao"
+                    :aria-labelledby="idTitulo"
+                  >
+                    <ItemTarefa
+                      v-for="tarefa in tarefasDoMarco(marco.chave)"
+                      :key="tarefa.id"
+                      :titulo="tarefa.titulo"
+                      :metadados="metadadosTarefa(tarefa, false)"
+                      :badge="badgeTarefa(tarefa)"
+                      :concluida="tarefa.status === 'Concluida'"
+                      :cancelada="tarefa.status === 'Cancelada'"
+                      :pode-alternar="!arquivado"
+                      :alternando="tarefaEmAndamento === tarefa.id"
+                      :rotulo-alternar="rotuloAlternar(tarefa)"
+                      @alternar="alternar(tarefa)"
+                    >
+                      <template
+                        v-if="!arquivado"
+                        #acoes
+                      >
+                        <MenuAcoes
+                          :itens="acoesTarefa"
+                          :rotulo="TEXTOS_TAREFAS.maisAcoes"
+                          :rotulo-acessivel="TEXTOS_TAREFAS.maisAcoesAria(tarefa.titulo)"
+                          :desabilitado="tarefaEmAndamento !== null"
+                          somente-icone
+                          @selecionar="executarAcao(tarefa)"
+                        />
+                      </template>
+                    </ItemTarefa>
+                  </ul>
+                </template>
+              </ReguaMarcos>
+            </div>
+          </div>
         </template>
       </div>
 
@@ -568,53 +615,95 @@ async function recalcular() {
 
 <style scoped>
 .checklist {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
-  max-width: var(--p-dimensao-largura-leitura);
+  --checklist-largura-lateral: 18rem;
+
+  container: checklist / inline-size;
 }
 
-.checklist__progresso,
-.checklist__aplicar,
-.checklist__painel {
-  padding: var(--p-espaco-5) var(--p-espaco-4);
-  background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
+.checklist__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
 }
 
-.checklist__aplicar {
+.checklist__principal,
+.checklist__lateral {
+  min-width: 0;
+}
+
+.checklist__lateral {
+  container: lateral-checklist / inline-size;
+}
+
+.checklist__progresso h2,
+.checklist__progresso h3 {
+  margin: 0;
+}
+
+.checklist__marcos {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-4);
+  gap: var(--p-ritmo-campo);
+  margin: 0;
+}
+
+.checklist__marco {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-ritmo-grupo);
+  font-size: var(--p-fonte-tamanho-controle);
+}
+
+.checklist__marco dt {
+  color: var(--p-cor-texto);
+}
+
+.checklist__marco dd {
+  margin: 0;
+  color: var(--p-cor-texto-secundario);
+}
+
+.checklist__marco--concluido dt,
+.checklist__marco--concluido dd {
+  color: var(--p-cor-sucesso-texto);
+}
+
+.checklist__por-marco {
+  padding-top: var(--p-ritmo-grupo);
+  border-top: 1px solid var(--p-cor-divisoria);
+}
+
+.checklist__ver-tarefas {
+  align-self: flex-start;
+  font-size: var(--p-fonte-tamanho-controle);
 }
 
 .checklist__titulo-aplicar {
   margin: 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-leve);
+  line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-texto);
 }
 
 .checklist__campo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-2);
   max-width: 24rem;
 }
 
 .checklist__rotulo {
   font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   color: var(--p-cor-texto);
 }
 
 .checklist__previa {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-1);
-  min-height: var(--p-espaco-6);
+  gap: var(--p-ritmo-campo);
+  min-height: var(--p-ritmo-cartao);
 }
 
 .checklist__previa p,
@@ -627,37 +716,59 @@ async function recalcular() {
 .checklist__acoes-aplicar {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .checklist__acoes-aplicar :deep(.p-button) {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
-.checklist__lista {
+.checklist .checklist__lista {
   margin: 0;
-  padding: 0;
-}
-
-.checklist__ver-tarefas {
-  align-self: flex-start;
-  font-size: var(--p-fonte-tamanho-controle);
+  padding: var(--p-ritmo-campo) var(--p-ritmo-grupo);
 }
 
 .checklist__voltar {
-  display: inline-block;
-  margin-top: var(--p-espaco-4);
+  align-self: flex-start;
 }
 
 @media (min-width: 640px) {
-  .checklist__progresso,
-  .checklist__aplicar,
-  .checklist__painel {
-    padding: var(--p-espaco-6);
-  }
-
   .checklist__acoes-aplicar {
     flex-direction: row;
+  }
+}
+
+@container lateral-checklist (min-width: 36rem) {
+  .checklist__progresso {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: var(--p-ritmo-bloco);
+    align-items: start;
+  }
+
+  .checklist__por-marco {
+    padding-top: 0;
+    padding-left: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-left: 1px solid var(--p-cor-divisoria);
+  }
+}
+
+@container checklist (min-width: 64rem) {
+  .checklist__corpo {
+    grid-template-columns: minmax(0, 1fr) var(--checklist-largura-lateral);
+  }
+
+  .checklist__lateral {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    top: var(--p-ritmo-bloco);
+  }
+
+  .checklist__principal {
+    grid-column: 1;
+    grid-row: 1;
   }
 }
 </style>

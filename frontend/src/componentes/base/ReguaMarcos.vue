@@ -69,8 +69,8 @@ function idTitulo(chave: string): string {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
-  padding: 0 0 var(--p-espaco-6) var(--p-espaco-6);
+  gap: var(--p-ritmo-campo);
+  padding: 0 0 var(--p-ritmo-cartao) var(--p-ritmo-cartao);
   border-left: 1px solid var(--p-cor-borda);
 }
 
@@ -89,7 +89,7 @@ function idTitulo(chave: string): string {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   margin: 0;
   font-family: var(--p-fonte-interface);
   font-size: var(--p-fonte-tamanho-apoio);
@@ -99,7 +99,7 @@ function idTitulo(chave: string): string {
 .regua__numero {
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
-  font-weight: var(--p-fonte-peso-medio);
+  font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums;
   line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-texto);
@@ -118,7 +118,7 @@ function idTitulo(chave: string): string {
 
 .regua__no {
   position: absolute;
-  top: var(--p-espaco-2);
+  top: var(--p-ritmo-campo);
   left: 0;
   width: var(--p-espaco-3);
   height: var(--p-espaco-3);
@@ -129,8 +129,8 @@ function idTitulo(chave: string): string {
 }
 
 .regua__marco--concluido .regua__no {
-  background: var(--p-cor-primaria);
-  border-color: var(--p-cor-primaria);
+  background: var(--p-cor-sucesso);
+  border-color: var(--p-cor-sucesso);
 }
 
 @media (min-width: 640px) {
@@ -146,7 +146,7 @@ function idTitulo(chave: string): string {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--p-espaco-1);
-    padding: var(--p-espaco-1) var(--p-espaco-5) var(--p-espaco-6) 0;
+    padding: var(--p-espaco-1) var(--p-ritmo-cartao) var(--p-ritmo-cartao) 0;
   }
 
   .regua__rotulo {
@@ -156,7 +156,7 @@ function idTitulo(chave: string): string {
 
   .regua__conteudo {
     position: relative;
-    padding: 0 0 var(--p-espaco-6) var(--p-espaco-6);
+    padding: 0 0 var(--p-ritmo-cartao) var(--p-ritmo-cartao);
     border-left: 1px solid var(--p-cor-borda);
   }
 

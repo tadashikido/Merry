@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
@@ -251,5 +253,109 @@ describe('ChecklistView', () => {
     )
     const segunda = await abrir()
     expect(segunda.wrapper.text()).toContain(TEXTOS_CHECKLIST.erroTitulo)
+  })
+})
+
+const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
+const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
+
+describe('ChecklistView — reestruturação Nossia', () => {
+  it('[COMPONENTE] lateral de progresso vem antes da régua e resume cada marco', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ data: DATA_CASAMENTO }))),
+      quando('GET', ROTA_CHECKLIST, () => respostaJson(checklistExemplo([LOCAL, BUFFET, PROVA]))),
+      quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo()])),
+    )
+
+    const { wrapper } = await abrir()
+
+    const lateral = wrapper.get('[data-teste="lateral-checklist"]')
+    expect(lateral.element.tagName).toBe('ASIDE')
+    expect(lateral.attributes('aria-labelledby')).toBe('titulo-progresso-checklist')
+    const titulo = lateral.get('#titulo-progresso-checklist')
+    expect(titulo.text()).toBe(TEXTOS_CHECKLIST.progressoTitulo)
+    expect(titulo.classes()).toContain('texto-rotulo')
+    expect(lateral.get('[data-teste="percentual-checklist"]').text()).toBe('33%')
+    expect(lateral.get('[data-teste="barra-checklist"]').attributes('role')).toBe('progressbar')
+    expect(lateral.get('.checklist__progresso').classes()).toContain('cartao')
+
+    const porMarco = lateral.get('[data-teste="progresso-por-marco"]')
+    expect(porMarco.get('h3').text()).toBe(TEXTOS_CHECKLIST.porMarcoTitulo)
+    expect(porMarco.get('dl').attributes('aria-labelledby')).toBe('titulo-por-marco')
+    expect(porMarco.get('[data-teste="resumo-marco-dozeMeses"] dt').text()).toBe('12 meses')
+    expect(porMarco.get('[data-teste="resumo-marco-dozeMeses"] dd').text()).toBe('1 de 2 concluídas')
+    expect(porMarco.get('[data-teste="resumo-marco-trintaDias"] dd').text()).toBe('0 de 1 concluída')
+    expect(porMarco.findAll('dt')).toHaveLength(2)
+    expect(lateral.find('[data-teste="ver-tarefas"]').exists()).toBe(true)
+
+    const filhos = Array.from(wrapper.get('.checklist__corpo').element.children)
+    expect(filhos[0]?.getAttribute('data-teste')).toBe('lateral-checklist')
+    expect(filhos[1]?.classList.contains('checklist__principal')).toBe(true)
+    expect(filhos[1]?.querySelector('[data-teste="regua-marcos"]')).not.toBeNull()
+  })
+
+  it('[COMPONENTE] cada marco lista as tarefas em cartão e o marco encerrado aparece concluído na régua e na lateral', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ data: DATA_CASAMENTO }))),
+      quando('GET', ROTA_CHECKLIST, () => respostaJson(checklistExemplo([LOCAL, PROVA]))),
+      quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo()])),
+    )
+
+    const { wrapper } = await abrir()
+
+    const doze = wrapper.get('[data-teste="marco-dozeMeses"]')
+    expect(doze.classes()).toContain('regua__marco--concluido')
+    const lista = doze.get('ul')
+    expect(lista.classes()).toEqual(expect.arrayContaining(['checklist__lista', 'cartao']))
+    expect(lista.attributes('aria-labelledby')).toBe(doze.get('h2').attributes('id'))
+    expect(wrapper.get('[data-teste="marco-trintaDias"]').classes()).not.toContain('regua__marco--concluido')
+    expect(wrapper.get('[data-teste="resumo-marco-dozeMeses"]').classes()).toContain('checklist__marco--concluido')
+    expect(wrapper.get('[data-teste="resumo-marco-trintaDias"]').classes()).not.toContain('checklist__marco--concluido')
+  })
+
+  it('[COMPONENTE] sem checklist a lateral mostra o estado vazio e o painel de aplicar fica em cartão na coluna principal', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ data: DATA_CASAMENTO }))),
+      quando('GET', ROTA_CHECKLIST, () => respostaJson(checklistExemplo([]))),
+      quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo()])),
+      quando('GET', ROTA_PREVIA, () => respostaJson(aplicacaoExemplo())),
+    )
+
+    const { wrapper } = await abrir()
+
+    const lateral = wrapper.get('[data-teste="lateral-checklist"]')
+    expect(lateral.text()).toContain(TEXTOS_CHECKLIST.semChecklist)
+    expect(lateral.find('[data-teste="progresso-por-marco"]').exists()).toBe(false)
+    expect(lateral.find('[data-teste="ver-tarefas"]').exists()).toBe(false)
+
+    const painel = wrapper.get('.checklist__principal [data-teste="painel-aplicar"]')
+    expect(painel.classes()).toContain('cartao')
+    expect(painel.attributes('aria-labelledby')).toBe('titulo-aplicar-modelo')
+    expect(wrapper.find('[data-teste="regua-marcos"]').exists()).toBe(false)
+  })
+
+  it('[UNITÁRIO] estilos usam a largura do painel, o ritmo da fundação e verde-alecrim no concluído', () => {
+    const view = estiloDe(lerFonte('views/checklist/ChecklistView.vue'))
+    expect(view).not.toContain('--p-dimensao-largura-leitura')
+    expect(view).not.toMatch(/--p-espaco-\d/)
+    expect(view).not.toMatch(/margin[^;]*:\s*-/)
+    expect(view).not.toContain('--p-cor-primaria')
+    expect(view).toContain('container: checklist / inline-size')
+    expect(view).toContain('@container checklist (min-width: 64rem)')
+    expect(view).toContain('position: sticky')
+
+    const regua = estiloDe(lerFonte('componentes/base/ReguaMarcos.vue'))
+    expect(regua).toMatch(/\.regua__marco--concluido \.regua__no \{\s*background: var\(--p-cor-sucesso\);\s*border-color: var\(--p-cor-sucesso\);/)
+    expect(regua).not.toContain('--p-cor-primaria')
+    expect(regua).toMatch(/\.regua__numero \{[^}]*font-weight: var\(--p-fonte-peso-leve\)/)
+
+    const progresso = estiloDe(lerFonte('componentes/base/ProgressoChecklist.vue'))
+    expect(progresso).not.toContain('--p-cor-primaria')
+    expect(progresso).toMatch(/\.progresso-checklist__percentual \{[^}]*color: var\(--p-cor-sucesso-texto\)/)
+    expect(progresso).toMatch(/\.progresso-checklist__preenchimento \{[^}]*background: var\(--p-cor-sucesso\)/)
+    expect(progresso).not.toMatch(/:\s*\d+px;/)
   })
 })
