@@ -2,12 +2,19 @@ import { ref, toValue, type MaybeRefOrGetter } from 'vue'
 
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 import { useNotificacao } from '@/composables/useNotificacao'
+import { useConfirmacoesStore } from '@/stores/confirmacoes'
 import { useConvidadosStore, type FalhaConvidados } from '@/stores/convidados'
-import { TEXTOS_PREVIA_RSVP } from '@/textos/confirmacoes'
+import { TEXTOS_COBRANCA, TEXTOS_PREVIA_RSVP } from '@/textos/confirmacoes'
 import { TEXTOS_ENVIO_CONVITE } from '@/textos/rsvp'
 import type { CasamentoDto } from '@/tipos/casamentos'
 import type { StatusEnvioConvite } from '@/tipos/convidados'
-import { montarLinkWhatsApp, montarMensagemConvite, montarUrlPrevia, montarUrlRsvp } from '@/utilitarios/rsvp'
+import {
+  montarLinkWhatsApp,
+  montarMensagemConvite,
+  montarMensagemLembrete,
+  montarUrlPrevia,
+  montarUrlRsvp,
+} from '@/utilitarios/rsvp'
 
 export interface ConviteParaEnvio {
   id: string
@@ -32,11 +39,13 @@ export interface OpcoesEnvioConvite {
 
 export function useEnvioConvite(opcoes: OpcoesEnvioConvite) {
   const store = useConvidadosStore()
+  const confirmacoes = useConfirmacoesStore()
   const notificacao = useNotificacao()
 
   const conviteEmAndamento = ref<string | null>(null)
   const confirmacaoLink = ref<ConfirmacaoLink | null>(null)
   const executandoConfirmacao = ref(false)
+  const anuncioCobranca = ref('')
 
   function itensMenuLink(): ItemMenuAcoes[] {
     const itens: ItemMenuAcoes[] = [
@@ -216,14 +225,98 @@ export function useEnvioConvite(opcoes: OpcoesEnvioConvite) {
     confirmacaoLink.value = null
   }
 
+  function lembreteDoConvite(convite: ConviteParaEnvio, url: string): string | null {
+    const casamento = toValue(opcoes.casamento)
+    return casamento ? montarMensagemLembrete(casamento, convite, url) : null
+  }
+
+  async function notificarFalhaCobranca(falha: FalhaConvidados) {
+    if (falha.tipo === 'semPermissao') {
+      notificacao.erro(TEXTOS_COBRANCA.semPermissao)
+      return
+    }
+    if (falha.tipo === 'conexao') {
+      notificacao.erro(TEXTOS_COBRANCA.semConexao)
+      return
+    }
+    if (falha.tipo === 'regra' || falha.tipo === 'conflito' || falha.tipo === 'naoEncontrado') {
+      notificacao.erro(TEXTOS_COBRANCA.naoCobravel)
+      await opcoes.aoAlterar?.()
+      return
+    }
+    notificacao.erro(TEXTOS_COBRANCA.erroGenerico)
+  }
+
+  async function gravarCobranca(convite: ConviteParaEnvio): Promise<boolean> {
+    const resultado = await confirmacoes.registrarCobranca(toValue(opcoes.casamentoId), convite.id)
+    if (!resultado.ok) {
+      await notificarFalhaCobranca(resultado.falha)
+      return false
+    }
+    anuncioCobranca.value = TEXTOS_COBRANCA.anuncioRegistrado(convite.nome)
+    return true
+  }
+
+  async function obterLinkAtivo(convite: ConviteParaEnvio): Promise<string | null> {
+    const resultado = await store.consultarLinkRsvp(toValue(opcoes.casamentoId), convite.id)
+    if (!resultado.ok) {
+      if (resultado.falha.tipo === 'naoEncontrado') {
+        await notificarFalhaCobranca(resultado.falha)
+      } else {
+        notificarFalhaLink(resultado.falha)
+      }
+      return null
+    }
+    return montarUrlRsvp(resultado.valor.token)
+  }
+
+  function enviarLembreteWhatsApp(convite: ConviteParaEnvio) {
+    const janela = window.open('about:blank', '_blank')
+    void comConvite(convite, async () => {
+      const url = await obterLinkAtivo(convite)
+      const mensagem = url ? lembreteDoConvite(convite, url) : null
+      if (!mensagem) {
+        janela?.close()
+        return
+      }
+      abrirEmJanela(janela, montarLinkWhatsApp(convite.telefone, mensagem))
+      if (!convite.telefone) {
+        notificacao.sucesso(TEXTOS_ENVIO_CONVITE.semTelefone)
+      }
+      await gravarCobranca(convite)
+    })
+  }
+
+  function copiarLembrete(convite: ConviteParaEnvio) {
+    void comConvite(convite, async () => {
+      const url = await obterLinkAtivo(convite)
+      const mensagem = url ? lembreteDoConvite(convite, url) : null
+      if (url && mensagem) {
+        await copiar(mensagem, TEXTOS_COBRANCA.lembreteCopiado, url)
+      }
+    })
+  }
+
+  function registrarCobranca(convite: ConviteParaEnvio) {
+    void comConvite(convite, async () => {
+      if (await gravarCobranca(convite)) {
+        notificacao.sucesso(TEXTOS_COBRANCA.lembreteRegistrado)
+      }
+    })
+  }
+
   return {
     conviteEmAndamento,
     confirmacaoLink,
     executandoConfirmacao,
+    anuncioCobranca,
     itensMenuLink,
     enviarWhatsApp,
     executarAcaoLink,
     confirmarAcaoLink,
     cancelarConfirmacao,
+    enviarLembreteWhatsApp,
+    copiarLembrete,
+    registrarCobranca,
   }
 }

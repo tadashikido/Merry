@@ -21,5 +21,8 @@ public static class MensagensConvidados
     public const string AcompanhanteSemConfirmacao = "Para levar acompanhante, ao menos uma pessoa do convite precisa ir.";
     public const string LimiteAcompanhantesExcedido = "O número de acompanhantes passou do limite deste convite.";
     public const string NomeAcompanhanteObrigatorio = "Informe o nome do acompanhante.";
+    public const string ConviteNaoCobravel = "Este convite já respondeu ou ainda não foi enviado, então não pode ser cobrado.";
+    public const string CobrancaPrazoEncerrado = "O prazo do RSVP terminou. Lembretes ficam disponíveis só até a data limite.";
+    public const string CobrancaSemLink = "Este convite está sem link de confirmação ativo. Gere um novo link antes de cobrar.";
     public const string TamanhoNomeAcompanhante = "Use entre 2 e 120 caracteres no nome do acompanhante.";
 }

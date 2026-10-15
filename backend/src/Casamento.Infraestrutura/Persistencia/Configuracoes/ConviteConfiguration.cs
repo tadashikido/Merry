@@ -12,6 +12,7 @@ public class ConviteConfiguration : IEntityTypeConfiguration<Convite>
     public const string IndiceOrganizacaoCasamento = "ix_convites_organizacao_id_casamento_id";
     public const string RestricaoLimiteAcompanhantes = "ck_convites_limite_acompanhantes";
     public const string RestricaoStatusEnvio = "ck_convites_status_envio";
+    public const string RestricaoQuantidadeCobrancas = "ck_convites_quantidade_cobrancas";
     public const int TamanhoMaximoEnum = 20;
 
     public void Configure(EntityTypeBuilder<Convite> builder)
@@ -24,6 +25,7 @@ public class ConviteConfiguration : IEntityTypeConfiguration<Convite>
             tabela.HasCheckConstraint(
                 RestricaoStatusEnvio,
                 $"status_envio IN ({ValoresPermitidos<StatusEnvioConvite>()})");
+            tabela.HasCheckConstraint(RestricaoQuantidadeCobrancas, "quantidade_cobrancas >= 0");
         });
 
         builder.HasKey(convite => convite.Id);
@@ -36,6 +38,8 @@ public class ConviteConfiguration : IEntityTypeConfiguration<Convite>
         builder.Property(convite => convite.CriadoEm).IsRequired();
         builder.Property(convite => convite.AtualizadoEm).IsRequired();
         builder.Property(convite => convite.RespondidoEm);
+        builder.Property(convite => convite.UltimaCobrancaEm);
+        builder.Property(convite => convite.QuantidadeCobrancas).IsRequired();
         builder.Property<uint>("Versao").IsRowVersion().HasColumnName("xmin").HasColumnType("xid");
 
         builder.HasIndex(convite => new { convite.OrganizacaoId, convite.CasamentoId }).HasDatabaseName(IndiceOrganizacaoCasamento);

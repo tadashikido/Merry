@@ -47,6 +47,7 @@ public static class ConfiguracaoAplicacao
         servicos.AddSingleton<CifragemRestricaoAlimentar>();
         servicos.AddScoped<IRestricaoAlimentarService, RestricaoAlimentarService>();
         servicos.AddScoped<IPainelConfirmacoesService, PainelConfirmacoesService>();
+        servicos.AddScoped<ICobrancaRsvpService, CobrancaRsvpService>();
         servicos.AddScoped<IAcessoCasalService, AcessoCasalService>();
         servicos.AddScoped<ITarefaCasamentoService, TarefaCasamentoService>();
         servicos.AddScoped<IModeloChecklistService, ModeloChecklistService>();

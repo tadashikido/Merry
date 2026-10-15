@@ -59,6 +59,51 @@ export const TEXTOS_CONFIRMACOES = {
   avisoArquivado: 'Casamento arquivado: dá para consultar e exportar, mas não enviar convites.',
 } as const
 
+export const TEXTOS_COBRANCA = {
+  acaoAbrir: (quantidade: number) => `Cobrar pendentes (${formatarNumero(quantidade)})`,
+  titulo: 'Cobrar pendentes',
+  apoio: (dataLimite: string) => `Convites enviados que ainda não responderam. Prazo: ${dataLimite}.`,
+  resumo: (paraCobrar: number, cobradosHoje: number) =>
+    `${formatarNumero(paraCobrar)} para cobrar · ${contar(cobradosHoje, 'cobrado hoje', 'cobrados hoje')}`,
+  buscaPlaceholder: 'Buscar convite ou pessoa',
+  buscaRotulo: 'Buscar na fila de cobrança',
+  filaRotulo: 'Convites para cobrar',
+  falta: (nomes: string) => `Falta: ${nomes}`,
+  nuncaCobrado: 'Nunca cobrado',
+  cobradoAgora: 'Cobrado agora há pouco',
+  cobradoHoje: (hora: string) => `Cobrado hoje às ${hora}`,
+  cobradoOntem: 'Cobrado ontem',
+  cobradoDias: (dias: number) => `Cobrado há ${formatarNumero(dias)} dias`,
+  quantidade: (quantidade: number) => `(${contar(quantidade, 'lembrete', 'lembretes')})`,
+  abrirWhatsApp: 'Abrir WhatsApp',
+  copiarLembrete: 'Copiar lembrete',
+  marcarEnviado: 'Marcar lembrete enviado',
+  verLembrete: 'Ver lembrete',
+  ocultarLembrete: 'Ocultar lembrete',
+  previaLink: '[link do convite]',
+  lembreteCopiado: 'Lembrete copiado.',
+  lembreteRegistrado: 'Lembrete registrado.',
+  anuncioRegistrado: (nome: string) => `Lembrete registrado para ${nome}.`,
+  naoCobravel: 'Este convite já respondeu ou não pode mais ser cobrado. A lista foi atualizada.',
+  semPermissao: 'Você não tem permissão para cobrar convites deste casamento.',
+  semConexao: 'Sem conexão. Verifique a internet e tente de novo.',
+  erroGenerico: 'Não foi possível registrar o lembrete. Tente de novo.',
+  vazioTitulo: 'Ninguém para cobrar agora',
+  vazioTexto: 'Todos os convites enviados já responderam ou ainda não foram enviados.',
+  vazioBusca: (termo: string) => `Nenhum convite encontrado para “${termo}”.`,
+  prazoEncerrado: 'Lembretes ficam disponíveis só até a data limite.',
+  fechar: 'Fechar',
+  mensagemLembrete: (dados: {
+    nomeConvite: string
+    primeiro: string
+    segundo: string
+    data: string
+    dataLimite: string
+    url: string
+  }) =>
+    `Oi, ${dados.nomeConvite}! Passando para lembrar da confirmação de presença no casamento de ${dados.primeiro} e ${dados.segundo}, em ${dados.data}. Responda até ${dados.dataLimite} pelo link: ${dados.url}`,
+} as const
+
 export const TEXTOS_FICHA_BUFFET = {
   titulo: (nomes: string) => `Ficha para o buffet · ${nomes}`,
   imprimir: 'Imprimir',

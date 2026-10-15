@@ -5,7 +5,7 @@ import { requisitar } from '@/servicos/clienteHttp'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { ROTA_CASAMENTOS } from '@/stores/casamentos'
 import { interpretarFalhaConvidados, type FalhaConvidados, type ResultadoConvidados } from '@/stores/convidados'
-import type { ExportacaoBuffetDto, FormatoExportacaoBuffet, PainelConfirmacoesDto } from '@/tipos/confirmacoes'
+import type { CobrancaRsvpDto, ExportacaoBuffetDto, FormatoExportacaoBuffet, PainelConfirmacoesDto } from '@/tipos/confirmacoes'
 
 export function rotaPainelConfirmacoes(casamentoId: string): string {
   return `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/painel-confirmacoes`
@@ -13,6 +13,10 @@ export function rotaPainelConfirmacoes(casamentoId: string): string {
 
 export function rotaExportacaoBuffet(casamentoId: string, formato: FormatoExportacaoBuffet): string {
   return `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/exportacao-buffet?formato=${formato}`
+}
+
+export function rotaCobrancaRsvp(casamentoId: string, conviteId: string): string {
+  return `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/convites/${encodeURIComponent(conviteId)}/cobranca`
 }
 
 export const useConfirmacoesStore = defineStore('confirmacoes', () => {
@@ -54,6 +58,30 @@ export const useConfirmacoesStore = defineStore('confirmacoes', () => {
     }
   }
 
+  async function registrarCobranca(id: string, conviteId: string): Promise<ResultadoConvidados<CobrancaRsvpDto>> {
+    try {
+      const cobranca = await requisitar<CobrancaRsvpDto>(rotaCobrancaRsvp(id, conviteId), { metodo: 'POST' })
+      atualizarCobranca(id, cobranca)
+      return { ok: true, valor: cobranca }
+    } catch (erro) {
+      return { ok: false, falha: interpretarFalhaConvidados(erro) }
+    }
+  }
+
+  function atualizarCobranca(id: string, cobranca: CobrancaRsvpDto) {
+    if (casamentoId.value !== id || !painel.value) {
+      return
+    }
+    painel.value = {
+      ...painel.value,
+      pendentes: painel.value.pendentes.map((pendente) =>
+        pendente.conviteId === cobranca.conviteId
+          ? { ...pendente, ultimaCobrancaEm: cobranca.ultimaCobrancaEm, quantidadeCobrancas: cobranca.quantidadeCobrancas }
+          : pendente,
+      ),
+    }
+  }
+
   function limpar() {
     casamentoId.value = null
     painel.value = null
@@ -71,5 +99,5 @@ export const useConfirmacoesStore = defineStore('confirmacoes', () => {
     },
   )
 
-  return { casamentoId, painel, carregando, falha, carregar, exportar, limpar }
+  return { casamentoId, painel, carregando, falha, carregar, exportar, registrarCobranca, limpar }
 })

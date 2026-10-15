@@ -8,19 +8,30 @@ public static class CalculadoraPainelConfirmacoes
 {
     public static PainelConfirmacoesDto Calcular(CasamentoAssessorado casamento, IReadOnlyList<Convite> convites, DateOnly hoje)
     {
+        return Calcular(casamento, convites, hoje, new HashSet<Guid>());
+    }
+
+    public static PainelConfirmacoesDto Calcular(
+        CasamentoAssessorado casamento,
+        IReadOnlyList<Convite> convites,
+        DateOnly hoje,
+        IReadOnlySet<Guid> convitesComLink)
+    {
         ArgumentNullException.ThrowIfNull(casamento);
         ArgumentNullException.ThrowIfNull(convites);
+        ArgumentNullException.ThrowIfNull(convitesComLink);
 
         var pessoas = CalculadoraTotaisConvidados.Calcular(CalculadoraTotaisConvidados.Resumir(convites));
         var dataLimite = casamento.DataLimiteRsvpEfetiva();
+        var aceitaRespostas = casamento.AceitaRespostaRsvp(hoje);
 
         return new PainelConfirmacoesDto(
             CalcularSituacao(convites),
             pessoas,
             casamento.ConvidadosEstimados,
-            new PrazoRsvpDto(dataLimite, dataLimite.DayNumber - hoje.DayNumber, casamento.AceitaRespostaRsvp(hoje)),
+            new PrazoRsvpDto(dataLimite, dataLimite.DayNumber - hoje.DayNumber, aceitaRespostas),
             casamento.Arquivado,
-            ListarPendentes(convites));
+            ListarPendentes(convites, convite => aceitaRespostas && Cobravel(convite, convitesComLink)));
     }
 
     public static SituacaoConvitesDto CalcularSituacao(IReadOnlyList<Convite> convites)
@@ -48,14 +59,21 @@ public static class CalculadoraPainelConfirmacoes
         return convite.Convidados.Any(convidado => convidado.Resposta == RespostaRsvp.Pendente);
     }
 
-    private static List<ConvitePendenteDto> ListarPendentes(IReadOnlyList<Convite> convites)
+    public static bool Cobravel(Convite convite, IReadOnlySet<Guid> convitesComLink)
+    {
+        ArgumentNullException.ThrowIfNull(convite);
+        ArgumentNullException.ThrowIfNull(convitesComLink);
+        return convite.PodeSerCobrado() && convitesComLink.Contains(convite.Id);
+    }
+
+    private static List<ConvitePendenteDto> ListarPendentes(IReadOnlyList<Convite> convites, Func<Convite, bool> cobravel)
     {
         return OrdenacaoConvites.Ordenar(convites.Where(AguardandoResposta))
-            .Select(ParaPendente)
+            .Select(convite => ParaPendente(convite, cobravel(convite)))
             .ToList();
     }
 
-    private static ConvitePendenteDto ParaPendente(Convite convite)
+    private static ConvitePendenteDto ParaPendente(Convite convite, bool cobravel)
     {
         var ordenados = convite.ConvidadosOrdenados();
 
@@ -66,6 +84,9 @@ public static class CalculadoraPainelConfirmacoes
             convite.StatusEnvio.ToString(),
             ordenados.Select(convidado => convidado.Telefone).FirstOrDefault(telefone => !string.IsNullOrWhiteSpace(telefone)),
             ordenados.Where(convidado => convidado.Resposta == RespostaRsvp.Pendente).Select(convidado => convidado.Nome).ToList(),
-            ordenados.Count);
+            ordenados.Count,
+            cobravel,
+            convite.UltimaCobrancaEm,
+            convite.QuantidadeCobrancas);
     }
 }

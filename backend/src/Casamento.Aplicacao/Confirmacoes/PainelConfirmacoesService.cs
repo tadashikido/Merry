@@ -10,6 +10,7 @@ namespace Casamento.Aplicacao.Confirmacoes;
 public partial class PainelConfirmacoesService : IPainelConfirmacoesService
 {
     private readonly IConviteRepository _conviteRepository;
+    private readonly IAcessoRsvpRepository _acessoRepository;
     private readonly VerificadorCasamentoConvidados _verificador;
     private readonly IRestricaoAlimentarService _restricaoAlimentarService;
     private readonly IUsuarioAtual _usuarioAtual;
@@ -21,6 +22,7 @@ public partial class PainelConfirmacoesService : IPainelConfirmacoesService
     public PainelConfirmacoesService(
         ICasamentoRepository casamentoRepository,
         IConviteRepository conviteRepository,
+        IAcessoRsvpRepository acessoRepository,
         IRestricaoAlimentarService restricaoAlimentarService,
         IDadosSensiveisRepository dadosSensiveisRepository,
         IUsuarioAtual usuarioAtual,
@@ -29,6 +31,7 @@ public partial class PainelConfirmacoesService : IPainelConfirmacoesService
         ILogger<PainelConfirmacoesService> logger)
     {
         _conviteRepository = conviteRepository;
+        _acessoRepository = acessoRepository;
         _verificador = new VerificadorCasamentoConvidados(casamentoRepository, conviteRepository);
         _restricaoAlimentarService = restricaoAlimentarService;
         _dadosSensiveisRepository = dadosSensiveisRepository;
@@ -42,8 +45,9 @@ public partial class PainelConfirmacoesService : IPainelConfirmacoesService
     {
         var casamento = await _verificador.ObterAsync(casamentoId, cancelamento);
         var convites = await _conviteRepository.ListarSemDadosSensiveisAsync(casamento.Id, cancelamento);
+        var convitesComLink = await _acessoRepository.ListarConvitesComLinkAsync(casamento.Id, cancelamento);
         var pessoasComRestricao = await _dadosSensiveisRepository.ContarPessoasComRestricaoAsync(casamento.Id, cancelamento);
-        return CalculadoraPainelConfirmacoes.Calcular(casamento, convites, _calendario.Hoje()) with
+        return CalculadoraPainelConfirmacoes.Calcular(casamento, convites, _calendario.Hoje(), convitesComLink) with
         {
             PessoasComRestricaoAlimentar = pessoasComRestricao,
         };
