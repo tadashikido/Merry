@@ -25,7 +25,7 @@ import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useCasamentosStore } from '@/stores/casamentos'
 import { useCronogramaStore } from '@/stores/cronograma'
 import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
-import { TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
+import { ROTULOS_DIA_CRONOGRAMA, TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import { TEXTOS_LINKS_CRONOGRAMA } from '@/textos/cronogramaPublico'
 import {
   TEXTOS_APLICAR_MODELO_CRONOGRAMA,
@@ -34,7 +34,15 @@ import {
   TEXTOS_SALVAR_COMO_MODELO,
 } from '@/textos/modelosCronograma'
 import type { ItemCronogramaDto } from '@/tipos/cronograma'
-import { agruparPorDia, descreverRelativoCerimonia, rotuloLinha, textosConflitos } from '@/utilitarios/cronograma'
+import {
+  agruparPorDia,
+  descreverRelativoCerimonia,
+  horarioParaMinutos,
+  MINUTOS_POR_DIA,
+  minutosParaHorario,
+  rotuloLinha,
+  textosConflitos,
+} from '@/utilitarios/cronograma'
 import { formatarDataCalendarioComDiaSemana, formatarNomesCasal } from '@/utilitarios/formatacao'
 
 const props = defineProps<{ id: string }>()
@@ -79,6 +87,29 @@ const dadosMensagem = computed(() =>
         data: casamento.value.data,
       }
     : null,
+)
+const resumoDias = computed(() =>
+  grupos.value.map((grupo) => {
+    const inicios = grupo.itens.map((item) => horarioParaMinutos(item.inicio) ?? 0)
+    const fins = grupo.itens.map((item) =>
+      item.termino
+        ? (horarioParaMinutos(item.termino) ?? 0) + (item.terminaEmOutroDia ? MINUTOS_POR_DIA : 0)
+        : (horarioParaMinutos(item.inicio) ?? 0),
+    )
+    const primeiro = Math.min(...inicios)
+    const ultimo = Math.max(...fins)
+    const inicio = minutosParaHorario(primeiro)
+    const fim = ultimo >= MINUTOS_POR_DIA ? `${minutosParaHorario(ultimo)} ${TEXTOS_CRONOGRAMA.rotuloMaisUmDia}` : minutosParaHorario(ultimo)
+    return {
+      dia: grupo.dia,
+      rotulo: ROTULOS_DIA_CRONOGRAMA[grupo.dia],
+      quantidade: TEXTOS_CRONOGRAMA.contagemGrupo(grupo.itens.length),
+      intervalo:
+        ultimo === primeiro
+          ? TEXTOS_CRONOGRAMA.rotuloHorarioInstante(inicio)
+          : TEXTOS_CRONOGRAMA.rotuloHorarioIntervalo(inicio, fim),
+    }
+  }),
 )
 const acoesMais: ItemMenuAcoes[] = [{ chave: 'salvar-modelo', rotulo: TEXTOS_SALVAR_COMO_MODELO.acao, icone: 'ie ie-lista' }]
 
@@ -280,7 +311,7 @@ function excluir(item: ItemCronogramaDto) {
         </template>
       </CabecalhoPagina>
 
-      <div class="cronograma">
+      <div class="cronograma pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado"
           variante="alerta"
@@ -381,62 +412,152 @@ function excluir(item: ItemCronogramaDto) {
           </template>
         </EstadoVazio>
 
-        <template v-else-if="cronograma && !semItens">
-          <MensagemFormulario
-            v-if="cronograma.itensComConflito > 0"
-            variante="alerta"
-            :mensagem="TEXTOS_CRONOGRAMA.conflitosFaixa(cronograma.itensComConflito)"
-            data-teste="aviso-conflitos"
-          />
+        <div
+          v-else-if="cronograma && !semItens"
+          class="cronograma__corpo"
+        >
+          <div class="cronograma__principal pilha pilha--bloco">
+            <MensagemFormulario
+              v-if="cronograma.itensComConflito > 0"
+              variante="alerta"
+              :mensagem="TEXTOS_CRONOGRAMA.conflitosFaixa(cronograma.itensComConflito)"
+              data-teste="aviso-conflitos"
+            />
 
-          <section
-            v-for="grupo in grupos"
-            :key="grupo.dia"
-            class="cronograma__grupo"
-            :aria-labelledby="`grupo-cronograma-${grupo.dia}`"
-            :data-teste="`grupo-cronograma-${grupo.dia}`"
+            <section
+              v-for="grupo in grupos"
+              :key="grupo.dia"
+              class="cronograma__grupo pilha pilha--grupo"
+              :aria-labelledby="`grupo-cronograma-${grupo.dia}`"
+              :data-teste="`grupo-cronograma-${grupo.dia}`"
+            >
+              <div class="cronograma__cabeca-grupo">
+                <h2
+                  :id="`grupo-cronograma-${grupo.dia}`"
+                  class="cronograma__titulo-grupo"
+                >
+                  {{ tituloGrupo(grupo.dia, grupo.data) }}
+                </h2>
+                <span class="cronograma__contagem texto-legenda">{{ TEXTOS_CRONOGRAMA.contagemGrupo(grupo.itens.length) }}</span>
+              </div>
+              <ol class="cronograma__lista cartao">
+                <LinhaCronograma
+                  v-for="item in grupo.itens"
+                  :key="item.id"
+                  :data-item-cronograma="item.id"
+                  :inicio="item.inicio"
+                  :termino="item.termino"
+                  :termina-em-outro-dia="item.terminaEmOutroDia"
+                  :atividade="item.atividade"
+                  :local="item.local"
+                  :responsavel="item.responsavel"
+                  :fornecedor="item.fornecedor?.nomeEmpresa ?? null"
+                  :instrucoes="item.instrucoes"
+                  :possui-nota-interna="Boolean(item.notasInternas)"
+                  :relativo-cerimonia="descreverRelativoCerimonia(item.minutosDesdeCerimonia)"
+                  :eh-cerimonia="item.minutosDesdeCerimonia === 0"
+                  :conflitos="textosConflitos(item)"
+                  :editavel="podeGerenciar"
+                  :rotulo="rotuloLinha(item)"
+                  @editar="abrirEdicao(item)"
+                />
+              </ol>
+            </section>
+          </div>
+
+          <aside
+            class="cronograma__lateral pilha pilha--grupo"
+            aria-labelledby="titulo-resumo-cronograma"
+            data-teste="lateral-cronograma"
           >
-            <div class="cronograma__cabeca-grupo">
+            <div class="cronograma__resumo cartao pilha pilha--cartao">
               <h2
-                :id="`grupo-cronograma-${grupo.dia}`"
-                class="cronograma__titulo-grupo"
+                id="titulo-resumo-cronograma"
+                class="cronograma__titulo-resumo texto-rotulo"
               >
-                {{ tituloGrupo(grupo.dia, grupo.data) }}
+                {{ TEXTOS_CRONOGRAMA.resumoTitulo }}
               </h2>
-              <span class="cronograma__contagem">{{ TEXTOS_CRONOGRAMA.contagemGrupo(grupo.itens.length) }}</span>
-            </div>
-            <ol class="cronograma__lista">
-              <LinhaCronograma
-                v-for="item in grupo.itens"
-                :key="item.id"
-                :data-item-cronograma="item.id"
-                :inicio="item.inicio"
-                :termino="item.termino"
-                :termina-em-outro-dia="item.terminaEmOutroDia"
-                :atividade="item.atividade"
-                :local="item.local"
-                :responsavel="item.responsavel"
-                :fornecedor="item.fornecedor?.nomeEmpresa ?? null"
-                :instrucoes="item.instrucoes"
-                :possui-nota-interna="Boolean(item.notasInternas)"
-                :relativo-cerimonia="descreverRelativoCerimonia(item.minutosDesdeCerimonia)"
-                :eh-cerimonia="item.minutosDesdeCerimonia === 0"
-                :conflitos="textosConflitos(item)"
-                :editavel="podeGerenciar"
-                :rotulo="rotuloLinha(item)"
-                @editar="abrirEdicao(item)"
-              />
-            </ol>
-          </section>
 
-          <p
-            v-if="visaoDoCasal"
-            class="cronograma__apoio"
-            data-teste="apoio-casal"
-          >
-            {{ TEXTOS_CRONOGRAMA.apoioCasal }}
-          </p>
-        </template>
+              <div
+                class="cronograma__cerimonia pilha pilha--campo"
+                data-teste="resumo-cerimonia"
+              >
+                <span class="cronograma__rotulo-cerimonia">{{ TEXTOS_CRONOGRAMA.resumoCerimonia }}</span>
+                <span
+                  v-if="cronograma.horarioCerimonia"
+                  class="cronograma__horario-cerimonia"
+                >{{ cronograma.horarioCerimonia }}</span>
+                <span
+                  v-else
+                  class="cronograma__sem-horario texto-legenda"
+                >{{ TEXTOS_CRONOGRAMA.resumoSemHorario }}</span>
+              </div>
+
+              <dl class="cronograma__dados">
+                <div
+                  v-if="cronograma.localCerimonia"
+                  class="cronograma__dado"
+                >
+                  <dt>{{ TEXTOS_CRONOGRAMA.resumoLocalCerimonia }}</dt>
+                  <dd>{{ cronograma.localCerimonia }}</dd>
+                </div>
+                <div
+                  v-if="cronograma.localRecepcao"
+                  class="cronograma__dado"
+                >
+                  <dt>{{ TEXTOS_CRONOGRAMA.resumoLocalRecepcao }}</dt>
+                  <dd>{{ cronograma.localRecepcao }}</dd>
+                </div>
+                <div class="cronograma__dado cronograma__dado--numero">
+                  <dt>{{ TEXTOS_CRONOGRAMA.resumoItens }}</dt>
+                  <dd
+                    class="numeros-tabulares"
+                    data-teste="resumo-total-itens"
+                  >
+                    {{ cronograma.itens.length.toLocaleString('pt-BR') }}
+                  </dd>
+                </div>
+                <div
+                  v-if="cronograma.itensComConflito > 0"
+                  class="cronograma__dado cronograma__dado--numero cronograma__dado--alerta"
+                >
+                  <dt>{{ TEXTOS_CRONOGRAMA.resumoConflitos }}</dt>
+                  <dd
+                    class="numeros-tabulares"
+                    data-teste="resumo-conflitos"
+                  >
+                    {{ cronograma.itensComConflito.toLocaleString('pt-BR') }}
+                  </dd>
+                </div>
+              </dl>
+
+              <div class="cronograma__dias pilha pilha--campo">
+                <h3 class="cronograma__titulo-dias">
+                  {{ TEXTOS_CRONOGRAMA.resumoDiasTitulo }}
+                </h3>
+                <ul class="cronograma__lista-dias">
+                  <li
+                    v-for="resumo in resumoDias"
+                    :key="resumo.dia"
+                    class="cronograma__dia"
+                    :data-teste="`resumo-dia-${resumo.dia}`"
+                  >
+                    <span class="cronograma__dia-nome">{{ resumo.rotulo }}</span>
+                    <span class="cronograma__dia-detalhe">{{ resumo.quantidade }}, {{ resumo.intervalo }}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <p
+              v-if="visaoDoCasal"
+              class="cronograma__apoio texto-legenda"
+              data-teste="apoio-casal"
+            >
+              {{ TEXTOS_CRONOGRAMA.apoioCasal }}
+            </p>
+          </aside>
+        </div>
       </div>
 
       <DialogoItemCronograma
@@ -481,35 +602,41 @@ function excluir(item: ItemCronogramaDto) {
 
 <style scoped>
 .cronograma {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
-  max-width: var(--p-dimensao-largura-leitura);
+  --cronograma-largura-lateral: 18rem;
+
+  container: cronograma / inline-size;
 }
 
 .cronograma__aviso-texto {
   margin: 0;
 }
 
-.cronograma__grupo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-2);
+.cronograma__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
+}
+
+.cronograma__principal {
+  min-width: 0;
 }
 
 .cronograma__cabeca-grupo {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--p-espaco-2) var(--p-espaco-4);
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
   align-items: baseline;
   justify-content: space-between;
 }
 
 .cronograma__titulo-grupo {
   margin: 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-leve);
+  line-height: var(--p-fonte-entrelinha-titulo);
+  letter-spacing: var(--p-fonte-espacamento-letras-display);
   color: var(--p-cor-texto);
 }
 
@@ -518,34 +645,169 @@ function excluir(item: ItemCronogramaDto) {
 }
 
 .cronograma__contagem {
-  font-size: var(--p-fonte-tamanho-apoio);
-  color: var(--p-cor-texto-apoio);
+  margin: 0;
 }
 
-.cronograma__lista {
+.cronograma .cronograma__lista {
   margin: 0;
-  padding: 0 var(--p-espaco-2) 0 0;
-  background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
+  padding: var(--p-ritmo-campo) var(--p-ritmo-campo) var(--p-ritmo-campo) 0;
+}
+
+.cronograma__lateral {
+  min-width: 0;
+  container: lateral-cronograma / inline-size;
+}
+
+.cronograma__titulo-resumo {
+  margin: 0;
+}
+
+.cronograma__rotulo-cerimonia {
+  font-size: var(--p-fonte-tamanho-controle);
+  color: var(--p-cor-texto-secundario);
+}
+
+.cronograma__horario-cerimonia {
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-pagina);
+  font-weight: var(--p-fonte-peso-leve);
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-texto);
+}
+
+.cronograma__sem-horario {
+  margin: 0;
+}
+
+.cronograma__dados {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding-top: var(--p-ritmo-campo);
+  border-top: 1px solid var(--p-cor-divisoria);
+}
+
+.cronograma__dado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-espaco-1);
+  padding-block: var(--p-ritmo-campo);
+  font-size: var(--p-fonte-tamanho-controle);
+}
+
+.cronograma__dado--numero {
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-ritmo-grupo);
+}
+
+.cronograma__dado dt {
+  color: var(--p-cor-texto-secundario);
+}
+
+.cronograma__dado dd {
+  margin: 0;
+  color: var(--p-cor-texto);
+  overflow-wrap: anywhere;
+}
+
+.cronograma__dado--numero dd {
+  font-weight: var(--p-fonte-peso-medio);
+}
+
+.cronograma__dado--alerta dt,
+.cronograma__dado--alerta dd {
+  color: var(--p-cor-alerta-texto);
+}
+
+.cronograma__dias {
+  padding-top: var(--p-ritmo-grupo);
+  border-top: 1px solid var(--p-cor-divisoria);
+}
+
+.cronograma__titulo-dias {
+  margin: 0;
+  font-family: var(--p-fonte-interface);
+  font-size: var(--p-fonte-tamanho-controle);
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-texto);
+}
+
+.cronograma__lista-dias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-campo);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cronograma__dia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-espaco-1);
+  font-size: var(--p-fonte-tamanho-controle);
+}
+
+.cronograma__dia-nome {
+  color: var(--p-cor-texto);
+}
+
+.cronograma__dia-detalhe {
+  font-size: var(--p-fonte-tamanho-apoio);
+  font-variant-numeric: tabular-nums;
+  color: var(--p-cor-texto-apoio);
 }
 
 .cronograma__apoio {
   margin: 0;
-  font-size: var(--p-fonte-tamanho-apoio);
-  color: var(--p-cor-texto-apoio);
 }
 
 .cronograma__acoes-vazio {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   justify-content: center;
 }
 
 .cronograma__voltar {
   display: inline-block;
-  margin-top: var(--p-espaco-4);
+  margin-top: var(--p-ritmo-grupo);
+}
+
+@container lateral-cronograma (min-width: 36rem) {
+  .cronograma__resumo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    column-gap: var(--p-ritmo-bloco);
+  }
+
+  .cronograma__resumo > .cronograma__titulo-resumo {
+    grid-column: 1 / -1;
+  }
+
+  .cronograma__resumo > .cronograma__dias {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    padding-top: 0;
+    padding-left: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-left: 1px solid var(--p-cor-divisoria);
+  }
+}
+
+@container cronograma (min-width: 64rem) {
+  .cronograma__corpo {
+    grid-template-columns: minmax(0, 1fr) var(--cronograma-largura-lateral);
+  }
+
+  .cronograma__lateral {
+    position: sticky;
+    top: var(--p-ritmo-bloco);
+  }
 }
 
 @media (max-width: 639px) {

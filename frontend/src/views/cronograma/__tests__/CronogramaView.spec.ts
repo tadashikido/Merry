@@ -360,6 +360,58 @@ describe('CronogramaView — assessoria', () => {
   })
 })
 
+describe('CronogramaView — reestruturação Nossia', () => {
+  it('[COMPONENTE] lateral resume cerimônia, locais, totais e o intervalo de cada dia', async () => {
+    const FESTA = itemCronograma({ id: 'f', inicio: '22:00', termino: '02:00', duracaoMinutos: 240, terminaEmOutroDia: true, atividade: 'Festa', minutosDesdeCerimonia: 330 })
+    await abrir(SESSAO_EXEMPLO, () => respostaJson(cronogramaExemplo([MONTAGEM, MAKING, CERIMONIA, RETOQUE, FESTA])))
+
+    const lateral = wrapper!.get('[data-teste="lateral-cronograma"]')
+    expect(lateral.element.tagName).toBe('ASIDE')
+    expect(lateral.attributes('aria-labelledby')).toBe('titulo-resumo-cronograma')
+    expect(lateral.get('#titulo-resumo-cronograma').text()).toBe(TEXTOS_CRONOGRAMA.resumoTitulo)
+    expect(lateral.get('[data-teste="resumo-cerimonia"]').text()).toContain('16:30')
+    expect(lateral.text()).toContain('Capela São José')
+    expect(lateral.text()).toContain('Espaço Jardim')
+    expect(lateral.get('[data-teste="resumo-total-itens"]').text()).toBe('5')
+    expect(lateral.get('[data-teste="resumo-conflitos"]').text()).toBe('2')
+    expect(lateral.get('[data-teste="resumo-dia-Vespera"]').text()).toContain('1 item, das 18:00 às 22:00')
+    expect(lateral.get('[data-teste="resumo-dia-DiaDoCasamento"]').text()).toContain('4 itens, das 13:00 às 02:00 do dia seguinte')
+    expect(lateral.find('button').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] sem horário da cerimônia a lateral avisa e sem conflitos não mostra a contagem', async () => {
+    await abrir(SESSAO_EXEMPLO, () => respostaJson(cronogramaExemplo([MAKING], { horarioCerimonia: null })))
+
+    const lateral = wrapper!.get('[data-teste="lateral-cronograma"]')
+    expect(lateral.get('[data-teste="resumo-cerimonia"]').text()).toContain(TEXTOS_CRONOGRAMA.resumoSemHorario)
+    expect(lateral.find('[data-teste="resumo-conflitos"]').exists()).toBe(false)
+    expect(lateral.get('[data-teste="resumo-dia-DiaDoCasamento"]').text()).toContain('1 item, das 13:00 às 15:00')
+  })
+
+  it('[COMPONENTE] estados vazio e de erro não mostram a lateral', async () => {
+    await abrir(SESSAO_EXEMPLO, () => respostaJson(cronogramaExemplo([])))
+
+    expect(wrapper!.find('[data-teste="lateral-cronograma"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] folha de item só mostra erro ao sair do campo depois da primeira tentativa e limpa ao digitar', async () => {
+    await abrir(SESSAO_EXEMPLO, () => respostaJson(cronogramaExemplo([CERIMONIA])))
+
+    await wrapper!.get('[data-teste="adicionar-item-cronograma"]').trigger('click')
+    await flushPromises()
+    campo('[data-teste="campo-atividade-cronograma"]').dispatchEvent(new Event('blur'))
+    await flushPromises()
+    expect(document.body.textContent).not.toContain(TEXTOS_CRONOGRAMA.erroAtividade)
+
+    await clicar('[data-teste="salvar-item-cronograma"]')
+    expect(document.body.textContent).toContain(TEXTOS_CRONOGRAMA.erroAtividade)
+
+    await digitar('[data-teste="campo-atividade-cronograma"]', 'Entrada dos noivos')
+    expect(document.body.textContent).not.toContain(TEXTOS_CRONOGRAMA.erroAtividade)
+    expect(chamadas(fetchSimulado, 'POST', ROTA_CRONOGRAMA)).toHaveLength(0)
+  })
+})
+
 describe('CronogramaView — casal', () => {
   it('[SEGURANÇA] casal vê o roteiro em leitura, sem ações nem atalho de horário', async () => {
     await abrir(
@@ -371,6 +423,7 @@ describe('CronogramaView — casal', () => {
     expect(wrapper!.find('button[data-teste="linha-cronograma-conteudo"]').exists()).toBe(false)
     expect(wrapper!.get('[data-teste="aviso-sem-horario"]').find('[data-teste="adicionar-horario"]').exists()).toBe(false)
     expect(wrapper!.get('[data-teste="apoio-casal"]').text()).toBe(TEXTOS_CRONOGRAMA.apoioCasal)
+    expect(wrapper!.get('[data-teste="lateral-cronograma"]').find('[data-teste="apoio-casal"]').exists()).toBe(true)
     expect(wrapper!.find('[data-teste="linha-cronograma-nota"]').exists()).toBe(false)
     expect(document.body.querySelector('[data-teste="dialogo-item-cronograma"]')).toBeNull()
   })

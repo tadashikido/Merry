@@ -318,7 +318,8 @@ function excluir() {
             :aria-describedby="descritoPor"
             :readonly="executando"
             data-teste="campo-inicio-cronograma"
-            @blur="formulario.validarCampo('inicio')"
+            @update:model-value="formulario.revalidarAoDigitar('inicio')"
+            @blur="formulario.validarAoSair('inicio')"
           />
         </CampoFormulario>
         <CampoFormulario
@@ -337,7 +338,8 @@ function excluir() {
             :aria-describedby="descritoPor"
             :readonly="executando"
             data-teste="campo-termino-cronograma"
-            @blur="formulario.validarCampo('termino')"
+            @update:model-value="formulario.revalidarAoDigitar('termino')"
+            @blur="formulario.validarAoSair('termino')"
           />
         </CampoFormulario>
       </div>
@@ -360,7 +362,8 @@ function excluir() {
           :aria-describedby="descritoPor"
           :readonly="executando"
           data-teste="campo-atividade-cronograma"
-          @blur="formulario.validarCampo('atividade')"
+          @update:model-value="formulario.revalidarAoDigitar('atividade')"
+          @blur="formulario.validarAoSair('atividade')"
         />
       </CampoFormulario>
 
@@ -533,13 +536,13 @@ function excluir() {
 .dialogo-item-cronograma__formulario {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
 }
 
 .dialogo-item-cronograma__campo {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .dialogo-item-cronograma__rotulo {
@@ -556,20 +559,20 @@ function excluir() {
 .dialogo-item-cronograma__horarios {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-grupo);
 }
 
 .dialogo-item-cronograma__rodape {
   display: flex;
   flex-direction: column-reverse;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-grupo);
   width: 100%;
 }
 
 .dialogo-item-cronograma__acoes {
   display: flex;
   flex-direction: column-reverse;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .dialogo-item-cronograma__acoes :deep(.p-button),

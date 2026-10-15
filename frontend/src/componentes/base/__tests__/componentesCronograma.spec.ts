@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
@@ -94,5 +96,42 @@ describe('AtalhosPreenchimento', () => {
     expect(mount(AtalhosPreenchimento, { props: { rotulo: 'Usar o local', opcoes: [] } }).find('[role="group"]').exists()).toBe(false)
     const desabilitado = mount(AtalhosPreenchimento, { props: { rotulo: 'Usar o local', opcoes, desabilitado: true } })
     expect(desabilitado.get('[data-teste="atalho-preenchimento"]').attributes('disabled')).toBeDefined()
+  })
+})
+
+describe('LinhaCronograma — detalhes lado a lado', () => {
+  const fonte = readFileSync(resolve(__dirname, '../LinhaCronograma.vue'), 'utf-8')
+
+  it('[COMPONENTE] com detalhes e complementos marca o conteúdo para a coluna de detalhes', () => {
+    const wrapper = montarLinha({
+      local: 'Capela São José',
+      responsavel: 'Fernanda',
+      instrucoes: 'Chegar antes.',
+      conflitos: ['Conflito com Retoque, 17:00'],
+    })
+
+    const conteudo = wrapper.get('[data-teste="linha-cronograma-conteudo"]')
+    expect(conteudo.classes()).toContain('linha-cronograma__conteudo--detalhes')
+    expect(conteudo.classes()).toContain('linha-cronograma__conteudo--complementos')
+    const complementos = wrapper.get('.linha-cronograma__complementos')
+    expect(complementos.find('[data-teste="linha-cronograma-instrucoes"]').exists()).toBe(true)
+    expect(complementos.find('[data-teste="linha-cronograma-conflito"]').exists()).toBe(true)
+    expect(complementos.find('[data-teste="linha-cronograma-local"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] sem detalhes nem complementos não cria colunas vazias', () => {
+    const wrapper = montarLinha({})
+
+    const conteudo = wrapper.get('[data-teste="linha-cronograma-conteudo"]')
+    expect(conteudo.classes()).not.toContain('linha-cronograma__conteudo--detalhes')
+    expect(conteudo.classes()).not.toContain('linha-cronograma__conteudo--complementos')
+    expect(wrapper.find('.linha-cronograma__complementos').exists()).toBe(false)
+    expect(wrapper.find('.linha-cronograma__metadados').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] a coluna de detalhes depende da largura da própria linha via container', () => {
+    expect(fonte).toMatch(/container:\s*linha-cronograma\s*\/\s*inline-size/)
+    expect(fonte).toMatch(/@container linha-cronograma \(min-width: 42rem\)/)
+    expect(fonte).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\) minmax\(12rem, 16rem\)/)
   })
 })

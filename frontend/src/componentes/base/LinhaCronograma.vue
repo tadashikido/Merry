@@ -40,6 +40,7 @@ const props = withDefaults(
 const emit = defineEmits<{ editar: [] }>()
 
 const comConflito = computed(() => props.conflitos.length > 0)
+const temComplementos = computed(() => Boolean(props.instrucoes) || props.possuiNotaInterna || comConflito.value)
 const rotuloHorario = computed(() => {
   if (!props.termino) {
     return TEXTOS_CRONOGRAMA.rotuloHorarioInstante(props.inicio)
@@ -100,6 +101,10 @@ const metadados = computed(() =>
       :is="editavel ? 'button' : 'div'"
       :type="editavel ? 'button' : undefined"
       class="linha-cronograma__conteudo"
+      :class="{
+        'linha-cronograma__conteudo--detalhes': metadados.length > 0,
+        'linha-cronograma__conteudo--complementos': temComplementos,
+      }"
       :aria-label="editavel ? rotulo : undefined"
       data-teste="linha-cronograma-conteudo"
       @click="editavel ? emit('editar') : undefined"
@@ -138,33 +143,38 @@ const metadados = computed(() =>
         </span>
       </span>
       <span
-        v-if="instrucoes"
-        class="linha-cronograma__instrucoes"
-        data-teste="linha-cronograma-instrucoes"
-      >{{ instrucoes }}</span>
-      <span
-        v-if="possuiNotaInterna"
-        class="linha-cronograma__nota"
-        data-teste="linha-cronograma-nota"
+        v-if="temComplementos"
+        class="linha-cronograma__complementos"
       >
         <span
-          class="ie ie-permissao"
-          aria-hidden="true"
-        />
-        {{ TEXTOS_CRONOGRAMA.notaInterna }}
-      </span>
-      <span
-        v-if="comConflito"
-        class="linha-cronograma__conflitos"
-      >
-        <BadgeStatus
-          v-for="conflito in conflitos"
-          :key="conflito"
-          :texto="conflito"
-          variante="alerta"
-          icone="aviso"
-          data-teste="linha-cronograma-conflito"
-        />
+          v-if="instrucoes"
+          class="linha-cronograma__instrucoes"
+          data-teste="linha-cronograma-instrucoes"
+        >{{ instrucoes }}</span>
+        <span
+          v-if="possuiNotaInterna"
+          class="linha-cronograma__nota"
+          data-teste="linha-cronograma-nota"
+        >
+          <span
+            class="ie ie-permissao"
+            aria-hidden="true"
+          />
+          {{ TEXTOS_CRONOGRAMA.notaInterna }}
+        </span>
+        <span
+          v-if="comConflito"
+          class="linha-cronograma__conflitos"
+        >
+          <BadgeStatus
+            v-for="conflito in conflitos"
+            :key="conflito"
+            :texto="conflito"
+            variante="alerta"
+            icone="aviso"
+            data-teste="linha-cronograma-conflito"
+          />
+        </span>
       </span>
     </component>
   </li>
@@ -172,6 +182,7 @@ const metadados = computed(() =>
 
 <style scoped>
 .linha-cronograma {
+  container: linha-cronograma / inline-size;
   display: grid;
   grid-template-columns: var(--p-dimensao-coluna-horario-cronograma-celular) var(--p-espaco-6) minmax(0, 1fr);
   align-items: stretch;
@@ -340,6 +351,13 @@ const metadados = computed(() =>
   overflow-wrap: anywhere;
 }
 
+.linha-cronograma__complementos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-espaco-2);
+  min-width: 0;
+}
+
 .linha-cronograma__instrucoes {
   display: -webkit-box;
   overflow: hidden;
@@ -381,6 +399,48 @@ const metadados = computed(() =>
 
   .linha-cronograma__relativo {
     flex-shrink: 0;
+  }
+}
+
+@container linha-cronograma (min-width: 42rem) {
+  .linha-cronograma__conteudo--detalhes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 16rem);
+    gap: var(--p-espaco-2) var(--p-ritmo-cartao);
+    align-items: start;
+  }
+
+  .linha-cronograma__conteudo--detalhes.linha-cronograma__conteudo--complementos {
+    grid-template-rows: auto 1fr;
+  }
+
+  .linha-cronograma__conteudo--detalhes .linha-cronograma__cabeca,
+  .linha-cronograma__conteudo--detalhes .linha-cronograma__complementos {
+    grid-column: 1;
+  }
+
+  .linha-cronograma__conteudo--detalhes .linha-cronograma__cabeca {
+    flex-wrap: wrap;
+  }
+
+  .linha-cronograma__conteudo--detalhes .linha-cronograma__metadados {
+    flex-direction: column;
+    grid-row: 1;
+    grid-column: 2;
+    padding-left: var(--p-ritmo-grupo);
+    border-left: 1px solid var(--p-cor-divisoria);
+  }
+
+  .linha-cronograma__conteudo--complementos .linha-cronograma__metadados {
+    grid-row: 1 / span 2;
+  }
+
+  .linha-cronograma__conteudo--detalhes .linha-cronograma__metadado {
+    align-items: flex-start;
+  }
+
+  .linha-cronograma__conteudo--detalhes .linha-cronograma__metadado > [aria-hidden='true'] {
+    margin-top: var(--p-espaco-1);
   }
 }
 

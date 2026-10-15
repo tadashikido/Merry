@@ -158,7 +158,8 @@ async function salvar() {
           :aria-describedby="descritoPor"
           :readonly="executando"
           data-teste="campo-nome-modelo"
-          @blur="formulario.validarCampo('nome')"
+          @update:model-value="formulario.revalidarAoDigitar('nome')"
+          @blur="formulario.validarAoSair('nome')"
         />
       </CampoFormulario>
 
@@ -216,7 +217,7 @@ async function salvar() {
 .dialogo-salvar-modelo {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
 }
 
 .dialogo-salvar-modelo__nota {
@@ -228,7 +229,7 @@ async function salvar() {
 .dialogo-salvar-modelo__acoes {
   display: flex;
   flex-direction: column-reverse;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   width: 100%;
 }
 

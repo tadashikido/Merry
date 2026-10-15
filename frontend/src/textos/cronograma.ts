@@ -91,4 +91,12 @@ export const TEXTOS_CRONOGRAMA = {
   rotuloLocal: 'Local',
   rotuloResponsavel: 'Responsável',
   rotuloFornecedor: 'Fornecedor',
+  resumoTitulo: 'Resumo do dia',
+  resumoCerimonia: 'Cerimônia',
+  resumoSemHorario: 'Sem horário definido',
+  resumoLocalCerimonia: 'Local da cerimônia',
+  resumoLocalRecepcao: 'Local da recepção',
+  resumoItens: 'Itens no roteiro',
+  resumoConflitos: 'Com conflito',
+  resumoDiasTitulo: 'Por dia',
 } as const
