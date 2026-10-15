@@ -64,3 +64,5 @@ publish/
 # Vite/Vue extras
 .vite/
 *.local
+
+.claude/worktrees/
