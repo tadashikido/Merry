@@ -341,6 +341,99 @@ describe('Formulários de modelo e item', () => {
     expect(wrapper.get('[data-teste="erro-formulario"]').text()).toContain('Já existe um modelo com esse nome.')
   })
 
+  it('[COMPONENTE] criação mostra orientação no cabeçalho e campos agrupados em "Sobre o modelo"', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/modelos-checklist/novo')
+
+    const pagina = wrapper.get('.pagina-formulario')
+    expect(pagina.get('h1').text()).toBe(TEXTOS_MODELOS_CHECKLIST.formNovo)
+    expect(pagina.text()).toContain(TEXTOS_MODELOS_CHECKLIST.formNovoDescricao)
+    const grupo = pagina.get('[data-teste="grupo-modelo"]')
+    expect(grupo.element.tagName).toBe('FIELDSET')
+    expect(grupo.get('legend').text()).toBe(TEXTOS_MODELOS_CHECKLIST.grupoModelo)
+    expect(grupo.get('legend').classes()).toContain('texto-rotulo')
+    expect(grupo.find('[data-teste="campo-nome"]').exists()).toBe(true)
+    expect(grupo.find('[data-teste="campo-descricao"]').exists()).toBe(true)
+    expect(wrapper.get('[data-teste="formulario-modelo"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    expect(wrapper.get('[data-teste="salvar-modelo"]').text()).toBe(TEXTOS_MODELOS_CHECKLIST.criar)
+  })
+
+  it('[COMPONENTE] edição mostra o nome carregado no cabeçalho, salva com PUT e volta ao detalhe', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([], { nome: 'Casamento no campo', descricao: 'Ao ar livre' }))),
+      quando('PUT', ROTA_MODELO, () => respostaJson(modeloCompleto([], { nome: 'Campo e praia' }))),
+    )
+    const { wrapper, montagem } = await abrir(`/modelos-checklist/${ID_MODELO}/editar`)
+
+    expect(wrapper.get('h1').text()).toBe(TEXTOS_MODELOS_CHECKLIST.formEditar)
+    expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe('Casamento no campo')
+    expect((wrapper.get('[data-teste="campo-descricao"]').element as HTMLTextAreaElement).value).toBe('Ao ar livre')
+
+    await wrapper.get('[data-teste="campo-nome"]').setValue('Campo e praia')
+    expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe('Casamento no campo')
+    await wrapper.get('[data-teste="formulario-modelo"]').trigger('submit')
+    await flushPromises()
+
+    const [chamada] = chamadas(fetchSimulado, 'PUT', ROTA_MODELO)
+    expect(corpoDaChamada(chamada!)).toEqual({ nome: 'Campo e praia', descricao: 'Ao ar livre' })
+    expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_MODELOS_CHECKLIST.toastSalvo)
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('modelo-checklist'))
+  })
+
+  it('[COMPONENTE] erro só aparece depois da primeira tentativa e some ao digitar um nome válido', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/modelos-checklist/novo')
+    const campoNome = wrapper.get('[data-teste="campo-nome"]')
+
+    await campoNome.trigger('blur')
+    expect(wrapper.text()).not.toContain(TEXTOS_MODELOS_CHECKLIST.erroNomeTamanho)
+
+    await campoNome.setValue('A')
+    await campoNome.trigger('blur')
+    expect(wrapper.text()).not.toContain(TEXTOS_MODELOS_CHECKLIST.erroNomeTamanho)
+
+    await wrapper.get('[data-teste="formulario-modelo"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.erroNomeTamanho)
+
+    await campoNome.setValue('Campo')
+    expect(wrapper.text()).not.toContain(TEXTOS_MODELOS_CHECKLIST.erroNomeTamanho)
+
+    await campoNome.setValue('B')
+    expect(wrapper.text()).not.toContain(TEXTOS_MODELOS_CHECKLIST.erroNomeTamanho)
+    await campoNome.trigger('blur')
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.erroNomeTamanho)
+  })
+
+  it('[COMPONENTE] edição de modelo inexistente mostra não encontrado sem formulário', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(404, { title: 'Não encontrado' })))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/editar`)
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.naoEncontradoTitulo)
+    expect(wrapper.find('[data-teste="formulario-modelo"]').exists()).toBe(false)
+  })
+
+  it('[SEGURANÇA] edição sem permissão mostra aviso da assessoria sem formulário', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(403, { title: 'Proibido' })))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/editar`)
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.semAcesso)
+    expect(wrapper.find('[data-teste="formulario-modelo"]').exists()).toBe(false)
+  })
+
+  it('[UNITÁRIO] estilo do formulário de modelo usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ModeloChecklistFormularioView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(fonte).toContain('class="pagina-formulario"')
+    expect(estilo).toContain('container: formulario-modelo / inline-size')
+    expect(estilo).toContain('@container formulario-modelo (min-width: 40rem)')
+    expect(estilo).not.toContain('@media')
+    expect(estilo).not.toContain('largura-leitura')
+    expect(estilo).not.toContain('--p-espaco-')
+    expect(fonte).not.toContain("validarCampo('")
+  })
+
   it('[COMPONENTE] item com "depois do casamento" envia dias negativos', async () => {
     rotearFetch(
       fetchSimulado,

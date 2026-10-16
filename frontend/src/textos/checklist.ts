@@ -62,6 +62,8 @@ export const TEXTOS_MODELOS_CHECKLIST = {
     `${itens > 0 ? `Os ${numero(itens)} ${plural(itens, 'item sai', 'itens saem')} do modelo. ` : ''}As tarefas já criadas nos casamentos continuam, mas deixam de contar no checklist.`,
   formNovo: 'Novo modelo',
   formEditar: 'Editar modelo',
+  formNovoDescricao: 'Dê um nome que a equipe reconheça. Os itens entram depois, no detalhe do modelo.',
+  grupoModelo: 'Sobre o modelo',
   campoNome: 'Nome do modelo',
   campoNomePlaceholder: 'Ex.: Casamento no campo',
   campoDescricao: 'Descrição',
