@@ -38,6 +38,7 @@ export const TEXTOS_MODELOS_CRONOGRAMA = {
   apoioReferencia: (horario: string) =>
     `Horários com cerimônia às ${horario}. Ao aplicar, tudo acompanha o horário real.`,
   listaRotulo: 'Modelos de cronograma da assessoria',
+  resumo: (quantidade: number) => contar(quantidade, 'modelo', 'modelos'),
   vazioTitulo: 'Nenhum modelo de cronograma',
   vazioTexto: 'Crie um modelo ou salve o cronograma de um casamento como modelo.',
   erroTitulo: 'Não foi possível carregar os modelos.',

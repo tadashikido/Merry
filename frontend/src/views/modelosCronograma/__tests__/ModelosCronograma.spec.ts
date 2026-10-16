@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
@@ -84,6 +86,66 @@ describe('ModelosCronogramaView', () => {
     expect(modelos[0]!.get('[data-teste="link-modelo"]').attributes('href')).toBe(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
     const rail = wrapper.findAll('[data-teste="item-menu"]').find((item) => item.text() === 'Modelos')!
     expect(rail.attributes('aria-current')).toBe('page')
+  })
+
+  it('[COMPONENTE] cartões em grade larga com resumo no cabeçalho e referência no rodapé', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELOS, () =>
+        respostaJson([resumoModeloCronograma(), resumoModeloCronograma({ id: 'm2', nome: 'Roteiro fazenda', sugerido: false, quantidadeItens: 1, horarioReferencia: '17:30', descricao: null })]),
+      ),
+    )
+
+    const { wrapper } = await abrir('/modelos-cronograma')
+
+    expect(wrapper.get('[data-teste="resumo-modelos"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.resumo(2))
+    expect(TEXTOS_MODELOS_CRONOGRAMA.resumo(1)).toBe('1 modelo')
+    expect(wrapper.get('[data-teste="resumo-modelos"]').attributes('aria-live')).toBe('polite')
+    const lista = wrapper.get('[data-teste="lista-modelos"]')
+    expect(lista.element.tagName).toBe('UL')
+    expect(lista.classes()).toEqual(expect.arrayContaining(['grade', 'grade--larga']))
+    expect(lista.attributes('aria-label')).toBe(TEXTOS_MODELOS_CRONOGRAMA.listaRotulo)
+    expect(wrapper.findAllComponents({ name: 'CartaoModelo' })).toHaveLength(2)
+    const cartoes = wrapper.findAll('[data-teste="modelo-cronograma"]')
+    expect(cartoes[0]!.find('[data-teste="descricao-modelo"]').exists()).toBe(true)
+    expect(cartoes[1]!.find('[data-teste="descricao-modelo"]').exists()).toBe(false)
+    expect(cartoes[1]!.text()).not.toContain(TEXTOS_MODELOS_CRONOGRAMA.sugerido)
+    expect(cartoes[1]!.get('[data-teste="referencia-modelo"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.referencia('17:30'))
+    expect(cartoes[1]!.get('[data-teste="contagem-modelo"]').text()).toBe('1 item')
+    expect(cartoes[0]!.get('[data-teste="menu-acoes"]').attributes('aria-label')).toBe(TEXTOS_MODELOS_CRONOGRAMA.maisAcoesAria('Roteiro clássico'))
+    expect(wrapper.find('.abas-secao__aba--ativa').text()).toBe('Cronograma')
+    expect(wrapper.find('[data-teste="novo-modelo"]').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] lista vazia não mostra resumo; erro esconde Novo modelo do cabeçalho', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaJson([])))
+    const { wrapper } = await abrir('/modelos-cronograma')
+    expect(wrapper.find('[data-teste="resumo-modelos"]').exists()).toBe(false)
+    wrapper.unmount()
+
+    fetchSimulado.mockReset()
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaProblema(500, { title: 'Erro' })))
+    const segunda = await abrir('/modelos-cronograma')
+    expect(segunda.wrapper.find('[data-teste="novo-modelo"]').exists()).toBe(false)
+    expect(segunda.wrapper.find('[data-teste="resumo-modelos"]').exists()).toBe(false)
+  })
+
+  it('[SEGURANÇA] sem permissão mostra aviso da assessoria sem lista', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaProblema(403, { title: 'Proibido' })))
+    const { wrapper } = await abrir('/modelos-cronograma')
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.semAcesso)
+    expect(wrapper.find('[data-teste="lista-modelos"]').exists()).toBe(false)
+  })
+
+  it('[UNITÁRIO] estilo da tela usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ModelosCronogramaView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(estilo).toContain('container: modelos / inline-size')
+    expect(estilo).toContain('@container modelos')
+    expect(estilo).not.toContain('@media')
+    expect(estilo).not.toContain('largura-leitura')
+    expect(estilo).not.toContain('--p-espaco-')
+    expect(fonte).toContain('class="modelos pilha pilha--cartao"')
   })
 
   it('[COMPONENTE] estado vazio convida a criar e erro oferece nova tentativa', async () => {
