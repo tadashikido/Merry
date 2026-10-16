@@ -95,6 +95,30 @@ describe('ImportarConvidadosView — reestruturação Nossia', { timeout: 20_000
     expect(principal.find('[data-teste="baixar-correcao"]').exists()).toBe(true)
   })
 
+  it('[COMPONENTE] sem convite pronto nem avisos a grade não reserva coluna lateral vazia', async () => {
+    const previa = previaExemplo()
+    previa.resumo.convitesValidos = 0
+    previa.resumo.pessoasValidas = 0
+    previa.colunasIgnoradas = []
+    previa.convites = previa.convites.map((convite) => ({ ...convite, valido: false }))
+    await abrir(quando('POST', ROTA_PREVIA, () => respostaJson(previa)))
+
+    await escolherArquivo()
+
+    const grade = wrapper!.get('.previa__grade')
+    expect(grade.find('.previa__lateral').exists()).toBe(false)
+    expect(grade.classes()).not.toContain('previa__grade--com-lateral')
+  })
+
+  it('[COMPONENTE] com resumo a grade ganha a coluna lateral', async () => {
+    await abrir(quando('POST', ROTA_PREVIA, () => respostaJson(previaExemplo())))
+
+    await escolherArquivo()
+
+    expect(wrapper!.get('.previa__grade').classes()).toContain('previa__grade--com-lateral')
+    expect(ESTILO_PREVIA).toMatch(/\.previa__grade--com-lateral \{\s*grid-template-columns: minmax\(0, 1fr\) 20rem;/)
+  })
+
   it('[COMPONENTE] etapa 3 usa o lacre padronizado em vez do selo terracota', async () => {
     const previa = previaExemplo({ linhasComProblema: [] })
     previa.convites = previa.convites.filter((convite) => convite.valido)

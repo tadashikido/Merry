@@ -34,6 +34,9 @@ watch(
 const frase = computed(() => frasePrevia(props.previa))
 const temBloqueantes = computed(() => linhasBloqueantes(props.previa) > 0)
 const acimaDoLimite = computed(() => ultrapassaLimite(props.previa))
+const temLateral = computed(
+  () => props.previa.resumo.convitesValidos > 0 || acimaDoLimite.value || props.previa.colunasIgnoradas.length > 0,
+)
 const totalDepois = computed(() => props.previa.resumo.convidadosExistentes + props.previa.resumo.pessoasValidas)
 
 const itensProblemas = computed<ItemProblemaLinha[]>(() =>
@@ -75,7 +78,10 @@ const convitesExibidos = computed(() =>
     class="previa"
     data-teste="previa-importacao"
   >
-    <div class="previa__grade">
+    <div
+      class="previa__grade"
+      :class="{ 'previa__grade--com-lateral': temLateral }"
+    >
       <header class="previa__abertura">
         <p
           class="previa__frase"
@@ -89,7 +95,7 @@ const convitesExibidos = computed(() =>
       </header>
 
       <div
-        v-if="previa.resumo.convitesValidos > 0 || acimaDoLimite || previa.colunasIgnoradas.length > 0"
+        v-if="temLateral"
         class="previa__lateral pilha pilha--grupo"
       >
         <ResumoContagem
@@ -380,7 +386,7 @@ const convitesExibidos = computed(() =>
 }
 
 @container previa (min-width: 56rem) {
-  .previa__grade {
+  .previa__grade--com-lateral {
     grid-template-columns: minmax(0, 1fr) 20rem;
     column-gap: var(--p-ritmo-bloco);
   }
