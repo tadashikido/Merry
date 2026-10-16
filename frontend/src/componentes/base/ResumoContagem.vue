@@ -2,21 +2,27 @@
 import type { ItemContagem } from './tipos'
 import { formatarNumero } from '@/utilitarios/formatacao'
 
-defineProps<{ itens: ItemContagem[]; rotulo: string }>()
+withDefaults(defineProps<{ itens: ItemContagem[]; rotulo: string; variante?: 'faixa' | 'indicadores' }>(), {
+  variante: 'faixa',
+})
 </script>
 
 <template>
   <section
     class="resumo-contagem"
+    :class="`resumo-contagem--${variante}`"
     :aria-label="rotulo"
     data-teste="resumo-contagem"
   >
-    <ul class="resumo-contagem__itens">
+    <ul
+      class="resumo-contagem__itens"
+      :class="{ 'grade grade--indicadores': variante === 'indicadores' }"
+    >
       <li
         v-for="item in itens"
         :key="item.chave"
         class="resumo-contagem__item"
-        :class="{ 'resumo-contagem__item--destaque': item.destaque }"
+        :class="{ 'resumo-contagem__item--destaque': item.destaque, 'cartao pilha pilha--campo': variante === 'indicadores' }"
         :data-teste="`contagem-${item.chave}`"
       >
         <span class="resumo-contagem__numero numeros-tabulares">{{ formatarNumero(item.valor) }}</span>
@@ -33,6 +39,7 @@ defineProps<{ itens: ItemContagem[]; rotulo: string }>()
     <p
       v-if="$slots.rodape"
       class="resumo-contagem__rodape"
+      :class="{ 'texto-legenda': variante === 'indicadores' }"
     >
       <slot name="rodape" />
     </p>
@@ -126,5 +133,34 @@ defineProps<{ itens: ItemContagem[]; rotulo: string }>()
   .resumo-contagem__numero {
     font-size: var(--p-fonte-tamanho-pagina);
   }
+}
+
+.resumo-contagem--indicadores {
+  gap: var(--p-ritmo-grupo);
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.resumo-contagem--indicadores .resumo-contagem__itens.grade {
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--grade-minimo), 100%), 1fr));
+  grid-auto-flow: row;
+}
+
+.resumo-contagem--indicadores .resumo-contagem__item.cartao:nth-child(n) {
+  gap: var(--p-ritmo-campo);
+  padding: var(--p-ritmo-cartao);
+  border: 1px solid var(--p-cor-borda);
+}
+
+.resumo-contagem--indicadores .resumo-contagem__numero.numeros-tabulares {
+  font-size: var(--p-fonte-tamanho-pagina);
+  font-weight: var(--p-fonte-peso-leve);
+}
+
+.resumo-contagem--indicadores .resumo-contagem__rodape.texto-legenda {
+  padding: 0;
+  font-size: var(--p-fonte-tamanho-apoio);
+  border-top: 0;
 }
 </style>

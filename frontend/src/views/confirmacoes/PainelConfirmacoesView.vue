@@ -125,7 +125,7 @@ const linhasPendentes = computed<LinhaPendente[]>(() =>
 
 const colunasPendentes: ColunaListagem<LinhaPendente>[] = [
   { campo: 'nome', titulo: TEXTOS_CONFIRMACOES.colunaConvite, principal: true },
-  { campo: 'envio', titulo: TEXTOS_CONFIRMACOES.colunaEnvio },
+  { campo: 'envio', titulo: TEXTOS_CONFIRMACOES.colunaEnvio, largura: '10rem' },
 ]
 
 const mensagemErro = computed(() => {
@@ -219,7 +219,10 @@ function importar() {
 
 <template>
   <LayoutPainelUsuario>
-    <template v-if="falha?.tipo === 'naoEncontrado'">
+    <div
+      v-if="falha?.tipo === 'naoEncontrado'"
+      class="pilha pilha--grupo"
+    >
       <EstadoErro
         :titulo="TEXTOS_CONFIRMACOES.naoEncontradoTitulo"
         :mensagem="TEXTOS_CONFIRMACOES.naoEncontradoTexto"
@@ -232,7 +235,7 @@ function importar() {
       >
         {{ TEXTOS_CONFIRMACOES.voltarCasamentos }}
       </RouterLink>
-    </template>
+    </div>
 
     <template v-else>
       <CabecalhoPagina
@@ -260,7 +263,7 @@ function importar() {
         </template>
       </CabecalhoPagina>
 
-      <div class="confirmacoes">
+      <div class="confirmacoes pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado"
           variante="informacao"
@@ -337,6 +340,7 @@ function importar() {
           <ResumoContagem
             :itens="itensResumoConvidados(painel.pessoas)"
             :rotulo="TEXTOS_CONFIRMACOES.pessoasRotulo"
+            variante="indicadores"
           >
             <template
               v-if="estimativa"
@@ -346,105 +350,114 @@ function importar() {
             </template>
           </ResumoContagem>
 
-          <BarraProgressoEnvio
-            :titulo="TEXTOS_CONFIRMACOES.caminhoTitulo"
-            :segmentos="segmentos"
-            :rotulo-acessivel="rotuloBarra"
-            :vazio="TEXTOS_CONFIRMACOES.semConvitesBarra"
+          <div
+            class="confirmacoes__detalhes"
+            data-teste="detalhes-confirmacoes"
           >
-            <template #rodape>
-              <span data-teste="respondidos">{{ TEXTOS_CONFIRMACOES.respondidos(painel.convites.respondidos, painel.convites.aguardandoResposta) }}</span>
-            </template>
-          </BarraProgressoEnvio>
+            <BarraProgressoEnvio
+              :titulo="TEXTOS_CONFIRMACOES.caminhoTitulo"
+              :segmentos="segmentos"
+              :rotulo-acessivel="rotuloBarra"
+              :vazio="TEXTOS_CONFIRMACOES.semConvitesBarra"
+            >
+              <template #rodape>
+                <span data-teste="respondidos">{{ TEXTOS_CONFIRMACOES.respondidos(painel.convites.respondidos, painel.convites.aguardandoResposta) }}</span>
+              </template>
+            </BarraProgressoEnvio>
 
-          <div
-            v-if="autenticacao.ehCasal"
-            class="confirmacoes__restricoes"
-            data-teste="restricoes-casal"
-          >
-            <ResumoCardapio
-              :titulo="TEXTOS_AREA_CASAL.restricoesTitulo"
-              :linhas="linhasRestricoesCasal"
-              :vazio="TEXTOS_AREA_CASAL.restricoesVazio"
-            >
-              <template #rodape>
-                <span>{{ TEXTOS_AREA_CASAL.restricoesApoio }}</span>
-              </template>
-            </ResumoCardapio>
-          </div>
-          <div
-            v-else-if="!falhaRestricoes || falhaRestricoes.tipo !== 'semPermissao'"
-            class="confirmacoes__restricoes"
-          >
-            <EstadoCarregando
-              v-if="restricoes.carregando && !relatorio"
-              variante="cartao"
-              :linhas="1"
-            />
             <div
-              v-else-if="falhaRestricoes"
-              class="confirmacoes__erro-bloco"
-              role="alert"
-              data-teste="erro-restricoes"
+              v-if="autenticacao.ehCasal"
+              class="confirmacoes__restricoes"
+              data-teste="restricoes-casal"
             >
-              <p>{{ TEXTOS_CONFIRMACOES.erroRestricoes }}</p>
-              <Button
-                :label="ROTULOS_ACOES.tentarNovamente"
-                severity="secondary"
-                text
-                @click="restricoes.carregar(id)"
-              />
+              <ResumoCardapio
+                :titulo="TEXTOS_AREA_CASAL.restricoesTitulo"
+                :linhas="linhasRestricoesCasal"
+                :vazio="TEXTOS_AREA_CASAL.restricoesVazio"
+              >
+                <template #rodape>
+                  <span>{{ TEXTOS_AREA_CASAL.restricoesApoio }}</span>
+                </template>
+              </ResumoCardapio>
             </div>
-            <ResumoCardapio
-              v-else-if="relatorio"
-              :titulo="TEXTOS_DADOS_SENSIVEIS.resumoBuffet"
-              :linhas="linhasCardapio"
-              :vazio="TEXTOS_CONFIRMACOES.semRestricoes"
+            <div
+              v-else-if="!falhaRestricoes || falhaRestricoes.tipo !== 'semPermissao'"
+              class="confirmacoes__restricoes"
             >
-              <template #rodape>
-                <RouterLink
-                  :to="{ name: 'restricoes-alimentares', params: { id } }"
-                  data-teste="ver-restricoes"
-                >
-                  {{ TEXTOS_CONFIRMACOES.verRestricoes }}
-                </RouterLink>
-              </template>
-            </ResumoCardapio>
+              <EstadoCarregando
+                v-if="restricoes.carregando && !relatorio"
+                variante="cartao"
+                :linhas="1"
+              />
+              <div
+                v-else-if="falhaRestricoes"
+                class="confirmacoes__erro-bloco"
+                role="alert"
+                data-teste="erro-restricoes"
+              >
+                <p>{{ TEXTOS_CONFIRMACOES.erroRestricoes }}</p>
+                <Button
+                  :label="ROTULOS_ACOES.tentarNovamente"
+                  severity="secondary"
+                  text
+                  @click="restricoes.carregar(id)"
+                />
+              </div>
+              <ResumoCardapio
+                v-else-if="relatorio"
+                :titulo="TEXTOS_DADOS_SENSIVEIS.resumoBuffet"
+                :linhas="linhasCardapio"
+                :vazio="TEXTOS_CONFIRMACOES.semRestricoes"
+              >
+                <template #rodape>
+                  <RouterLink
+                    :to="{ name: 'restricoes-alimentares', params: { id } }"
+                    data-teste="ver-restricoes"
+                  >
+                    {{ TEXTOS_CONFIRMACOES.verRestricoes }}
+                  </RouterLink>
+                </template>
+              </ResumoCardapio>
+            </div>
           </div>
 
           <section
-            class="confirmacoes__pendentes"
+            class="confirmacoes__pendentes pilha pilha--cartao"
             aria-labelledby="titulo-pendentes"
           >
-            <h2
-              id="titulo-pendentes"
-              class="confirmacoes__titulo-secao"
-            >
-              {{ TEXTOS_CONFIRMACOES.pendentesTitulo }}
-              <span class="confirmacoes__quantidade numeros-tabulares">({{ painel.pendentes.length }})</span>
-            </h2>
+            <div class="confirmacoes__cabecalho-pendentes cabecalho-secao">
+              <div>
+                <h2
+                  id="titulo-pendentes"
+                  class="confirmacoes__titulo-secao"
+                >
+                  {{ TEXTOS_CONFIRMACOES.pendentesTitulo }}
+                  <span class="confirmacoes__quantidade numeros-tabulares">({{ painel.pendentes.length }})</span>
+                </h2>
+              </div>
 
-            <div
-              v-if="podeCobrar"
-              class="confirmacoes__cobrar"
-            >
-              <Button
-                :label="TEXTOS_COBRANCA.acaoAbrir(fila.length)"
-                icon="ie ie-mensagem"
-                severity="secondary"
-                outlined
-                aria-haspopup="dialog"
-                data-teste="abrir-cobranca"
-                @click="cobrancaAberta = true"
-              />
+              <div
+                v-if="podeCobrar"
+                class="confirmacoes__cobrar"
+              >
+                <Button
+                  :label="TEXTOS_COBRANCA.acaoAbrir(fila.length)"
+                  icon="ie ie-mensagem"
+                  severity="secondary"
+                  outlined
+                  aria-haspopup="dialog"
+                  data-teste="abrir-cobranca"
+                  @click="cobrancaAberta = true"
+                />
+              </div>
+              <p
+                v-else-if="prazoEncerrado && !arquivado && painel.pendentes.length > 0"
+                class="confirmacoes__aviso-cobranca"
+                data-teste="cobranca-prazo-encerrado"
+              >
+                {{ TEXTOS_COBRANCA.prazoEncerrado }}
+              </p>
             </div>
-            <p
-              v-else-if="prazoEncerrado && !arquivado && painel.pendentes.length > 0"
-              class="confirmacoes__aviso-cobranca"
-              data-teste="cobranca-prazo-encerrado"
-            >
-              {{ TEXTOS_COBRANCA.prazoEncerrado }}
-            </p>
 
             <MensagemFormulario
               v-if="painel.pendentes.length === 0"
@@ -537,13 +550,13 @@ function importar() {
 
 <style scoped>
 .confirmacoes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+  --confirmacoes-coluna-minima: 22rem;
+
+  container: confirmacoes / inline-size;
 }
 
-.confirmacoes > :not(.confirmacoes__pendentes) {
-  max-width: var(--p-dimensao-largura-leitura);
+.confirmacoes :deep(.resumo-contagem--indicadores .resumo-contagem__itens.grade) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .confirmacoes__vazio {
@@ -552,13 +565,28 @@ function importar() {
   border-radius: var(--p-raio-painel);
 }
 
+.confirmacoes__detalhes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--confirmacoes-coluna-minima), 100%), 1fr));
+  gap: var(--p-ritmo-cartao);
+}
+
+.confirmacoes__restricoes {
+  display: grid;
+  min-width: 0;
+}
+
+.confirmacoes__restricoes :deep(.resumo-cardapio) {
+  max-width: none;
+}
+
 .confirmacoes__erro-bloco {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--p-espaco-2);
-  padding: var(--p-espaco-3) var(--p-espaco-4);
+  gap: var(--p-ritmo-campo);
+  padding: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
   color: var(--p-cor-texto);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
@@ -566,10 +594,8 @@ function importar() {
   border-radius: var(--p-raio-painel);
 }
 
-.confirmacoes__pendentes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-3);
+.confirmacoes__cabecalho-pendentes {
+  align-items: center;
 }
 
 .confirmacoes__cobrar {
@@ -577,18 +603,9 @@ function importar() {
 }
 
 .confirmacoes__aviso-cobranca {
+  max-width: var(--p-dimensao-largura-leitura);
   font-size: var(--p-fonte-tamanho-controle);
   color: var(--p-cor-texto-apoio);
-}
-
-@media (max-width: 639px) {
-  .confirmacoes__cobrar > * {
-    flex: 1 1 100%;
-  }
-}
-
-.confirmacoes__titulo-secao {
-  font-size: var(--p-fonte-tamanho-secao);
 }
 
 .confirmacoes__quantidade {
@@ -601,7 +618,7 @@ function importar() {
 .confirmacoes__convite {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-1);
+  gap: var(--p-ritmo-campo);
   min-width: 0;
 }
 
@@ -622,8 +639,25 @@ function importar() {
   color: var(--p-cor-texto-apoio);
 }
 
-.confirmacoes__voltar {
-  display: inline-block;
-  margin-top: var(--p-espaco-4);
+@container confirmacoes (max-width: 39.99rem) {
+  .confirmacoes__cobrar {
+    flex: 1 1 100%;
+  }
+
+  .confirmacoes__cobrar > * {
+    flex: 1 1 100%;
+  }
+}
+
+@container confirmacoes (min-width: 48rem) {
+  .confirmacoes :deep(.resumo-contagem--indicadores .resumo-contagem__itens.grade) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@container confirmacoes (max-width: 63.99rem) {
+  .confirmacoes__pendentes :deep(.listagem__tabela .listagem__acoes-linha .p-button-label) {
+    display: none;
+  }
 }
 </style>
