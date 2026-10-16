@@ -75,176 +75,196 @@ const convitesExibidos = computed(() =>
     class="previa"
     data-teste="previa-importacao"
   >
-    <header class="previa__abertura">
-      <p
-        class="previa__frase"
-        data-teste="previa-frase"
-      >
-        {{ frase }}
-      </p>
-      <p class="previa__arquivo">
-        {{ TEXTOS_IMPORTACAO.linhasLidas(nomeArquivo, previa.resumo.linhas) }}
-      </p>
-    </header>
-
-    <ResumoContagem
-      v-if="previa.resumo.convitesValidos > 0"
-      :itens="itensResumoImportacao(previa)"
-      :rotulo="TEXTOS_IMPORTACAO.resumoRotulo"
-    >
-      <template #rodape>
-        {{ TEXTOS_IMPORTACAO.rodapeResumo(previa.resumo.convidadosExistentes, totalDepois) }}
-      </template>
-    </ResumoContagem>
-
-    <MensagemFormulario
-      v-if="acimaDoLimite"
-      :mensagem="TEXTOS_IMPORTACAO.acimaDoLimite(previa.resumo.limitePorCasamento)"
-      data-teste="previa-limite"
-    />
-
-    <MensagemFormulario
-      v-if="previa.colunasIgnoradas.length > 0"
-      variante="informacao"
-      :mensagem="TEXTOS_IMPORTACAO.colunasIgnoradas(previa.colunasIgnoradas)"
-      data-teste="previa-colunas-ignoradas"
-    />
-
-    <section
-      v-if="itensProblemas.length > 0"
-      class="previa__secao"
-      aria-labelledby="previa-titulo-problemas"
-      data-teste="previa-problemas"
-    >
-      <h2
-        id="previa-titulo-problemas"
-        class="previa__titulo-secao"
-      >
-        {{ temBloqueantes ? TEXTOS_IMPORTACAO.secaoProblemas : TEXTOS_IMPORTACAO.secaoAvisos }}
-      </h2>
-      <ListaProblemasLinha
-        :itens="itensProblemas"
-        :filtros="filtrosProblemas"
-        :textos="textosProblemas"
-      />
-      <div class="previa__acoes-secao">
-        <slot name="acoes-problemas" />
-      </div>
-    </section>
-
-    <section
-      v-if="previa.convites.length > 0"
-      class="previa__secao"
-      aria-labelledby="previa-titulo-convites"
-      data-teste="previa-convites"
-    >
-      <h2
-        id="previa-titulo-convites"
-        class="previa__titulo-secao"
-      >
-        {{ TEXTOS_IMPORTACAO.secaoConvites }}
-        <span class="previa__contagem numeros-tabulares">{{ TEXTOS_IMPORTACAO.contagemConvites(previa.resumo.convitesValidos) }}</span>
-      </h2>
-      <ul class="previa__convites">
-        <li
-          v-for="(convite, indice) in convitesExibidos"
-          :key="`${indice}-${convite.nome}`"
-          class="previa__convite"
-          :class="{ 'previa__convite--fora': !convite.valido }"
-          data-teste="previa-convite"
+    <div class="previa__grade">
+      <header class="previa__abertura">
+        <p
+          class="previa__frase"
+          data-teste="previa-frase"
         >
-          <div class="previa__convite-cabecalho">
-            <span class="previa__convite-nome">{{ convite.nome }}</span>
-            <BadgeStatus
-              v-if="!convite.valido"
-              :texto="TEXTOS_IMPORTACAO.ficaDeFora"
-              variante="alerta"
-            />
+          {{ frase }}
+        </p>
+        <p class="previa__arquivo">
+          {{ TEXTOS_IMPORTACAO.linhasLidas(nomeArquivo, previa.resumo.linhas) }}
+        </p>
+      </header>
+
+      <div
+        v-if="previa.resumo.convitesValidos > 0 || acimaDoLimite || previa.colunasIgnoradas.length > 0"
+        class="previa__lateral pilha pilha--grupo"
+      >
+        <ResumoContagem
+          v-if="previa.resumo.convitesValidos > 0"
+          :itens="itensResumoImportacao(previa)"
+          :rotulo="TEXTOS_IMPORTACAO.resumoRotulo"
+        >
+          <template #rodape>
+            {{ TEXTOS_IMPORTACAO.rodapeResumo(previa.resumo.convidadosExistentes, totalDepois) }}
+          </template>
+        </ResumoContagem>
+
+        <MensagemFormulario
+          v-if="acimaDoLimite"
+          :mensagem="TEXTOS_IMPORTACAO.acimaDoLimite(previa.resumo.limitePorCasamento)"
+          data-teste="previa-limite"
+        />
+
+        <MensagemFormulario
+          v-if="previa.colunasIgnoradas.length > 0"
+          variante="informacao"
+          :mensagem="TEXTOS_IMPORTACAO.colunasIgnoradas(previa.colunasIgnoradas)"
+          data-teste="previa-colunas-ignoradas"
+        />
+      </div>
+
+      <div class="previa__principal pilha pilha--bloco">
+        <section
+          v-if="itensProblemas.length > 0"
+          class="previa__secao"
+          aria-labelledby="previa-titulo-problemas"
+          data-teste="previa-problemas"
+        >
+          <h2
+            id="previa-titulo-problemas"
+            class="previa__titulo-secao"
+          >
+            {{ temBloqueantes ? TEXTOS_IMPORTACAO.secaoProblemas : TEXTOS_IMPORTACAO.secaoAvisos }}
+          </h2>
+          <ListaProblemasLinha
+            :itens="itensProblemas"
+            :filtros="filtrosProblemas"
+            :textos="textosProblemas"
+          />
+          <div class="previa__acoes-secao">
+            <slot name="acoes-problemas" />
           </div>
-          <p class="previa__convite-detalhe">
-            {{ convite.grupo ?? TEXTOS_IMPORTACAO.semGrupo }}<template v-if="convite.limiteAcompanhantes > 0">
-              <span aria-hidden="true">, </span>{{ TEXTOS_IMPORTACAO.acompanhantes(convite.limiteAcompanhantes) }}
-            </template>
-          </p>
-          <ul class="previa__pessoas">
+        </section>
+
+        <section
+          v-if="previa.convites.length > 0"
+          class="previa__secao"
+          aria-labelledby="previa-titulo-convites"
+          data-teste="previa-convites"
+        >
+          <h2
+            id="previa-titulo-convites"
+            class="previa__titulo-secao"
+          >
+            {{ TEXTOS_IMPORTACAO.secaoConvites }}
+            <span class="previa__contagem numeros-tabulares">{{ TEXTOS_IMPORTACAO.contagemConvites(previa.resumo.convitesValidos) }}</span>
+          </h2>
+          <ul class="previa__convites">
             <li
-              v-for="pessoa in convite.pessoas"
-              :key="pessoa.linha"
-              class="previa__pessoa"
+              v-for="(convite, indice) in convitesExibidos"
+              :key="`${indice}-${convite.nome}`"
+              class="previa__convite"
+              :class="{ 'previa__convite--fora': !convite.valido }"
+              data-teste="previa-convite"
             >
-              <span>{{ pessoa.nome || TEXTOS_IMPORTACAO.semNome }}</span>
-              <BadgeStatus
-                v-if="pessoa.faixaEtaria === 'Crianca'"
-                :texto="TEXTOS_IMPORTACAO.crianca"
-              />
+              <div class="previa__convite-cabecalho">
+                <span class="previa__convite-nome">{{ convite.nome }}</span>
+                <BadgeStatus
+                  v-if="!convite.valido"
+                  :texto="TEXTOS_IMPORTACAO.ficaDeFora"
+                  variante="alerta"
+                />
+              </div>
+              <p class="previa__convite-detalhe">
+                {{ convite.grupo ?? TEXTOS_IMPORTACAO.semGrupo }}<template v-if="convite.limiteAcompanhantes > 0">
+                  <span aria-hidden="true">, </span>{{ TEXTOS_IMPORTACAO.acompanhantes(convite.limiteAcompanhantes) }}
+                </template>
+              </p>
+              <ul class="previa__pessoas">
+                <li
+                  v-for="pessoa in convite.pessoas"
+                  :key="pessoa.linha"
+                  class="previa__pessoa"
+                >
+                  <span>{{ pessoa.nome || TEXTOS_IMPORTACAO.semNome }}</span>
+                  <BadgeStatus
+                    v-if="pessoa.faixaEtaria === 'Crianca'"
+                    :texto="TEXTOS_IMPORTACAO.crianca"
+                  />
+                </li>
+              </ul>
+              <p
+                v-if="!convite.valido"
+                class="previa__convite-detalhe"
+              >
+                {{ TEXTOS_IMPORTACAO.ficaDeForaDetalhe(convite.pessoas.filter((pessoa) => pessoa.situacao !== 'Valida').map((pessoa) => pessoa.linha)) }}
+              </p>
             </li>
           </ul>
-          <p
-            v-if="!convite.valido"
-            class="previa__convite-detalhe"
-          >
-            {{ TEXTOS_IMPORTACAO.ficaDeForaDetalhe(convite.pessoas.filter((pessoa) => pessoa.situacao !== 'Valida').map((pessoa) => pessoa.linha)) }}
-          </p>
-        </li>
-      </ul>
-      <Button
-        v-if="!todosConvites && convitesOrdenados.length > LIMITE_CONVITES"
-        class="previa__mais"
-        :label="TEXTOS_IMPORTACAO.mostrarTodos(convitesOrdenados.length)"
-        severity="secondary"
-        text
-        data-teste="previa-mostrar-todos"
-        @click="todosConvites = true"
-      />
-    </section>
+          <Button
+            v-if="!todosConvites && convitesOrdenados.length > LIMITE_CONVITES"
+            class="previa__mais"
+            :label="TEXTOS_IMPORTACAO.mostrarTodos(convitesOrdenados.length)"
+            severity="secondary"
+            text
+            data-teste="previa-mostrar-todos"
+            @click="todosConvites = true"
+          />
+        </section>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .previa {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+  container: previa / inline-size;
+}
+
+.previa__grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-cartao);
+  align-items: start;
 }
 
 .previa__abertura {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
+  min-width: 0;
 }
 
 .previa__frase {
-  max-width: 34ch;
-  margin: 0;
+  max-width: 30ch;
   font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina-celular);
-  font-weight: var(--p-fonte-peso-medio);
+  font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
+  letter-spacing: var(--p-fonte-espacamento-letras-display);
   color: var(--p-cor-texto);
   text-wrap: balance;
 }
 
 .previa__arquivo {
-  margin: 0;
-  font-size: var(--p-fonte-tamanho-controle);
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-apoio);
+  font-style: italic;
   color: var(--p-cor-texto-apoio);
   overflow-wrap: anywhere;
+}
+
+.previa__lateral,
+.previa__principal {
+  min-width: 0;
 }
 
 .previa__secao {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-grupo);
+  min-width: 0;
 }
 
 .previa__titulo-secao {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--p-espaco-3);
-  margin: 0;
-  font-size: var(--p-fonte-tamanho-secao);
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
 }
 
 .previa__contagem {
@@ -257,11 +277,15 @@ const convitesExibidos = computed(() =>
 .previa__acoes-secao {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-campo);
 }
 
 .previa__acoes-secao:empty {
   display: none;
+}
+
+.previa__acoes-secao :deep(.p-button) {
+  min-height: var(--p-dimensao-alvo-toque);
 }
 
 .previa__convites {
@@ -278,8 +302,8 @@ const convitesExibidos = computed(() =>
 .previa__convite {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
-  padding: var(--p-espaco-4);
+  gap: var(--p-ritmo-campo);
+  padding: var(--p-ritmo-grupo);
 }
 
 .previa__convite + .previa__convite {
@@ -290,21 +314,30 @@ const convitesExibidos = computed(() =>
   background: var(--p-cor-neutro-suave);
 }
 
+.previa__convite:first-child {
+  border-start-start-radius: var(--p-raio-painel);
+  border-start-end-radius: var(--p-raio-painel);
+}
+
+.previa__convite:last-child {
+  border-end-start-radius: var(--p-raio-painel);
+  border-end-end-radius: var(--p-raio-painel);
+}
+
 .previa__convite-cabecalho {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .previa__convite-nome {
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   color: var(--p-cor-texto);
   overflow-wrap: anywhere;
 }
 
 .previa__convite-detalhe {
-  margin: 0;
   font-size: var(--p-fonte-tamanho-controle);
   color: var(--p-cor-texto-apoio);
 }
@@ -312,7 +345,7 @@ const convitesExibidos = computed(() =>
 .previa__pessoas {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--p-espaco-1) var(--p-espaco-4);
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -321,7 +354,7 @@ const convitesExibidos = computed(() =>
 .previa__pessoa {
   display: inline-flex;
   align-items: center;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   font-size: var(--p-fonte-tamanho-controle);
   color: var(--p-cor-texto);
   overflow-wrap: anywhere;
@@ -331,20 +364,64 @@ const convitesExibidos = computed(() =>
   align-self: flex-start;
 }
 
-@media (min-width: 640px) {
+@container previa (min-width: 36rem) {
   .previa__convite {
-    padding: var(--p-espaco-4) var(--p-espaco-6);
+    padding: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
   }
 
   .previa__acoes-secao {
     flex-direction: row;
     flex-wrap: wrap;
   }
-}
 
-@media (min-width: 1024px) {
   .previa__frase {
     font-size: var(--p-fonte-tamanho-pagina);
+  }
+}
+
+@container previa (min-width: 56rem) {
+  .previa__grade {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    column-gap: var(--p-ritmo-bloco);
+  }
+
+  .previa__abertura {
+    grid-column: 1 / -1;
+  }
+
+  .previa__lateral {
+    position: sticky;
+    top: var(--p-ritmo-cartao);
+    grid-column: 2;
+    grid-row: 2 / span 2;
+  }
+
+  .previa__principal {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .previa__lateral :deep(.resumo-contagem__itens) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row;
+  }
+
+  .previa__lateral :deep(.resumo-contagem__item:nth-child(n)) {
+    padding: var(--p-ritmo-grupo);
+    border-top: 0;
+    border-left: 0;
+  }
+
+  .previa__lateral :deep(.resumo-contagem__item:nth-child(even)) {
+    border-left: 1px solid var(--p-cor-borda);
+  }
+
+  .previa__lateral :deep(.resumo-contagem__item:nth-child(n + 3)) {
+    border-top: 1px solid var(--p-cor-borda);
+  }
+
+  .previa__lateral :deep(.resumo-contagem__rodape) {
+    padding: var(--p-ritmo-grupo);
   }
 }
 </style>

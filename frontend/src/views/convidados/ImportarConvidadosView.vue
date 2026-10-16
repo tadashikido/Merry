@@ -10,6 +10,7 @@ import EnvioArquivo from '@/componentes/base/EnvioArquivo.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import IndicadorEtapas from '@/componentes/base/IndicadorEtapas.vue'
+import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import type { TextosEnvioArquivo } from '@/componentes/base/tipos'
 import PreviaImportacao from '@/componentes/convidados/PreviaImportacao.vue'
@@ -217,7 +218,10 @@ function importarOutra() {
 
 <template>
   <LayoutPainelUsuario>
-    <template v-if="falhaCasamento?.tipo === 'naoEncontrado'">
+    <div
+      v-if="falhaCasamento?.tipo === 'naoEncontrado'"
+      class="pilha pilha--grupo"
+    >
       <EstadoErro
         :titulo="TEXTOS_CONVIDADOS.casamentoNaoEncontradoTitulo"
         :mensagem="TEXTOS_CONVIDADOS.casamentoNaoEncontradoTexto"
@@ -230,7 +234,7 @@ function importarOutra() {
       >
         {{ TEXTOS_CONVIDADOS.voltarCasamentos }}
       </RouterLink>
-    </template>
+    </div>
 
     <template v-else>
       <CabecalhoPagina
@@ -252,7 +256,7 @@ function importarOutra() {
 
       <div
         v-else-if="arquivado"
-        class="importacao"
+        class="importacao pilha pilha--grupo"
       >
         <MensagemFormulario
           variante="informacao"
@@ -269,7 +273,7 @@ function importarOutra() {
 
       <div
         v-else-if="casamento"
-        class="importacao"
+        class="importacao pilha pilha--bloco"
         :data-etapa="etapa"
       >
         <IndicadorEtapas
@@ -299,6 +303,7 @@ function importarOutra() {
           <EnvioArquivo
             :id="ID_ARQUIVO"
             ref="envio"
+            class="importacao__envio"
             :textos="textosEnvio"
             :aceite="ACEITE_PLANILHA"
             :arquivo="store.arquivo"
@@ -308,17 +313,14 @@ function importarOutra() {
           />
 
           <section
-            class="importacao__instrucoes"
+            class="importacao__instrucoes cartao pilha pilha--grupo"
             aria-labelledby="importacao-como-montar"
             data-teste="como-montar"
           >
-            <h3
-              id="importacao-como-montar"
-              class="importacao__titulo-instrucoes"
-            >
+            <h3 id="importacao-como-montar">
               {{ TEXTOS_IMPORTACAO.comoMontarTitulo }}
             </h3>
-            <p class="importacao__texto">
+            <p class="importacao__texto texto-corrido">
               {{ TEXTOS_IMPORTACAO.comoMontarTexto }}
             </p>
             <dl class="importacao__colunas">
@@ -331,7 +333,7 @@ function importarOutra() {
                 <dd>{{ item.texto }}</dd>
               </div>
             </dl>
-            <p class="importacao__dica">
+            <p class="importacao__dica texto-legenda">
               {{ TEXTOS_IMPORTACAO.dicaExcel }}
             </p>
             <Button
@@ -345,7 +347,7 @@ function importarOutra() {
             />
           </section>
 
-          <div class="importacao__acoes">
+          <div class="importacao__acoes importacao__acoes--inicio">
             <Button
               :label="TEXTOS_IMPORTACAO.voltarConvidados"
               severity="secondary"
@@ -358,7 +360,7 @@ function importarOutra() {
 
         <div
           v-else-if="etapa === 'previa' && previa"
-          class="importacao__previa"
+          class="importacao__previa pilha pilha--cartao"
         >
           <MensagemFormulario
             v-if="falhaImportacao"
@@ -405,7 +407,7 @@ function importarOutra() {
 
           <p
             v-if="convitesValidos === 0"
-            class="importacao__orientacao"
+            class="importacao__orientacao texto-legenda"
             data-teste="orientacao-nenhum"
           >
             {{ TEXTOS_IMPORTACAO.orientacaoNenhumPronto }}
@@ -434,20 +436,22 @@ function importarOutra() {
 
         <section
           v-else-if="etapa === 'concluida' && resultado"
-          class="importacao__concluida"
+          class="importacao__concluida cartao"
           data-teste="importacao-concluida"
         >
-          <span
-            class="importacao__selo ie ie-concluir"
-            aria-hidden="true"
+          <LacreIcone
+            icone="ie-concluir"
+            data-teste="lacre-concluida"
           />
-          <p class="importacao__titulo-concluida">
-            {{ TEXTOS_IMPORTACAO.sucessoTitulo }}
-          </p>
-          <p class="importacao__texto">
-            {{ TEXTOS_IMPORTACAO.sucessoTexto(resultado.convitesCriados, resultado.pessoasCriadas, nomes) }}
-          </p>
-          <div class="importacao__acoes">
+          <div class="importacao__mensagem-concluida pilha pilha--campo">
+            <p class="importacao__titulo-concluida">
+              {{ TEXTOS_IMPORTACAO.sucessoTitulo }}
+            </p>
+            <p class="importacao__texto texto-corrido">
+              {{ TEXTOS_IMPORTACAO.sucessoTexto(resultado.convitesCriados, resultado.pessoasCriadas, nomes) }}
+            </p>
+          </div>
+          <div class="importacao__acoes importacao__acoes--inicio">
             <Button
               :label="TEXTOS_IMPORTACAO.importarOutra"
               severity="secondary"
@@ -479,66 +483,48 @@ function importarOutra() {
 
 <style scoped>
 .importacao {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+  container: importacao / inline-size;
 }
 
-.importacao__escolha,
-.importacao__previa {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+.importacao__escolha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-cartao);
+  align-items: stretch;
+}
+
+.importacao__envio {
+  justify-content: center;
 }
 
 .importacao__instrucoes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-3);
-}
-
-.importacao__titulo-instrucoes {
-  margin: 0;
-  font-size: var(--p-fonte-tamanho-secao);
-}
-
-.importacao__texto,
-.importacao__dica,
-.importacao__orientacao {
-  max-width: 65ch;
-  margin: 0;
-  line-height: var(--p-fonte-entrelinha-leitura);
-  color: var(--p-cor-texto);
-}
-
-.importacao__dica,
-.importacao__orientacao {
-  font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-apoio);
+  min-width: 0;
 }
 
 .importacao__colunas {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   margin: 0;
 }
 
 .importacao__coluna {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--p-espaco-1) var(--p-espaco-2);
   font-size: var(--p-fonte-tamanho-controle);
   line-height: var(--p-fonte-entrelinha-leitura);
 }
 
+.importacao__coluna dt,
+.importacao__coluna dd {
+  display: inline;
+}
+
 .importacao__coluna dt {
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   color: var(--p-cor-texto);
 }
 
 .importacao__coluna dt::after {
-  content: ':';
+  content: ': ';
 }
 
 .importacao__coluna dd {
@@ -553,13 +539,18 @@ function importarOutra() {
 .importacao__acoes {
   display: flex;
   flex-direction: column-reverse;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-campo);
+}
+
+.importacao__acoes :deep(.p-button) {
+  min-height: var(--p-dimensao-alvo-toque);
 }
 
 .importacao__acoes--fixas {
   position: sticky;
   bottom: 0;
-  padding: var(--p-espaco-3) 0;
+  z-index: 1;
+  padding-block: var(--p-ritmo-grupo);
   background: var(--p-cor-fundo);
   border-top: 1px solid var(--p-cor-borda);
 }
@@ -568,66 +559,61 @@ function importarOutra() {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--p-espaco-3);
-  padding: var(--p-espaco-8) var(--p-espaco-6);
-  background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
-}
-
-.importacao__selo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  color: var(--p-cor-superficie);
-  background: var(--p-cor-primaria);
-  border-radius: var(--p-raio-total);
+  gap: var(--p-ritmo-cartao);
 }
 
 .importacao__titulo-concluida {
-  margin: 0;
-  font-family: var(--p-fonte-interface);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina-celular);
-  font-weight: var(--p-fonte-peso-medio);
+  font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-texto);
 }
 
-.importacao__voltar {
-  display: inline-block;
-  margin-top: var(--p-espaco-4);
+.importacao__concluida .importacao__acoes {
+  align-self: stretch;
 }
 
-@media (min-width: 640px) {
+.importacao__voltar {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: var(--p-dimensao-alvo-toque);
+}
+
+@container importacao (min-width: 40rem) {
   .importacao__acoes {
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: flex-end;
+  }
+
+  .importacao__acoes--inicio {
+    justify-content: flex-start;
   }
 
   .importacao__acoes--fixas {
     position: static;
-    padding: 0;
+    padding-block: var(--p-ritmo-grupo) 0;
     background: none;
-    border-top: 0;
   }
 
-  .importacao__concluida .importacao__acoes {
-    justify-content: flex-start;
+  .importacao__concluida {
+    padding: var(--p-ritmo-bloco);
+  }
+
+  .importacao__titulo-concluida {
+    font-size: var(--p-fonte-tamanho-pagina);
   }
 }
 
-@media (min-width: 1024px) {
+@container importacao (min-width: 52rem) {
   .importacao__escolha {
-    display: grid;
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    align-items: start;
   }
 
-  .importacao__escolha .importacao__acoes {
+  .importacao__acoes--inicio {
     grid-column: 1 / -1;
-    justify-content: flex-start;
   }
 }
 </style>
