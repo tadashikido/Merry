@@ -175,7 +175,7 @@ function confirmar() {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-grupo);
 }
 
 .dialogo-sentar__vazio p {
@@ -185,7 +185,7 @@ function confirmar() {
 .dialogo-sentar__opcoes {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   margin: 0;
   padding: 0;
   border: 0;
@@ -195,9 +195,9 @@ function confirmar() {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: var(--p-espaco-1) var(--p-espaco-3);
+  gap: calc(var(--p-ritmo-campo) / 2) var(--p-ritmo-grupo);
   min-block-size: var(--p-dimensao-alvo-toque-movel);
-  padding: var(--p-espaco-2) var(--p-espaco-3);
+  padding: var(--p-ritmo-campo) var(--p-ritmo-grupo);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-controle);
 }
@@ -231,6 +231,6 @@ function confirmar() {
 }
 
 .dialogo-sentar__mensagem {
-  margin-top: var(--p-espaco-3);
+  margin-top: var(--p-ritmo-grupo);
 }
 </style>

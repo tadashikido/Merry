@@ -433,7 +433,7 @@ function acaoCabecalho(chave: string) {
         </template>
       </CabecalhoPagina>
 
-      <div class="mesas">
+      <div class="mesas pilha pilha--bloco">
         <p
           class="somente-leitor-tela"
           aria-live="polite"
@@ -607,7 +607,10 @@ function acaoCabecalho(chave: string) {
               data-teste="abas-mesas"
             />
 
-            <div class="mesas__colunas">
+            <div
+              class="mesas__colunas"
+              :class="{ 'mesas__colunas--abas': telaPequena }"
+            >
               <section
                 v-show="!telaPequena || painelAtivo === 'semMesa'"
                 class="mesas__sem-mesa"
@@ -775,77 +778,82 @@ function acaoCabecalho(chave: string) {
                   </template>
                 </EstadoVazio>
 
-                <section
-                  v-for="item in mesasVisiveis"
-                  :key="item.mesa.id"
-                  class="mesas__mesa"
-                  :class="{ 'mesas__mesa--especial': item.mesa.especial }"
-                  :aria-labelledby="`mesa-${item.mesa.id}`"
-                  data-teste="mesa"
+                <div
+                  v-else
+                  class="mesas__grade"
                 >
-                  <header class="mesas__mesa-cabecalho">
-                    <h3
-                      :id="`mesa-${item.mesa.id}`"
-                      class="mesas__mesa-titulo"
-                    >
-                      {{ rotuloMesa(item.mesa) }}
-                    </h3>
-                    <OcupacaoMesa
-                      :ocupados="item.mesa.ocupacao"
-                      :lugares="item.mesa.capacidade"
-                    />
-                    <MenuAcoes
-                      v-if="podeEditar"
-                      :itens="itensMenuMesa"
-                      :rotulo="TEXTOS_MESAS.maisAcoes"
-                      :rotulo-acessivel="TEXTOS_MESAS.acoesMesa(rotuloMesa(item.mesa))"
-                      somente-icone
-                      data-teste="menu-mesa"
-                      @selecionar="acaoMesa($event, item.mesa)"
-                    />
-                  </header>
-                  <p
-                    v-if="item.pessoas.length === 0"
-                    class="mesas__nota"
+                  <section
+                    v-for="item in mesasVisiveis"
+                    :key="item.mesa.id"
+                    class="mesas__mesa"
+                    :class="{ 'mesas__mesa--especial': item.mesa.especial }"
+                    :aria-labelledby="`mesa-${item.mesa.id}`"
+                    data-teste="mesa"
                   >
-                    {{ TEXTOS_MESAS.mesaVazia }}
-                  </p>
-                  <p
-                    v-else-if="item.visiveis.length === 0"
-                    class="mesas__nota"
-                  >
-                    {{ TEXTOS_MESAS.mesaSemResultado }}
-                  </p>
-                  <ul
-                    v-else
-                    class="mesas__pessoas"
-                  >
-                    <li
-                      v-for="pessoa in item.visiveis"
-                      :key="pessoa.id"
-                    >
-                      <LinhaPessoaMesa
-                        :nome="pessoa.nome"
-                        :apoio="pessoa.convite"
-                        :crianca="pessoa.faixaEtaria === 'Crianca'"
-                        :acompanhante="pessoa.acompanhante"
-                        :selecionavel="podeEditar"
-                        :selecionada="estaSelecionada(pessoa.id)"
-                        @update:selecionada="alternar(pessoa.id, $event)"
+                    <header class="mesas__mesa-cabecalho">
+                      <h3
+                        :id="`mesa-${item.mesa.id}`"
+                        class="mesas__mesa-titulo"
                       >
-                        <template
-                          v-if="divididos.has(pessoa.conviteId)"
-                          #extra
+                        {{ rotuloMesa(item.mesa) }}
+                      </h3>
+                      <OcupacaoMesa
+                        :ocupados="item.mesa.ocupacao"
+                        :lugares="item.mesa.capacidade"
+                      />
+                      <MenuAcoes
+                        v-if="podeEditar"
+                        :itens="itensMenuMesa"
+                        :rotulo="TEXTOS_MESAS.maisAcoes"
+                        :rotulo-acessivel="TEXTOS_MESAS.acoesMesa(rotuloMesa(item.mesa))"
+                        somente-icone
+                        data-teste="menu-mesa"
+                        @selecionar="acaoMesa($event, item.mesa)"
+                      />
+                    </header>
+                    <p
+                      v-if="item.pessoas.length === 0"
+                      class="mesas__nota"
+                    >
+                      {{ TEXTOS_MESAS.mesaVazia }}
+                    </p>
+                    <p
+                      v-else-if="item.visiveis.length === 0"
+                      class="mesas__nota"
+                    >
+                      {{ TEXTOS_MESAS.mesaSemResultado }}
+                    </p>
+                    <ul
+                      v-else
+                      class="mesas__pessoas"
+                    >
+                      <li
+                        v-for="pessoa in item.visiveis"
+                        :key="pessoa.id"
+                      >
+                        <LinhaPessoaMesa
+                          :nome="pessoa.nome"
+                          :apoio="pessoa.convite"
+                          :crianca="pessoa.faixaEtaria === 'Crianca'"
+                          :acompanhante="pessoa.acompanhante"
+                          :selecionavel="podeEditar"
+                          :selecionada="estaSelecionada(pessoa.id)"
+                          @update:selecionada="alternar(pessoa.id, $event)"
                         >
-                          <BadgeStatus
-                            :texto="TEXTOS_MESAS.conviteDividido"
-                            variante="alerta"
-                          />
-                        </template>
-                      </LinhaPessoaMesa>
-                    </li>
-                  </ul>
-                </section>
+                          <template
+                            v-if="divididos.has(pessoa.conviteId)"
+                            #extra
+                          >
+                            <BadgeStatus
+                              :texto="TEXTOS_MESAS.conviteDividido"
+                              variante="alerta"
+                            />
+                          </template>
+                        </LinhaPessoaMesa>
+                      </li>
+                    </ul>
+                  </section>
+                </div>
               </section>
             </div>
 
@@ -911,28 +919,29 @@ function acaoCabecalho(chave: string) {
 
 <style scoped>
 .mesas {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+  --mesas-largura-lateral: 17rem;
+
+  container: mesas / inline-size;
 }
 
 .mesas__voltar {
   display: inline-block;
-  margin-top: var(--p-espaco-4);
+  margin-top: var(--p-ritmo-grupo);
 }
 
 .mesas__aviso {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: var(--p-espaco-3);
-  padding: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
+  padding: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
   background: var(--p-cor-alerta-suave);
   border: 1px solid var(--p-cor-alerta);
   border-radius: var(--p-raio-painel);
 }
 
 .mesas__aviso-icone {
+  margin-top: calc(var(--p-ritmo-campo) / 2);
   color: var(--p-cor-alerta-texto);
 }
 
@@ -940,18 +949,21 @@ function acaoCabecalho(chave: string) {
   display: flex;
   flex: 1 1 16rem;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
+  min-width: 0;
 }
 
 .mesas__aviso-titulo {
-  margin: 0;
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   color: var(--p-cor-alerta-texto);
 }
 
 .mesas__aviso-lista {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--p-ritmo-campo) / 2);
   margin: 0;
-  padding-left: var(--p-espaco-4);
+  padding-left: var(--p-ritmo-grupo);
   font-size: var(--p-fonte-tamanho-controle);
   color: var(--p-cor-texto);
 }
@@ -960,12 +972,12 @@ function acaoCabecalho(chave: string) {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-grupo);
 }
 
 .mesas__busca {
   display: flex;
-  flex: 1 1 16rem;
+  flex: 2 1 16rem;
 }
 
 .mesas__busca :deep(.p-inputtext) {
@@ -976,7 +988,8 @@ function acaoCabecalho(chave: string) {
   display: flex;
   flex: 1 1 10rem;
   flex-direction: column;
-  gap: var(--p-espaco-1);
+  gap: var(--p-ritmo-campo);
+  min-width: 0;
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-texto-secundario);
 }
@@ -984,28 +997,31 @@ function acaoCabecalho(chave: string) {
 .mesas__resultados {
   display: flex;
   flex-basis: 100%;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-2);
-  margin: 0;
+  gap: var(--p-ritmo-campo);
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-texto-apoio);
 }
 
 .mesas__abas {
+  max-width: 100%;
   overflow-x: auto;
 }
 
 .mesas__colunas {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
 }
 
 .mesas__sem-mesa {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-3);
-  padding: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
+  min-width: 0;
+  padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo);
   background: var(--p-cor-superficie-sutil);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
@@ -1014,21 +1030,22 @@ function acaoCabecalho(chave: string) {
 .mesas__lista {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-4);
-  min-inline-size: 0;
+  gap: var(--p-ritmo-grupo);
+  min-width: 0;
+  container: lista-mesas / inline-size;
 }
 
 .mesas__coluna-cabecalho {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--p-espaco-2);
+  justify-content: space-between;
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
+  padding-inline: var(--p-ritmo-campo);
 }
 
 .mesas__coluna-titulo {
-  margin: 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-leve);
 }
 
 .mesas__coluna-contagem {
@@ -1038,22 +1055,33 @@ function acaoCabecalho(chave: string) {
 
 .mesas__instrucao,
 .mesas__nota,
-.mesas__dica-convite,
 .mesas__divisao {
-  margin: 0;
   font-size: var(--p-fonte-tamanho-apoio);
   line-height: var(--p-fonte-entrelinha-corpo);
   color: var(--p-cor-texto-secundario);
 }
 
+.mesas__instrucao {
+  padding-inline: var(--p-ritmo-campo);
+  font-family: var(--p-fonte-serif);
+  font-style: italic;
+  color: var(--p-cor-texto-apoio);
+}
+
 .mesas__dica-convite {
+  padding-inline: var(--p-ritmo-campo);
+  font-size: var(--p-fonte-tamanho-apoio);
+  line-height: var(--p-fonte-entrelinha-corpo);
   color: var(--p-cor-alerta-texto);
 }
 
+.mesas__divisao {
+  padding-inline: var(--p-ritmo-campo);
+}
+
 .mesas__todos-sentados {
-  margin: 0;
-  padding: var(--p-espaco-4);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  padding: var(--p-ritmo-grupo);
+  font-weight: var(--p-fonte-peso-medio);
   color: var(--p-cor-sucesso-texto);
   text-align: center;
   border: 1px dashed var(--p-cor-borda-controle);
@@ -1068,20 +1096,25 @@ function acaoCabecalho(chave: string) {
 .mesas__pessoas {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-1);
+  gap: calc(var(--p-ritmo-campo) / 2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .mesas__convites {
-  gap: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
 }
 
 .mesas__convite {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-1);
+  gap: calc(var(--p-ritmo-campo) / 2);
+}
+
+.mesas__convite + .mesas__convite {
+  padding-top: var(--p-ritmo-grupo);
+  border-top: 1px solid var(--p-cor-divisoria);
 }
 
 .mesas__convite-cabecalho {
@@ -1089,20 +1122,36 @@ function acaoCabecalho(chave: string) {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
+  padding-inline: var(--p-ritmo-campo);
+}
+
+.mesas__convite-cabecalho:has(> :only-child:not(.mesas__convite-nome)) {
+  justify-content: flex-end;
 }
 
 .mesas__convite-nome {
+  min-width: 0;
+  font-family: var(--p-fonte-serif);
   font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-style: italic;
   color: var(--p-cor-texto-secundario);
+  overflow-wrap: anywhere;
+}
+
+.mesas__grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+  gap: var(--p-ritmo-grupo);
+  align-items: start;
 }
 
 .mesas__mesa {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-3);
-  padding: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
+  min-width: 0;
+  padding: var(--p-ritmo-grupo);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
@@ -1113,22 +1162,37 @@ function acaoCabecalho(chave: string) {
 }
 
 .mesas__mesa-cabecalho {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'titulo menu'
+    'ocupacao ocupacao';
   align-items: center;
-  gap: var(--p-espaco-2) var(--p-espaco-4);
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
+  padding-bottom: var(--p-ritmo-grupo);
+  border-bottom: 1px solid var(--p-cor-divisoria);
 }
 
 .mesas__mesa-titulo {
-  flex: 1 1 10rem;
-  margin: 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-corpo);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  grid-area: titulo;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mesas__mesa-cabecalho > .ocupacao-mesa {
+  grid-area: ocupacao;
+}
+
+.mesas__mesa-cabecalho > .menu-acoes {
+  grid-area: menu;
 }
 
 .mesas__mesa--especial .mesas__mesa-titulo {
   color: var(--p-cor-acento-texto);
+}
+
+.mesas__mesa .mesas__nota {
+  padding-inline: var(--p-ritmo-campo);
 }
 
 .mesas__barra {
@@ -1137,11 +1201,22 @@ function acaoCabecalho(chave: string) {
   z-index: var(--p-camada-cabecalho);
 }
 
-@media (min-width: 1024px) {
-  .mesas__colunas {
-    display: grid;
-    grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
-    align-items: start;
+@container mesas (min-width: 40rem) {
+  .mesas__colunas:not(.mesas__colunas--abas) {
+    grid-template-columns: var(--mesas-largura-lateral) minmax(0, 1fr);
+    gap: var(--p-ritmo-cartao);
+  }
+}
+
+@container lista-mesas (min-width: 34rem) {
+  .mesas__grade {
+    gap: var(--p-ritmo-cartao) var(--p-ritmo-grupo);
+  }
+}
+
+@container lista-mesas (min-width: 48rem) {
+  .mesas__mesa {
+    padding: var(--p-ritmo-grupo) var(--p-ritmo-cartao) var(--p-ritmo-cartao);
   }
 }
 </style>

@@ -49,7 +49,7 @@ const lugares = computed(() =>
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-2) var(--p-espaco-3);
+  gap: var(--p-ritmo-campo);
 }
 
 .ocupacao-mesa__fileira {
@@ -74,7 +74,7 @@ const lugares = computed(() =>
 
 .ocupacao-mesa__texto {
   font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
   color: var(--p-cor-texto-secundario);
   white-space: nowrap;
 }

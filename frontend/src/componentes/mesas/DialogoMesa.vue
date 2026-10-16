@@ -124,7 +124,7 @@ async function salvar() {
     data-teste="dialogo-mesa"
   >
     <form
-      class="dialogo-mesa__formulario"
+      class="dialogo-mesa__formulario pilha pilha--grupo"
       novalidate
       @submit.prevent="salvar"
     >
@@ -149,7 +149,8 @@ async function salvar() {
             :aria-describedby="descritoPor"
             :readonly="executando"
             data-teste="campo-numero-mesa"
-            @blur="formulario.validarCampo('numero')"
+            @update:model-value="formulario.revalidarAoDigitar('numero')"
+            @blur="formulario.validarAoSair('numero')"
           />
         </CampoFormulario>
 
@@ -172,7 +173,8 @@ async function salvar() {
             :aria-describedby="descritoPor"
             :readonly="executando"
             data-teste="campo-capacidade-mesa"
-            @blur="formulario.validarCampo('capacidade')"
+            @update:model-value="formulario.revalidarAoDigitar('capacidade')"
+            @blur="formulario.validarAoSair('capacidade')"
           />
         </CampoFormulario>
       </div>
@@ -193,7 +195,8 @@ async function salvar() {
           :aria-describedby="descritoPor"
           :readonly="executando"
           data-teste="campo-nome-mesa"
-          @blur="formulario.validarCampo('nome')"
+          @update:model-value="formulario.revalidarAoDigitar('nome')"
+          @blur="formulario.validarAoSair('nome')"
         />
       </CampoFormulario>
 
@@ -242,28 +245,22 @@ async function salvar() {
 </template>
 
 <style scoped>
-.dialogo-mesa__formulario {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-4);
-}
-
 .dialogo-mesa__linha {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: var(--p-espaco-4);
+  gap: var(--p-ritmo-grupo);
 }
 
 .dialogo-mesa__especial {
   display: flex;
   align-items: flex-start;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-campo);
 }
 
 .dialogo-mesa__especial-textos {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-1);
+  gap: calc(var(--p-ritmo-campo) / 2);
 }
 
 .dialogo-mesa__especial-textos label {
