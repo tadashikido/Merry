@@ -442,7 +442,7 @@ describe('Formulários de modelo e item', () => {
     )
     const { wrapper, montagem } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/novo`)
 
-    expect(wrapper.get('legend').text()).toBe(TEXTOS_ITEM_MODELO.campoQuando)
+    expect(wrapper.get('[data-teste="campo-quando"] legend').text()).toBe(TEXTOS_ITEM_MODELO.campoQuando)
     await wrapper.get('[data-teste="campo-titulo"]').setValue('Enviar fotos para o álbum')
     const dias = wrapper.get('[data-teste="campo-dias"] input')
     await dias.setValue('15')
@@ -476,6 +476,87 @@ describe('Formulários de modelo e item', () => {
 
     expect(wrapper.text()).toContain('Use de 0 a 1.095 dias antes ou até 365 dias depois.')
     expect(corpoDaChamada(chamadas(fetchSimulado, 'PUT', `${ROTA_ITENS}/${ID_ITEM}`)[0]!)).toMatchObject({ diasAntesDoCasamento: -10 })
+  })
+
+  it('[COMPONENTE] formulário de item agrupa "O item" e "Prazo e responsável" com o nome do modelo no cabeçalho', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([]))))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/novo`)
+
+    const pagina = wrapper.get('.pagina-formulario')
+    expect(pagina.get('h1').text()).toBe(TEXTOS_ITEM_MODELO.formNovo)
+    expect(pagina.get('.cabecalho-pagina__descricao').text()).toBe('Checklist essencial')
+    expect(wrapper.get('[data-teste="formulario-item-modelo"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+
+    const grupoItem = pagina.get('[data-teste="grupo-item"]')
+    expect(grupoItem.element.tagName).toBe('FIELDSET')
+    expect(grupoItem.get('legend').text()).toBe(TEXTOS_ITEM_MODELO.grupoItem)
+    expect(grupoItem.get('legend').classes()).toContain('texto-rotulo')
+    for (const campo of ['campo-titulo', 'campo-categoria', 'campo-descricao']) {
+      expect(grupoItem.find(`[data-teste="${campo}"]`).exists()).toBe(true)
+    }
+
+    const grupoPrazo = pagina.get('[data-teste="grupo-prazo"]')
+    expect(grupoPrazo.element.tagName).toBe('FIELDSET')
+    expect(grupoPrazo.get('legend').text()).toBe(TEXTOS_ITEM_MODELO.grupoPrazo)
+    expect(grupoPrazo.get('legend').classes()).toContain('texto-rotulo')
+    for (const campo of ['campo-quando', 'campo-dias', 'campo-sentido', 'campo-responsavel']) {
+      expect(grupoPrazo.find(`[data-teste="${campo}"]`).exists()).toBe(true)
+    }
+    expect(grupoPrazo.find('[data-teste="campo-titulo"]').exists()).toBe(false)
+    expect(wrapper.get('[data-teste="salvar-item"]').text()).toBe(TEXTOS_ITEM_MODELO.criar)
+  })
+
+  it('[COMPONENTE] erro do título só aparece depois da primeira tentativa, leva o foco e some ao digitar', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([]))))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/novo`)
+    const campoTitulo = wrapper.get('[data-teste="campo-titulo"]')
+
+    await campoTitulo.trigger('blur')
+    expect(wrapper.text()).not.toContain('Preencha este campo.')
+
+    await wrapper.get('[data-teste="formulario-item-modelo"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain('Preencha este campo.')
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-titulo'))
+    expect(chamadas(fetchSimulado, 'POST', ROTA_ITENS)).toHaveLength(0)
+
+    await campoTitulo.setValue('Provar o vestido')
+    expect(wrapper.text()).not.toContain('Preencha este campo.')
+  })
+
+  it('[COMPONENTE] trocar o sentido refaz a validação de dias depois da tentativa', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([]))))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/novo`)
+
+    await wrapper.get('[data-teste="campo-titulo"]').setValue('Enviar fotos para o álbum')
+    const dias = wrapper.get('[data-teste="campo-dias"] input')
+    await dias.setValue('500')
+    await dias.trigger('input')
+    await dias.trigger('blur')
+    const opcoes = () => wrapper.get('[data-teste="campo-sentido"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]')
+    await opcoes().find((opcao) => opcao.text() === 'depois do casamento')!.trigger('click')
+    expect(wrapper.text()).not.toContain(TEXTOS_ITEM_MODELO.erroDias)
+
+    await wrapper.get('[data-teste="formulario-item-modelo"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain(TEXTOS_ITEM_MODELO.erroDias)
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-dias'))
+
+    await opcoes().find((opcao) => opcao.text() === 'antes do casamento')!.trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).not.toContain(TEXTOS_ITEM_MODELO.erroDias)
+  })
+
+  it('[UNITÁRIO] estilo do formulário de item usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ItemModeloChecklistFormularioView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(fonte).toContain('class="pagina-formulario"')
+    expect(estilo).toContain('container: formulario-item / inline-size')
+    expect(estilo).toContain('@container formulario-item (min-width: 40rem)')
+    expect(estilo).not.toContain('@media')
+    expect(estilo).not.toContain('largura-leitura')
+    expect(estilo).not.toContain('--p-espaco-')
+    expect(fonte).not.toContain("validarCampo('")
   })
 
   it('[SEGURANÇA] casal é redirecionado para fora das rotas de modelos', async () => {

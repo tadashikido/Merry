@@ -97,6 +97,8 @@ export const TEXTOS_MODELOS_CHECKLIST = {
 export const TEXTOS_ITEM_MODELO = {
   formNovo: 'Novo item',
   formEditar: 'Editar item',
+  grupoItem: 'O item',
+  grupoPrazo: 'Prazo e responsável',
   campoTitulo: 'Título',
   campoTituloPlaceholder: 'Ex.: Reservar o local da cerimônia',
   campoQuando: 'Quando',
