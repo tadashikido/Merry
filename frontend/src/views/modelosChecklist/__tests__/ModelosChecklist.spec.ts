@@ -193,6 +193,117 @@ describe('ModeloChecklistView', () => {
     expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.naoEncontradoTitulo)
     expect(wrapper.get('[data-teste="voltar"]').attributes('href')).toBe('/modelos-checklist')
   })
+
+  it('[COMPONENTE] lateral resume total, itens por marco e por responsável, com volta para a lista', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () =>
+        respostaJson(
+          modeloCompleto([
+            itemModelo(),
+            itemModelo({ id: 'i2', titulo: 'Definir orçamento', diasAntesDoCasamento: 400, responsavel: 'Casal' }),
+            itemModelo({ id: 'i3', titulo: 'Prova final dos trajes', diasAntesDoCasamento: 30, responsavel: 'Casal' }),
+          ]),
+        ),
+      ),
+    )
+
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}`)
+
+    const lateral = wrapper.get('[data-teste="lateral-modelo"]')
+    expect(lateral.element.tagName).toBe('ASIDE')
+    expect(lateral.attributes('aria-labelledby')).toBe('titulo-resumo-modelo')
+    expect(wrapper.get('#titulo-resumo-modelo').text()).toBe(TEXTOS_MODELOS_CHECKLIST.resumoTitulo)
+    expect(lateral.get('[data-teste="total-itens-modelo"]').text()).toBe('3 itens')
+    expect(lateral.text()).toContain(TEXTOS_MODELOS_CHECKLIST.notaAplicacao)
+    expect(lateral.get('[data-teste="resumo-marco-dozeMeses"]').text()).toContain('2')
+    expect(lateral.get('[data-teste="resumo-marco-trintaDias"]').text()).toContain('1')
+    expect(lateral.get('[data-teste="resumo-responsavel-Assessoria"]').text()).toContain('1')
+    expect(lateral.get('[data-teste="resumo-responsavel-Casal"]').text()).toContain('2')
+    expect(lateral.get('[data-teste="voltar-lateral"]').attributes('href')).toBe('/modelos-checklist')
+    const listas = wrapper.findAll('ul.modelo__lista.cartao')
+    expect(listas).toHaveLength(2)
+    expect(listas[0]!.attributes('aria-labelledby')).toBe(wrapper.get('[data-teste="marco-dozeMeses"] h2').attributes('id'))
+    expect(listas[0]!.findAll('[data-teste="item-modelo-checklist"]')).toHaveLength(2)
+  })
+
+  it('[COMPONENTE] responsável sem itens não aparece no resumo', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([itemModelo()]))))
+
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}`)
+
+    expect(wrapper.find('[data-teste="resumo-responsavel-Assessoria"]').exists()).toBe(true)
+    expect(wrapper.find('[data-teste="resumo-responsavel-Casal"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] modelo sem itens mostra o convite e não mostra a lateral', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([]))))
+
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}`)
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.itensVazioTitulo)
+    expect(wrapper.find('[data-teste="adicionar-item-vazio"]').exists()).toBe(true)
+    expect(wrapper.find('[data-teste="lateral-modelo"]').exists()).toBe(false)
+    expect(wrapper.get('[data-teste="resumo-modelo"]').text()).toContain('0 itens')
+  })
+
+  it('[COMPONENTE] erro de rede mostra tentar de novo e sem permissão mostra aviso', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(500, { title: 'Erro' })))
+    const primeira = await abrir(`/modelos-checklist/${ID_MODELO}`)
+    expect(primeira.wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.erroTitulo)
+    expect(primeira.wrapper.find('[data-teste="lateral-modelo"]').exists()).toBe(false)
+    expect(primeira.wrapper.find('[data-teste="adicionar-item"]').exists()).toBe(false)
+    primeira.wrapper.unmount()
+
+    fetchSimulado.mockReset()
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(403, { title: 'Proibido' })))
+    const segunda = await abrir(`/modelos-checklist/${ID_MODELO}`)
+    expect(segunda.wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.semAcesso)
+  })
+
+  it('[COMPONENTE] excluir item confirma, chama a store e atualiza o resumo', async () => {
+    const restante = itemModelo({ id: 'i2', titulo: 'Definir orçamento', responsavel: 'Casal' })
+    let excluido = false
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto(excluido ? [restante] : [itemModelo(), restante]))),
+      quando('DELETE', `${ROTA_ITENS}/${ID_ITEM}`, () => {
+        excluido = true
+        return respostaVazia()
+      }),
+    )
+    const { wrapper, montagem } = await abrir(`/modelos-checklist/${ID_MODELO}`)
+    const confirmacao = useConfirmacaoExclusaoStore(montagem.pinia)
+
+    wrapper.findAllComponents({ name: 'MenuAcoes' })[0]!.vm.$emit('selecionar', 'excluir')
+    await flushPromises()
+
+    expect(confirmacao.visivel).toBe(true)
+    expect(confirmacao.mensagem).toBe(TEXTOS_MODELOS_CHECKLIST.itemConfirmarExclusaoTexto)
+    await confirmacao.confirmar()
+    await flushPromises()
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_ITENS}/${ID_ITEM}`)).toHaveLength(1)
+    expect(wrapper.get('[data-teste="total-itens-modelo"]').text()).toBe('1 item')
+  })
+
+  it('[UNITÁRIO] estilo do detalhe usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ModeloChecklistView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(estilo).toContain('container: modelo / inline-size')
+    expect(estilo).toContain('@container modelo (min-width: 64rem)')
+    expect(estilo).toContain('@container lateral-modelo (min-width: 36rem)')
+    expect(estilo).not.toContain('@media')
+    expect(estilo).not.toContain('largura-leitura')
+    expect(estilo).not.toContain('--p-espaco-')
+    expect(fonte).toContain('class="modelo pilha pilha--bloco"')
+  })
+
+  it('[UNITÁRIO] prazo do item não usa terracota', () => {
+    const fonte = readFileSync(resolve(__dirname, '../../../componentes/base/ItemModeloChecklist.vue'), 'utf-8')
+    const regraPrazo = fonte.slice(fonte.indexOf('.item-modelo__prazo'), fonte.indexOf('}', fonte.indexOf('.item-modelo__prazo')))
+    expect(regraPrazo).not.toContain('--p-cor-primaria')
+    expect(regraPrazo).toContain('--p-cor-texto-secundario')
+  })
 })
 
 describe('Formulários de modelo e item', () => {

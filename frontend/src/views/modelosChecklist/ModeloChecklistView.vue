@@ -24,6 +24,7 @@ import {
 } from '@/textos/checklist'
 import { ROTULOS_CATEGORIA_TAREFA, ROTULOS_RESPONSAVEL_TAREFA } from '@/textos/tarefas'
 import type { ItemModeloChecklistDto } from '@/tipos/checklist'
+import { RESPONSAVEIS_TAREFA } from '@/tipos/tarefas'
 import { agruparPorMarco } from '@/utilitarios/checklist'
 
 const props = defineProps<{ modeloId: string }>()
@@ -43,6 +44,14 @@ const marcos = computed<MarcoRegua[]>(() =>
     complemento: COMPLEMENTO_MARCO_CHECKLIST[grupo.marco],
     detalhe: TEXTOS_MODELOS_CHECKLIST.resumoItens(grupo.itens.length),
   })),
+)
+
+const porResponsavel = computed(() =>
+  RESPONSAVEIS_TAREFA.map((responsavel) => ({
+    chave: responsavel,
+    rotulo: ROTULOS_RESPONSAVEL_TAREFA[responsavel],
+    quantidade: modelo.value?.itens.filter((item) => item.responsavel === responsavel).length ?? 0,
+  })).filter((grupo) => grupo.quantidade > 0),
 )
 
 const acoesItem: ItemMenuAcoes[] = [
@@ -110,7 +119,10 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
 
 <template>
   <LayoutPainelUsuario>
-    <template v-if="falha?.tipo === 'naoEncontrado'">
+    <div
+      v-if="falha?.tipo === 'naoEncontrado'"
+      class="pilha pilha--grupo"
+    >
       <EstadoErro
         :titulo="TEXTOS_MODELOS_CHECKLIST.naoEncontradoTitulo"
         :mensagem="TEXTOS_MODELOS_CHECKLIST.naoEncontradoTexto"
@@ -123,7 +135,7 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
       >
         {{ TEXTOS_MODELOS_CHECKLIST.voltarModelos }}
       </RouterLink>
-    </template>
+    </div>
 
     <template v-else>
       <CabecalhoPagina
@@ -134,8 +146,8 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
           v-if="modelo"
           #detalhes
         >
-          <span
-            class="modelo__detalhes"
+          <p
+            class="modelo__detalhes texto-legenda"
             data-teste="resumo-modelo"
           >
             <BadgeStatus
@@ -144,8 +156,8 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
               variante="informacao"
               icone="informacao"
             />
-            {{ TEXTOS_MODELOS_CHECKLIST.resumoItens(modelo.itens.length) }}
-          </span>
+            <span>{{ TEXTOS_MODELOS_CHECKLIST.resumoItens(modelo.itens.length) }}</span>
+          </p>
         </template>
         <template
           v-if="modelo"
@@ -168,7 +180,7 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
         </template>
       </CabecalhoPagina>
 
-      <div class="modelo">
+      <div class="modelo pilha pilha--bloco">
         <EstadoCarregando
           v-if="store.carregandoAtual && !modelo"
           variante="lista"
@@ -210,38 +222,130 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
 
         <div
           v-else-if="modelo"
-          class="modelo__painel"
+          class="modelo__corpo"
         >
-          <ReguaMarcos
-            :marcos="marcos"
-            :rotulo="TEXTOS_MODELOS_CHECKLIST.regua"
+          <aside
+            class="modelo__lateral pilha pilha--grupo"
+            aria-labelledby="titulo-resumo-modelo"
+            data-teste="lateral-modelo"
           >
-            <template #marco="{ marco, idTitulo }">
-              <ul
-                class="modelo__itens"
-                :aria-labelledby="idTitulo"
-              >
-                <ItemModeloChecklist
-                  v-for="item in itensDoMarco(marco.chave)"
-                  :key="item.id"
-                  :titulo="item.titulo"
-                  :prazo-relativo="descreverPrazoRelativo(item.diasAntesDoCasamento)"
-                  :metadados="metadados(item)"
-                  :descricao="item.descricao"
+            <section class="modelo__resumo cartao">
+              <div class="modelo__geral pilha pilha--campo">
+                <h2
+                  id="titulo-resumo-modelo"
+                  class="texto-rotulo"
                 >
-                  <template #acoes>
-                    <MenuAcoes
-                      :itens="acoesItem"
-                      :rotulo="TEXTOS_MODELOS_CHECKLIST.maisAcoes"
-                      :rotulo-acessivel="TEXTOS_MODELOS_CHECKLIST.itemMaisAcoesAria(item.titulo)"
-                      somente-icone
-                      @selecionar="executarAcao(item, $event)"
-                    />
-                  </template>
-                </ItemModeloChecklist>
-              </ul>
-            </template>
-          </ReguaMarcos>
+                  {{ TEXTOS_MODELOS_CHECKLIST.resumoTitulo }}
+                </h2>
+                <p
+                  class="modelo__total numeros-tabulares"
+                  data-teste="total-itens-modelo"
+                >
+                  {{ TEXTOS_MODELOS_CHECKLIST.resumoItens(modelo.itens.length) }}
+                </p>
+                <p class="modelo__nota texto-legenda">
+                  {{ TEXTOS_MODELOS_CHECKLIST.notaAplicacao }}
+                </p>
+              </div>
+
+              <div
+                class="modelo__bloco pilha pilha--campo"
+                data-teste="resumo-por-marco"
+              >
+                <h3
+                  id="titulo-por-marco-modelo"
+                  class="texto-rotulo"
+                >
+                  {{ TEXTOS_MODELOS_CHECKLIST.porMarcoTitulo }}
+                </h3>
+                <dl
+                  class="modelo__contagens"
+                  aria-labelledby="titulo-por-marco-modelo"
+                >
+                  <div
+                    v-for="marco in marcos"
+                    :key="marco.chave"
+                    class="modelo__contagem"
+                    :data-teste="`resumo-marco-${marco.chave}`"
+                  >
+                    <dt>{{ marco.rotulo }}</dt>
+                    <dd class="numeros-tabulares">
+                      {{ itensDoMarco(marco.chave).length }}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div
+                class="modelo__bloco pilha pilha--campo"
+                data-teste="resumo-por-responsavel"
+              >
+                <h3
+                  id="titulo-por-responsavel-modelo"
+                  class="texto-rotulo"
+                >
+                  {{ TEXTOS_MODELOS_CHECKLIST.porResponsavelTitulo }}
+                </h3>
+                <dl
+                  class="modelo__contagens"
+                  aria-labelledby="titulo-por-responsavel-modelo"
+                >
+                  <div
+                    v-for="grupo in porResponsavel"
+                    :key="grupo.chave"
+                    class="modelo__contagem"
+                    :data-teste="`resumo-responsavel-${grupo.chave}`"
+                  >
+                    <dt>{{ grupo.rotulo }}</dt>
+                    <dd class="numeros-tabulares">
+                      {{ grupo.quantidade }}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </section>
+
+            <RouterLink
+              class="modelo__voltar"
+              :to="{ name: 'modelos-checklist' }"
+              data-teste="voltar-lateral"
+            >
+              {{ TEXTOS_MODELOS_CHECKLIST.voltarModelos }}
+            </RouterLink>
+          </aside>
+
+          <div class="modelo__principal">
+            <ReguaMarcos
+              :marcos="marcos"
+              :rotulo="TEXTOS_MODELOS_CHECKLIST.regua"
+            >
+              <template #marco="{ marco, idTitulo }">
+                <ul
+                  class="modelo__lista cartao"
+                  :aria-labelledby="idTitulo"
+                >
+                  <ItemModeloChecklist
+                    v-for="item in itensDoMarco(marco.chave)"
+                    :key="item.id"
+                    :titulo="item.titulo"
+                    :prazo-relativo="descreverPrazoRelativo(item.diasAntesDoCasamento)"
+                    :metadados="metadados(item)"
+                    :descricao="item.descricao"
+                  >
+                    <template #acoes>
+                      <MenuAcoes
+                        :itens="acoesItem"
+                        :rotulo="TEXTOS_MODELOS_CHECKLIST.maisAcoes"
+                        :rotulo-acessivel="TEXTOS_MODELOS_CHECKLIST.itemMaisAcoesAria(item.titulo)"
+                        somente-icone
+                        @selecionar="executarAcao(item, $event)"
+                      />
+                    </template>
+                  </ItemModeloChecklist>
+                </ul>
+              </template>
+            </ReguaMarcos>
+          </div>
         </div>
       </div>
     </template>
@@ -250,39 +354,127 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
 
 <style scoped>
 .modelo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
-  max-width: var(--p-dimensao-largura-leitura);
+  --modelo-largura-lateral: 18rem;
+
+  container: modelo / inline-size;
 }
 
-.modelo__painel {
-  padding: var(--p-espaco-5) var(--p-espaco-4);
-  background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
+.modelo__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
 }
 
-.modelo__itens {
-  margin: 0;
-  padding: 0;
+.modelo__principal,
+.modelo__lateral {
+  min-width: 0;
+}
+
+.modelo__lateral {
+  container: lateral-modelo / inline-size;
 }
 
 .modelo__detalhes {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
+  margin: 0;
+}
+
+.modelo__resumo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-grupo);
+}
+
+.modelo__resumo h2,
+.modelo__resumo h3,
+.modelo__total,
+.modelo__nota {
+  margin: 0;
+}
+
+.modelo__total {
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-leve);
+  line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-texto);
+}
+
+.modelo__bloco {
+  padding-top: var(--p-ritmo-grupo);
+  border-top: 1px solid var(--p-cor-divisoria);
+}
+
+.modelo__contagens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-campo);
+  margin: 0;
+}
+
+.modelo__contagem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-ritmo-grupo);
+  font-size: var(--p-fonte-tamanho-controle);
+}
+
+.modelo__contagem dt {
+  color: var(--p-cor-texto);
+}
+
+.modelo__contagem dd {
+  margin: 0;
+  color: var(--p-cor-texto-secundario);
 }
 
 .modelo__voltar {
-  display: inline-block;
-  margin-top: var(--p-espaco-4);
+  align-self: flex-start;
+  font-size: var(--p-fonte-tamanho-controle);
 }
 
-@media (min-width: 640px) {
-  .modelo__painel {
-    padding: var(--p-espaco-6);
+.modelo .modelo__lista {
+  margin: 0;
+  padding: var(--p-ritmo-campo) var(--p-ritmo-grupo);
+}
+
+@container lateral-modelo (min-width: 36rem) {
+  .modelo__resumo {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--p-ritmo-bloco);
+    align-items: start;
+  }
+
+  .modelo__bloco {
+    padding-top: 0;
+    padding-left: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-left: 1px solid var(--p-cor-divisoria);
+  }
+}
+
+@container modelo (min-width: 64rem) {
+  .modelo__corpo {
+    grid-template-columns: minmax(0, 1fr) var(--modelo-largura-lateral);
+  }
+
+  .modelo__lateral {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    top: var(--p-ritmo-bloco);
+  }
+
+  .modelo__principal {
+    grid-column: 1;
+    grid-row: 1;
   }
 }
 </style>
+

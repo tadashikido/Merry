@@ -51,8 +51,8 @@ withDefaults(
 .item-modelo {
   display: flex;
   align-items: flex-start;
-  gap: var(--p-espaco-3);
-  padding: var(--p-espaco-3) var(--p-espaco-2);
+  gap: var(--p-espaco-2);
+  padding: var(--p-espaco-3) var(--p-espaco-1);
   list-style: none;
 }
 
@@ -71,6 +71,7 @@ withDefaults(
 .item-modelo__titulo {
   font-size: var(--p-fonte-tamanho-corpo);
   font-weight: var(--p-fonte-peso-seminegrito);
+  line-height: var(--p-fonte-entrelinha-interface);
   color: var(--p-cor-texto);
   overflow-wrap: anywhere;
 }
@@ -86,7 +87,7 @@ withDefaults(
 
 .item-modelo__prazo {
   font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-texto-secundario);
 }
 
 .item-modelo__descricao {
@@ -97,6 +98,8 @@ withDefaults(
 }
 
 .item-modelo__acoes {
+  display: flex;
   flex: none;
+  align-items: center;
 }
 </style>

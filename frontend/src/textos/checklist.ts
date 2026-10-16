@@ -86,6 +86,10 @@ export const TEXTOS_MODELOS_CHECKLIST = {
   itemConfirmarExclusaoTexto: 'As tarefas já criadas a partir deste item continuam nos casamentos, mas deixam de contar no checklist.',
   itemToastExcluido: 'Item excluído.',
   resumoItens: (quantidade: number) => `${numero(quantidade)} ${plural(quantidade, 'item', 'itens')}`,
+  resumoTitulo: 'Resumo do modelo',
+  porMarcoTitulo: 'Por marco',
+  porResponsavelTitulo: 'Quem faz',
+  notaAplicacao: 'Aplique este modelo pelo Checklist de cada casamento. Os prazos são contados a partir da data do casamento.',
 } as const
 
 export const TEXTOS_ITEM_MODELO = {
