@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
@@ -127,5 +130,68 @@ describe('ImpressaoBuffetView', { timeout: 20_000 }, () => {
     await flushPromises()
 
     expect(wrapper!.find('[data-teste="ficha-buffet"]').exists()).toBe(true)
+  })
+  it('[COMPONENTE] cabeçalho identifica o documento, resumos ficam juntos e a tabela ocupa a largura toda', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_IMPRESSAO, () => respostaJson(exportacaoExemplo())))
+    await abrir()
+
+    const ficha = wrapper!.get('[data-teste="ficha-buffet"]')
+    const cabecalho = ficha.get('header')
+    expect(cabecalho.text()).toContain(TEXTOS_FICHA_BUFFET.documento)
+    expect(cabecalho.text()).toContain('Gerada em')
+    expect(cabecalho.findAll('h1')).toHaveLength(1)
+    const resumos = ficha.get('.ficha__resumos')
+    expect(resumos.find('[data-teste="resumo-cardapio"]').exists()).toBe(true)
+    expect(resumos.find('#ficha-restricoes').exists()).toBe(true)
+    expect(resumos.find('[data-teste="ficha-restricoes-pessoas"]').exists()).toBe(false)
+    const tabela = ficha.get('[data-teste="ficha-restricoes-pessoas"]')
+    expect(tabela.get('caption').text()).toBe(TEXTOS_FICHA_BUFFET.restricoesPorPessoa)
+    expect(tabela.findAll('th[scope="col"]')).toHaveLength(3)
+  })
+
+  it('[SEGURANÇA] aviso de dado de saúde sempre presente e nenhum contato de convidado', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_IMPRESSAO, () => respostaJson(exportacaoExemplo())))
+    await abrir()
+
+    const ficha = wrapper!.get('[data-teste="ficha-buffet"]')
+    expect(ficha.get('[data-teste="ficha-aviso-saude"]').text()).toBe(TEXTOS_FICHA_BUFFET.rodape)
+    expect(ficha.text()).not.toMatch(/@[a-z0-9-]+\.[a-z]{2,}/i)
+    expect(ficha.text()).not.toMatch(/\(?\d{2}\)?\s?9?\d{4}-?\d{4}/)
+    expect(ficha.html()).not.toContain('<script')
+  })
+
+  it('[COMPONENTE] restrições apagadas pela política mostram a data e omitem a tabela', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_IMPRESSAO, () =>
+        respostaJson(
+          exportacaoExemplo({
+            restricoes: { porTipo: [], outrasRestricoes: 0, necessidadesEspeciais: 0, pessoas: [], registrosIlegiveis: 0, dadosExcluidosEm: '2027-06-01T12:00:00Z' },
+          }),
+        ),
+      ),
+    )
+    await abrir()
+
+    const texto = wrapper!.text()
+    expect(texto).toContain('foram apagadas em 01/06/2027')
+    expect(wrapper!.find('[data-teste="ficha-restricoes-pessoas"]').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="ficha-aviso-saude"]').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] estilo usa tokens, @container na tela e regras de impressão A4', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ImpressaoBuffetView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style scoped>'))
+    expect(estilo).toContain('container: ficha / inline-size')
+    expect(estilo).toContain('@container ficha (min-width: 36rem)')
+    expect(estilo).toContain('@media print')
+    expect(estilo).toContain('display: table-header-group')
+    expect(estilo).toContain('break-inside: avoid')
+    expect(estilo).not.toMatch(/@media \(min-width/)
+    expect(estilo).not.toContain('--p-espaco-')
+    expect(estilo).not.toMatch(/#[0-9a-f]{3,6}\b/i)
+    expect(estilo.replace(/1px (solid|dotted)/g, '')).not.toMatch(/\d+(px|mm|pt)\b/)
+    expect(estilo).not.toMatch(/background:\s*var\(--p-cor/)
+    expect(estilo).not.toContain('box-shadow')
   })
 })

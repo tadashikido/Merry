@@ -106,6 +106,7 @@ export const TEXTOS_COBRANCA = {
 
 export const TEXTOS_FICHA_BUFFET = {
   titulo: (nomes: string) => `Ficha para o buffet · ${nomes}`,
+  documento: 'Ficha para o buffet',
   imprimir: 'Imprimir',
   voltar: 'Voltar às confirmações',
   acoesRotulo: 'Ações da ficha',

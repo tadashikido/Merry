@@ -160,71 +160,81 @@ function imprimir() {
 
     <article
       v-else-if="ficha"
-      class="ficha"
+      class="ficha pilha pilha--bloco"
       data-teste="ficha-buffet"
     >
-      <header class="ficha__cabecalho">
-        <h1 class="ficha__casal">
-          {{ nomes }}
-        </h1>
-        <p class="ficha__quando numeros-tabulares">
-          {{ quando }}
-        </p>
-        <p
-          v-if="ficha.casamento.localRecepcao"
-          class="ficha__local"
-        >
-          {{ ficha.casamento.localRecepcao }}
-        </p>
-        <p class="ficha__gerado">
-          {{ TEXTOS_FICHA_BUFFET.gerado(formatarDataHora(ficha.geradoEm)) }}
-        </p>
+      <header class="ficha__cabecalho pilha pilha--grupo">
+        <div class="ficha__documento">
+          <p class="ficha__documento-nome">
+            {{ TEXTOS_FICHA_BUFFET.documento }}
+          </p>
+          <p class="ficha__gerado texto-legenda numeros-tabulares">
+            {{ TEXTOS_FICHA_BUFFET.gerado(formatarDataHora(ficha.geradoEm)) }}
+          </p>
+        </div>
+        <div class="ficha__identificacao pilha pilha--campo">
+          <h1 class="ficha__casal">
+            {{ nomes }}
+          </h1>
+          <p class="ficha__quando numeros-tabulares">
+            {{ quando }}
+          </p>
+          <p
+            v-if="ficha.casamento.localRecepcao"
+            class="ficha__local"
+          >
+            {{ ficha.casamento.localRecepcao }}
+          </p>
+        </div>
       </header>
 
-      <ResumoCardapio
-        class="ficha__bloco"
-        :titulo="TEXTOS_FICHA_BUFFET.contagem"
-        :linhas="linhasContagem"
-      >
-        <template
-          v-if="ficha.pendentes > 0"
-          #rodape
+      <div class="ficha__resumos">
+        <ResumoCardapio
+          class="ficha__bloco"
+          :titulo="TEXTOS_FICHA_BUFFET.contagem"
+          :linhas="linhasContagem"
         >
-          <span data-teste="ficha-pendentes">{{ TEXTOS_FICHA_BUFFET.pendentes(ficha.pendentes) }}</span>
-        </template>
-      </ResumoCardapio>
+          <template
+            v-if="ficha.pendentes > 0"
+            #rodape
+          >
+            <span data-teste="ficha-pendentes">{{ TEXTOS_FICHA_BUFFET.pendentes(ficha.pendentes) }}</span>
+          </template>
+        </ResumoCardapio>
 
-      <section
-        class="ficha__secao ficha__bloco"
-        aria-labelledby="ficha-restricoes"
-      >
-        <h2
-          id="ficha-restricoes"
-          class="ficha__titulo"
+        <section
+          class="ficha__bloco ficha__restricoes pilha pilha--grupo"
+          aria-labelledby="ficha-restricoes"
         >
-          {{ TEXTOS_FICHA_BUFFET.restricoes }}
-        </h2>
-        <p
-          v-if="ficha.restricoes.dadosExcluidosEm"
-          class="ficha__nota"
-        >
-          {{ TEXTOS_FICHA_BUFFET.dadosExcluidos(formatarData(ficha.restricoes.dadosExcluidosEm)) }}
-        </p>
-        <p
-          v-if="ficha.restricoes.registrosIlegiveis > 0"
-          class="ficha__nota"
-          role="alert"
-        >
-          {{ TEXTOS_FICHA_BUFFET.ilegiveis(ficha.restricoes.registrosIlegiveis) }}
-        </p>
-        <p
-          v-if="linhasRestricoes.length === 0"
-          class="ficha__nota"
-        >
-          {{ TEXTOS_FICHA_BUFFET.semRestricoes }}
-        </p>
-        <template v-else>
-          <dl class="ficha__linhas">
+          <h2
+            id="ficha-restricoes"
+            class="ficha__titulo"
+          >
+            {{ TEXTOS_FICHA_BUFFET.restricoes }}
+          </h2>
+          <p
+            v-if="ficha.restricoes.dadosExcluidosEm"
+            class="ficha__nota"
+          >
+            {{ TEXTOS_FICHA_BUFFET.dadosExcluidos(formatarData(ficha.restricoes.dadosExcluidosEm)) }}
+          </p>
+          <p
+            v-if="ficha.restricoes.registrosIlegiveis > 0"
+            class="ficha__nota ficha__nota--alerta"
+            role="alert"
+          >
+            {{ TEXTOS_FICHA_BUFFET.ilegiveis(ficha.restricoes.registrosIlegiveis) }}
+          </p>
+          <p
+            v-if="linhasRestricoes.length === 0"
+            class="ficha__nota"
+          >
+            {{ TEXTOS_FICHA_BUFFET.semRestricoes }}
+          </p>
+          <dl
+            v-else
+            class="ficha__linhas"
+          >
             <div
               v-for="linha in linhasRestricoes"
               :key="linha.chave"
@@ -236,43 +246,55 @@ function imprimir() {
               </dd>
             </div>
           </dl>
-          <table
-            v-if="ficha.restricoes.pessoas.length > 0"
-            class="ficha__tabela"
-            data-teste="ficha-restricoes-pessoas"
+        </section>
+      </div>
+
+      <table
+        v-if="linhasRestricoes.length > 0 && ficha.restricoes.pessoas.length > 0"
+        class="ficha__tabela"
+        data-teste="ficha-restricoes-pessoas"
+      >
+        <caption class="ficha__legenda-tabela">
+          {{ TEXTOS_FICHA_BUFFET.restricoesPorPessoa }}
+        </caption>
+        <thead>
+          <tr>
+            <th
+              scope="col"
+              class="texto-rotulo"
+            >
+              {{ TEXTOS_FICHA_BUFFET.colunaNome }}
+            </th>
+            <th
+              scope="col"
+              class="texto-rotulo"
+            >
+              {{ TEXTOS_FICHA_BUFFET.colunaConvite }}
+            </th>
+            <th
+              scope="col"
+              class="texto-rotulo"
+            >
+              {{ TEXTOS_FICHA_BUFFET.colunaRestricao }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(pessoa, indiceRestricao) in ficha.restricoes.pessoas"
+            :key="`${indiceRestricao}-${pessoa.convite}-${pessoa.nome}`"
           >
-            <caption class="ficha__legenda-tabela">
-              {{ TEXTOS_FICHA_BUFFET.restricoesPorPessoa }}
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">
-                  {{ TEXTOS_FICHA_BUFFET.colunaNome }}
-                </th>
-                <th scope="col">
-                  {{ TEXTOS_FICHA_BUFFET.colunaConvite }}
-                </th>
-                <th scope="col">
-                  {{ TEXTOS_FICHA_BUFFET.colunaRestricao }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(pessoa, indiceRestricao) in ficha.restricoes.pessoas"
-                :key="`${indiceRestricao}-${pessoa.convite}-${pessoa.nome}`"
-              >
-                <td>{{ pessoa.nome }}</td>
-                <td>{{ pessoa.convite }}</td>
-                <td>{{ restricaoPessoa(pessoa) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </template>
-      </section>
+            <td class="ficha__celula-nome">
+              {{ pessoa.nome }}
+            </td>
+            <td>{{ pessoa.convite }}</td>
+            <td>{{ restricaoPessoa(pessoa) }}</td>
+          </tr>
+        </tbody>
+      </table>
 
       <section
-        class="ficha__secao"
+        class="ficha__confirmados pilha pilha--grupo"
         aria-labelledby="ficha-confirmados"
       >
         <h2
@@ -294,7 +316,7 @@ function imprimir() {
           <section
             v-for="(convite, indiceConvite) in ficha.convites"
             :key="`${indiceConvite}-${convite.nome}`"
-            class="ficha__convite"
+            class="ficha__convite pilha pilha--campo"
             data-teste="ficha-convite"
           >
             <h3 class="ficha__nome-convite">
@@ -315,7 +337,10 @@ function imprimir() {
         </div>
       </section>
 
-      <footer class="ficha__rodape">
+      <footer
+        class="ficha__rodape"
+        data-teste="ficha-aviso-saude"
+      >
         {{ TEXTOS_FICHA_BUFFET.rodape }}
       </footer>
     </article>
@@ -324,24 +349,26 @@ function imprimir() {
 
 <style scoped>
 .ficha {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-8);
+  container: ficha / inline-size;
 }
 
 .ficha__cabecalho {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-1);
-  padding-bottom: var(--p-espaco-4);
-  border-bottom: 1px solid var(--p-cor-borda);
+  padding-bottom: var(--p-ritmo-cartao);
+  border-bottom: 1px solid var(--p-cor-texto);
+}
+
+.ficha__identificacao {
+  min-width: 0;
 }
 
 .ficha__casal {
   font-family: var(--p-fonte-display);
-  font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina-celular);
+  font-weight: var(--p-fonte-peso-leve);
+  font-variant-numeric: lining-nums;
   line-height: var(--p-fonte-entrelinha-titulo);
+  letter-spacing: var(--p-fonte-espacamento-letras-display);
+  overflow-wrap: anywhere;
 }
 
 .ficha__quando,
@@ -350,51 +377,115 @@ function imprimir() {
   color: var(--p-cor-texto);
 }
 
+.ficha__local {
+  font-family: var(--p-fonte-serif);
+  font-style: italic;
+}
+
+.ficha__documento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
+  padding-bottom: var(--p-ritmo-campo);
+  border-bottom: 1px solid var(--p-cor-divisoria);
+}
+
+.ficha__documento-nome {
+  margin: 0;
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-texto);
+}
+
 .ficha__gerado {
   margin: 0;
-  font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-apoio);
 }
 
-.ficha__bloco {
+.ficha__resumos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-grupo);
+  align-items: start;
+}
+
+.ficha__bloco,
+.ficha :deep(.resumo-cardapio) {
   max-width: none;
+  padding: var(--p-ritmo-cartao);
+  background: none;
+  border: 1px solid var(--p-cor-borda);
+  border-radius: var(--p-raio-painel);
+  break-inside: avoid;
 }
 
-.ficha__secao {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-3);
+.ficha :deep(.resumo-cardapio) {
+  gap: var(--p-ritmo-grupo);
+}
+
+.ficha :deep(.resumo-cardapio__titulo) {
+  font-weight: var(--p-fonte-peso-regular);
+}
+
+.ficha :deep(.resumo-cardapio__valor) {
+  color: var(--p-cor-texto);
+}
+
+.ficha :deep(.resumo-cardapio__linha:last-child) {
+  padding-top: var(--p-ritmo-campo);
+  font-weight: var(--p-fonte-peso-medio);
+  border-top: 1px solid var(--p-cor-texto);
+}
+
+.ficha :deep(.resumo-cardapio__linha:last-child::after) {
+  border-bottom-color: transparent;
+}
+
+.ficha :deep(.resumo-cardapio__rodape) {
+  margin: 0;
+  font-family: var(--p-fonte-serif);
+  font-style: italic;
 }
 
 .ficha__titulo {
   font-family: var(--p-fonte-interface);
   font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-regular);
   line-height: var(--p-fonte-entrelinha-titulo);
 }
 
 .ficha__nota {
   margin: 0;
-  font-size: var(--p-fonte-tamanho-controle);
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-apoio);
+  font-style: italic;
+  line-height: var(--p-fonte-entrelinha-leitura);
   color: var(--p-cor-texto-apoio);
+}
+
+.ficha__nota--alerta {
+  font-style: normal;
+  color: var(--p-cor-texto);
 }
 
 .ficha__linhas {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
   margin: 0;
 }
 
 .ficha__linha {
   display: flex;
   align-items: baseline;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .ficha__linha::after {
   order: 1;
   flex: 1;
-  min-width: var(--p-espaco-4);
+  min-width: var(--p-ritmo-grupo);
   content: '';
   border-bottom: 1px dotted var(--p-cor-borda-campo);
 }
@@ -409,43 +500,67 @@ function imprimir() {
   width: 100%;
   font-size: var(--p-fonte-tamanho-controle);
   border-collapse: collapse;
+}
+
+.ficha__tabela thead {
+  display: table-header-group;
+}
+
+.ficha__tabela tr {
   break-inside: avoid;
 }
 
 .ficha__legenda-tabela {
-  padding-bottom: var(--p-espaco-2);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  padding-bottom: var(--p-ritmo-grupo);
+  font-family: var(--p-fonte-interface);
+  font-size: var(--p-fonte-tamanho-secao);
+  line-height: var(--p-fonte-entrelinha-titulo);
   text-align: left;
 }
 
 .ficha__tabela th,
 .ficha__tabela td {
-  padding: var(--p-espaco-2);
+  padding: var(--p-ritmo-campo) var(--p-ritmo-grupo) var(--p-ritmo-campo) 0;
   text-align: left;
   vertical-align: top;
-  border-bottom: 1px solid var(--p-cor-borda);
   overflow-wrap: anywhere;
 }
 
+.ficha__tabela th:last-child,
+.ficha__tabela td:last-child {
+  padding-right: 0;
+}
+
 .ficha__tabela th {
-  color: var(--p-cor-texto-apoio);
+  overflow-wrap: normal;
+  border-bottom: 1px solid var(--p-cor-texto);
+}
+
+.ficha__tabela td {
+  line-height: var(--p-fonte-entrelinha-interface);
+  border-bottom: 1px solid var(--p-cor-divisoria);
+}
+
+.ficha__celula-nome {
   font-weight: var(--p-fonte-peso-medio);
 }
 
 .ficha__convites {
   columns: 1;
-  column-gap: var(--p-espaco-8);
+  column-gap: var(--p-ritmo-cartao);
 }
 
 .ficha__convite {
-  margin-bottom: var(--p-espaco-4);
+  padding-bottom: var(--p-ritmo-grupo);
   break-inside: avoid;
 }
 
 .ficha__nome-convite {
   font-family: var(--p-fonte-interface);
   font-size: var(--p-fonte-tamanho-corpo);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-medio);
+  line-height: var(--p-fonte-entrelinha-interface);
+  overflow-wrap: anywhere;
 }
 
 .ficha__nome-convite span {
@@ -454,47 +569,77 @@ function imprimir() {
 }
 
 .ficha__pessoas {
-  margin: var(--p-espaco-1) 0 0;
-  padding-left: var(--p-espaco-4);
+  margin: 0;
+  padding-left: var(--p-ritmo-grupo);
+  line-height: var(--p-fonte-entrelinha-interface);
+  overflow-wrap: anywhere;
 }
 
 .ficha__marcador {
+  font-family: var(--p-fonte-serif);
+  font-style: italic;
   color: var(--p-cor-texto-apoio);
 }
 
 .ficha__rodape {
-  padding-top: var(--p-espaco-3);
-  font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-apoio);
-  border-top: 1px solid var(--p-cor-borda);
+  padding-top: var(--p-ritmo-grupo);
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-apoio);
+  line-height: var(--p-fonte-entrelinha-leitura);
+  color: var(--p-cor-texto);
+  border-top: 1px solid var(--p-cor-texto);
+  break-inside: avoid;
 }
 
-@media (min-width: 640px) {
+@container ficha (min-width: 36rem) {
   .ficha__casal {
     font-size: var(--p-fonte-tamanho-pagina);
   }
 
+  .ficha__resumos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .ficha__convites {
     columns: 2;
+  }
+}
+
+@container ficha (min-width: 56rem) {
+  .ficha__convites {
+    columns: 3;
   }
 }
 
 @media print {
   .ficha {
-    gap: 6mm;
+    --pilha-espaco: var(--p-ritmo-cartao);
+  }
+
+  .ficha__casal {
+    font-size: var(--p-fonte-tamanho-pagina-celular);
+  }
+
+  .ficha__resumos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ficha__bloco,
+  .ficha :deep(.resumo-cardapio) {
+    padding: var(--p-ritmo-grupo);
+    border-color: var(--p-cor-texto-apoio);
   }
 
   .ficha__convites {
     columns: 2;
   }
 
-  .ficha :deep(.resumo-cardapio) {
-    padding: 0;
-    border: 0;
-  }
-
-  .ficha__casal {
-    font-size: 20pt;
+  .ficha__nota,
+  .ficha__gerado,
+  .ficha__marcador,
+  .ficha__nome-convite span,
+  .ficha :deep(.resumo-cardapio__rodape) {
+    color: var(--p-cor-texto);
   }
 }
 </style>
