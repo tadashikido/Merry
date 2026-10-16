@@ -134,6 +134,7 @@ export const TEXTOS_MESAS = {
 export const TEXTOS_IMPRESSAO_MESAS = {
   titulo: (nomes: string) => `Mapa de mesas — ${nomes}`,
   acoesRotulo: 'Ações do mapa de mesas',
+  documento: 'Mapa de mesas',
   voltar: 'Voltar às mesas',
   imprimir: 'Imprimir',
   gerado: (quando: string) => `Gerado em ${quando}`,
