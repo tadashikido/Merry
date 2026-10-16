@@ -134,4 +134,17 @@ describe('LinhaCronograma — detalhes lado a lado', () => {
     expect(fonte).toMatch(/@container linha-cronograma \(min-width: 42rem\)/)
     expect(fonte).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\) minmax\(12rem, 16rem\)/)
   })
+
+  it('[UNITÁRIO] término do dia seguinte quebra o +1 dentro da coluna de horário', () => {
+    const wrapper = montarLinha({ inicio: '21:00', termino: '02:00', terminaEmOutroDia: true })
+    const termino = wrapper.get('[data-teste="linha-cronograma-termino"]')
+    expect(termino.text()).toBe('02:00+1')
+    expect(termino.find('.linha-cronograma__mais-um').exists()).toBe(true)
+
+    const inicioRegra = fonte.indexOf('.linha-cronograma__termino {')
+    const regra = fonte.slice(inicioRegra, fonte.indexOf('}', inicioRegra))
+    expect(regra).toContain('flex-wrap: wrap')
+    expect(regra).toContain('justify-content: flex-end')
+    expect(regra).toContain('max-width: 100%')
+  })
 })

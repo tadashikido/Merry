@@ -77,6 +77,13 @@ export const TEXTOS_MODELOS_CRONOGRAMA = {
   itensVazioTitulo: 'Este modelo ainda não tem itens.',
   itensVazioTexto: 'Adicione o que acontece antes, durante e depois da cerimônia.',
   rotuloLinha: (atividade: string, inicio: string, distancia: string) => `Editar ${atividade}, ${inicio}, ${distancia}`,
+  resumoTitulo: 'Resumo do modelo',
+  porDiaTitulo: 'Por dia',
+  cerimoniaTitulo: 'Em relação à cerimônia',
+  rotuloReferencia: 'Cerimônia',
+  rotuloComeca: 'Começa',
+  rotuloTermina: 'Termina',
+  resumoDia: (quantidade: number, intervalo: string) => `${contar(quantidade, 'item', 'itens')}, ${intervalo}`,
 } as const
 
 export const TEXTOS_ITEM_MODELO_CRONOGRAMA = {

@@ -224,6 +224,124 @@ describe('ModeloCronogramaView', () => {
     expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.naoEncontradoTitulo)
     expect(wrapper.get('[data-teste="voltar"]').attributes('href')).toBe('/modelos-cronograma')
   })
+
+  it('[COMPONENTE] cabeçalho mostra Sugerido, contagem e horário de referência', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    const resumo = wrapper.get('[data-teste="resumo-modelo"]')
+    expect(resumo.element.tagName).toBe('P')
+    expect(resumo.classes()).toContain('texto-legenda')
+    expect(resumo.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.sugerido)
+    expect(resumo.text()).toContain('3 itens')
+    expect(resumo.get('[data-teste="referencia-modelo"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.referencia('16:00'))
+    expect(wrapper.find('[data-teste="editar-modelo"]').exists()).toBe(true)
+    expect(wrapper.find('[data-teste="adicionar-item"]').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] lateral resume total, dias com intervalo e posição em relação à cerimônia', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    const lateral = wrapper.get('[data-teste="lateral-modelo"]')
+    expect(lateral.element.tagName).toBe('ASIDE')
+    expect(lateral.attributes('aria-labelledby')).toBe('titulo-resumo-modelo')
+    expect(wrapper.get('#titulo-resumo-modelo').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.resumoTitulo)
+    expect(lateral.get('[data-teste="total-itens-modelo"]').text()).toBe('3 itens')
+    expect(lateral.get('[data-teste="apoio-referencia"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00'))
+    expect(lateral.get('[data-teste="resumo-dia-Vespera"]').text()).toContain('1 item, das 19:00 às 20:00')
+    expect(lateral.get('[data-teste="resumo-dia-DiaDoCasamento"]').text()).toContain('2 itens, das 10:00 às 17:00')
+    expect(lateral.find('[data-teste="resumo-dia-DiaSeguinte"]').exists()).toBe(false)
+    expect(lateral.get('[data-teste="resumo-referencia"]').text()).toBe('16:00')
+    expect(lateral.get('[data-teste="resumo-comeca"]').text()).toBe('21 h antes da cerimônia')
+    expect(lateral.get('[data-teste="resumo-termina"]').text()).toBe('1 h depois da cerimônia')
+    expect(lateral.get('[data-teste="voltar-lateral"]').attributes('href')).toBe('/modelos-cronograma')
+  })
+
+  it('[COMPONENTE] roteiro por dia em listas de cartão rotuladas pelo título do dia', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    const listas = wrapper.findAll('ol.modelo-cronograma__lista.cartao')
+    expect(listas).toHaveLength(2)
+    expect(listas[0]!.attributes('aria-labelledby')).toBe('grupo-modelo-Vespera')
+    expect(wrapper.get('#grupo-modelo-Vespera').text()).toBe('Véspera')
+    expect(listas[1]!.findAll('[data-teste="linha-cronograma"]')).toHaveLength(2)
+    expect(wrapper.get('[data-teste="grupo-modelo-DiaDoCasamento"]').classes()).toEqual(
+      expect.arrayContaining(['pilha', 'pilha--grupo']),
+    )
+  })
+
+  it('[COMPONENTE] item que termina no dia seguinte entra no intervalo do dia e no fim do roteiro', async () => {
+    const festa = itemModeloCronograma({
+      id: 'f',
+      minutosDesdeCerimonia: 300,
+      inicio: '21:00',
+      duracaoMinutos: 300,
+      termino: '02:00',
+      terminaEmOutroDia: true,
+      atividade: 'Festa',
+    })
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ itens: [itemModeloCronograma(), festa] }))),
+    )
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    expect(wrapper.get('[data-teste="resumo-dia-DiaDoCasamento"]').text()).toContain('2 itens, das 10:00 às 02:00 do dia seguinte')
+    expect(wrapper.get('[data-teste="resumo-comeca"]').text()).toBe('6 h antes da cerimônia')
+    expect(wrapper.get('[data-teste="resumo-termina"]').text()).toBe('10 h depois da cerimônia')
+    expect(wrapper.findAll('[data-teste="linha-cronograma-termino"]')[1]!.text()).toBe('02:00+1')
+  })
+
+  it('[COMPONENTE] modelo sem itens mostra o convite, sem lateral, com referência no cabeçalho', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ itens: [] }))))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.itensVazioTitulo)
+    expect(wrapper.find('[data-teste="adicionar-item-vazio"]').exists()).toBe(true)
+    expect(wrapper.find('[data-teste="lateral-modelo"]').exists()).toBe(false)
+    expect(wrapper.get('[data-teste="resumo-modelo"]').text()).toContain('0 itens')
+    expect(wrapper.get('[data-teste="referencia-modelo"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.referencia('16:00'))
+  })
+
+  it('[COMPONENTE] erro de rede mostra tentar de novo sem lateral nem ações', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(500, { title: 'Erro' })))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.erroTitulo)
+    expect(wrapper.find('[data-teste="lateral-modelo"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="adicionar-item"]').exists()).toBe(false)
+  })
+
+  it('[SEGURANÇA] sem permissão mostra o aviso da assessoria sem roteiro', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(403, { title: 'Proibido' })))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.semAcesso)
+    expect(wrapper.find('[data-teste="linha-cronograma"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="lateral-modelo"]').exists()).toBe(false)
+  })
+
+  it('[UNITÁRIO] estilo do detalhe usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ModeloCronogramaView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(estilo).toContain('container: modelo-cronograma / inline-size')
+    expect(estilo).toContain('container: lateral-modelo-cronograma / inline-size')
+    expect(estilo).toContain('@container modelo-cronograma (min-width: 64rem)')
+    expect(estilo).toContain('@container lateral-modelo-cronograma (min-width: 36rem)')
+    expect(estilo).not.toContain('@media')
+    expect(estilo).not.toContain('largura-leitura')
+    expect(estilo).not.toContain('--p-espaco-')
+    expect(fonte).toContain('class="modelo-cronograma pilha pilha--bloco"')
+  })
 })
 
 describe('Formulários de modelo de cronograma', () => {

@@ -211,6 +211,10 @@ const metadados = computed(() =>
 }
 
 .linha-cronograma__termino {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 100%;
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-texto-apoio);
 }
