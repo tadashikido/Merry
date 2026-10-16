@@ -63,6 +63,12 @@ const relatorio = computed(() => (store.casamentoId === props.id ? store.relator
 const falha = computed(() => (store.casamentoId === props.id ? store.falha : null))
 const dadosExcluidos = computed(() => Boolean(relatorio.value?.dadosExcluidosEm) && (relatorio.value?.totalPessoas ?? 0) === 0)
 const podeRegistrar = computed(() => relatorio.value?.podeRegistrar ?? false)
+const semRestricoes = computed(() => relatorio.value?.totalPessoas === 0 && relatorio.value.registrosIlegiveis === 0)
+const mensagemExclusaoPrevista = computed(() =>
+  relatorio.value
+    ? TEXTOS_DADOS_SENSIVEIS.exclusaoPrevista(formatarDataCalendario(relatorio.value.dataExclusaoPrevista), relatorio.value.diasRetencao)
+    : '',
+)
 
 const mensagemErro = computed(() => {
   if (!falha.value) {
@@ -108,10 +114,10 @@ const linhas = computed<LinhaRestricao[]>(() =>
 )
 
 const colunas: ColunaListagem<LinhaRestricao>[] = [
-  { campo: 'nome', titulo: TEXTOS_DADOS_SENSIVEIS.colunaNome, principal: true },
+  { campo: 'nome', titulo: TEXTOS_DADOS_SENSIVEIS.colunaNome, principal: true, largura: '24%' },
   { campo: 'restricoes', titulo: TEXTOS_DADOS_SENSIVEIS.colunaRestricoes },
   { campo: 'necessidade', titulo: TEXTOS_DADOS_SENSIVEIS.colunaNecessidade },
-  { campo: 'resposta', titulo: TEXTOS_DADOS_SENSIVEIS.colunaResposta },
+  { campo: 'resposta', titulo: TEXTOS_DADOS_SENSIVEIS.colunaResposta, largura: '9rem' },
   { campo: 'origem', titulo: TEXTOS_DADOS_SENSIVEIS.colunaOrigem, ocultarNoTablet: true },
 ]
 
@@ -245,7 +251,7 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
       </template>
     </CabecalhoPagina>
 
-    <div class="restricoes">
+    <div class="restricoes pilha pilha--bloco">
       <EstadoCarregando
         v-if="store.carregando && !relatorio"
         variante="lista"
@@ -267,87 +273,108 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
           data-teste="restricoes-excluidas"
         />
 
-        <EstadoVazio
-          v-else-if="relatorio.totalPessoas === 0 && relatorio.registrosIlegiveis === 0"
-          :titulo="TEXTOS_DADOS_SENSIVEIS.vazioTitulo"
-          :descricao="TEXTOS_DADOS_SENSIVEIS.vazioTexto"
-          icone="lista"
-          data-teste="restricoes-vazio"
+        <div
+          v-else-if="semRestricoes"
+          class="pilha pilha--cartao"
         >
-          <template
-            v-if="podeRegistrar"
-            #acao
+          <EstadoVazio
+            :titulo="TEXTOS_DADOS_SENSIVEIS.vazioTitulo"
+            :descricao="TEXTOS_DADOS_SENSIVEIS.vazioTexto"
+            icone="lista"
+            data-teste="restricoes-vazio"
           >
-            <Button
-              :label="TEXTOS_DADOS_SENSIVEIS.registrar"
-              severity="secondary"
-              outlined
-              @click="abrirRegistro"
-            />
-          </template>
-        </EstadoVazio>
-
-        <template v-else>
-          <MensagemFormulario
-            v-if="relatorio.registrosIlegiveis > 0"
-            :mensagem="TEXTOS_DADOS_SENSIVEIS.ilegiveis(relatorio.registrosIlegiveis)"
-            data-teste="restricoes-ilegiveis"
-          />
-
-          <ResumoCardapio
-            :titulo="TEXTOS_DADOS_SENSIVEIS.resumoBuffet"
-            :linhas="linhasCardapio"
-            :vazio="TEXTOS_DADOS_SENSIVEIS.semConfirmados"
-          >
-            <template #rodape>
-              {{ TEXTOS_DADOS_SENSIVEIS.totais(relatorio.totalPessoas, relatorio.totalConfirmados) }}
-            </template>
-          </ResumoCardapio>
-
-          <ListagemDados
-            v-model:busca="busca"
-            :itens="linhas"
-            :colunas="colunas"
-            chave="convidadoId"
-            :rotulo="TEXTOS_DADOS_SENSIVEIS.listaRotulo"
-            :placeholder-busca="TEXTOS_DADOS_SENSIVEIS.buscaPlaceholder"
-            :titulo-vazio="TEXTOS_DADOS_SENSIVEIS.vazioTitulo"
-          >
-            <template #celula-nome="{ item }">
-              <span class="restricoes__nome">
-                <span>{{ item.nome }}</span>
-                <span
-                  v-if="item.pessoa.acompanhante"
-                  class="restricoes__marcador"
-                >{{ TEXTOS_DADOS_SENSIVEIS.acompanhante }}</span>
-              </span>
-            </template>
-            <template #celula-resposta="{ item }">
-              <BadgeStatus
-                :texto="ROTULOS_RESPOSTA[item.pessoa.resposta]"
-                :variante="VARIANTE_RESPOSTA[item.pessoa.resposta]"
-              />
-            </template>
             <template
               v-if="podeRegistrar"
-              #acoes-linha="{ item }"
+              #acao
             >
-              <MenuAcoes
-                :itens="itensMenu"
-                :rotulo="TEXTOS_DADOS_SENSIVEIS.editar"
-                :rotulo-acessivel="TEXTOS_DADOS_SENSIVEIS.acoesPessoa(item.nome)"
-                @selecionar="selecionarAcao(item.pessoa, $event)"
+              <Button
+                :label="TEXTOS_DADOS_SENSIVEIS.registrar"
+                severity="secondary"
+                outlined
+                @click="abrirRegistro"
               />
             </template>
-          </ListagemDados>
-        </template>
+          </EstadoVazio>
 
-        <MensagemFormulario
-          v-if="!dadosExcluidos"
-          variante="informacao"
-          :mensagem="TEXTOS_DADOS_SENSIVEIS.exclusaoPrevista(formatarDataCalendario(relatorio.dataExclusaoPrevista), relatorio.diasRetencao)"
-          data-teste="restricoes-exclusao-prevista"
-        />
+          <MensagemFormulario
+            variante="informacao"
+            :mensagem="mensagemExclusaoPrevista"
+            data-teste="restricoes-exclusao-prevista"
+          />
+        </div>
+
+        <div
+          v-else
+          class="restricoes__corpo"
+          data-teste="restricoes-corpo"
+        >
+          <aside
+            class="restricoes__lateral pilha pilha--grupo"
+            :aria-label="TEXTOS_DADOS_SENSIVEIS.resumoBuffet"
+            data-teste="restricoes-lateral"
+          >
+            <ResumoCardapio
+              :titulo="TEXTOS_DADOS_SENSIVEIS.resumoBuffet"
+              :linhas="linhasCardapio"
+              :vazio="TEXTOS_DADOS_SENSIVEIS.semConfirmados"
+            >
+              <template #rodape>
+                {{ TEXTOS_DADOS_SENSIVEIS.totais(relatorio.totalPessoas, relatorio.totalConfirmados) }}
+              </template>
+            </ResumoCardapio>
+
+            <MensagemFormulario
+              variante="informacao"
+              :mensagem="mensagemExclusaoPrevista"
+              data-teste="restricoes-exclusao-prevista"
+            />
+          </aside>
+
+          <div class="restricoes__principal pilha pilha--cartao">
+            <MensagemFormulario
+              v-if="relatorio.registrosIlegiveis > 0"
+              :mensagem="TEXTOS_DADOS_SENSIVEIS.ilegiveis(relatorio.registrosIlegiveis)"
+              data-teste="restricoes-ilegiveis"
+            />
+
+            <ListagemDados
+              v-model:busca="busca"
+              :itens="linhas"
+              :colunas="colunas"
+              chave="convidadoId"
+              :rotulo="TEXTOS_DADOS_SENSIVEIS.listaRotulo"
+              :placeholder-busca="TEXTOS_DADOS_SENSIVEIS.buscaPlaceholder"
+              :titulo-vazio="TEXTOS_DADOS_SENSIVEIS.vazioTitulo"
+            >
+              <template #celula-nome="{ item }">
+                <span class="restricoes__nome">
+                  <span>{{ item.nome }}</span>
+                  <span
+                    v-if="item.pessoa.acompanhante"
+                    class="restricoes__marcador"
+                  >{{ TEXTOS_DADOS_SENSIVEIS.acompanhante }}</span>
+                </span>
+              </template>
+              <template #celula-resposta="{ item }">
+                <BadgeStatus
+                  :texto="ROTULOS_RESPOSTA[item.pessoa.resposta]"
+                  :variante="VARIANTE_RESPOSTA[item.pessoa.resposta]"
+                />
+              </template>
+              <template
+                v-if="podeRegistrar"
+                #acoes-linha="{ item }"
+              >
+                <MenuAcoes
+                  :itens="itensMenu"
+                  :rotulo="TEXTOS_DADOS_SENSIVEIS.editar"
+                  :rotulo-acessivel="TEXTOS_DADOS_SENSIVEIS.acoesPessoa(item.nome)"
+                  @selecionar="selecionarAcao(item.pessoa, $event)"
+                />
+              </template>
+            </ListagemDados>
+          </div>
+        </div>
       </template>
     </div>
 
@@ -365,20 +392,75 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
 
 <style scoped>
 .restricoes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+  --restricoes-largura-lateral: 20rem;
+
+  container: restricoes / inline-size;
+}
+
+.restricoes__corpo {
+  display: grid;
+  grid-template-areas:
+    'lateral'
+    'principal';
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
+}
+
+.restricoes__lateral {
+  grid-area: lateral;
+  min-width: 0;
+}
+
+.restricoes__lateral :deep(.resumo-cardapio) {
+  max-width: none;
+}
+
+.restricoes__principal {
+  grid-area: principal;
+  min-width: 0;
+}
+
+.restricoes__principal :deep(.listagem__tabela .listagem__acoes-linha .p-button-label) {
+  display: none;
 }
 
 .restricoes__nome {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .restricoes__marcador {
   font-size: var(--p-fonte-tamanho-controle);
   color: var(--p-cor-texto-apoio);
+}
+
+@container restricoes (min-width: 40rem) {
+  .restricoes__lateral {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@container restricoes (max-width: 63.99rem) {
+  .restricoes__principal :deep(.listagem__tabela .listagem__coluna--secundaria) {
+    display: none;
+  }
+}
+
+@container restricoes (min-width: 80rem) {
+  .restricoes__corpo {
+    grid-template-areas: 'principal lateral';
+    grid-template-columns: minmax(0, 1fr) var(--restricoes-largura-lateral);
+  }
+
+  .restricoes__lateral {
+    display: flex;
+    position: sticky;
+    top: var(--p-ritmo-bloco);
+  }
 }
 </style>
