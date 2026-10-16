@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
@@ -68,6 +70,58 @@ describe('ModelosChecklistView', () => {
     expect(modelos[0]!.get('[data-teste="link-modelo"]').attributes('href')).toBe(`/modelos-checklist/${ID_MODELO}`)
     const rail = wrapper.findAll('[data-teste="item-menu"]').find((item) => item.text() === 'Modelos')!
     expect(rail.attributes('aria-current')).toBe('page')
+  })
+
+  it('[COMPONENTE] cartões em grade larga com resumo no cabeçalho e aba Checklist ativa', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo(), resumoModelo({ id: 'm2', nome: 'Destination wedding', descricao: null, sugerido: false, quantidadeItens: 1 })])))
+
+    const { wrapper } = await abrir('/modelos-checklist')
+
+    expect(wrapper.get('[data-teste="resumo-modelos"]').text()).toBe(TEXTOS_MODELOS_CHECKLIST.resumo(2))
+    expect(wrapper.get('[data-teste="resumo-modelos"]').attributes('aria-live')).toBe('polite')
+    const lista = wrapper.get('[data-teste="lista-modelos"]')
+    expect(lista.element.tagName).toBe('UL')
+    expect(lista.classes()).toEqual(expect.arrayContaining(['grade', 'grade--larga']))
+    expect(lista.attributes('aria-label')).toBe(TEXTOS_MODELOS_CHECKLIST.listaRotulo)
+    expect(wrapper.findAllComponents({ name: 'CartaoModelo' })).toHaveLength(2)
+    const cartoes = wrapper.findAll('[data-teste="modelo-checklist"]')
+    expect(cartoes[0]!.find('[data-teste="descricao-modelo"]').exists()).toBe(true)
+    expect(cartoes[1]!.find('[data-teste="descricao-modelo"]').exists()).toBe(false)
+    expect(cartoes[1]!.text()).not.toContain(TEXTOS_MODELOS_CHECKLIST.sugerido)
+    expect(cartoes[0]!.get('[data-teste="menu-acoes"]').attributes('aria-label')).toBe(TEXTOS_MODELOS_CHECKLIST.maisAcoesAria(resumoModelo().nome))
+    expect(wrapper.find('.abas-secao__aba--ativa').text()).toBe('Checklist')
+    expect(wrapper.find('[data-teste="novo-modelo"]').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] lista vazia não mostra resumo; erro esconde Novo modelo do cabeçalho', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaJson([])))
+    const { wrapper } = await abrir('/modelos-checklist')
+    expect(wrapper.find('[data-teste="resumo-modelos"]').exists()).toBe(false)
+    wrapper.unmount()
+
+    fetchSimulado.mockReset()
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaProblema(500, { title: 'Erro' })))
+    const segunda = await abrir('/modelos-checklist')
+    expect(segunda.wrapper.find('[data-teste="novo-modelo"]').exists()).toBe(false)
+    expect(segunda.wrapper.find('[data-teste="resumo-modelos"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] sem permissão mostra aviso da assessoria sem tentar de novo', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaProblema(403, { title: 'Proibido' })))
+    const { wrapper } = await abrir('/modelos-checklist')
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.semAcesso)
+    expect(wrapper.find('[data-teste="lista-modelos"]').exists()).toBe(false)
+  })
+
+  it('[UNITÁRIO] estilo da tela usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ModelosChecklistView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(estilo).toContain('container: modelos / inline-size')
+    expect(estilo).toContain('@container modelos')
+    expect(estilo).not.toContain('@media')
+    expect(estilo).not.toContain('largura-leitura')
+    expect(estilo).not.toContain('--p-espaco-')
+    expect(fonte).toContain('class="modelos pilha pilha--cartao"')
   })
 
   it('[COMPONENTE] estado vazio e erro', async () => {

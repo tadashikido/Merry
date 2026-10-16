@@ -44,6 +44,7 @@ export const TEXTOS_MODELOS_CHECKLIST = {
   sugerido: 'Sugerido',
   itens: (quantidade: number) => `${numero(quantidade)} ${plural(quantidade, 'item', 'itens')}`,
   listaRotulo: 'Modelos da assessoria',
+  resumo: (quantidade: number) => `${numero(quantidade)} ${plural(quantidade, 'modelo', 'modelos')}`,
   vazioTitulo: 'Nenhum modelo ainda',
   vazioTexto: 'Crie um modelo com os itens que se repetem em todo casamento.',
   erroTitulo: 'Não foi possível abrir os modelos',

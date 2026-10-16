@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 
 import LayoutPainelUsuario from '@/layouts/LayoutPainelUsuario.vue'
 import AbasSecao from '@/componentes/base/AbasSecao.vue'
-import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
 import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
+import CartaoModelo from '@/componentes/base/CartaoModelo.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
-import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
@@ -29,6 +28,8 @@ const acoes: ItemMenuAcoes[] = [
   { chave: 'editar', rotulo: TEXTOS_MODELOS_CHECKLIST.acaoEditar, icone: 'ie ie-editar' },
   { chave: 'excluir', rotulo: TEXTOS_MODELOS_CHECKLIST.acaoExcluir, icone: 'ie ie-excluir', perigoso: true },
 ]
+
+const resumo = computed(() => (store.lista && store.lista.length > 0 ? TEXTOS_MODELOS_CHECKLIST.resumo(store.lista.length) : null))
 
 onMounted(() => {
   document.title = TEXTOS_MODELOS_CHECKLIST.tituloDocumento
@@ -66,6 +67,18 @@ function executarAcao(modelo: ModeloChecklistResumoDto, chave: string) {
       :descricao="TEXTOS_MODELOS_CHECKLIST.subtitulo"
     >
       <template
+        v-if="resumo"
+        #detalhes
+      >
+        <p
+          class="texto-legenda"
+          aria-live="polite"
+          data-teste="resumo-modelos"
+        >
+          {{ resumo }}
+        </p>
+      </template>
+      <template
         v-if="!store.falhaLista"
         #acoes
       >
@@ -78,7 +91,7 @@ function executarAcao(modelo: ModeloChecklistResumoDto, chave: string) {
       </template>
     </CabecalhoPagina>
 
-    <div class="modelos">
+    <div class="modelos pilha pilha--cartao">
       <AbasSecao
         :rotulo="TEXTOS_ABAS_MODELOS.rotulo"
         :abas="ABAS_MODELOS"
@@ -126,45 +139,25 @@ function executarAcao(modelo: ModeloChecklistResumoDto, chave: string) {
 
       <ul
         v-else-if="store.lista"
-        class="modelos__lista"
+        class="grade grade--larga modelos__grade"
         :aria-label="TEXTOS_MODELOS_CHECKLIST.listaRotulo"
         data-teste="lista-modelos"
       >
         <li
           v-for="modelo in store.lista"
           :key="modelo.id"
-          class="modelos__item"
           data-teste="modelo-checklist"
         >
-          <div class="modelos__textos">
-            <div class="modelos__linha">
-              <RouterLink
-                :to="{ name: 'modelo-checklist', params: { modeloId: modelo.id } }"
-                class="modelos__nome"
-                data-teste="link-modelo"
-              >
-                {{ modelo.nome }}
-              </RouterLink>
-              <BadgeStatus
-                v-if="modelo.sugerido"
-                :texto="TEXTOS_MODELOS_CHECKLIST.sugerido"
-                variante="informacao"
-                icone="informacao"
-              />
-            </div>
-            <p
-              v-if="modelo.descricao"
-              class="modelos__descricao"
-            >
-              {{ modelo.descricao }}
-            </p>
-          </div>
-          <span class="modelos__contagem numeros-tabulares">{{ TEXTOS_MODELOS_CHECKLIST.itens(modelo.quantidadeItens) }}</span>
-          <MenuAcoes
-            :itens="acoes"
-            :rotulo="TEXTOS_MODELOS_CHECKLIST.maisAcoes"
-            :rotulo-acessivel="TEXTOS_MODELOS_CHECKLIST.maisAcoesAria(modelo.nome)"
-            somente-icone
+          <CartaoModelo
+            :nome="modelo.nome"
+            :descricao="modelo.descricao"
+            :rota="{ name: 'modelo-checklist', params: { modeloId: modelo.id } }"
+            :contagem="TEXTOS_MODELOS_CHECKLIST.itens(modelo.quantidadeItens)"
+            :sugerido="modelo.sugerido"
+            :rotulo-sugerido="TEXTOS_MODELOS_CHECKLIST.sugerido"
+            :acoes="acoes"
+            :rotulo-acoes="TEXTOS_MODELOS_CHECKLIST.maisAcoes"
+            :rotulo-acessivel-acoes="TEXTOS_MODELOS_CHECKLIST.maisAcoesAria(modelo.nome)"
             @selecionar="executarAcao(modelo, $event)"
           />
         </li>
@@ -175,70 +168,18 @@ function executarAcao(modelo: ModeloChecklistResumoDto, chave: string) {
 
 <style scoped>
 .modelos {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-5);
-  max-width: var(--p-dimensao-largura-leitura);
+  container: modelos / inline-size;
 }
 
-.modelos__lista {
+.modelos__grade {
   margin: 0;
   padding: 0;
   list-style: none;
-  background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
 }
 
-.modelos__item {
-  display: flex;
-  align-items: center;
-  gap: var(--p-espaco-3);
-  padding: var(--p-espaco-4);
-}
-
-.modelos__item + .modelos__item {
-  border-top: 1px solid var(--p-cor-divisoria);
-}
-
-.modelos__textos {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: var(--p-espaco-1);
-  min-width: 0;
-}
-
-.modelos__linha {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--p-espaco-2);
-}
-
-.modelos__nome {
-  font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto);
-  text-decoration: none;
-  overflow-wrap: anywhere;
-}
-
-.modelos__nome:hover {
-  color: var(--p-cor-primaria);
-  text-decoration: underline;
-}
-
-.modelos__descricao {
-  margin: 0;
-  font-size: var(--p-fonte-tamanho-apoio);
-  color: var(--p-cor-texto-apoio);
-  overflow-wrap: anywhere;
-}
-
-.modelos__contagem {
-  flex: none;
-  font-size: var(--p-fonte-tamanho-apoio);
-  color: var(--p-cor-texto-apoio);
+@container modelos (max-width: 39.99rem) {
+  .modelos__grade {
+    --grade-espaco: var(--p-ritmo-grupo);
+  }
 }
 </style>
