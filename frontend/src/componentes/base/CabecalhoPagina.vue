@@ -143,6 +143,7 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
 .cabecalho-pagina__descricao {
   max-width: var(--p-dimensao-largura-leitura);
   color: var(--p-cor-texto-secundario);
+  overflow-wrap: anywhere;
 }
 
 .cabecalho-pagina__detalhes {

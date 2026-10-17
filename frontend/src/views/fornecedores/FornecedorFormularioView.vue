@@ -33,7 +33,7 @@ import {
 import { LIMITES_TELEFONE } from '@/utilitarios/telefone'
 import { email } from '@/utilitarios/validacao'
 
-const CAMPOS = ['categoria', 'nomeEmpresa', 'responsavel', 'telefone', 'email', 'site', 'instagram', 'observacoes'] as const
+const CAMPOS = ['categoria', 'nomeEmpresa', 'site', 'instagram', 'responsavel', 'telefone', 'email', 'observacoes'] as const
 type Campo = (typeof CAMPOS)[number]
 
 const props = defineProps<{ fornecedorId?: string }>()
@@ -45,6 +45,7 @@ const notificacao = useNotificacao()
 const edicao = computed(() => Boolean(props.fornecedorId))
 const carregando = ref(false)
 const falhaCarga = ref<FalhaCasamento | null>(null)
+const nomeCarregado = ref('')
 const enviando = ref(false)
 const mensagemErro = ref<string | null>(null)
 const categorias = opcoesCategorias()
@@ -55,21 +56,21 @@ const formulario = useFormulario(
   {
     categoria: '' as CategoriaFornecedor | '',
     nomeEmpresa: '',
+    site: '',
+    instagram: '',
     responsavel: '',
     telefone: '',
     email: '',
-    site: '',
-    instagram: '',
     observacoes: '',
   },
   {
     categoria: [regraCategoria],
     nomeEmpresa: [regraNomeEmpresa],
+    site: [regraSite],
+    instagram: [regraInstagram],
     responsavel: [regraTamanho(LIMITES_FORNECEDOR.responsavelMaximo, TEXTOS_FORNECEDORES.erroResponsavel)],
     telefone: [regraTelefone],
     email: [regraEmail, regraTamanho(LIMITES_FORNECEDOR.emailMaximo, TEXTOS_FORNECEDORES.erroEmail)],
-    site: [regraSite],
-    instagram: [regraInstagram],
     observacoes: [regraTamanho(LIMITES_FORNECEDOR.observacoesMaximo, TEXTOS_FORNECEDORES.erroObservacoes)],
   },
 )
@@ -77,6 +78,12 @@ const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 const idCampo = (campo: Campo) => `fornecedor-${campo}`
 const titulo = computed(() => (edicao.value ? TEXTOS_FORNECEDORES.editarTitulo : TEXTOS_FORNECEDORES.novoTitulo))
+const descricaoCabecalho = computed(() => {
+  if (!edicao.value) {
+    return TEXTOS_FORNECEDORES.formNovoDescricao
+  }
+  return nomeCarregado.value || undefined
+})
 
 async function carregar() {
   if (!props.fornecedorId) {
@@ -91,6 +98,7 @@ async function carregar() {
     return
   }
   const fornecedor = resultado.valor
+  nomeCarregado.value = fornecedor.nomeEmpresa
   if (fornecedor.arquivado) {
     mensagemErro.value = TEXTOS_FORNECEDORES.arquivadoFaixa
   }
@@ -196,274 +204,335 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <CabecalhoPagina :titulo="titulo" />
-
-    <div class="formulario-fornecedor__area">
-      <EstadoCarregando
-        v-if="carregando"
-        variante="formulario"
-        :linhas="4"
+    <div class="pagina-formulario">
+      <CabecalhoPagina
+        :titulo="titulo"
+        :descricao="descricaoCabecalho"
       />
 
-      <EstadoErro
-        v-else-if="falhaCarga?.tipo === 'naoEncontrado'"
-        :titulo="TEXTOS_FORNECEDORES.naoEncontradoTitulo"
-        :mensagem="TEXTOS_FORNECEDORES.naoEncontradoTexto"
-        :pode-tentar-novamente="false"
-      />
-
-      <EstadoErro
-        v-else-if="falhaCarga"
-        :titulo="TEXTOS_FORNECEDORES.erroDetalheTitulo"
-        :mensagem="falhaCarga.tipo === 'semPermissao' ? TEXTOS_FORNECEDORES.semAcesso : TEXTOS_FORNECEDORES.erroTexto"
-        :pode-tentar-novamente="falhaCarga.tipo !== 'semPermissao'"
-        :variante="falhaCarga.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
-        @tentar-novamente="carregar"
-      />
-
-      <template v-else>
-        <MensagemFormulario
-          v-if="mensagemErro"
-          :mensagem="mensagemErro"
-          data-teste="erro-formulario"
+      <div class="formulario-fornecedor pilha pilha--cartao">
+        <EstadoCarregando
+          v-if="carregando"
+          variante="formulario"
+          :linhas="6"
         />
 
-        <form
-          class="formulario-fornecedor"
-          novalidate
-          data-teste="formulario-fornecedor"
-          @submit.prevent="enviar"
-        >
-          <CampoFormulario
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES.campoCategoria"
-            :id-campo="idCampo('categoria')"
-            obrigatorio
-            :erro="formulario.erros.categoria"
-          >
-            <Select
-              v-model="formulario.valores.categoria"
-              :input-id="idEntrada"
-              :options="categorias"
-              option-label="rotulo"
-              option-value="valor"
-              :placeholder="TEXTOS_FORNECEDORES.categoriaPlaceholder"
-              aria-required="true"
-              :invalid="invalido"
-              :aria-invalid="invalido"
-              :aria-describedby="descritoPor"
-              :disabled="enviando"
-              data-teste="campo-categoria"
-              @change="formulario.validarCampo('categoria')"
-            />
-          </CampoFormulario>
+        <EstadoErro
+          v-else-if="falhaCarga?.tipo === 'naoEncontrado'"
+          :titulo="TEXTOS_FORNECEDORES.naoEncontradoTitulo"
+          :mensagem="TEXTOS_FORNECEDORES.naoEncontradoTexto"
+          :pode-tentar-novamente="false"
+        />
 
-          <CampoFormulario
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES.campoEmpresa"
-            :id-campo="idCampo('nomeEmpresa')"
-            obrigatorio
-            :erro="formulario.erros.nomeEmpresa"
-          >
-            <InputText
-              :id="idEntrada"
-              v-model="formulario.valores.nomeEmpresa"
-              autocomplete="organization"
-              :maxlength="LIMITES_FORNECEDOR.nomeEmpresaMaximo"
-              aria-required="true"
-              :invalid="invalido"
-              :aria-invalid="invalido"
-              :aria-describedby="descritoPor"
-              :readonly="enviando"
-              data-teste="campo-nome-empresa"
-              @blur="formulario.validarCampo('nomeEmpresa')"
-            />
-          </CampoFormulario>
+        <EstadoErro
+          v-else-if="falhaCarga"
+          :titulo="TEXTOS_FORNECEDORES.erroDetalheTitulo"
+          :mensagem="falhaCarga.tipo === 'semPermissao' ? TEXTOS_FORNECEDORES.semAcesso : TEXTOS_FORNECEDORES.erroTexto"
+          :pode-tentar-novamente="falhaCarga.tipo !== 'semPermissao'"
+          :variante="falhaCarga.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
+          @tentar-novamente="carregar"
+        />
 
-          <CampoFormulario
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES.campoResponsavel"
-            :id-campo="idCampo('responsavel')"
-            :dica="TEXTOS_FORNECEDORES.campoResponsavelDica"
-            :erro="formulario.erros.responsavel"
-          >
-            <InputText
-              :id="idEntrada"
-              v-model="formulario.valores.responsavel"
-              autocomplete="off"
-              :maxlength="LIMITES_FORNECEDOR.responsavelMaximo"
-              :invalid="invalido"
-              :aria-invalid="invalido"
-              :aria-describedby="descritoPor"
-              :readonly="enviando"
-              data-teste="campo-responsavel"
-              @blur="formulario.validarCampo('responsavel')"
-            />
-          </CampoFormulario>
+        <template v-else>
+          <MensagemFormulario
+            v-if="mensagemErro"
+            :mensagem="mensagemErro"
+            data-teste="erro-formulario"
+          />
 
-          <CampoFormulario
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES.campoTelefone"
-            :id-campo="idCampo('telefone')"
-            :dica="TEXTOS_FORNECEDORES.campoTelefoneDica"
-            :erro="formulario.erros.telefone"
+          <form
+            class="pilha pilha--bloco"
+            novalidate
+            data-teste="formulario-fornecedor"
+            @submit.prevent="enviar"
           >
-            <InputText
-              :id="idEntrada"
-              v-model="formulario.valores.telefone"
-              type="tel"
-              inputmode="tel"
-              autocomplete="off"
-              :maxlength="LIMITES_TELEFONE.tamanhoMaximoEntrada"
-              :invalid="invalido"
-              :aria-invalid="invalido"
-              :aria-describedby="descritoPor"
-              :readonly="enviando"
-              data-teste="campo-telefone"
-              @blur="formulario.validarCampo('telefone')"
-            />
-          </CampoFormulario>
+            <fieldset
+              class="formulario-fornecedor__grupo pilha pilha--grupo"
+              data-teste="grupo-empresa"
+            >
+              <legend class="formulario-fornecedor__legenda texto-rotulo">
+                {{ TEXTOS_FORNECEDORES.grupoEmpresa }}
+              </legend>
 
-          <CampoFormulario
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES.campoEmail"
-            :id-campo="idCampo('email')"
-            :erro="formulario.erros.email"
-          >
-            <InputText
-              :id="idEntrada"
-              v-model="formulario.valores.email"
-              type="email"
-              inputmode="email"
-              autocomplete="off"
-              :maxlength="LIMITES_FORNECEDOR.emailMaximo"
-              :invalid="invalido"
-              :aria-invalid="invalido"
-              :aria-describedby="descritoPor"
-              :readonly="enviando"
-              data-teste="campo-email"
-              @blur="formulario.validarCampo('email')"
-            />
-          </CampoFormulario>
+              <div class="formulario-fornecedor__colunas">
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES.campoCategoria"
+                  :id-campo="idCampo('categoria')"
+                  obrigatorio
+                  :erro="formulario.erros.categoria"
+                >
+                  <Select
+                    v-model="formulario.valores.categoria"
+                    :input-id="idEntrada"
+                    :options="categorias"
+                    option-label="rotulo"
+                    option-value="valor"
+                    :placeholder="TEXTOS_FORNECEDORES.categoriaPlaceholder"
+                    aria-required="true"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :disabled="enviando"
+                    data-teste="campo-categoria"
+                    @update:model-value="formulario.revalidarAoDigitar('categoria')"
+                  />
+                </CampoFormulario>
 
-          <CampoFormulario
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES.campoSite"
-            :id-campo="idCampo('site')"
-            :erro="formulario.erros.site"
-          >
-            <InputText
-              :id="idEntrada"
-              v-model="formulario.valores.site"
-              type="url"
-              inputmode="url"
-              autocomplete="off"
-              :maxlength="LIMITES_FORNECEDOR.siteMaximo"
-              :placeholder="TEXTOS_FORNECEDORES.campoSitePlaceholder"
-              :invalid="invalido"
-              :aria-invalid="invalido"
-              :aria-describedby="descritoPor"
-              :readonly="enviando"
-              data-teste="campo-site"
-              @blur="formulario.validarCampo('site')"
-            />
-          </CampoFormulario>
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES.campoEmpresa"
+                  :id-campo="idCampo('nomeEmpresa')"
+                  obrigatorio
+                  :erro="formulario.erros.nomeEmpresa"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.nomeEmpresa"
+                    autocomplete="organization"
+                    :maxlength="LIMITES_FORNECEDOR.nomeEmpresaMaximo"
+                    aria-required="true"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    data-teste="campo-nome-empresa"
+                    @update:model-value="formulario.revalidarAoDigitar('nomeEmpresa')"
+                    @blur="formulario.validarAoSair('nomeEmpresa')"
+                  />
+                </CampoFormulario>
+              </div>
 
-          <CampoFormulario
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES.campoInstagram"
-            :id-campo="idCampo('instagram')"
-            :erro="formulario.erros.instagram"
-          >
-            <InputText
-              :id="idEntrada"
-              v-model="formulario.valores.instagram"
-              autocomplete="off"
-              autocapitalize="none"
-              :maxlength="LIMITES_FORNECEDOR.instagramEntradaMaxima"
-              :placeholder="TEXTOS_FORNECEDORES.campoInstagramPlaceholder"
-              :invalid="invalido"
-              :aria-invalid="invalido"
-              :aria-describedby="descritoPor"
-              :readonly="enviando"
-              data-teste="campo-instagram"
-              @blur="formulario.validarCampo('instagram')"
-            />
-          </CampoFormulario>
+              <div class="formulario-fornecedor__colunas">
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES.campoSite"
+                  :id-campo="idCampo('site')"
+                  :erro="formulario.erros.site"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.site"
+                    type="url"
+                    inputmode="url"
+                    autocomplete="off"
+                    :maxlength="LIMITES_FORNECEDOR.siteMaximo"
+                    :placeholder="TEXTOS_FORNECEDORES.campoSitePlaceholder"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    data-teste="campo-site"
+                    @update:model-value="formulario.revalidarAoDigitar('site')"
+                    @blur="formulario.validarAoSair('site')"
+                  />
+                </CampoFormulario>
 
-          <CampoFormulario
-            v-slot="{ id: idEntrada, invalido, descritoPor }"
-            :rotulo="TEXTOS_FORNECEDORES.campoObservacoes"
-            :id-campo="idCampo('observacoes')"
-            :dica="TEXTOS_FORNECEDORES.campoObservacoesDica(formulario.valores.observacoes.length, LIMITES_FORNECEDOR.observacoesMaximo)"
-            :erro="formulario.erros.observacoes"
-          >
-            <Textarea
-              :id="idEntrada"
-              v-model="formulario.valores.observacoes"
-              rows="4"
-              auto-resize
-              :maxlength="LIMITES_FORNECEDOR.observacoesMaximo"
-              :invalid="invalido"
-              :aria-invalid="invalido"
-              :aria-describedby="descritoPor"
-              :readonly="enviando"
-              data-teste="campo-observacoes"
-              @blur="formulario.validarCampo('observacoes')"
-            />
-          </CampoFormulario>
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES.campoInstagram"
+                  :id-campo="idCampo('instagram')"
+                  :erro="formulario.erros.instagram"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.instagram"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    :maxlength="LIMITES_FORNECEDOR.instagramEntradaMaxima"
+                    :placeholder="TEXTOS_FORNECEDORES.campoInstagramPlaceholder"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    data-teste="campo-instagram"
+                    @update:model-value="formulario.revalidarAoDigitar('instagram')"
+                    @blur="formulario.validarAoSair('instagram')"
+                  />
+                </CampoFormulario>
+              </div>
+            </fieldset>
 
-          <div class="formulario-fornecedor__acoes">
-            <Button
-              type="submit"
-              :label="edicao ? TEXTOS_FORNECEDORES.salvarEdicao : TEXTOS_FORNECEDORES.salvarNovo"
-              :loading="enviando"
-              :aria-busy="enviando"
-              data-teste="salvar-fornecedor"
-            />
-            <Button
-              type="button"
-              :label="TEXTOS_FORNECEDORES.cancelar"
-              severity="secondary"
-              text
-              :disabled="enviando"
-              data-teste="cancelar"
-              @click="cancelar"
-            />
-          </div>
-        </form>
-      </template>
+            <fieldset
+              class="formulario-fornecedor__grupo pilha pilha--grupo"
+              data-teste="grupo-contato"
+            >
+              <legend class="formulario-fornecedor__legenda texto-rotulo">
+                {{ TEXTOS_FORNECEDORES.grupoContato }}
+              </legend>
+
+              <div class="formulario-fornecedor__colunas">
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES.campoResponsavel"
+                  :id-campo="idCampo('responsavel')"
+                  :dica="TEXTOS_FORNECEDORES.campoResponsavelDica"
+                  :erro="formulario.erros.responsavel"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.responsavel"
+                    autocomplete="off"
+                    :maxlength="LIMITES_FORNECEDOR.responsavelMaximo"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    data-teste="campo-responsavel"
+                    @update:model-value="formulario.revalidarAoDigitar('responsavel')"
+                    @blur="formulario.validarAoSair('responsavel')"
+                  />
+                </CampoFormulario>
+
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES.campoTelefone"
+                  :id-campo="idCampo('telefone')"
+                  :dica="TEXTOS_FORNECEDORES.campoTelefoneDica"
+                  :erro="formulario.erros.telefone"
+                >
+                  <InputText
+                    :id="idEntrada"
+                    v-model="formulario.valores.telefone"
+                    type="tel"
+                    inputmode="tel"
+                    autocomplete="off"
+                    :maxlength="LIMITES_TELEFONE.tamanhoMaximoEntrada"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    data-teste="campo-telefone"
+                    @update:model-value="formulario.revalidarAoDigitar('telefone')"
+                    @blur="formulario.validarAoSair('telefone')"
+                  />
+                </CampoFormulario>
+              </div>
+
+              <CampoFormulario
+                v-slot="{ id: idEntrada, invalido, descritoPor }"
+                :rotulo="TEXTOS_FORNECEDORES.campoEmail"
+                :id-campo="idCampo('email')"
+                :erro="formulario.erros.email"
+              >
+                <InputText
+                  :id="idEntrada"
+                  v-model="formulario.valores.email"
+                  type="email"
+                  inputmode="email"
+                  autocomplete="off"
+                  :maxlength="LIMITES_FORNECEDOR.emailMaximo"
+                  :invalid="invalido"
+                  :aria-invalid="invalido"
+                  :aria-describedby="descritoPor"
+                  :readonly="enviando"
+                  data-teste="campo-email"
+                  @update:model-value="formulario.revalidarAoDigitar('email')"
+                  @blur="formulario.validarAoSair('email')"
+                />
+              </CampoFormulario>
+            </fieldset>
+
+            <fieldset
+              class="formulario-fornecedor__grupo pilha pilha--grupo"
+              data-teste="grupo-interno"
+            >
+              <legend class="formulario-fornecedor__legenda texto-rotulo">
+                {{ TEXTOS_FORNECEDORES.grupoInterno }}
+              </legend>
+
+              <CampoFormulario
+                v-slot="{ id: idEntrada, invalido, descritoPor }"
+                :rotulo="TEXTOS_FORNECEDORES.campoObservacoes"
+                :id-campo="idCampo('observacoes')"
+                :dica="TEXTOS_FORNECEDORES.campoObservacoesDica(formulario.valores.observacoes.length, LIMITES_FORNECEDOR.observacoesMaximo)"
+                :erro="formulario.erros.observacoes"
+              >
+                <Textarea
+                  :id="idEntrada"
+                  v-model="formulario.valores.observacoes"
+                  rows="4"
+                  auto-resize
+                  :maxlength="LIMITES_FORNECEDOR.observacoesMaximo"
+                  :invalid="invalido"
+                  :aria-invalid="invalido"
+                  :aria-describedby="descritoPor"
+                  :readonly="enviando"
+                  data-teste="campo-observacoes"
+                  @update:model-value="formulario.revalidarAoDigitar('observacoes')"
+                  @blur="formulario.validarAoSair('observacoes')"
+                />
+              </CampoFormulario>
+            </fieldset>
+
+            <div class="formulario-fornecedor__acoes">
+              <Button
+                type="submit"
+                :label="edicao ? TEXTOS_FORNECEDORES.salvarEdicao : TEXTOS_FORNECEDORES.salvarNovo"
+                :loading="enviando"
+                :aria-busy="enviando"
+                data-teste="salvar-fornecedor"
+              />
+              <Button
+                type="button"
+                :label="TEXTOS_FORNECEDORES.cancelar"
+                severity="secondary"
+                text
+                :disabled="enviando"
+                data-teste="cancelar"
+                @click="cancelar"
+              />
+            </div>
+          </form>
+        </template>
+      </div>
     </div>
   </LayoutPainelUsuario>
 </template>
 
 <style scoped>
-.formulario-fornecedor__area {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-4);
-  max-width: var(--p-dimensao-largura-leitura);
+.formulario-fornecedor {
+  container: formulario-fornecedor / inline-size;
 }
 
-.formulario-fornecedor {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+.formulario-fornecedor__grupo {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.formulario-fornecedor__legenda {
+  padding: 0;
+  margin-bottom: var(--p-ritmo-grupo);
+}
+
+.formulario-fornecedor__colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-grupo);
 }
 
 .formulario-fornecedor__acoes {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .formulario-fornecedor__acoes :deep(.p-button) {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
-@media (min-width: 640px) {
+@container formulario-fornecedor (min-width: 40rem) {
+  .formulario-fornecedor__colunas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
   .formulario-fornecedor__acoes {
     flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--p-ritmo-grupo);
   }
 }
 </style>

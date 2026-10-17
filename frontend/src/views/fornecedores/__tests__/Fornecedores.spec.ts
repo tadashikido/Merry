@@ -623,6 +623,142 @@ describe('FornecedorView — reestruturação Nossia', () => {
   })
 })
 
+describe('FornecedorFormularioView — reestruturação Nossia', () => {
+  const legendas = (alvo: VueWrapper) => alvo.findAll('fieldset > legend').map((legenda) => legenda.text())
+  const camposDoGrupo = (alvo: VueWrapper, grupo: string) =>
+    alvo.get(`[data-teste="${grupo}"]`).findAll('[data-teste^="campo-"]').map((campo) => campo.attributes('data-teste'))
+
+  it('[COMPONENTE] criação: cabeçalho orientador e campos agrupados em Empresa, Contato e Uso interno na ordem visual', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/fornecedores/novo')
+
+    const pagina = wrapper.get('.pagina-formulario')
+    expect(pagina.get('h1').text()).toBe(TEXTOS_FORNECEDORES.novoTitulo)
+    expect(pagina.text()).toContain(TEXTOS_FORNECEDORES.formNovoDescricao)
+    expect(pagina.find('[data-teste="formulario-fornecedor"]').exists()).toBe(true)
+    expect(wrapper.get('.formulario-fornecedor').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--cartao']))
+    expect(wrapper.get('[data-teste="formulario-fornecedor"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+
+    expect(legendas(wrapper)).toEqual([TEXTOS_FORNECEDORES.grupoEmpresa, TEXTOS_FORNECEDORES.grupoContato, TEXTOS_FORNECEDORES.grupoInterno])
+    for (const legenda of wrapper.findAll('fieldset > legend')) {
+      expect(legenda.classes()).toContain('texto-rotulo')
+    }
+    expect(camposDoGrupo(wrapper, 'grupo-empresa')).toEqual(['campo-categoria', 'campo-nome-empresa', 'campo-site', 'campo-instagram'])
+    expect(camposDoGrupo(wrapper, 'grupo-contato')).toEqual(['campo-responsavel', 'campo-telefone', 'campo-email'])
+    expect(camposDoGrupo(wrapper, 'grupo-interno')).toEqual(['campo-observacoes'])
+    expect(wrapper.get('[data-teste="grupo-empresa"]').findAll('.formulario-fornecedor__colunas')).toHaveLength(2)
+    expect(wrapper.get('[data-teste="grupo-contato"]').findAll('.formulario-fornecedor__colunas')).toHaveLength(1)
+
+    expect(wrapper.findComponent({ name: 'Select' }).props('placeholder')).toBe(TEXTOS_FORNECEDORES.categoriaPlaceholder)
+    expect(wrapper.get('[data-teste="grupo-interno"]').text()).toContain('Só a assessoria vê.')
+    expect(wrapper.get('[data-teste="salvar-fornecedor"]').text()).toBe(TEXTOS_FORNECEDORES.salvarNovo)
+  })
+
+  it('[COMPONENTE] edição: descrição do cabeçalho é o nome carregado e não muda enquanto digita', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())))
+    const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}/editar`)
+
+    const cabecalho = () => wrapper.get('.cabecalho-pagina')
+    expect(cabecalho().get('h1').text()).toBe(TEXTOS_FORNECEDORES.editarTitulo)
+    expect(cabecalho().text()).toContain('Buffet São João')
+    expect(cabecalho().text()).not.toContain(TEXTOS_FORNECEDORES.formNovoDescricao)
+
+    await wrapper.get('[data-teste="campo-nome-empresa"]').setValue('Buffet Oliveira')
+    expect(cabecalho().text()).toContain('Buffet São João')
+    expect(cabecalho().text()).not.toContain('Buffet Oliveira')
+    expect(wrapper.get('[data-teste="salvar-fornecedor"]').text()).toBe(TEXTOS_FORNECEDORES.salvarEdicao)
+  })
+
+  it('[COMPONENTE] erro só aparece após enviar, foca o primeiro inválido na ordem visual e some ao digitar', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/fornecedores/novo')
+
+    wrapper.findComponent({ name: 'Select' }).vm.$emit('update:modelValue', 'Buffet')
+    await flushPromises()
+    await wrapper.get('[data-teste="campo-nome-empresa"]').setValue('Buffet Sol')
+    await wrapper.get('[data-teste="campo-telefone"]').setValue('11 abc')
+    await wrapper.get('[data-teste="campo-telefone"]').trigger('blur')
+    await wrapper.get('[data-teste="campo-site"]').setValue('javascript:alert(1)')
+    await wrapper.get('[data-teste="campo-site"]').trigger('blur')
+    await flushPromises()
+    expect(wrapper.findAll('[data-teste="erro-campo"]')).toHaveLength(0)
+
+    await wrapper.get('[data-teste="formulario-fornecedor"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.erroSite)
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.erroTelefone)
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe('fornecedor-site'))
+
+    await wrapper.get('[data-teste="campo-site"]').setValue('buffetsol.com.br')
+    await flushPromises()
+    expect(wrapper.text()).not.toContain(TEXTOS_FORNECEDORES.erroSite)
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.erroTelefone)
+    expect(chamadas(fetchSimulado, 'POST', ROTA)).toHaveLength(0)
+  })
+
+  it('[COMPONENTE] escolher a categoria após a tentativa limpa o erro sem esperar sair do campo', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/fornecedores/novo')
+
+    await wrapper.get('[data-teste="formulario-fornecedor"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.erroCategoria)
+
+    wrapper.findComponent({ name: 'Select' }).vm.$emit('update:modelValue', 'Fotografia')
+    await flushPromises()
+    expect(wrapper.text()).not.toContain(TEXTOS_FORNECEDORES.erroCategoria)
+  })
+
+  it('[COMPONENTE] falha do serviço ao carregar a edição mostra erro com nova tentativa e sem formulário', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_FORNECEDOR, () => respostaProblema(500, { title: 'Erro' })))
+    const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}/editar`)
+
+    expect(wrapper.find('[data-teste="formulario-fornecedor"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.erroDetalheTitulo)
+    expect(wrapper.get('.pagina-formulario').find('.formulario-fornecedor').exists()).toBe(true)
+  })
+
+  it('[SEGURANÇA] 403 na edição mostra o aviso da assessoria sem formulário', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_FORNECEDOR, () => respostaProblema(403, { title: 'Proibido' })))
+    const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}/editar`)
+
+    expect(wrapper.find('[data-teste="formulario-fornecedor"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.semAcesso)
+  })
+
+  it('[COMPONENTE] fornecedor inexistente mostra não encontrado sem formulário', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_FORNECEDOR, () => respostaProblema(404, { title: 'Não encontrado' })))
+    const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}/editar`)
+
+    expect(wrapper.find('[data-teste="formulario-fornecedor"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.naoEncontradoTitulo)
+  })
+
+  it('[UNITÁRIO] a view usa .pagina-formulario, ritmo e @container, sem @media nem validarCampo no template', () => {
+    const fonte = lerFonte('views/fornecedores/FornecedorFormularioView.vue')
+    const estilo = estiloDe(fonte)
+
+    expect(fonte).toContain('class="pagina-formulario"')
+    expect(fonte).not.toMatch(/validarCampo\('/)
+    expect(fonte).toMatch(/@blur="formulario\.validarAoSair\('nomeEmpresa'\)"/)
+    expect(fonte).toMatch(/@update:model-value="formulario\.revalidarAoDigitar\('nomeEmpresa'\)"/)
+    expect(fonte).toMatch(/const CAMPOS = \['categoria', 'nomeEmpresa', 'site', 'instagram', 'responsavel', 'telefone', 'email', 'observacoes'\]/)
+    expect(estilo).toMatch(/container:\s*formulario-fornecedor\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/@container formulario-fornecedor \(min-width: 40rem\)\s*\{\s*\.formulario-fornecedor__colunas\s*\{\s*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/)
+    expect(estilo).not.toMatch(/@media/)
+    expect(estilo).not.toMatch(/largura-leitura/)
+    expect(estilo).not.toMatch(/--p-espaco-/)
+    expect(estilo).not.toMatch(/margin[^:]*:\s*-/)
+    expect(estilo).not.toMatch(/box-shadow/)
+  })
+
+  it('[UNITÁRIO] a descrição do CabecalhoPagina quebra palavras longas', () => {
+    const estilo = estiloDe(lerFonte('componentes/base/CabecalhoPagina.vue'))
+
+    expect(estilo).toMatch(/\.cabecalho-pagina__descricao\s*\{[^}]*overflow-wrap:\s*anywhere/)
+  })
+})
+
 describe('rotas de fornecedores', () => {
   it('[SEGURANÇA] todas as rotas são exclusivas da assessoria', () => {
     for (const caminho of ['/fornecedores', '/fornecedores/novo', `/fornecedores/${ID_FORNECEDOR}`, `/fornecedores/${ID_FORNECEDOR}/editar`]) {
