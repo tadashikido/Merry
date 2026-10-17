@@ -384,6 +384,119 @@ describe('Formulários de modelo de cronograma', () => {
     expect(wrapper.text()).toContain('Já existe um modelo de cronograma com esse nome.')
   })
 
+  it('[COMPONENTE] criação mostra orientação no cabeçalho e campos agrupados em "Sobre o modelo"', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/modelos-cronograma/novo')
+
+    const pagina = wrapper.get('.pagina-formulario')
+    expect(pagina.get('h1').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.formNovo)
+    expect(pagina.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.formNovoDescricao)
+    const grupo = pagina.get('[data-teste="grupo-modelo"]')
+    expect(grupo.element.tagName).toBe('FIELDSET')
+    expect(grupo.get('legend').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.grupoModelo)
+    expect(grupo.get('legend').classes()).toContain('texto-rotulo')
+    expect(grupo.find('[data-teste="campo-nome"]').exists()).toBe(true)
+    expect(grupo.find('[data-teste="campo-descricao"]').exists()).toBe(true)
+    expect(grupo.find('.formulario-modelo__colunas [data-teste="campo-horario-referencia"]').exists()).toBe(true)
+    expect(wrapper.get('[data-teste="formulario-modelo"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    expect(wrapper.get('[data-teste="salvar-modelo"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.criarModelo)
+  })
+
+  it('[COMPONENTE] edição mostra o nome carregado no cabeçalho, salva com PUT e volta ao detalhe', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () =>
+        respostaJson(modeloCronogramaCompleto({ nome: 'Roteiro fazenda', descricao: 'Ao ar livre', horarioReferencia: '16:30', itens: [] })),
+      ),
+      quando('PUT', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ nome: 'Fazenda e praia', itens: [] }))),
+    )
+    const { wrapper, montagem } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/editar`)
+
+    expect(wrapper.get('h1').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.formEditar)
+    expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe('Roteiro fazenda')
+    expect((wrapper.get('[data-teste="campo-descricao"]').element as HTMLTextAreaElement).value).toBe('Ao ar livre')
+    expect((wrapper.get('[data-teste="campo-horario-referencia"]').element as HTMLInputElement).value).toBe('16:30')
+    expect(wrapper.get('[data-teste="salvar-modelo"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.salvarAlteracoes)
+
+    await wrapper.get('[data-teste="campo-nome"]').setValue('Fazenda e praia')
+    expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe('Roteiro fazenda')
+    await wrapper.get('[data-teste="formulario-modelo"]').trigger('submit')
+    await flushPromises()
+
+    const [chamada] = chamadas(fetchSimulado, 'PUT', ROTA_MODELO)
+    expect(corpoDaChamada(chamada!)).toEqual({ nome: 'Fazenda e praia', descricao: 'Ao ar livre', horarioReferencia: '16:30' })
+    expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_MODELOS_CRONOGRAMA.toastSalvo)
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('modelo-cronograma'), { timeout: 5000 })
+  })
+
+  it('[COMPONENTE] erro só aparece depois da primeira tentativa e some ao digitar um nome válido', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/modelos-cronograma/novo')
+    const campoNome = wrapper.get('[data-teste="campo-nome"]')
+
+    await campoNome.trigger('blur')
+    expect(wrapper.text()).not.toContain(TEXTOS_MODELOS_CRONOGRAMA.erroNomeTamanho)
+
+    await campoNome.setValue('A')
+    await campoNome.trigger('blur')
+    expect(wrapper.text()).not.toContain(TEXTOS_MODELOS_CRONOGRAMA.erroNomeTamanho)
+
+    await wrapper.get('[data-teste="formulario-modelo"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.erroNomeTamanho)
+    expect(chamadas(fetchSimulado, 'POST', ROTA_MODELOS)).toHaveLength(0)
+
+    await campoNome.setValue('Roteiro')
+    expect(wrapper.text()).not.toContain(TEXTOS_MODELOS_CRONOGRAMA.erroNomeTamanho)
+
+    await campoNome.setValue('B')
+    expect(wrapper.text()).not.toContain(TEXTOS_MODELOS_CRONOGRAMA.erroNomeTamanho)
+    await campoNome.trigger('blur')
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.erroNomeTamanho)
+  })
+
+  it('[COMPONENTE] falha do servidor ao salvar mostra a mensagem geral e mantém os dados', async () => {
+    rotearFetch(fetchSimulado, quando('POST', ROTA_MODELOS, () => respostaProblema(500, { title: 'Erro' })))
+    const { wrapper } = await abrir('/modelos-cronograma/novo')
+
+    await wrapper.get('[data-teste="campo-nome"]').setValue('Roteiro praia')
+    await wrapper.get('[data-teste="formulario-modelo"]').trigger('submit')
+    await flushPromises()
+
+    expect(wrapper.get('[data-teste="erro-formulario"]').text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.erroSalvar)
+    expect((wrapper.get('[data-teste="campo-nome"]').element as HTMLInputElement).value).toBe('Roteiro praia')
+    expect(notificacoes.sucesso).not.toHaveBeenCalled()
+  })
+
+  it('[COMPONENTE] edição de modelo inexistente mostra não encontrado sem formulário', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(404, { title: 'Não encontrado' })))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/editar`)
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.naoEncontradoTitulo)
+    expect(wrapper.find('[data-teste="formulario-modelo"]').exists()).toBe(false)
+  })
+
+  it('[SEGURANÇA] edição sem permissão mostra aviso da assessoria sem formulário', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(403, { title: 'Proibido' })))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/editar`)
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.semAcesso)
+    expect(wrapper.find('[data-teste="formulario-modelo"]').exists()).toBe(false)
+  })
+
+  it('[UNITÁRIO] estilo do formulário de modelo usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ModeloCronogramaFormularioView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(fonte).toContain('class="pagina-formulario"')
+    expect(estilo).toContain('container: formulario-modelo / inline-size')
+    expect(estilo).toContain('@container formulario-modelo (min-width: 40rem)')
+    expect(estilo).toContain('repeat(2, minmax(0, 1fr))')
+    expect(estilo).not.toContain('@media')
+    expect(estilo).not.toContain('largura-leitura')
+    expect(estilo).not.toContain('--p-espaco-')
+    expect(fonte).not.toContain("validarCampo('")
+  })
+
   it('[INTEGRAÇÃO] novo item converte dia e horário em minutos desde a cerimônia', async () => {
     rotearFetch(
       fetchSimulado,
