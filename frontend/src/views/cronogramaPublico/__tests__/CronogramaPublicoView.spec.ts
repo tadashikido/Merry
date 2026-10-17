@@ -275,6 +275,7 @@ describe('CronogramaPublicoView — estrutura Nossia', { timeout: 20_000 }, () =
     expect(estiloView).not.toMatch(/^\s*(gap|row-gap|column-gap|margin[\w-]*|padding[\w-]*|top):[^;]*\d+px/m)
     expect(estiloView).not.toMatch(/margin[^;]*-\d/)
     expect(estiloView).not.toMatch(/box-shadow|gradient|@media/)
+    expect(estiloView).not.toMatch(/position:\s*sticky/)
     expect(estiloView).toContain('container: cronograma-publico / inline-size')
     expect(estiloView).toMatch(/@container cronograma-publico \(min-width: 40rem\)/)
     expect(estiloView).toMatch(/@container cronograma-publico \(min-width: 60rem\)/)

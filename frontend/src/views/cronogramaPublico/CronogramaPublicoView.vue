@@ -392,8 +392,6 @@ onBeforeUnmount(() => store.limpar())
   }
 
   .cronograma-publico__conteudo--ao-vivo .cronograma-publico__painel {
-    position: sticky;
-    top: var(--p-ritmo-cartao);
     grid-area: painel;
   }
 
