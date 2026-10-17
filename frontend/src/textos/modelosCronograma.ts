@@ -93,6 +93,9 @@ export const TEXTOS_MODELOS_CRONOGRAMA = {
 export const TEXTOS_ITEM_MODELO_CRONOGRAMA = {
   novo: 'Novo item',
   editar: 'Editar item',
+  grupoAtividade: 'A atividade',
+  grupoHorarioLocal: 'Horário e local',
+  campoQuando: 'Quando',
   campoLocal: 'Local',
   campoLocalOutro: 'Qual local',
   campoCategoria: 'Categoria de fornecedor',

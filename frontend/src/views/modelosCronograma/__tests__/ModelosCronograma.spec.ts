@@ -14,6 +14,7 @@ import {
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
+import { TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import { TEXTOS_ITEM_MODELO_CRONOGRAMA, TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
 import { RaizRotas, chamadas, quando, rotearFetch } from '../../casamentos/__tests__/auxiliaresCasamentos'
 
@@ -571,5 +572,127 @@ describe('Formulários de modelo de cronograma', () => {
     const erros = wrapper.findAll('[data-teste="erro-campo"]').map((erro) => erro.text())
     expect(erros).toContain('Informe o horário de início.')
     expect(erros).toContain('Informe a atividade.')
+  })
+
+  it('[COMPONENTE] formulário de item agrupa "A atividade" e "Horário e local" com a referência no cabeçalho', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`)
+
+    const pagina = wrapper.get('.pagina-formulario')
+    expect(pagina.get('h1').text()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.novo)
+    expect(pagina.get('.cabecalho-pagina__descricao').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00'))
+    expect(wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+
+    const grupoAtividade = pagina.get('[data-teste="grupo-atividade"]')
+    expect(grupoAtividade.element.tagName).toBe('FIELDSET')
+    expect(grupoAtividade.get('legend').text()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.grupoAtividade)
+    expect(grupoAtividade.get('legend').classes()).toContain('texto-rotulo')
+    for (const campo of ['campo-atividade', 'campo-responsavel', 'campo-categoria', 'campo-instrucoes']) {
+      expect(grupoAtividade.find(`[data-teste="${campo}"]`).exists()).toBe(true)
+    }
+    expect(grupoAtividade.find('.formulario-item-cronograma__colunas [data-teste="campo-responsavel"]').exists()).toBe(true)
+
+    const grupoHorario = pagina.get('[data-teste="grupo-horario-local"]')
+    expect(grupoHorario.element.tagName).toBe('FIELDSET')
+    expect(grupoHorario.get('legend').text()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.grupoHorarioLocal)
+    expect(grupoHorario.get('legend').classes()).toContain('texto-rotulo')
+    const subgrupoQuando = grupoHorario.get('[data-teste="campo-quando"]')
+    expect(subgrupoQuando.element.tagName).toBe('FIELDSET')
+    expect(subgrupoQuando.get('legend').text()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.campoQuando)
+    for (const campo of ['campo-dia', 'campo-inicio', 'campo-termino']) {
+      expect(subgrupoQuando.find(`[data-teste="${campo}"]`).exists()).toBe(true)
+    }
+    expect(subgrupoQuando.find('.formulario-item-cronograma__colunas [data-teste="campo-termino"]').exists()).toBe(true)
+    expect(grupoHorario.find('[data-teste="campo-opcao-local"]').exists()).toBe(true)
+    expect(grupoHorario.find('[data-teste="campo-local"]').exists()).toBe(true)
+    expect(grupoHorario.find('[data-teste="campo-atividade"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="salvar-outro"]').exists()).toBe(true)
+    expect(wrapper.find('[data-teste="excluir-item"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] erros do item só aparecem depois da tentativa, focam a atividade e somem ao digitar', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`)
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-cronograma-atividade'))
+
+    const atividade = wrapper.get('#item-modelo-cronograma-atividade')
+    await atividade.trigger('blur')
+    await wrapper.get('#item-modelo-cronograma-inicio').trigger('blur')
+    expect(wrapper.findAll('[data-teste="erro-campo"]')).toHaveLength(0)
+
+    await wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain(TEXTOS_CRONOGRAMA.erroAtividade)
+    expect(wrapper.text()).toContain(TEXTOS_CRONOGRAMA.erroInicio)
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-cronograma-atividade'))
+    expect(chamadas(fetchSimulado, 'POST', ROTA_ITENS)).toHaveLength(0)
+
+    await atividade.setValue('Cortejo dos padrinhos')
+    expect(wrapper.text()).not.toContain(TEXTOS_CRONOGRAMA.erroAtividade)
+    await wrapper.get('#item-modelo-cronograma-inicio').setValue('15:40')
+    expect(wrapper.text()).not.toContain(TEXTOS_CRONOGRAMA.erroInicio)
+  })
+
+  it('[COMPONENTE] mudar o início refaz a validação do término depois da tentativa', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`)
+
+    await wrapper.get('#item-modelo-cronograma-atividade').setValue('Recepção dos convidados')
+    const inicio = wrapper.get('#item-modelo-cronograma-inicio')
+    const termino = wrapper.get('#item-modelo-cronograma-termino')
+    await inicio.setValue('17:00')
+    await termino.setValue('17:00')
+    await wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain(TEXTOS_CRONOGRAMA.erroTermino)
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-cronograma-termino'))
+    expect(chamadas(fetchSimulado, 'POST', ROTA_ITENS)).toHaveLength(0)
+
+    await inicio.setValue('16:30')
+    expect(wrapper.text()).not.toContain(TEXTOS_CRONOGRAMA.erroTermino)
+
+    await inicio.setValue('17:00')
+    expect(wrapper.text()).not.toContain(TEXTOS_CRONOGRAMA.erroTermino)
+    await inicio.trigger('blur')
+    expect(wrapper.text()).toContain(TEXTOS_CRONOGRAMA.erroTermino)
+  })
+
+  it('[COMPONENTE] falha de rede ao salvar o item mostra a mensagem geral e mantém os dados', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())),
+      quando('POST', ROTA_ITENS, () => respostaProblema(500, { title: 'Erro' })),
+    )
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`)
+
+    await wrapper.get('#item-modelo-cronograma-atividade').setValue('Brinde')
+    await wrapper.get('#item-modelo-cronograma-inicio').setValue('18:00')
+    await wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').trigger('submit')
+    await flushPromises()
+
+    expect(wrapper.get('[data-teste="erro-formulario"]').text()).toContain(TEXTOS_ITEM_MODELO_CRONOGRAMA.erroSalvar)
+    expect((wrapper.get('#item-modelo-cronograma-atividade').element as HTMLInputElement).value).toBe('Brinde')
+  })
+
+  it('[SEGURANÇA] item sem permissão mostra aviso da assessoria sem formulário', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(403, { title: 'Proibido' })))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/${ID_ITEM_MODELO_CRONOGRAMA}/editar`)
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.semAcesso)
+    expect(wrapper.find('[data-teste="formulario-item-modelo-cronograma"]').exists()).toBe(false)
+  })
+
+  it('[UNITÁRIO] estilo do formulário de item usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ItemModeloCronogramaFormularioView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(fonte).toContain('class="pagina-formulario"')
+    expect(estilo).toContain('container: formulario-item-cronograma / inline-size')
+    expect(estilo).toContain('@container formulario-item-cronograma (min-width: 40rem)')
+    expect(estilo).toContain('flex: 1 1 auto')
+    expect(estilo).not.toContain('@media')
+    expect(estilo).not.toContain('largura-leitura')
+    expect(estilo).not.toContain('--p-espaco-')
+    expect(estilo).not.toContain('overflow-x')
+    expect(fonte).not.toContain("validarCampo('")
   })
 })
