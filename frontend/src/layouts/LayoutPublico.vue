@@ -131,6 +131,10 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
   box-shadow: none;
 }
 
+.layout-publico--operacao.layout-publico--amplo .layout-publico__folha {
+  max-width: var(--p-dimensao-largura-ampla);
+}
+
 .layout-publico--operacao .layout-publico__folha :deep(h1) {
   font-size: var(--p-fonte-tamanho-pagina-celular);
   text-align: left;

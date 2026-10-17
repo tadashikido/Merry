@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
@@ -5,6 +8,8 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { TOKEN_CRONOGRAMA, cronogramaPublico, itemPublico } from '@/__tests__/auxiliaresCronogramaPublico'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
+import { razaoContraste } from '@/design/contraste'
+import { cores } from '@/design/tokens'
 import { rotas } from '@/router'
 import { TEXTOS_CRONOGRAMA_PUBLICO } from '@/textos/cronogramaPublico'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
@@ -221,5 +226,67 @@ describe('CronogramaPublicoView — agora / próximo', { timeout: 20_000 }, () =
     document.dispatchEvent(new Event('visibilitychange'))
     await flushPromises()
     expect(chamadas(fetchSimulado, 'POST', ROTA_CONSULTA)).toHaveLength(1)
+  })
+})
+
+describe('CronogramaPublicoView — estrutura Nossia', { timeout: 20_000 }, () => {
+  const estiloView = readFileSync(resolve(__dirname, '../CronogramaPublicoView.vue'), 'utf-8').split('<style scoped>')[1] ?? ''
+  const estiloLayout = readFileSync(resolve(__dirname, '../../../layouts/LayoutPublico.vue'), 'utf-8')
+
+  it('[COMPONENTE] com dados usa a folha ampla e agrupa os dias numa grade por contêiner', async () => {
+    rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(cronogramaPublico())))
+
+    await abrir()
+
+    expect(wrapper!.get('.layout-publico--operacao').classes()).toContain('layout-publico--amplo')
+    const roteiro = wrapper!.get('[data-teste="cronograma-publico-roteiro"]')
+    expect(roteiro.findAll('section[data-teste^="dia-roteiro-"]')).toHaveLength(2)
+    expect(wrapper!.get('[data-teste="cronograma-publico"]').classes()).not.toContain('cronograma-publico__conteudo--ao-vivo')
+    expect(wrapper!.find('[data-teste="relogio-operacao"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] no dia marca o conteúdo como ao vivo com o painel antes do roteiro', async () => {
+    const noDia = cronogramaPublico({
+      momento: { agora: '2027-05-15T14:20:00', fase: 'NoDia', diasParaOCasamento: 0 },
+      itens: [itemPublico({ situacao: 'Agora' })],
+    })
+    rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(noDia)))
+
+    await abrir()
+
+    const conteudo = wrapper!.get('[data-teste="cronograma-publico"]')
+    expect(conteudo.classes()).toContain('cronograma-publico__conteudo--ao-vivo')
+    const ordem = conteudo.findAll('.cronograma-publico__painel, [data-teste="cronograma-publico-roteiro"]').map((no) => no.classes()[0])
+    expect(ordem).toEqual(['cronograma-publico__painel', 'cronograma-publico__roteiro'])
+    expect(conteudo.find('.cronograma-publico__identificacao [data-teste="relogio-operacao"]').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] erro e carregamento ficam na coluna estreita, sem folha ampla', async () => {
+    rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaProblema(404, { title: 'Recurso não encontrado.' })))
+
+    await abrir()
+
+    expect(wrapper!.get('.layout-publico--operacao').classes()).not.toContain('layout-publico--amplo')
+    expect(wrapper!.find('[data-teste="cronograma-publico"]').exists()).toBe(false)
+  })
+
+  it('[UNITÁRIO] estilos da tela usam só o ritmo, ajustes por contêiner e nenhuma sombra ou gradiente', () => {
+    expect(estiloView).not.toMatch(/--p-espaco-/)
+    expect(estiloView).not.toMatch(/^\s*(gap|row-gap|column-gap|margin[\w-]*|padding[\w-]*|top):[^;]*\d+px/m)
+    expect(estiloView).not.toMatch(/margin[^;]*-\d/)
+    expect(estiloView).not.toMatch(/box-shadow|gradient|@media/)
+    expect(estiloView).toContain('container: cronograma-publico / inline-size')
+    expect(estiloView).toMatch(/@container cronograma-publico \(min-width: 40rem\)/)
+    expect(estiloView).toMatch(/@container cronograma-publico \(min-width: 60rem\)/)
+  })
+
+  it('[UNITÁRIO] a variante operação aceita a folha ampla sem mudar o padrão', () => {
+    expect(estiloLayout).toMatch(/\.layout-publico--operacao\.layout-publico--amplo \.layout-publico__folha \{\s*max-width: var\(--p-dimensao-largura-ampla\);/)
+    expect(estiloLayout).toContain('amplo: false')
+  })
+
+  it('[UNITÁRIO] contorno dos controles no tema operação tem contraste mínimo de 3:1', () => {
+    expect(razaoContraste(cores.operacaoBorda, cores.operacaoFundo)).toBeGreaterThanOrEqual(3)
+    expect(razaoContraste(cores.operacaoBorda, cores.operacaoSuperficie)).toBeGreaterThanOrEqual(3)
   })
 })

@@ -154,7 +154,7 @@ export const cores = {
   operacaoSuperficie: '#2A1D18',
   operacaoTexto: paletas.areia[100],
   operacaoApoio: '#C4AA9E',
-  operacaoBorda: '#5A4239',
+  operacaoBorda: '#846759',
   operacaoDivisoria: '#3A2A24',
   operacaoDestaque: paletas.terracota[300],
   operacaoSucesso: paletas.alecrim[300],

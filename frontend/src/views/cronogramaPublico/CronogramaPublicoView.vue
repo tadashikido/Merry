@@ -51,6 +51,7 @@ const seloFase = computed(() => {
   }
   return atual.fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.faltamDias(atual.diasParaOCasamento) : TEXTOS_GRANDE_DIA.diaPassou
 })
+const aoVivo = computed(() => grupos.value.length > 0 && fase.value === 'NoDia')
 const semConexaoComDados = computed(() => dados.value !== null && store.falha !== null && store.falha !== 'linkInativo')
 
 const locais = computed<LocalOperacao[]>(() => {
@@ -110,7 +111,10 @@ onBeforeUnmount(() => store.limpar())
 </script>
 
 <template>
-  <LayoutPublico variante="operacao">
+  <LayoutPublico
+    variante="operacao"
+    :amplo="dados !== null"
+  >
     <EstadoCarregando
       v-if="store.carregando && !dados"
       variante="cartao"
@@ -126,103 +130,130 @@ onBeforeUnmount(() => store.limpar())
       @tentar-novamente="carregar"
     />
 
-    <template v-else-if="dados">
-      <CabecalhoOperacao
-        :primeiro="dados.casamento.nomePrimeiraPessoa"
-        :segundo="dados.casamento.nomeSegundaPessoa"
-        :data="dados.casamento.data"
-        :filtro="rotuloFiltro(dados)"
-        :locais="locais"
-      />
-
-      <MensagemFormulario
-        v-if="semConexaoComDados"
-        variante="alerta"
-        :mensagem="TEXTOS_CRONOGRAMA_PUBLICO.semConexao(horarioCarga)"
-        data-teste="cronograma-publico-sem-conexao"
-      />
-
-      <template v-if="grupos.length > 0 && fase === 'NoDia'">
-        <RelogioOperacao
-          :hora="momento?.hora ?? ''"
-          :selo="seloFase"
-          ao-vivo
-        />
-        <PainelAgoraProximo
-          :itens="itensPainel"
-          :minuto-atual="minutoAtual"
-          prefixo="cronograma-publico"
-        />
-      </template>
-
-      <FaixaFaseDia
-        v-else-if="grupos.length > 0 && fase !== null"
-        :titulo="fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.antesTitulo : TEXTOS_GRANDE_DIA.depoisTitulo"
-        :texto="fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.antesTexto : TEXTOS_GRANDE_DIA.depoisTexto"
-      />
-
-      <EstadoVazio
-        v-if="grupos.length === 0"
-        icone="cronograma"
-        :titulo="TEXTOS_CRONOGRAMA_PUBLICO.vazioTitulo"
-        :descricao="TEXTOS_CRONOGRAMA_PUBLICO.vazioTexto"
-        data-teste="cronograma-publico-vazio"
-      />
-
-      <section
-        v-for="grupo in grupos"
-        :key="grupo.dia"
-        class="cronograma-publico__dia"
-        :aria-labelledby="`dia-roteiro-${grupo.dia}`"
-        :data-teste="`dia-roteiro-${grupo.dia}`"
+    <div
+      v-else-if="dados"
+      class="cronograma-publico"
+    >
+      <div
+        class="cronograma-publico__conteudo"
+        :class="{ 'cronograma-publico__conteudo--ao-vivo': aoVivo }"
+        data-teste="cronograma-publico"
       >
-        <h2
-          :id="`dia-roteiro-${grupo.dia}`"
-          class="cronograma-publico__titulo-dia"
-        >
-          {{ grupo.titulo }}
-        </h2>
-        <ol class="cronograma-publico__lista">
-          <ItemRoteiro
-            v-for="(item, indice) in grupo.itens"
-            :key="`${item.inicio}-${indice}`"
-            :inicio="item.inicio"
-            :termino="item.termino"
-            :termina-em-outro-dia="item.terminaEmOutroDia"
-            :atividade="item.atividade"
-            :local="item.local"
-            :responsavel="item.responsavel"
-            :fornecedor="item.fornecedor?.nomeEmpresa ?? null"
-            :instrucoes="item.instrucoes"
-            :concluido="item.status === 'Concluido'"
-            :cerimonia="ehHorarioDaCerimonia(item, dados.casamento.horarioCerimonia)"
-          />
-        </ol>
-      </section>
+        <div class="cronograma-publico__topo">
+          <div class="cronograma-publico__identificacao">
+            <CabecalhoOperacao
+              :primeiro="dados.casamento.nomePrimeiraPessoa"
+              :segundo="dados.casamento.nomeSegundaPessoa"
+              :data="dados.casamento.data"
+              :filtro="rotuloFiltro(dados)"
+              :locais="locais"
+            />
 
-      <footer class="cronograma-publico__rodape">
-        <p
-          class="cronograma-publico__atualizado"
-          role="status"
-          aria-live="polite"
-          data-teste="cronograma-publico-atualizado"
-        >
-          {{ TEXTOS_CRONOGRAMA_PUBLICO.atualizadoAs(horarioCarga) }}
-        </p>
-        <Button
-          :label="store.carregando ? TEXTOS_CRONOGRAMA_PUBLICO.atualizando : TEXTOS_CRONOGRAMA_PUBLICO.atualizar"
-          icon="ie ie-recarregar"
-          severity="secondary"
-          outlined
-          :loading="store.carregando"
-          data-teste="cronograma-publico-atualizar"
-          @click="carregar"
+            <RelogioOperacao
+              v-if="aoVivo"
+              class="cronograma-publico__relogio"
+              :hora="momento?.hora ?? ''"
+              :selo="seloFase"
+              ao-vivo
+            />
+          </div>
+
+          <MensagemFormulario
+            v-if="semConexaoComDados"
+            variante="alerta"
+            :mensagem="TEXTOS_CRONOGRAMA_PUBLICO.semConexao(horarioCarga)"
+            data-teste="cronograma-publico-sem-conexao"
+          />
+        </div>
+
+        <EstadoVazio
+          v-if="grupos.length === 0"
+          icone="cronograma"
+          :titulo="TEXTOS_CRONOGRAMA_PUBLICO.vazioTitulo"
+          :descricao="TEXTOS_CRONOGRAMA_PUBLICO.vazioTexto"
+          data-teste="cronograma-publico-vazio"
         />
-        <p class="cronograma-publico__nota">
-          {{ TEXTOS_CRONOGRAMA_PUBLICO.nota(formatarDataCalendarioExtenso(dados.validoAte)) }}
-        </p>
-      </footer>
-    </template>
+
+        <template v-else>
+          <div
+            v-if="aoVivo"
+            class="cronograma-publico__painel"
+          >
+            <PainelAgoraProximo
+              :itens="itensPainel"
+              :minuto-atual="minutoAtual"
+              prefixo="cronograma-publico"
+            />
+          </div>
+
+          <FaixaFaseDia
+            v-else-if="fase !== null"
+            :titulo="fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.antesTitulo : TEXTOS_GRANDE_DIA.depoisTitulo"
+            :texto="fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.antesTexto : TEXTOS_GRANDE_DIA.depoisTexto"
+          />
+
+          <div
+            class="cronograma-publico__roteiro"
+            data-teste="cronograma-publico-roteiro"
+          >
+            <section
+              v-for="grupo in grupos"
+              :key="grupo.dia"
+              class="cronograma-publico__dia"
+              :aria-labelledby="`dia-roteiro-${grupo.dia}`"
+              :data-teste="`dia-roteiro-${grupo.dia}`"
+            >
+              <h2
+                :id="`dia-roteiro-${grupo.dia}`"
+                class="cronograma-publico__titulo-dia"
+              >
+                {{ grupo.titulo }}
+              </h2>
+              <ol class="cronograma-publico__lista">
+                <ItemRoteiro
+                  v-for="(item, indice) in grupo.itens"
+                  :key="`${item.inicio}-${indice}`"
+                  :inicio="item.inicio"
+                  :termino="item.termino"
+                  :termina-em-outro-dia="item.terminaEmOutroDia"
+                  :atividade="item.atividade"
+                  :local="item.local"
+                  :responsavel="item.responsavel"
+                  :fornecedor="item.fornecedor?.nomeEmpresa ?? null"
+                  :instrucoes="item.instrucoes"
+                  :concluido="item.status === 'Concluido'"
+                  :cerimonia="ehHorarioDaCerimonia(item, dados.casamento.horarioCerimonia)"
+                />
+              </ol>
+            </section>
+          </div>
+        </template>
+
+        <footer class="cronograma-publico__rodape">
+          <p
+            class="cronograma-publico__atualizado"
+            role="status"
+            aria-live="polite"
+            data-teste="cronograma-publico-atualizado"
+          >
+            {{ TEXTOS_CRONOGRAMA_PUBLICO.atualizadoAs(horarioCarga) }}
+          </p>
+          <Button
+            class="cronograma-publico__atualizar"
+            :label="store.carregando ? TEXTOS_CRONOGRAMA_PUBLICO.atualizando : TEXTOS_CRONOGRAMA_PUBLICO.atualizar"
+            icon="ie ie-recarregar"
+            severity="secondary"
+            outlined
+            :loading="store.carregando"
+            data-teste="cronograma-publico-atualizar"
+            @click="carregar"
+          />
+          <p class="cronograma-publico__nota">
+            {{ TEXTOS_CRONOGRAMA_PUBLICO.nota(formatarDataCalendarioExtenso(dados.validoAte)) }}
+          </p>
+        </footer>
+      </div>
+    </div>
 
     <template #rodape>
       <MarcaProduto
@@ -234,23 +265,53 @@ onBeforeUnmount(() => store.limpar())
 </template>
 
 <style scoped>
+.cronograma-publico {
+  container: cronograma-publico / inline-size;
+  width: 100%;
+}
+
+.cronograma-publico__conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-cartao);
+  min-width: 0;
+}
+
+.cronograma-publico__topo,
+.cronograma-publico__identificacao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-grupo);
+  min-width: 0;
+}
+
+.cronograma-publico__painel {
+  min-width: 0;
+}
+
+.cronograma-publico__roteiro {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
+  min-width: 0;
+}
+
 .cronograma-publico__dia {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
-}
-
-.cronograma-publico__dia + .cronograma-publico__dia {
-  padding-top: var(--p-espaco-4);
-  border-top: 1px solid var(--p-cor-operacao-divisoria);
+  gap: var(--p-ritmo-campo);
+  min-width: 0;
 }
 
 .cronograma-publico__titulo-dia {
   margin: 0;
+  padding-bottom: var(--p-ritmo-campo);
   font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-controle);
+  font-size: var(--p-fonte-tamanho-apoio);
   font-weight: var(--p-fonte-peso-seminegrito);
   color: var(--p-cor-operacao-apoio);
+  border-bottom: 1px solid var(--p-cor-operacao-divisoria);
 }
 
 .cronograma-publico__titulo-dia::first-letter {
@@ -265,8 +326,8 @@ onBeforeUnmount(() => store.limpar())
 .cronograma-publico__rodape {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-3);
-  padding-top: var(--p-espaco-5);
+  gap: var(--p-ritmo-grupo);
+  padding-top: var(--p-ritmo-cartao);
   border-top: 1px solid var(--p-cor-operacao-divisoria);
 }
 
@@ -280,5 +341,68 @@ onBeforeUnmount(() => store.limpar())
 .cronograma-publico__atualizado {
   font-variant-numeric: tabular-nums;
   color: var(--p-cor-operacao-texto);
+}
+
+@container cronograma-publico (min-width: 40rem) {
+  .cronograma-publico__rodape {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
+    align-items: center;
+  }
+
+  .cronograma-publico .cronograma-publico__rodape .cronograma-publico__atualizar {
+    width: auto;
+  }
+
+  .cronograma-publico__nota {
+    grid-column: 1 / -1;
+  }
+}
+
+@container cronograma-publico (min-width: 60rem) {
+  .cronograma-publico__identificacao {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0;
+    align-items: end;
+  }
+
+  .cronograma-publico__relogio {
+    align-self: stretch;
+    align-items: flex-end;
+    padding-left: var(--p-ritmo-bloco);
+    padding-bottom: var(--p-ritmo-cartao);
+    border-bottom: 1px solid var(--p-cor-operacao-divisoria);
+  }
+
+  .cronograma-publico__conteudo--ao-vivo {
+    display: grid;
+    grid-template-areas:
+      'topo topo'
+      'painel roteiro'
+      'rodape rodape';
+    grid-template-columns: minmax(20rem, 2fr) minmax(0, 3fr);
+    gap: var(--p-ritmo-bloco);
+    align-items: start;
+  }
+
+  .cronograma-publico__conteudo--ao-vivo .cronograma-publico__topo {
+    grid-area: topo;
+  }
+
+  .cronograma-publico__conteudo--ao-vivo .cronograma-publico__painel {
+    position: sticky;
+    top: var(--p-ritmo-cartao);
+    grid-area: painel;
+  }
+
+  .cronograma-publico__conteudo--ao-vivo .cronograma-publico__roteiro {
+    grid-area: roteiro;
+  }
+
+  .cronograma-publico__conteudo--ao-vivo .cronograma-publico__rodape {
+    grid-area: rodape;
+  }
 }
 </style>
