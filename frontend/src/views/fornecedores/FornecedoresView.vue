@@ -428,6 +428,10 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
   .fornecedores__indice {
     position: sticky;
     top: var(--p-ritmo-bloco);
+    max-height: calc(100dvh - 2 * var(--p-ritmo-bloco));
+    overflow-y: auto;
+    padding: var(--p-ritmo-campo);
+    overscroll-behavior: contain;
   }
 }
 </style>
