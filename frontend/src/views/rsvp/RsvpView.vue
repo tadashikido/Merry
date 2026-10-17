@@ -100,6 +100,8 @@ const estadoErro = computed(() => {
   return null
 })
 
+const conviteAmplo = computed(() => Boolean(dados.value) && !estadoErro.value)
+
 function novaChave(): string {
   proximaChave += 1
   return `acompanhante-${proximaChave}`
@@ -338,7 +340,10 @@ function alterarResposta() {
 </script>
 
 <template>
-  <LayoutPublico variante="convite">
+  <LayoutPublico
+    variante="convite"
+    :amplo="conviteAmplo"
+  >
     <EstadoCarregando
       v-if="store.carregando && !dados"
       variante="cartao"
@@ -353,321 +358,344 @@ function alterarResposta() {
       @tentar-novamente="carregar"
     />
 
-    <template v-else-if="dados">
-      <CabecalhoConvite
-        :primeiro="dados.casamento.nomePrimeiraPessoa"
-        :segundo="dados.casamento.nomeSegundaPessoa"
-        :data="dados.casamento.data"
-        :horario="dados.casamento.horario"
-        :local-cerimonia="dados.casamento.localCerimonia"
-        :local-recepcao="dados.casamento.localRecepcao"
-        :variante="modo === 'resumo' && recemEnviado ? 'compacto' : 'completo'"
-      />
-
-      <MensagemFormulario
-        v-if="dados.preVisualizacao"
-        variante="informacao"
-        :mensagem="TEXTOS_PREVIA_RSVP.faixa"
-        role="status"
-        data-teste="rsvp-previa"
-      />
-
-      <MensagemFormulario
-        v-if="aviso"
-        variante="informacao"
-        :mensagem="aviso"
-        data-teste="rsvp-aviso"
-      />
-
-      <section
-        v-if="modo === 'resumo'"
-        class="rsvp__resumo"
-        data-teste="rsvp-resumo"
-      >
-        <SeloConfirmacao
-          ref="selo"
-          :titulo="recemEnviado ? TEXTOS_RSVP.enviada : TEXTOS_RSVP.suaResposta"
-          :animado="recemEnviado"
-        >
-          <p v-if="recemEnviado">
-            {{ TEXTOS_RSVP.obrigado(dados.nomeConvite) }}
-          </p>
-          <p v-else>
-            {{ dados.nomeConvite }}
-          </p>
-        </SeloConfirmacao>
-
-        <ul class="rsvp__lista-resumo">
-          <li
-            v-for="pessoa in dados.pessoas"
-            :key="pessoa.id"
-            class="rsvp__linha-resumo"
-            data-teste="rsvp-linha-resumo"
-          >
-            <span class="rsvp__nome-resumo">
-              <span>{{ pessoa.nome }}</span>
-              <BadgeStatus
-                v-if="pessoa.possuiRestricao"
-                :texto="TEXTOS_DADOS_SENSIVEIS.registrada"
-                variante="informacao"
-                data-teste="rsvp-resumo-restricao"
-              />
-            </span>
-            <span
-              class="rsvp__resposta-resumo"
-              :class="{ 'rsvp__resposta-resumo--vai': pessoa.resposta === 'Confirmado' }"
-            >{{ pessoa.resposta === 'Confirmado' ? TEXTOS_RSVP.vai : TEXTOS_RSVP.naoVai }}</span>
-          </li>
-          <li
-            v-for="acompanhante in dados.acompanhantes"
-            :key="acompanhante.id"
-            class="rsvp__linha-resumo"
-            data-teste="rsvp-linha-resumo"
-          >
-            <span class="rsvp__nome-resumo">
-              <span>{{ TEXTOS_RSVP.resumoAcompanhante(acompanhante.nome) }}</span>
-              <BadgeStatus
-                v-if="acompanhante.possuiRestricao"
-                :texto="TEXTOS_DADOS_SENSIVEIS.registrada"
-                variante="informacao"
-                data-teste="rsvp-resumo-restricao"
-              />
-            </span>
-            <span class="rsvp__resposta-resumo rsvp__resposta-resumo--vai">{{ TEXTOS_RSVP.vai }}</span>
-          </li>
-        </ul>
-
-        <template v-if="dados.podeResponder">
-          <p class="rsvp__nota">
-            {{ TEXTOS_RSVP.podeAlterar(prazo) }}
-          </p>
-          <Button
-            :label="TEXTOS_RSVP.alterar"
-            severity="secondary"
-            outlined
-            data-teste="rsvp-alterar"
-            @click="alterarResposta"
+    <div
+      v-else-if="dados"
+      class="rsvp"
+    >
+      <div class="rsvp__grade">
+        <div class="rsvp__coluna-convite">
+          <CabecalhoConvite
+            :primeiro="dados.casamento.nomePrimeiraPessoa"
+            :segundo="dados.casamento.nomeSegundaPessoa"
+            :data="dados.casamento.data"
+            :horario="dados.casamento.horario"
+            :local-cerimonia="dados.casamento.localCerimonia"
+            :local-recepcao="dados.casamento.localRecepcao"
+            :variante="modo === 'resumo' && recemEnviado ? 'compacto' : 'completo'"
           />
-        </template>
-        <MensagemFormulario
-          v-else
-          variante="informacao"
-          :mensagem="TEXTOS_RSVP.prazoEncerrado(prazo)"
-          data-teste="rsvp-prazo-encerrado"
-        />
-      </section>
-
-      <form
-        v-else
-        class="rsvp__formulario"
-        novalidate
-        data-teste="rsvp-formulario"
-        @submit.prevent="enviar"
-      >
-        <div class="rsvp__convite">
-          <p class="rsvp__nota">
-            {{ TEXTOS_RSVP.conviteDe }}
-          </p>
-          <h2 class="rsvp__nome-convite">
-            {{ dados.nomeConvite }}
-          </h2>
-          <p class="rsvp__nota">
-            {{ TEXTOS_RSVP.prazo(prazo) }}
-          </p>
         </div>
 
-        <section
-          class="rsvp__pessoas"
-          aria-labelledby="rsvp-titulo-pessoas"
-        >
-          <div class="rsvp__titulo-pessoas">
-            <h3 id="rsvp-titulo-pessoas">
-              {{ TEXTOS_RSVP.quemVai }}
-            </h3>
-            <Button
-              type="button"
-              :label="TEXTOS_RSVP.todosVao"
-              text
-              :disabled="store.enviando"
-              data-teste="rsvp-todos-vao"
-              @click="marcarTodos('Confirmado')"
-            />
-          </div>
-          <ul class="rsvp__lista-pessoas">
-            <li
-              v-for="pessoa in dados.pessoas"
-              :key="pessoa.id"
-              class="rsvp__pessoa"
-              data-teste="rsvp-pessoa"
-            >
-              <EscolhaPresenca
-                :model-value="escolhas[pessoa.id] ?? null"
-                :id-grupo="idPessoa(pessoa.id)"
-                :nome="pessoa.nome"
-                :marcador="pessoa.faixaEtaria === 'Crianca' ? TEXTOS_RSVP.crianca : null"
-                :erro="errosEscolha[pessoa.id]"
-                :desabilitado="store.enviando"
-                @update:model-value="alterarEscolha(pessoa.id, $event)"
-              >
-                <SeletorRestricaoAlimentar
-                  v-if="escolhas[pessoa.id] === 'Confirmado'"
-                  :model-value="restricaoDe(pessoa.id)"
-                  :nome="pessoa.nome"
-                  :possui-registro="pessoa.possuiRestricao"
-                  :erro="errosRestricao[pessoa.id] ?? null"
-                  :desabilitado="store.enviando"
-                  :id-base="`rsvp-restricao-${pessoa.id}`"
-                  @update:model-value="alterarRestricao(pessoa.id, $event)"
-                />
-                <p
-                  v-else-if="escolhas[pessoa.id] === 'Recusado' && pessoa.possuiRestricao"
-                  class="rsvp__nota"
-                  data-teste="rsvp-restricao-sera-apagada"
-                >
-                  {{ TEXTOS_DADOS_SENSIVEIS.seraApagadaRecusa(pessoa.nome) }}
-                </p>
-              </EscolhaPresenca>
-            </li>
-          </ul>
-          <Button
-            type="button"
-            class="rsvp__ninguem"
-            :label="TEXTOS_RSVP.ninguemVai"
-            text
-            severity="secondary"
-            :disabled="store.enviando"
-            data-teste="rsvp-ninguem-vai"
-            @click="marcarTodos('Recusado')"
+        <div class="rsvp__principal pilha pilha--bloco">
+          <MensagemFormulario
+            v-if="dados.preVisualizacao"
+            variante="informacao"
+            :mensagem="TEXTOS_PREVIA_RSVP.faixa"
+            role="status"
+            data-teste="rsvp-previa"
           />
-        </section>
 
-        <section
-          v-if="podeLevarAcompanhantes"
-          class="rsvp__acompanhantes"
-          aria-labelledby="rsvp-titulo-acompanhantes"
-          data-teste="rsvp-acompanhantes"
-        >
-          <h3 id="rsvp-titulo-acompanhantes">
-            {{ TEXTOS_RSVP.acompanhantesTitulo }}
-          </h3>
-          <p class="rsvp__nota">
-            {{ TEXTOS_RSVP.acompanhantesLimite(dados.limiteAcompanhantes) }}
-          </p>
-          <ListaRepetivel
-            :itens="acompanhantes"
-            :chave="(acompanhante) => acompanhante.chave"
-            :textos="TEXTOS_LISTA_ACOMPANHANTES"
-            :minimo="0"
-            :maximo="dados.limiteAcompanhantes"
-            :desabilitado="store.enviando"
-            @adicionar="adicionarAcompanhante"
-            @remover="removerAcompanhante"
+          <MensagemFormulario
+            v-if="aviso"
+            variante="informacao"
+            :mensagem="aviso"
+            data-teste="rsvp-aviso"
+          />
+
+          <section
+            v-if="modo === 'resumo'"
+            class="rsvp__resumo pilha pilha--cartao"
+            data-teste="rsvp-resumo"
           >
-            <template #default="{ item, indice }">
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_RSVP.nomeAcompanhante"
-                :id-campo="`rsvp-acompanhante-${indice}`"
-                obrigatorio
-                :erro="item.erro"
+            <SeloConfirmacao
+              ref="selo"
+              :titulo="recemEnviado ? TEXTOS_RSVP.enviada : TEXTOS_RSVP.suaResposta"
+              :animado="recemEnviado"
+            >
+              <p v-if="recemEnviado">
+                {{ TEXTOS_RSVP.obrigado(dados.nomeConvite) }}
+              </p>
+              <p v-else>
+                {{ dados.nomeConvite }}
+              </p>
+            </SeloConfirmacao>
+
+            <ul class="rsvp__lista-resumo">
+              <li
+                v-for="pessoa in dados.pessoas"
+                :key="pessoa.id"
+                class="rsvp__linha-resumo"
+                data-teste="rsvp-linha-resumo"
               >
-                <InputText
-                  :id="idEntrada"
-                  v-model="item.nome"
-                  :placeholder="TEXTOS_RSVP.placeholderNome"
-                  autocomplete="off"
-                  maxlength="120"
-                  aria-required="true"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  data-teste="rsvp-nome-acompanhante"
-                />
-              </CampoFormulario>
-              <div
-                class="rsvp__opcoes"
-                role="group"
-                :aria-labelledby="`rsvp-faixa-acompanhante-${indice}-rotulo`"
-              >
+                <span class="rsvp__nome-resumo">
+                  <span>{{ pessoa.nome }}</span>
+                  <BadgeStatus
+                    v-if="pessoa.possuiRestricao"
+                    :texto="TEXTOS_DADOS_SENSIVEIS.registrada"
+                    variante="informacao"
+                    data-teste="rsvp-resumo-restricao"
+                  />
+                </span>
                 <span
-                  :id="`rsvp-faixa-acompanhante-${indice}-rotulo`"
-                  class="rsvp__rotulo-opcoes"
-                  data-teste="rsvp-rotulo-faixa-acompanhante"
-                >{{ TEXTOS_RSVP.faixaAcompanhante }}</span>
-                <SelectButton
-                  v-model="item.faixaEtaria"
-                  :options="opcoesFaixa"
-                  option-label="rotulo"
-                  option-value="valor"
-                  :allow-empty="false"
-                  :aria-labelledby="`rsvp-faixa-acompanhante-${indice}-rotulo`"
-                  data-teste="rsvp-faixa-acompanhante"
+                  class="rsvp__resposta-resumo"
+                  :class="{ 'rsvp__resposta-resumo--vai': pessoa.resposta === 'Confirmado' }"
+                >{{ pessoa.resposta === 'Confirmado' ? TEXTOS_RSVP.vai : TEXTOS_RSVP.naoVai }}</span>
+              </li>
+              <li
+                v-for="acompanhante in dados.acompanhantes"
+                :key="acompanhante.id"
+                class="rsvp__linha-resumo"
+                data-teste="rsvp-linha-resumo"
+              >
+                <span class="rsvp__nome-resumo">
+                  <span>{{ TEXTOS_RSVP.resumoAcompanhante(acompanhante.nome) }}</span>
+                  <BadgeStatus
+                    v-if="acompanhante.possuiRestricao"
+                    :texto="TEXTOS_DADOS_SENSIVEIS.registrada"
+                    variante="informacao"
+                    data-teste="rsvp-resumo-restricao"
+                  />
+                </span>
+                <span class="rsvp__resposta-resumo rsvp__resposta-resumo--vai">{{ TEXTOS_RSVP.vai }}</span>
+              </li>
+            </ul>
+
+            <div
+              v-if="dados.podeResponder"
+              class="rsvp__alterar pilha pilha--grupo"
+            >
+              <p class="texto-legenda">
+                {{ TEXTOS_RSVP.podeAlterar(prazo) }}
+              </p>
+              <Button
+                :label="TEXTOS_RSVP.alterar"
+                severity="secondary"
+                outlined
+                data-teste="rsvp-alterar"
+                @click="alterarResposta"
+              />
+            </div>
+            <MensagemFormulario
+              v-else
+              variante="informacao"
+              :mensagem="TEXTOS_RSVP.prazoEncerrado(prazo)"
+              data-teste="rsvp-prazo-encerrado"
+            />
+          </section>
+
+          <form
+            v-else
+            class="rsvp__formulario pilha pilha--bloco"
+            novalidate
+            data-teste="rsvp-formulario"
+            @submit.prevent="enviar"
+          >
+            <div class="rsvp__convite pilha pilha--campo">
+              <p class="texto-rotulo">
+                {{ TEXTOS_RSVP.conviteDe }}
+              </p>
+              <h2 class="rsvp__nome-convite">
+                {{ dados.nomeConvite }}
+              </h2>
+              <p class="texto-legenda">
+                {{ TEXTOS_RSVP.prazo(prazo) }}
+              </p>
+            </div>
+
+            <section
+              class="rsvp__pessoas pilha pilha--campo"
+              aria-labelledby="rsvp-titulo-pessoas"
+            >
+              <div class="rsvp__titulo-secao">
+                <h3
+                  id="rsvp-titulo-pessoas"
+                  class="texto-rotulo"
+                >
+                  {{ TEXTOS_RSVP.quemVai }}
+                </h3>
+                <Button
+                  type="button"
+                  :label="TEXTOS_RSVP.todosVao"
+                  text
+                  :disabled="store.enviando"
+                  data-teste="rsvp-todos-vao"
+                  @click="marcarTodos('Confirmado')"
                 />
               </div>
-              <SeletorRestricaoAlimentar
-                v-model="item.restricao"
-                :nome="item.nome.trim() || TEXTOS_LISTA_ACOMPANHANTES.rotuloItem(indice + 1)"
-                :possui-registro="item.possuiRegistro"
-                :erro="item.erroRestricao"
-                :desabilitado="store.enviando"
-                :id-base="`rsvp-restricao-acompanhante-${indice}`"
-                @update:model-value="item.erroRestricao = null"
+              <ul class="rsvp__lista-pessoas">
+                <li
+                  v-for="pessoa in dados.pessoas"
+                  :key="pessoa.id"
+                  class="rsvp__pessoa"
+                  data-teste="rsvp-pessoa"
+                >
+                  <EscolhaPresenca
+                    :model-value="escolhas[pessoa.id] ?? null"
+                    :id-grupo="idPessoa(pessoa.id)"
+                    :nome="pessoa.nome"
+                    :marcador="pessoa.faixaEtaria === 'Crianca' ? TEXTOS_RSVP.crianca : null"
+                    :erro="errosEscolha[pessoa.id]"
+                    :desabilitado="store.enviando"
+                    @update:model-value="alterarEscolha(pessoa.id, $event)"
+                  >
+                    <SeletorRestricaoAlimentar
+                      v-if="escolhas[pessoa.id] === 'Confirmado'"
+                      :model-value="restricaoDe(pessoa.id)"
+                      :nome="pessoa.nome"
+                      :possui-registro="pessoa.possuiRestricao"
+                      :erro="errosRestricao[pessoa.id] ?? null"
+                      :desabilitado="store.enviando"
+                      :id-base="`rsvp-restricao-${pessoa.id}`"
+                      @update:model-value="alterarRestricao(pessoa.id, $event)"
+                    />
+                    <p
+                      v-else-if="escolhas[pessoa.id] === 'Recusado' && pessoa.possuiRestricao"
+                      class="texto-legenda"
+                      data-teste="rsvp-restricao-sera-apagada"
+                    >
+                      {{ TEXTOS_DADOS_SENSIVEIS.seraApagadaRecusa(pessoa.nome) }}
+                    </p>
+                  </EscolhaPresenca>
+                </li>
+              </ul>
+              <Button
+                type="button"
+                class="rsvp__ninguem"
+                :label="TEXTOS_RSVP.ninguemVai"
+                text
+                severity="secondary"
+                :disabled="store.enviando"
+                data-teste="rsvp-ninguem-vai"
+                @click="marcarTodos('Recusado')"
               />
-            </template>
-          </ListaRepetivel>
-        </section>
+            </section>
 
-        <AvisoPrivacidade
-          v-if="alguemVai"
-          :dias-retencao="dados.privacidade.diasRetencao"
-        >
-          <CaixaConsentimento
-            v-if="informaDadosSensiveis"
-            ref="caixaConsentimento"
-            v-model="consentimento"
-            id-campo="rsvp-consentimento"
-            :texto="TEXTOS_DADOS_SENSIVEIS.consentimento"
-            :erro="erroConsentimento"
-            :desabilitado="store.enviando"
-          />
-        </AvisoPrivacidade>
+            <section
+              v-if="podeLevarAcompanhantes"
+              class="rsvp__acompanhantes pilha pilha--grupo"
+              aria-labelledby="rsvp-titulo-acompanhantes"
+              data-teste="rsvp-acompanhantes"
+            >
+              <div class="pilha pilha--campo">
+                <h3
+                  id="rsvp-titulo-acompanhantes"
+                  class="texto-rotulo"
+                >
+                  {{ TEXTOS_RSVP.acompanhantesTitulo }}
+                </h3>
+                <p class="texto-legenda">
+                  {{ TEXTOS_RSVP.acompanhantesLimite(dados.limiteAcompanhantes) }}
+                </p>
+              </div>
+              <ListaRepetivel
+                :itens="acompanhantes"
+                :chave="(acompanhante) => acompanhante.chave"
+                :textos="TEXTOS_LISTA_ACOMPANHANTES"
+                :minimo="0"
+                :maximo="dados.limiteAcompanhantes"
+                :desabilitado="store.enviando"
+                @adicionar="adicionarAcompanhante"
+                @remover="removerAcompanhante"
+              >
+                <template #default="{ item, indice }">
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_RSVP.nomeAcompanhante"
+                    :id-campo="`rsvp-acompanhante-${indice}`"
+                    obrigatorio
+                    :erro="item.erro"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="item.nome"
+                      :placeholder="TEXTOS_RSVP.placeholderNome"
+                      autocomplete="off"
+                      maxlength="120"
+                      aria-required="true"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      data-teste="rsvp-nome-acompanhante"
+                    />
+                  </CampoFormulario>
+                  <div
+                    class="rsvp__opcoes pilha pilha--campo"
+                    role="group"
+                    :aria-labelledby="`rsvp-faixa-acompanhante-${indice}-rotulo`"
+                  >
+                    <span
+                      :id="`rsvp-faixa-acompanhante-${indice}-rotulo`"
+                      class="rsvp__rotulo-opcoes"
+                      data-teste="rsvp-rotulo-faixa-acompanhante"
+                    >{{ TEXTOS_RSVP.faixaAcompanhante }}</span>
+                    <SelectButton
+                      v-model="item.faixaEtaria"
+                      :options="opcoesFaixa"
+                      option-label="rotulo"
+                      option-value="valor"
+                      :allow-empty="false"
+                      :aria-labelledby="`rsvp-faixa-acompanhante-${indice}-rotulo`"
+                      data-teste="rsvp-faixa-acompanhante"
+                    />
+                  </div>
+                  <SeletorRestricaoAlimentar
+                    v-model="item.restricao"
+                    :nome="item.nome.trim() || TEXTOS_LISTA_ACOMPANHANTES.rotuloItem(indice + 1)"
+                    :possui-registro="item.possuiRegistro"
+                    :erro="item.erroRestricao"
+                    :desabilitado="store.enviando"
+                    :id-base="`rsvp-restricao-acompanhante-${indice}`"
+                    @update:model-value="item.erroRestricao = null"
+                  />
+                </template>
+              </ListaRepetivel>
+            </section>
 
-        <MensagemFormulario
-          v-if="mensagemErro"
-          id="rsvp-mensagem-erro"
-          :mensagem="mensagemErro"
-          data-teste="rsvp-erro"
-        />
+            <AvisoPrivacidade
+              v-if="alguemVai"
+              :dias-retencao="dados.privacidade.diasRetencao"
+            >
+              <CaixaConsentimento
+                v-if="informaDadosSensiveis"
+                ref="caixaConsentimento"
+                v-model="consentimento"
+                id-campo="rsvp-consentimento"
+                :texto="TEXTOS_DADOS_SENSIVEIS.consentimento"
+                :erro="erroConsentimento"
+                :desabilitado="store.enviando"
+              />
+            </AvisoPrivacidade>
 
-        <BarraAcaoFixa>
-          <template #status>
-            <span data-teste="rsvp-contador">{{ statusBarra }}</span>
-          </template>
-          <Button
-            type="submit"
-            :label="TEXTOS_RSVP.enviar"
-            :loading="store.enviando"
-            data-teste="rsvp-enviar"
-          />
-        </BarraAcaoFixa>
-      </form>
-    </template>
+            <MensagemFormulario
+              v-if="mensagemErro"
+              id="rsvp-mensagem-erro"
+              :mensagem="mensagemErro"
+              data-teste="rsvp-erro"
+            />
+
+            <BarraAcaoFixa class="rsvp__barra">
+              <template #status>
+                <span data-teste="rsvp-contador">{{ statusBarra }}</span>
+              </template>
+              <Button
+                type="submit"
+                :label="TEXTOS_RSVP.enviar"
+                :loading="store.enviando"
+                data-teste="rsvp-enviar"
+              />
+            </BarraAcaoFixa>
+          </form>
+        </div>
+      </div>
+    </div>
   </LayoutPublico>
 </template>
 
 <style scoped>
-.rsvp__formulario,
-.rsvp__resumo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-6);
+.rsvp {
+  container: rsvp / inline-size;
+  width: 100%;
+}
+
+.rsvp__grade {
+  display: grid;
+  gap: var(--p-ritmo-cartao);
+  width: 100%;
+  max-width: var(--p-dimensao-largura-convite);
+  margin-inline: auto;
 }
 
 .rsvp__convite {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--p-espaco-1);
   text-align: center;
 }
 
@@ -675,52 +703,26 @@ function alterarResposta() {
   font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina-celular);
-  font-weight: var(--p-fonte-peso-medio);
+  font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-texto);
   overflow-wrap: anywhere;
 }
 
-.rsvp__nota {
-  font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-quente);
-}
-
-.rsvp__opcoes {
+.rsvp__titulo-secao {
   display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-2);
-}
-
-.rsvp__rotulo-opcoes {
-  font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-texto);
-}
-
-.rsvp__resumo .rsvp__nota {
-  text-align: center;
-}
-
-.rsvp__titulo-pessoas {
-  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
 }
 
-.rsvp__titulo-pessoas h3,
-.rsvp__acompanhantes h3 {
-  font-size: 0.6875rem;
-  font-weight: var(--p-fonte-peso-seminegrito);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--p-cor-apoio-quente);
-}
-
-.layout-publico__folha .rsvp__titulo-pessoas :deep(.p-button),
+.layout-publico__folha .rsvp__titulo-secao :deep(.p-button),
 .layout-publico__folha .rsvp__pessoas .rsvp__ninguem {
+  align-self: flex-start;
   width: auto;
   min-height: var(--p-dimensao-alvo-toque-movel);
+  padding-inline: 0;
 }
 
 .rsvp__lista-pessoas,
@@ -734,42 +736,29 @@ function alterarResposta() {
   border-top: 1px solid var(--p-cor-borda-quente);
 }
 
-.rsvp__lista-pessoas {
-  margin-top: var(--p-espaco-2);
+.rsvp__rotulo-opcoes {
+  font-size: var(--p-fonte-tamanho-controle);
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-texto);
+}
+
+.rsvp__alterar {
+  text-align: center;
 }
 
 .rsvp__lista-resumo {
-  padding: var(--p-espaco-1) var(--p-espaco-5);
+  padding: 0 var(--p-ritmo-cartao);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda-quente);
-  border-radius: 12px;
-}
-
-.rsvp__formulario .barra-acao-fixa {
-  margin: 0 calc(-1 * var(--p-espaco-4)) calc(-1 * var(--p-espaco-8));
-  padding-right: var(--p-espaco-4);
-  padding-left: var(--p-espaco-4);
-  background: var(--p-cor-fundo-convite);
-  border-top-color: var(--p-cor-borda-quente);
-}
-
-.rsvp__formulario .barra-acao-fixa :deep(.p-button) {
-  min-height: var(--p-dimensao-altura-acao-convite);
-  font-size: var(--p-fonte-tamanho-corpo);
-  border-radius: 8px;
-}
-
-.rsvp__acompanhantes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-3);
+  border-radius: var(--p-raio-painel);
 }
 
 .rsvp__linha-resumo {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--p-espaco-4);
-  padding: var(--p-espaco-3) 0;
+  gap: var(--p-ritmo-grupo);
+  padding: var(--p-ritmo-grupo) 0;
   font-size: var(--p-fonte-tamanho-controle);
   overflow-wrap: anywhere;
 }
@@ -782,16 +771,50 @@ function alterarResposta() {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
+  min-width: 0;
 }
 
 .rsvp__resposta-resumo {
   flex-shrink: 0;
-  color: var(--p-cor-apoio-quente);
+  color: var(--p-cor-texto-apoio);
 }
 
 .rsvp__resposta-resumo--vai {
   font-weight: var(--p-fonte-peso-seminegrito);
   color: var(--p-cor-primaria);
+}
+
+.rsvp__formulario .rsvp__barra {
+  margin: 0;
+  padding-right: 0;
+  padding-left: 0;
+  background: var(--p-cor-fundo-convite);
+  border-top-color: var(--p-cor-borda-quente);
+  box-shadow: none;
+}
+
+.rsvp__formulario .rsvp__barra :deep(.p-button) {
+  min-height: var(--p-dimensao-altura-acao-convite);
+  font-size: var(--p-fonte-tamanho-corpo);
+}
+
+@container rsvp (min-width: 56rem) {
+  .rsvp__grade {
+    grid-template-columns: minmax(0, 1fr) minmax(0, var(--p-dimensao-largura-convite));
+    align-items: start;
+    column-gap: var(--p-ritmo-secao);
+    max-width: none;
+  }
+
+  .rsvp__coluna-convite {
+    position: sticky;
+    top: var(--p-ritmo-bloco);
+  }
+
+  .rsvp__convite {
+    align-items: flex-start;
+    text-align: left;
+  }
 }
 </style>

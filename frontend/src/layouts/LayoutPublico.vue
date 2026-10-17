@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
 
-withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convite' | 'operacao' }>(), { demonstracao: false, variante: 'padrao' })
+withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convite' | 'operacao'; amplo?: boolean }>(), {
+  demonstracao: false,
+  variante: 'padrao',
+  amplo: false,
+})
 </script>
 
 <template>
   <div
     class="layout-publico"
-    :class="[`layout-publico--${variante}`, { 'tema-operacao': variante === 'operacao' }]"
+    :class="[`layout-publico--${variante}`, { 'tema-operacao': variante === 'operacao', 'layout-publico--amplo': amplo }]"
   >
     <header
       v-if="variante === 'padrao'"
@@ -38,7 +42,7 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--p-espaco-6);
+  gap: var(--p-ritmo-cartao);
   min-height: 100vh;
   padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo) var(--p-ritmo-bloco);
   background: var(--p-cor-fundo-casal);
@@ -52,10 +56,10 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
 .layout-publico__folha {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-6);
+  gap: var(--p-ritmo-cartao);
   width: 100%;
   max-width: var(--p-dimensao-largura-publica);
-  padding: var(--p-espaco-8) var(--p-espaco-5);
+  padding: var(--p-ritmo-bloco) var(--p-ritmo-cartao);
   font-size: var(--p-fonte-tamanho-corpo);
   line-height: var(--p-fonte-entrelinha-corpo);
   background: var(--p-cor-superficie);
@@ -81,8 +85,8 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
 }
 
 .layout-publico--convite {
-  gap: var(--p-espaco-5);
-  padding: var(--p-espaco-4) var(--p-espaco-4) var(--p-espaco-8);
+  gap: var(--p-ritmo-cartao);
+  padding: var(--p-ritmo-grupo) var(--p-ritmo-grupo) var(--p-ritmo-bloco);
   color: var(--p-cor-texto);
   background: var(--p-cor-fundo-convite);
 }
@@ -97,6 +101,10 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
   box-shadow: none;
 }
 
+.layout-publico--convite.layout-publico--amplo .layout-publico__folha {
+  max-width: calc(var(--p-dimensao-largura-convite) * 2 + var(--p-ritmo-secao));
+}
+
 .layout-publico--convite .layout-publico__rodape {
   max-width: var(--p-dimensao-largura-convite);
   color: var(--p-cor-apoio-quente);
@@ -107,8 +115,8 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
 }
 
 .layout-publico--operacao {
-  gap: var(--p-espaco-5);
-  padding: var(--p-espaco-5) var(--p-espaco-4) var(--p-espaco-8);
+  gap: var(--p-ritmo-cartao);
+  padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo) var(--p-ritmo-bloco);
   color: var(--p-cor-operacao-texto);
   background: var(--p-cor-operacao-fundo);
 }
@@ -134,20 +142,17 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
 }
 
 @media (min-width: 640px) {
-  .layout-publico--operacao {
-    padding-top: var(--p-espaco-8);
-  }
-
-  .layout-publico--convite {
-    padding-top: var(--p-espaco-8);
-  }
-
   .layout-publico {
-    padding-top: var(--p-espaco-12);
+    padding-top: var(--p-ritmo-secao);
+  }
+
+  .layout-publico--operacao,
+  .layout-publico--convite {
+    padding-top: var(--p-ritmo-bloco);
   }
 
   .layout-publico__folha {
-    padding: var(--p-espaco-12) var(--p-espaco-10);
+    padding: var(--p-ritmo-bloco);
   }
 
   .layout-publico__folha :deep(h1) {

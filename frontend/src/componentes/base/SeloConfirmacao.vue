@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+import LacreIcone from './LacreIcone.vue'
+
 withDefaults(defineProps<{ titulo: string; animado?: boolean }>(), { animado: false })
 
 const tituloRef = ref<HTMLHeadingElement | null>(null)
@@ -18,9 +20,9 @@ defineExpose({ focar })
     :class="{ 'selo-confirmacao--animado': animado }"
     data-teste="selo-confirmacao"
   >
-    <span
-      class="selo-confirmacao__marca ie ie-concluir"
-      aria-hidden="true"
+    <LacreIcone
+      class="selo-confirmacao__marca"
+      icone="ie-concluir"
     />
     <h2
       ref="tituloRef"
@@ -43,26 +45,15 @@ defineExpose({ focar })
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-grupo);
   text-align: center;
-}
-
-.selo-confirmacao__marca {
-  display: grid;
-  place-items: center;
-  width: 4rem;
-  height: 4rem;
-  font-size: 1.875rem;
-  color: var(--p-cor-sucesso-texto);
-  background: var(--p-cor-sucesso-suave);
-  border-radius: var(--p-raio-total);
 }
 
 .selo-confirmacao .selo-confirmacao__titulo {
   font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: 2.375rem;
-  font-weight: var(--p-fonte-peso-medio);
+  font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
 }
 
