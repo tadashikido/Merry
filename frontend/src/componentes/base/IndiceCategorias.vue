@@ -60,6 +60,10 @@ function selecionar(chave: C | null) {
 </template>
 
 <style scoped>
+.indice-categorias {
+  container: indice-categorias / inline-size;
+}
+
 .indice-categorias__lista {
   display: flex;
   flex-direction: column;
@@ -111,5 +115,27 @@ function selecionar(chave: C | null) {
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1;
   color: var(--p-cor-primaria);
+}
+
+@container indice-categorias (min-width: 30rem) {
+  .indice-categorias__lista {
+    flex-flow: row wrap;
+    gap: var(--p-ritmo-campo);
+  }
+
+  .indice-categorias__item {
+    align-items: center;
+    width: auto;
+    padding-inline: var(--p-ritmo-grupo);
+    border: 1px solid var(--p-cor-borda);
+  }
+
+  .indice-categorias__item[aria-pressed='true'] {
+    border-color: var(--p-cor-primaria-suave);
+  }
+
+  .indice-categorias__quantidade {
+    font-size: var(--p-fonte-tamanho-titulo);
+  }
 }
 </style>

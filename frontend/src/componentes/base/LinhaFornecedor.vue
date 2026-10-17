@@ -86,7 +86,7 @@ withDefaults(
     'canais canais';
   gap: var(--p-espaco-1) var(--p-espaco-3);
   align-items: center;
-  padding: var(--p-espaco-3) var(--p-espaco-4);
+  padding: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
   list-style: none;
 }
 
@@ -151,6 +151,20 @@ withDefaults(
 
   .linha-fornecedor__acoes {
     align-self: center;
+  }
+}
+
+@container lista-fornecedores (max-width: 39.99rem) {
+  .linha-fornecedor {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'textos acoes'
+      'canais canais';
+    gap: var(--p-espaco-1) var(--p-espaco-3);
+  }
+
+  .linha-fornecedor__acoes {
+    align-self: start;
   }
 }
 </style>

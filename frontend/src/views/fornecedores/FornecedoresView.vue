@@ -48,6 +48,7 @@ const quantidadeAtivos = computed(() => daSituacao(lista.value, 'ativos').length
 const quantidadeArquivados = computed(() => daSituacao(lista.value, 'arquivados').length)
 const semNenhum = computed(() => store.lista !== null && store.lista.length === 0)
 const filtroAtivo = computed(() => busca.value.trim() !== '' || categoria.value !== null)
+const comIndice = computed(() => !telaPequena.value && daSituacaoAtual.value.length > 0)
 const anuncio = computed(() => (store.lista && filtroAtivo.value ? TEXTOS_FORNECEDORES.resultados(filtrados.value.length) : ''))
 
 const opcoesSituacao = computed(() => [
@@ -162,7 +163,7 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
       </template>
     </CabecalhoPagina>
 
-    <div class="fornecedores">
+    <div class="fornecedores pilha pilha--bloco">
       <EstadoCarregando
         v-if="store.carregandoLista && !store.lista"
         variante="lista"
@@ -184,25 +185,21 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
         @tentar-novamente="store.carregar()"
       />
 
-      <div
+      <EstadoVazio
         v-else-if="semNenhum"
-        class="fornecedores__painel"
+        icone="fornecedor"
+        :titulo="TEXTOS_FORNECEDORES.vazioTitulo"
+        :descricao="TEXTOS_FORNECEDORES.vazioTexto"
       >
-        <EstadoVazio
-          icone="fornecedor"
-          :titulo="TEXTOS_FORNECEDORES.vazioTitulo"
-          :descricao="TEXTOS_FORNECEDORES.vazioTexto"
-        >
-          <template #acao>
-            <Button
-              :label="TEXTOS_FORNECEDORES.adicionar"
-              icon="ie ie-mais"
-              data-teste="adicionar-fornecedor-vazio"
-              @click="adicionar"
-            />
-          </template>
-        </EstadoVazio>
-      </div>
+        <template #acao>
+          <Button
+            :label="TEXTOS_FORNECEDORES.adicionar"
+            icon="ie ie-mais"
+            data-teste="adicionar-fornecedor-vazio"
+            @click="adicionar"
+          />
+        </template>
+      </EstadoVazio>
 
       <template v-else-if="store.lista">
         <div class="fornecedores__barra">
@@ -240,6 +237,7 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
               :options="opcoesCategoria"
               option-label="rotulo"
               option-value="valor"
+              :placeholder="opcoesCategoria[0]?.rotulo"
               :aria-label="TEXTOS_FORNECEDORES.categoriaRotulo"
               data-teste="seletor-categoria"
             />
@@ -266,10 +264,10 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
 
         <div
           class="fornecedores__corpo"
-          :class="{ 'fornecedores__corpo--com-indice': !telaPequena && daSituacaoAtual.length > 0 }"
+          :class="{ 'fornecedores__corpo--com-indice': comIndice }"
         >
           <IndiceCategorias
-            v-if="!telaPequena && daSituacaoAtual.length > 0"
+            v-if="comIndice"
             v-model="categoria"
             class="fornecedores__indice"
             :itens="contagens"
@@ -278,7 +276,7 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
             :total="daSituacaoAtual.length"
           />
 
-          <div class="fornecedores__painel">
+          <div class="fornecedores__principal">
             <EstadoVazio
               v-if="daSituacaoAtual.length === 0"
               :icone="situacao === 'arquivados' ? 'arquivar' : 'fornecedor'"
@@ -305,24 +303,27 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
 
             <div
               v-else
-              class="fornecedores__grupos"
+              class="fornecedores__grupos pilha pilha--cartao"
               data-teste="lista-fornecedores"
             >
               <section
                 v-for="grupo in grupos"
                 :key="grupo.categoria"
-                class="fornecedores__grupo"
+                class="fornecedores__grupo pilha pilha--campo"
                 :aria-labelledby="`grupo-${grupo.categoria}`"
                 data-teste="grupo-categoria"
               >
                 <h2
                   :id="`grupo-${grupo.categoria}`"
-                  class="fornecedores__grupo-titulo"
+                  class="fornecedores__grupo-titulo texto-rotulo"
                 >
                   {{ grupo.rotulo }}
                   <span class="fornecedores__grupo-quantidade">{{ TEXTOS_FORNECEDORES.quantidadeGrupo(grupo.fornecedores.length) }}</span>
                 </h2>
-                <ul class="fornecedores__lista">
+                <ul
+                  class="fornecedores__lista cartao"
+                  :aria-labelledby="`grupo-${grupo.categoria}`"
+                >
                   <LinhaFornecedor
                     v-for="fornecedor in grupo.fornecedores"
                     :key="fornecedor.id"
@@ -358,21 +359,21 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
 
 <style scoped>
 .fornecedores {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-4);
+  --fornecedores-largura-indice: 16rem;
+
+  container: fornecedores / inline-size;
 }
 
 .fornecedores__barra {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-grupo);
 }
 
 .fornecedores__busca {
   flex: 1 1 16rem;
-  max-width: 24rem;
+  max-width: 28rem;
 }
 
 .fornecedores__busca :deep(.p-iconfield),
@@ -387,58 +388,46 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
 }
 
 .fornecedores__corpo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-4);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
 }
 
-.fornecedores__painel {
+.fornecedores__indice,
+.fornecedores__principal {
   min-width: 0;
-  background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
-}
-
-.fornecedores__grupo + .fornecedores__grupo {
-  border-top: 1px solid var(--p-cor-borda);
 }
 
 .fornecedores .fornecedores__grupo-titulo {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-campo);
   margin: 0;
-  padding: var(--p-espaco-4) var(--p-espaco-4) var(--p-espaco-2);
-  font-size: var(--p-fonte-tamanho-corpo);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto);
 }
 
 .fornecedores__grupo-quantidade {
-  font-size: var(--p-fonte-tamanho-apoio);
   font-weight: var(--p-fonte-peso-regular);
-  color: var(--p-cor-texto-apoio);
+  letter-spacing: normal;
+  text-transform: none;
 }
 
-.fornecedores__lista {
+.fornecedores .fornecedores__lista {
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--p-cor-divisoria);
+  container: lista-fornecedores / inline-size;
 }
 
-@media (min-width: 1024px) {
+@container fornecedores (min-width: 64rem) {
   .fornecedores__corpo--com-indice {
-    display: grid;
-    grid-template-columns: var(--p-dimensao-largura-navegacao-casamento) minmax(0, 1fr);
-    align-items: start;
-    gap: var(--p-espaco-6);
+    grid-template-columns: var(--fornecedores-largura-indice) minmax(0, 1fr);
   }
 
   .fornecedores__indice {
     position: sticky;
-    top: var(--p-espaco-4);
+    top: var(--p-ritmo-bloco);
   }
 }
 </style>

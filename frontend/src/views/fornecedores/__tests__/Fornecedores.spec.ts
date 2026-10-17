@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
@@ -108,6 +110,7 @@ describe('FornecedoresView', () => {
 
     expect(wrapper.find('[data-teste="indice-categorias"]').exists()).toBe(false)
     expect(wrapper.find('[data-teste="seletor-categoria"]').exists()).toBe(true)
+    expect(wrapper.get('[data-teste="seletor-categoria"]').text()).toContain(`${TEXTOS_FORNECEDORES.todas} (2)`)
   })
 
   it('[COMPONENTE] sem fornecedores mostra o estado vazio do canvas com uma só ação primária', async () => {
@@ -425,6 +428,79 @@ describe('FornecedorFormularioView', () => {
     await flushPromises()
     expect(notificacoes.erro).toHaveBeenCalledWith(TEXTOS_FORNECEDORES.erroConcorrencia)
     expect((wrapper.get('[data-teste="campo-nome-empresa"]').element as HTMLInputElement).value).toBe('Buffet Oliveira')
+  })
+})
+
+const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
+const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
+
+describe('FornecedoresView — reestruturação Nossia', () => {
+  it('[COMPONENTE] índice vem antes da lista; grupos usam rótulo, pilha e cartão rotulado', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA, () => respostaJson(LISTA)))
+    const { wrapper } = await abrir('/fornecedores')
+
+    const raiz = wrapper.get('.fornecedores')
+    expect(raiz.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    const corpo = wrapper.get('.fornecedores__corpo')
+    expect(corpo.classes()).toContain('fornecedores__corpo--com-indice')
+    const indice = corpo.get('[data-teste="indice-categorias"]')
+    const lista = corpo.get('[data-teste="lista-fornecedores"]')
+    expect(indice.element.compareDocumentPosition(lista.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(lista.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--cartao']))
+    expect(wrapper.find('.fornecedores__painel').exists()).toBe(false)
+
+    const grupo = wrapper.findAll('[data-teste="grupo-categoria"]')[0]!
+    expect(grupo.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--campo']))
+    const titulo = grupo.get('h2')
+    expect(titulo.classes()).toContain('texto-rotulo')
+    expect(titulo.text()).toContain(TEXTOS_FORNECEDORES.quantidadeGrupo(1))
+    const listaGrupo = grupo.get('ul')
+    expect(listaGrupo.classes()).toContain('cartao')
+    expect(listaGrupo.attributes('aria-labelledby')).toBe(titulo.attributes('id'))
+  })
+
+  it('[COMPONENTE] nome longo sem espaços é renderizado inteiro na linha', async () => {
+    const nomeLongo = 'AtelierFloralJardimSecretoDecoracoesParaCasamentosEEventosEspeciaisLtda'
+    rotearFetch(fetchSimulado, quando('GET', ROTA, () => respostaJson([resumoFornecedor({ nomeEmpresa: nomeLongo })])))
+    const { wrapper } = await abrir('/fornecedores')
+
+    expect(nomesVisiveis(wrapper)).toEqual([nomeLongo])
+  })
+
+  it('[COMPONENTE] sem fornecedores ativos esconde o índice e o corpo fica em uma coluna', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA, () => respostaJson([resumoFornecedor({ arquivado: true })])))
+    const { wrapper } = await abrir('/fornecedores')
+
+    expect(wrapper.find('[data-teste="indice-categorias"]').exists()).toBe(false)
+    expect(wrapper.get('.fornecedores__corpo').classes()).not.toContain('fornecedores__corpo--com-indice')
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.vazioTitulo)
+  })
+
+  it('[UNITÁRIO] a view usa só o ritmo e abre a lateral do índice por contêiner, sem @media', () => {
+    const estilo = estiloDe(lerFonte('views/fornecedores/FornecedoresView.vue'))
+
+    expect(estilo).not.toMatch(/@media/)
+    expect(estilo).not.toMatch(/--p-espaco-/)
+    expect(estilo).not.toMatch(/margin[^:]*:\s*-/)
+    expect(estilo).toMatch(/container:\s*fornecedores\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/container:\s*lista-fornecedores\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/@container fornecedores \(min-width: 64rem\)/)
+    expect(estilo).toMatch(/position:\s*sticky/)
+  })
+
+  it('[UNITÁRIO] IndiceCategorias vira fichas horizontais só quando o próprio contêiner é largo', () => {
+    const estilo = estiloDe(lerFonte('componentes/base/IndiceCategorias.vue'))
+
+    expect(estilo).toMatch(/container:\s*indice-categorias\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/@container indice-categorias \(min-width: 30rem\)\s*\{\s*\.indice-categorias__lista\s*\{\s*flex-flow:\s*row wrap/)
+  })
+
+  it('[UNITÁRIO] LinhaFornecedor empilha numa lista estreita e usa o ritmo no espaçamento interno', () => {
+    const estilo = estiloDe(lerFonte('componentes/base/LinhaFornecedor.vue'))
+
+    expect(estilo).toMatch(/padding:\s*var\(--p-ritmo-grupo\) var\(--p-ritmo-cartao\)/)
+    expect(estilo).toMatch(/@container lista-fornecedores \(max-width: 39\.99rem\)/)
+    expect(estilo.indexOf('@container lista-fornecedores')).toBeGreaterThan(estilo.indexOf('@media (min-width: 640px)'))
   })
 })
 
