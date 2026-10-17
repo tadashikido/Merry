@@ -130,7 +130,10 @@ function arquivarEmVezDeExcluir() {
 
 <template>
   <LayoutPainelUsuario>
-    <template v-if="falha?.tipo === 'naoEncontrado'">
+    <div
+      v-if="falha?.tipo === 'naoEncontrado'"
+      class="pilha pilha--bloco"
+    >
       <EstadoErro
         :titulo="TEXTOS_FORNECEDORES.naoEncontradoTitulo"
         :mensagem="TEXTOS_FORNECEDORES.naoEncontradoTexto"
@@ -143,7 +146,7 @@ function arquivarEmVezDeExcluir() {
       >
         {{ TEXTOS_FORNECEDORES.voltar }}
       </RouterLink>
-    </template>
+    </div>
 
     <template v-else>
       <CabecalhoPagina :titulo="fornecedor?.nomeEmpresa ?? TEXTOS_FORNECEDORES.tituloDetalhe">
@@ -185,7 +188,7 @@ function arquivarEmVezDeExcluir() {
         </template>
       </CabecalhoPagina>
 
-      <div class="fornecedor">
+      <div class="fornecedor pilha pilha--bloco">
         <EstadoCarregando
           v-if="store.carregandoAtual && !fornecedor"
           variante="cartao"
@@ -225,143 +228,156 @@ function arquivarEmVezDeExcluir() {
             />
           </MensagemFormulario>
 
-          <div class="fornecedor__blocos">
-            <section
-              class="fornecedor__bloco"
-              aria-labelledby="fornecedor-contato"
+          <div class="fornecedor__corpo">
+            <aside
+              class="fornecedor__ficha pilha pilha--bloco"
+              data-teste="ficha-fornecedor"
             >
-              <h2
-                id="fornecedor-contato"
-                class="fornecedor__titulo-bloco"
+              <section
+                class="pilha pilha--campo"
+                aria-labelledby="fornecedor-contato"
               >
-                {{ TEXTOS_FORNECEDORES.contato }}
-              </h2>
-              <CanaisContato
-                v-if="temContato"
-                :nome="fornecedor.nomeEmpresa"
-                :telefone="fornecedor.telefone"
-                :email="fornecedor.email"
-                :site="fornecedor.site"
-                :instagram="fornecedor.instagram"
-                variante="completa"
-              />
+                <h2
+                  id="fornecedor-contato"
+                  class="fornecedor__titulo-bloco texto-rotulo"
+                >
+                  {{ TEXTOS_FORNECEDORES.contato }}
+                </h2>
+                <div class="fornecedor__cartao cartao">
+                  <CanaisContato
+                    v-if="temContato"
+                    :nome="fornecedor.nomeEmpresa"
+                    :telefone="fornecedor.telefone"
+                    :email="fornecedor.email"
+                    :site="fornecedor.site"
+                    :instagram="fornecedor.instagram"
+                    variante="completa"
+                  />
+                  <p
+                    v-else
+                    class="fornecedor__apoio"
+                    data-teste="sem-contato"
+                  >
+                    {{ TEXTOS_FORNECEDORES.semContato }}
+                  </p>
+                </div>
+              </section>
+
+              <section
+                class="pilha pilha--campo"
+                aria-labelledby="fornecedor-observacoes"
+              >
+                <h2
+                  id="fornecedor-observacoes"
+                  class="fornecedor__titulo-bloco texto-rotulo"
+                >
+                  {{ TEXTOS_FORNECEDORES.observacoes }}
+                </h2>
+                <div class="fornecedor__cartao cartao pilha pilha--campo">
+                  <p class="fornecedor__texto texto-legenda">
+                    {{ TEXTOS_FORNECEDORES.observacoesApoio }}
+                  </p>
+                  <p
+                    v-if="fornecedor.observacoes"
+                    class="fornecedor__observacoes fornecedor__texto texto-corrido"
+                    data-teste="observacoes"
+                  >
+                    {{ fornecedor.observacoes }}
+                  </p>
+                  <p
+                    v-else
+                    class="fornecedor__apoio"
+                  >
+                    {{ TEXTOS_FORNECEDORES.semObservacoes }}
+                  </p>
+                </div>
+              </section>
+
               <p
-                v-else
-                class="fornecedor__apoio"
-                data-teste="sem-contato"
+                class="fornecedor__texto texto-legenda numeros-tabulares"
+                data-teste="datas-fornecedor"
               >
-                {{ TEXTOS_FORNECEDORES.semContato }}
+                {{ TEXTOS_FORNECEDORES.cadastro(formatarData(fornecedor.criadoEm), formatarData(fornecedor.atualizadoEm)) }}
               </p>
-            </section>
+            </aside>
 
             <section
-              class="fornecedor__bloco"
-              aria-labelledby="fornecedor-observacoes"
+              class="fornecedor__historico-secao pilha pilha--campo"
+              aria-labelledby="fornecedor-historico"
+              data-teste="historico-casamentos"
             >
               <h2
-                id="fornecedor-observacoes"
-                class="fornecedor__titulo-bloco"
+                id="fornecedor-historico"
+                class="fornecedor__titulo-bloco texto-rotulo"
               >
-                {{ TEXTOS_FORNECEDORES.observacoes }}
+                {{ TEXTOS_FORNECEDORES.historicoTitulo }}
               </h2>
-              <p class="fornecedor__apoio">
-                {{ TEXTOS_FORNECEDORES.observacoesApoio }}
-              </p>
               <p
-                v-if="fornecedor.observacoes"
-                class="fornecedor__observacoes"
-                data-teste="observacoes"
+                v-if="store.carregandoParticipacoes && !participacoes"
+                class="fornecedor__cartao cartao fornecedor__apoio"
               >
-                {{ fornecedor.observacoes }}
+                {{ TEXTOS_HISTORICO_FORNECEDOR.carregando }}
               </p>
-              <p
+              <div
+                v-else-if="falhaParticipacoes"
+                class="fornecedor__cartao cartao fornecedor__historico-erro"
+                data-teste="erro-historico"
+              >
+                <p class="fornecedor__apoio">
+                  {{ TEXTOS_HISTORICO_FORNECEDOR.erro }}
+                </p>
+                <Button
+                  :label="TEXTOS_HISTORICO_FORNECEDOR.tentarNovamente"
+                  severity="secondary"
+                  text
+                  size="small"
+                  @click="store.carregarParticipacoes(fornecedorId)"
+                />
+              </div>
+              <ul
+                v-else-if="participacoes && participacoes.length > 0"
+                class="fornecedor__historico cartao"
+                :aria-label="TEXTOS_HISTORICO_FORNECEDOR.listaRotulo"
+                data-teste="lista-historico"
+              >
+                <li
+                  v-for="participacao in participacoes"
+                  :key="participacao.casamentoId"
+                  class="fornecedor__participacao"
+                >
+                  <RouterLink
+                    :to="{ name: 'casamento-fornecedores', params: { id: participacao.casamentoId } }"
+                    class="fornecedor__participacao-nomes"
+                  >
+                    {{ formatarNomesCasal(participacao.nomePrimeiraPessoa, participacao.nomeSegundaPessoa) }}
+                  </RouterLink>
+                  <span class="fornecedor__participacao-data numeros-tabulares">{{ formatarDataCalendarioCurta(participacao.dataCasamento) }}</span>
+                  <span class="fornecedor__participacao-selos">
+                    <BadgeStatus
+                      :texto="ROTULOS_STATUS_FORNECEDOR_CASAMENTO[participacao.status]"
+                      :variante="VARIANTES_STATUS_FORNECEDOR_CASAMENTO[participacao.status]"
+                    />
+                    <BadgeStatus
+                      v-if="participacao.casamentoArquivado"
+                      :texto="TEXTOS_HISTORICO_FORNECEDOR.casamentoArquivado"
+                      variante="neutro"
+                      icone="arquivar"
+                    />
+                  </span>
+                </li>
+              </ul>
+              <div
                 v-else
-                class="fornecedor__apoio"
+                class="fornecedor__cartao cartao"
               >
-                {{ TEXTOS_FORNECEDORES.semObservacoes }}
-              </p>
+                <EstadoVazio
+                  icone="casamento"
+                  :titulo="TEXTOS_FORNECEDORES.historicoVazioTitulo"
+                  :descricao="TEXTOS_FORNECEDORES.historicoVazioTexto"
+                />
+              </div>
             </section>
           </div>
-
-          <section
-            class="fornecedor__bloco"
-            aria-labelledby="fornecedor-historico"
-            data-teste="historico-casamentos"
-          >
-            <h2
-              id="fornecedor-historico"
-              class="fornecedor__titulo-bloco"
-            >
-              {{ TEXTOS_FORNECEDORES.historicoTitulo }}
-            </h2>
-            <p
-              v-if="store.carregandoParticipacoes && !participacoes"
-              class="fornecedor__apoio"
-            >
-              {{ TEXTOS_HISTORICO_FORNECEDOR.carregando }}
-            </p>
-            <div
-              v-else-if="falhaParticipacoes"
-              class="fornecedor__historico-erro"
-              data-teste="erro-historico"
-            >
-              <p class="fornecedor__apoio">
-                {{ TEXTOS_HISTORICO_FORNECEDOR.erro }}
-              </p>
-              <Button
-                :label="TEXTOS_HISTORICO_FORNECEDOR.tentarNovamente"
-                severity="secondary"
-                text
-                size="small"
-                @click="store.carregarParticipacoes(fornecedorId)"
-              />
-            </div>
-            <ul
-              v-else-if="participacoes && participacoes.length > 0"
-              class="fornecedor__historico"
-              :aria-label="TEXTOS_HISTORICO_FORNECEDOR.listaRotulo"
-              data-teste="lista-historico"
-            >
-              <li
-                v-for="participacao in participacoes"
-                :key="participacao.casamentoId"
-                class="fornecedor__participacao"
-              >
-                <RouterLink
-                  :to="{ name: 'casamento-fornecedores', params: { id: participacao.casamentoId } }"
-                  class="fornecedor__participacao-nomes"
-                >
-                  {{ formatarNomesCasal(participacao.nomePrimeiraPessoa, participacao.nomeSegundaPessoa) }}
-                </RouterLink>
-                <span class="fornecedor__apoio numeros-tabulares">{{ formatarDataCalendarioCurta(participacao.dataCasamento) }}</span>
-                <span class="fornecedor__participacao-selos">
-                  <BadgeStatus
-                    :texto="ROTULOS_STATUS_FORNECEDOR_CASAMENTO[participacao.status]"
-                    :variante="VARIANTES_STATUS_FORNECEDOR_CASAMENTO[participacao.status]"
-                  />
-                  <BadgeStatus
-                    v-if="participacao.casamentoArquivado"
-                    :texto="TEXTOS_HISTORICO_FORNECEDOR.casamentoArquivado"
-                    variante="neutro"
-                    icone="arquivar"
-                  />
-                </span>
-              </li>
-            </ul>
-            <EstadoVazio
-              v-else
-              icone="casamento"
-              :titulo="TEXTOS_FORNECEDORES.historicoVazioTitulo"
-              :descricao="TEXTOS_FORNECEDORES.historicoVazioTexto"
-            />
-          </section>
-
-          <p
-            class="fornecedor__apoio numeros-tabulares"
-            data-teste="datas-fornecedor"
-          >
-            {{ TEXTOS_FORNECEDORES.cadastro(formatarData(fornecedor.criadoEm), formatarData(fornecedor.atualizadoEm)) }}
-          </p>
         </template>
       </div>
 
@@ -380,37 +396,39 @@ function arquivarEmVezDeExcluir() {
 
 <style scoped>
 .fornecedor {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-4);
+  --fornecedor-largura-ficha: 20rem;
+  --fornecedor-largura-data: 6rem;
+  --fornecedor-largura-selos: 14rem;
+
+  container: fornecedor / inline-size;
 }
 
 .fornecedor__detalhes {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-2) var(--p-espaco-4);
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
 }
 
-.fornecedor__blocos {
+.fornecedor__corpo {
   display: grid;
-  gap: var(--p-espaco-4);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
 }
 
-.fornecedor__bloco {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-espaco-3);
+.fornecedor__ficha,
+.fornecedor__historico-secao {
   min-width: 0;
-  padding: var(--p-espaco-5) var(--p-espaco-4);
-  background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
 }
 
-.fornecedor .fornecedor__titulo-bloco {
+.fornecedor .fornecedor__titulo-bloco,
+.fornecedor .fornecedor__texto {
   margin: 0;
-  font-size: var(--p-fonte-tamanho-titulo);
+}
+
+.fornecedor__cartao {
+  min-width: 0;
 }
 
 .fornecedor__apoio {
@@ -420,28 +438,24 @@ function arquivarEmVezDeExcluir() {
 }
 
 .fornecedor__observacoes {
-  margin: 0;
-  font-size: var(--p-fonte-tamanho-corpo);
-  line-height: var(--p-fonte-entrelinha-corpo);
   color: var(--p-cor-texto);
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
 
-.fornecedor__historico {
-  display: flex;
-  flex-direction: column;
+.fornecedor .fornecedor__historico {
   margin: 0;
-  padding: 0;
+  padding-block: 0;
   list-style: none;
+  container: historico-fornecedor / inline-size;
 }
 
 .fornecedor__participacao {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-1) var(--p-espaco-3);
-  padding: var(--p-espaco-3) 0;
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
+  padding-block: var(--p-ritmo-grupo);
 }
 
 .fornecedor__participacao + .fornecedor__participacao {
@@ -449,35 +463,73 @@ function arquivarEmVezDeExcluir() {
 }
 
 .fornecedor__participacao-nomes {
+  flex: 1 1 100%;
+  min-width: 0;
   font-weight: var(--p-fonte-peso-seminegrito);
+  overflow-wrap: anywhere;
+}
+
+.fornecedor__participacao-data {
+  font-size: var(--p-fonte-tamanho-apoio);
+  color: var(--p-cor-texto-apoio);
 }
 
 .fornecedor__participacao-selos {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: var(--p-espaco-2);
-  margin-inline-start: auto;
+  gap: var(--p-ritmo-campo);
 }
 
 .fornecedor__historico-erro {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--p-espaco-2);
+  gap: var(--p-ritmo-campo);
 }
 
 .fornecedor__voltar {
-  display: inline-block;
-  margin-top: var(--p-espaco-4);
+  align-self: flex-start;
 }
 
-@media (min-width: 640px) {
-  .fornecedor__blocos {
+@container fornecedor (min-width: 40rem) and (max-width: 63.99rem) {
+  .fornecedor__ficha {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--p-ritmo-bloco) var(--p-ritmo-cartao);
   }
 
-  .fornecedor__bloco {
-    padding: var(--p-espaco-6);
+  .fornecedor__ficha > :last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@container historico-fornecedor (min-width: 36rem) {
+  .fornecedor__participacao {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--fornecedor-largura-data) var(--fornecedor-largura-selos);
+  }
+
+  .fornecedor__participacao-selos {
+    justify-content: flex-end;
+  }
+}
+
+@container fornecedor (min-width: 64rem) {
+  .fornecedor__corpo {
+    grid-template-columns: var(--fornecedor-largura-ficha) minmax(0, 1fr);
+  }
+
+  .fornecedor__ficha {
+    position: sticky;
+    top: var(--p-ritmo-bloco);
+    max-height: calc(100dvh - 2 * var(--p-ritmo-bloco));
+    overflow-y: auto;
+    padding: var(--p-ritmo-campo);
+    overscroll-behavior: contain;
+  }
+
+  .fornecedor__historico-secao {
+    padding-block-start: var(--p-ritmo-campo);
   }
 }
 </style>

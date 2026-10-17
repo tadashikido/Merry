@@ -137,6 +137,7 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
 .cabecalho-pagina .cabecalho-pagina__titulo {
   font-size: var(--p-fonte-tamanho-pagina-celular);
   line-height: var(--p-fonte-entrelinha-titulo);
+  overflow-wrap: anywhere;
 }
 
 .cabecalho-pagina__descricao {

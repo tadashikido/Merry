@@ -504,6 +504,125 @@ describe('FornecedoresView — reestruturação Nossia', () => {
   })
 })
 
+describe('FornecedorView — reestruturação Nossia', () => {
+  const PARTICIPACAO_LONGA = {
+    casamentoId: '77777777-7777-4777-8777-777777777777',
+    nomePrimeiraPessoa: 'MariaEduardaFigueiredoDeAlbuquerqueCavalcanti',
+    nomeSegundaPessoa: 'Rafael',
+    dataCasamento: '2026-11-07',
+    casamentoArquivado: false,
+    status: 'EmNegociacao',
+  }
+
+  it('[COMPONENTE] ficha vem antes do histórico; blocos usam rótulo, pilha e cartão rotulado', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
+      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson([PARTICIPACAO_LONGA])),
+    )
+    const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
+
+    const raiz = wrapper.get('.fornecedor')
+    expect(raiz.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    const corpo = raiz.get('.fornecedor__corpo')
+    const ficha = corpo.get('[data-teste="ficha-fornecedor"]')
+    const historico = corpo.get('[data-teste="historico-casamentos"]')
+    expect(ficha.element.tagName).toBe('ASIDE')
+    expect(ficha.element.compareDocumentPosition(historico.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(ficha.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+
+    for (const secao of [...ficha.findAll('section'), historico]) {
+      expect(secao.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--campo']))
+      const titulo = secao.get('h2')
+      expect(titulo.classes()).toContain('texto-rotulo')
+      expect(secao.attributes('aria-labelledby')).toBe(titulo.attributes('id'))
+    }
+    expect(ficha.findAll('.cartao')).toHaveLength(2)
+    expect(ficha.get('[data-teste="observacoes"]').classes()).toContain('texto-corrido')
+    expect(ficha.get('[data-teste="datas-fornecedor"]').classes()).toContain('texto-legenda')
+    expect(historico.get('[data-teste="lista-historico"]').classes()).toContain('cartao')
+    expect(historico.get('a').text()).toBe('MariaEduardaFigueiredoDeAlbuquerqueCavalcanti & Rafael')
+    expect(historico.text()).toContain('Em negociação')
+  })
+
+  it('[COMPONENTE] histórico vazio e com falha ficam dentro de cartão, com a ficha visível', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
+      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaProblema(500, { title: 'Erro' })),
+    )
+    const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
+
+    expect(wrapper.get('[data-teste="erro-historico"]').classes()).toContain('cartao')
+    expect(wrapper.find('[data-teste="ficha-fornecedor"]').exists()).toBe(true)
+    expect(wrapper.findAll('[data-teste="canal-contato"]').length).toBeGreaterThan(0)
+
+    wrapper.unmount()
+    fetchSimulado.mockReset()
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
+      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson([])),
+    )
+    const segunda = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
+    const vazio = segunda.wrapper.get('[data-teste="historico-casamentos"]').get('.cartao')
+    expect(vazio.text()).toContain(TEXTOS_FORNECEDORES.historicoVazioTitulo)
+  })
+
+  it('[COMPONENTE] arquivado mostra a faixa antes do corpo e não encontrado agrupa erro e volta numa pilha', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto({ arquivado: true, arquivadoEm: '2026-09-30T13:00:00Z' }))),
+      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson([])),
+    )
+    const primeira = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
+    const faixa = primeira.wrapper.get('[data-teste="faixa-arquivado"]')
+    const corpo = primeira.wrapper.get('.fornecedor__corpo')
+    expect(faixa.element.compareDocumentPosition(corpo.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    primeira.wrapper.unmount()
+
+    fetchSimulado.mockReset()
+    rotearFetch(fetchSimulado)
+    const segunda = await abrir(`/fornecedores/${ID_FORNECEDOR_2}`)
+    const voltar = segunda.wrapper.get('[data-teste="voltar"]')
+    expect(voltar.element.parentElement?.classList.contains('pilha--bloco')).toBe(true)
+  })
+
+  it('[COMPONENTE] nome de empresa longo sem espaços aparece inteiro no título', async () => {
+    const nomeLongo = 'AtelierFloralJardimSecretoDecoracoesParaCasamentosEEventosEspeciaisLtda'
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto({ nomeEmpresa: nomeLongo }))),
+      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson([])),
+    )
+    const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`, true)
+
+    expect(wrapper.get('h1').text()).toBe(nomeLongo)
+  })
+
+  it('[UNITÁRIO] a view usa só o ritmo e abre colunas por contêiner, sem @media', () => {
+    const estilo = estiloDe(lerFonte('views/fornecedores/FornecedorView.vue'))
+
+    expect(estilo).not.toMatch(/@media/)
+    expect(estilo).not.toMatch(/--p-espaco-/)
+    expect(estilo).not.toMatch(/margin[^:]*:\s*-/)
+    expect(estilo).not.toMatch(/box-shadow/)
+    expect(estilo).toMatch(/container:\s*fornecedor\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/container:\s*historico-fornecedor\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/@container fornecedor \(min-width: 64rem\)\s*\{\s*\.fornecedor__corpo\s*\{\s*grid-template-columns:\s*var\(--fornecedor-largura-ficha\) minmax\(0, 1fr\)/)
+    expect(estilo).toMatch(/@container fornecedor \(min-width: 40rem\) and \(max-width: 63\.99rem\)/)
+    expect(estilo).toMatch(/@container historico-fornecedor \(min-width: 36rem\)/)
+    expect(estilo).toMatch(/position:\s*sticky/)
+    expect(estilo).toMatch(/overflow-y:\s*auto/)
+  })
+
+  it('[UNITÁRIO] o título do CabecalhoPagina quebra palavras longas', () => {
+    const estilo = estiloDe(lerFonte('componentes/base/CabecalhoPagina.vue'))
+
+    expect(estilo).toMatch(/\.cabecalho-pagina \.cabecalho-pagina__titulo\s*\{[^}]*overflow-wrap:\s*anywhere/)
+  })
+})
+
 describe('rotas de fornecedores', () => {
   it('[SEGURANÇA] todas as rotas são exclusivas da assessoria', () => {
     for (const caminho of ['/fornecedores', '/fornecedores/novo', `/fornecedores/${ID_FORNECEDOR}`, `/fornecedores/${ID_FORNECEDOR}/editar`]) {
