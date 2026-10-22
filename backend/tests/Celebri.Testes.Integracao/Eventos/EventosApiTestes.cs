@@ -280,6 +280,20 @@ public sealed class EventosApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.False(unico.Arquivado);
     }
 
+    [Theory]
+    [InlineData("Casal")]
+    [InlineData("Administrador")]
+    public async Task TokenComPapelDesconhecido_DeveRetornar401ParaForcarARenovacaoDaSessao(string papel)
+    {
+        var criado = await CriarAsync(OrganizacaoA.Cliente);
+        using var cliente = Fabrica.CriarClienteHttps();
+        cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GerarTokenComPapel(OrganizacaoA, papel));
+
+        var resposta = await cliente.GetAsync($"{Rota}/{criado.Id}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resposta.StatusCode);
+    }
+
     private string GerarTokenComPapel(OrganizacaoTeste organizacao, string papel)
     {
         var opcoes = Fabrica.Services.GetRequiredService<IOptions<OpcoesJwt>>().Value;

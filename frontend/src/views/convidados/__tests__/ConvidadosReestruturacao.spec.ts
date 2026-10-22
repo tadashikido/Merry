@@ -150,7 +150,7 @@ describe('ConvidadosView — reestruturação da fundação', { timeout: 20_000 
     expect(atalhos.find('[data-teste="abrir-restricoes"]').exists()).toBe(true)
   })
 
-  it('[SEGURANÇA] perfil anfitriões não veem o atalho de restrições alimentares', async () => {
+  it('[SEGURANÇA] perfil anfitrião não vê o atalho de restrições alimentares', async () => {
     const tela = await abrir(SESSAO_ANFITRIAO)
 
     const atalhos = tela.get('[data-teste="atalhos-convidados"]')

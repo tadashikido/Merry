@@ -15,7 +15,19 @@ public static class ValidadorSessaoAnfitriao
         ArgumentNullException.ThrowIfNull(contexto);
 
         var principal = contexto.Principal;
-        if (principal?.FindFirstValue(ClaimsAutenticacao.Papel) != nameof(PapelUsuario.Anfitriao))
+        if (principal is null)
+        {
+            return;
+        }
+
+        var papel = principal.FindFirstValue(ClaimsAutenticacao.Papel);
+        if (!PapelConhecido(papel))
+        {
+            contexto.Fail(MotivoSessaoEncerrada);
+            return;
+        }
+
+        if (papel != nameof(PapelUsuario.Anfitriao))
         {
             return;
         }
@@ -39,5 +51,10 @@ public static class ValidadorSessaoAnfitriao
         {
             contexto.Fail(MotivoSessaoEncerrada);
         }
+    }
+
+    private static bool PapelConhecido(string? papel)
+    {
+        return Enum.GetNames<PapelUsuario>().Contains(papel, StringComparer.Ordinal);
     }
 }
