@@ -150,7 +150,7 @@ describe('EsqueciSenhaView', () => {
     expect(wrapper!.text()).not.toContain('ninguem@exemplo.com')
   })
 
-  it('[COMPONENTE] organiza formulário e confirmação com as primitivas de ritmo do Nossia', async () => {
+  it('[COMPONENTE] organiza formulário e confirmação com as primitivas de ritmo da fundação', async () => {
     await abrirEsqueci()
 
     const formulario = wrapper!.get('[data-teste="formulario-esqueci-senha"]')
@@ -269,7 +269,7 @@ describe('RedefinirSenhaView', () => {
     expect(wrapper!.find('[data-teste="lacre-link-invalido"]').exists()).toBe(true)
   })
 
-  it('[COMPONENTE] organiza o formulário com as primitivas de ritmo do Nossia', async () => {
+  it('[COMPONENTE] organiza o formulário com as primitivas de ritmo da fundação', async () => {
     await abrir('/redefinir-senha#token=abc')
 
     const formulario = wrapper!.get('[data-teste="formulario-redefinir-senha"]')

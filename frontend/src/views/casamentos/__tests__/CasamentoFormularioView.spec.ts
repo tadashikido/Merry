@@ -47,7 +47,7 @@ function colunaDe(campo: string) {
   return wrapper!.get(`#casamento-${campo}`).element.closest('.formulario-casamento__colunas')
 }
 
-describe('CasamentoFormularioView no design system Nossia', () => {
+describe('CasamentoFormularioView no design system Celebri', () => {
   it('[COMPONENTE] cabeçalho e formulário dividem a largura de formulário', async () => {
     rotearFetch(fetchSimulado)
     await abrir('/casamentos/novo')

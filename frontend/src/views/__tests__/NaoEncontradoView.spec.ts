@@ -66,7 +66,7 @@ describe('NaoEncontradoView', () => {
     wrapper.unmount()
   })
 
-  it('[COMPONENTE] usa o ritmo Nossia: bloco entre mensagem e ação, grupo e campo dentro da mensagem', async () => {
+  it('[COMPONENTE] usa o ritmo da fundação: bloco entre mensagem e ação, grupo e campo dentro da mensagem', async () => {
     const { wrapper } = await montar()
 
     expect(wrapper.get('section').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))

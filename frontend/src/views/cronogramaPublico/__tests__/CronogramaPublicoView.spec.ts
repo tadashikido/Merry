@@ -229,7 +229,7 @@ describe('CronogramaPublicoView — agora / próximo', { timeout: 20_000 }, () =
   })
 })
 
-describe('CronogramaPublicoView — estrutura Nossia', { timeout: 20_000 }, () => {
+describe('CronogramaPublicoView — estrutura da fundação', { timeout: 20_000 }, () => {
   const estiloView = readFileSync(resolve(__dirname, '../CronogramaPublicoView.vue'), 'utf-8').split('<style scoped>')[1] ?? ''
   const estiloLayout = readFileSync(resolve(__dirname, '../../../layouts/LayoutPublico.vue'), 'utf-8')
 

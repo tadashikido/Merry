@@ -191,7 +191,7 @@ describe('PainelInicioView', () => {
     expect(chamadas(fetchSimulado, 'GET', '/api/financeiro/alertas')).toHaveLength(2)
   })
 
-  it('[COMPONENTE] organiza a página em seções do ritmo Nossia, com pendências lado a lado e a grade larga de casamentos', async () => {
+  it('[COMPONENTE] organiza a página em seções do ritmo da fundação, com pendências lado a lado e a grade larga de casamentos', async () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento()])),
@@ -250,7 +250,7 @@ describe('PainelInicioView', () => {
     expect(wrapper.find('[data-teste="ver-todos"]').exists()).toBe(true)
   })
 
-  it('[UNITÁRIO] o estilo da tela usa só o ritmo e os tokens do Nossia, sem espaços soltos', () => {
+  it('[UNITÁRIO] o estilo da tela usa só o ritmo e os tokens da fundação, sem espaços soltos', () => {
     const estilo = estiloDe(lerFonte('views/painel/PainelInicioView.vue'))
 
     expect(estilo).not.toMatch(/--p-espaco-/)
@@ -262,7 +262,7 @@ describe('PainelInicioView', () => {
     expect(estilo).toContain('var(--p-fonte-peso-leve)')
   })
 
-  it('[UNITÁRIO] cartão de casamento e blocos do painel seguem o Nossia: sem sombra e com padding do ritmo de cartão', () => {
+  it('[UNITÁRIO] cartão de casamento e blocos do painel seguem a fundação: sem sombra e com padding do ritmo de cartão', () => {
     const cartao = estiloDe(lerFonte('componentes/casamentos/CartaoCasamento.vue'))
     const tarefas = estiloDe(lerFonte('componentes/tarefas/BlocoPendenciasTarefas.vue'))
     const pagamentos = estiloDe(lerFonte('componentes/base/BlocoAlertasPagamentos.vue'))

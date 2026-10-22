@@ -434,7 +434,7 @@ describe('FornecedorFormularioView', () => {
 const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
 const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
 
-describe('FornecedoresView — reestruturação Nossia', () => {
+describe('FornecedoresView — reestruturação da fundação', () => {
   it('[COMPONENTE] índice vem antes da lista; grupos usam rótulo, pilha e cartão rotulado', async () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA, () => respostaJson(LISTA)))
     const { wrapper } = await abrir('/fornecedores')
@@ -504,7 +504,7 @@ describe('FornecedoresView — reestruturação Nossia', () => {
   })
 })
 
-describe('FornecedorView — reestruturação Nossia', () => {
+describe('FornecedorView — reestruturação da fundação', () => {
   const PARTICIPACAO_LONGA = {
     casamentoId: '77777777-7777-4777-8777-777777777777',
     nomePrimeiraPessoa: 'MariaEduardaFigueiredoDeAlbuquerqueCavalcanti',
@@ -623,7 +623,7 @@ describe('FornecedorView — reestruturação Nossia', () => {
   })
 })
 
-describe('FornecedorFormularioView — reestruturação Nossia', () => {
+describe('FornecedorFormularioView — reestruturação da fundação', () => {
   const legendas = (alvo: VueWrapper) => alvo.findAll('fieldset > legend').map((legenda) => legenda.text())
   const camposDoGrupo = (alvo: VueWrapper, grupo: string) =>
     alvo.get(`[data-teste="${grupo}"]`).findAll('[data-teste^="campo-"]').map((campo) => campo.attributes('data-teste'))

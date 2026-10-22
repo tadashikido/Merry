@@ -116,7 +116,7 @@ const opcoes: { valor: EscolhaPresencaRsvp; rotulo: string; icone: string }[] = 
 .escolha-presenca__marcador {
   font-size: var(--p-fonte-tamanho-apoio);
   font-weight: var(--p-fonte-peso-regular);
-  color: var(--p-cor-apoio-quente);
+  color: var(--p-cor-apoio-publico);
 }
 
 .escolha-presenca__opcoes {
@@ -141,7 +141,7 @@ const opcoes: { valor: EscolhaPresencaRsvp; rotulo: string; icone: string }[] = 
   color: var(--p-cor-texto);
   cursor: pointer;
   background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-controle-quente);
+  border: 1px solid var(--p-cor-controle-publico);
   border-radius: 12px;
   transition:
     background-color var(--p-duracao-rapida),
@@ -171,7 +171,7 @@ const opcoes: { valor: EscolhaPresencaRsvp; rotulo: string; icone: string }[] = 
 
 .escolha-presenca__icone {
   font-size: 1.25rem;
-  color: var(--p-cor-apoio-quente);
+  color: var(--p-cor-apoio-publico);
 }
 
 .escolha-presenca__opcao--vou .escolha-presenca__icone {

@@ -107,7 +107,7 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
 
 .layout-publico--convite .layout-publico__rodape {
   max-width: var(--p-dimensao-largura-convite);
-  color: var(--p-cor-apoio-quente);
+  color: var(--p-cor-apoio-publico);
 }
 
 .layout-publico--convite .layout-publico__rodape :deep(a) {

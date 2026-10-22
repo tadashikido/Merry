@@ -14,49 +14,69 @@ describe('contraste', () => {
     expect(razaoContraste('#FFFFFF', '#000000')).toBeCloseTo(21, 5)
   })
 
-  it('[UNITÁRIO] confere a razão de referência do texto sobre a superfície e sobre o fundo', () => {
-    expect(razaoContraste(cores.texto, cores.superficie)).toBeCloseTo(9.56, 1)
-    expect(razaoContraste(cores.texto, cores.fundo)).toBeCloseTo(9.05, 1)
+  it('[UNITÁRIO] confere a razão de referência do marinho sobre o branco e do branco sobre o marinho', () => {
+    expect(razaoContraste(cores.texto, cores.superficie)).toBeCloseTo(15.47, 1)
+    expect(razaoContraste(cores.superficie, cores.primaria)).toBeCloseTo(15.47, 1)
+    expect(razaoContraste(cores.texto, cores.fundo)).toBeCloseTo(15.47, 1)
   })
 
   it('[UNITÁRIO] documenta a exceção de acessibilidade: a borda de controle e o hairline não servem para campos, a borda de campo sim', () => {
     expect(razaoContraste(cores.bordaControle, cores.superficie)).toBeLessThan(MINIMO_CONTRASTE.componente)
-    expect(razaoContraste(coresMarca.hairline, cores.superficie)).toBeLessThan(MINIMO_CONTRASTE.componente)
+    expect(razaoContraste(coresMarca.linha, cores.superficie)).toBeLessThan(MINIMO_CONTRASTE.componente)
     expect(razaoContraste(cores.bordaCampo, cores.superficie)).toBeGreaterThanOrEqual(MINIMO_CONTRASTE.componente)
   })
 
-  it('[UNITÁRIO] usa os valores oficiais do design system Nossia', () => {
+  it('[UNITÁRIO] usa os valores oficiais da identidade Celebri: branco predominante e azul-marinho #0B2542', () => {
+    expect(paletas.marinho[800]).toBe('#0B2542')
     expect(coresMarca).toEqual({
-      terracota: '#A84D2E',
-      terracotaEscuro: '#8F472E',
-      terracotaClaro: '#E1A38A',
-      rosaQueimado: '#CFA599',
-      verdeAlecrim: '#656D56',
-      ink: '#6E3524',
-      inkMuted: '#7A5A4E',
-      surface: '#FFFFFF',
-      surfaceRosado: '#F8EFEA',
-      hairline: '#EAD9CF',
-      onTerracota: '#FFFFFF',
+      marinho: '#0B2542',
+      marinhoMedio: '#294466',
+      marinhoClaro: '#93AACB',
+      branco: '#FFFFFF',
+      tinta: '#0B2542',
+      tintaApoio: '#596574',
+      superficie: '#FFFFFF',
+      superficieAzulada: '#F2F5F9',
+      linha: '#D5DCE4',
+      sobreMarinho: '#FFFFFF',
     })
     expect(cores).toMatchObject({
-      primaria: coresMarca.terracota,
-      primariaEscura: coresMarca.terracotaEscuro,
-      primariaSuave: coresMarca.surfaceRosado,
-      texto: coresMarca.ink,
-      textoApoio: coresMarca.inkMuted,
-      superficie: coresMarca.surface,
-      borda: coresMarca.hairline,
-      sucesso: coresMarca.verdeAlecrim,
-      fundoCasal: coresMarca.surfaceRosado,
-      navegacao: coresMarca.surface,
+      primaria: coresMarca.marinho,
+      texto: coresMarca.tinta,
+      textoApoio: coresMarca.tintaApoio,
+      fundo: coresMarca.branco,
+      superficie: coresMarca.superficie,
+      borda: coresMarca.linha,
+      fundoCasal: coresMarca.superficieAzulada,
+      navegacao: coresMarca.branco,
+      navegacaoAtivo: coresMarca.marinho,
     })
   })
 
-  it('[UNITÁRIO] distingue o erro da terracota pela luminosidade', () => {
-    const diferenca = Math.abs(luminanciaRelativa(cores.erro) - luminanciaRelativa(cores.primaria))
-    expect(diferenca).toBeGreaterThan(0.05)
-    expect(razaoContraste(cores.superficie, cores.erro)).toBeGreaterThan(razaoContraste(cores.superficie, cores.primaria) + 1.5)
+  it('[UNITÁRIO] a escala marinho vai do mais claro ao mais escuro, de 50 a 950', () => {
+    const passos = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const
+    expect(Object.keys(paletas.marinho).map(Number)).toEqual([...passos])
+    const luminancias = passos.map((passo) => luminanciaRelativa(paletas.marinho[passo]))
+    luminancias.slice(1).forEach((valor, indice) => expect(valor).toBeLessThan(luminancias[indice]!))
+  })
+
+  it('[UNITÁRIO] cores semânticas e de operação não têm hex solto: todas vêm das paletas', () => {
+    const daPaleta = new Set<string>(Object.values(paletas).flatMap((paleta) => Object.values(paleta)))
+    const soltas = Object.entries(cores).filter(([chave, valor]) => chave !== 'veu' && !daPaleta.has(valor))
+    expect(soltas).toEqual([])
+    expect(Object.keys(paletas)).toEqual(['marinho', 'cinza', 'sucesso', 'alerta', 'erro', 'informacao'])
+  })
+
+  it('[UNITÁRIO] distingue o erro e a informação da primária pela luminosidade', () => {
+    for (const cor of [cores.erro, cores.informacao, cores.sucesso]) {
+      expect(Math.abs(luminanciaRelativa(cor) - luminanciaRelativa(cores.primaria))).toBeGreaterThan(0.05)
+    }
+    expect(razaoContraste(cores.superficie, cores.primaria)).toBeGreaterThan(razaoContraste(cores.superficie, cores.erro) + 1.5)
+  })
+
+  it('[UNITÁRIO] sucesso, alerta, erro e informação são distintos entre si', () => {
+    const semanticas = [cores.sucesso, cores.alerta, cores.erro, cores.informacao, cores.primaria]
+    expect(new Set(semanticas).size).toBe(semanticas.length)
   })
 
   it.each(['#FFF', 'vermelho', '#GGGGGG', ''])('[UNITÁRIO] rejeita cor inválida %s', (cor) => {
@@ -97,7 +117,7 @@ describe('contraste', () => {
       'Toast: ação Desfazer',
       'Anel de foco sobre fundo',
       'Borda de campo sobre superfície',
-      'Convite: apoio quente sobre fundo do convite',
+      'Convite: apoio público sobre fundo do convite',
     ]) {
       expect(descricoes).toContain(esperado)
     }

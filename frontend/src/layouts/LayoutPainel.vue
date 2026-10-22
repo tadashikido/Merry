@@ -279,7 +279,7 @@ watch(telaPequena, (pequena) => {
 }
 
 .layout-painel__marca-barra {
-  --marca-altura-logo: 1.75rem;
+  --marca-tamanho: 1.375rem;
 }
 
 .layout-painel__casal-barra {

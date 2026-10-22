@@ -63,7 +63,7 @@ defineExpose({ focar })
 
 .selo-confirmacao__texto {
   line-height: 1.55;
-  color: var(--p-cor-texto-quente);
+  color: var(--p-cor-texto-publico);
 }
 
 .selo-confirmacao--animado .selo-confirmacao__marca {

@@ -309,7 +309,7 @@ describe('CasamentoView', () => {
     expect(wrapper!.text()).toContain('sábado, 15 de maio de 2027, 16:30')
     const valores = wrapper!.findAll('.lista-detalhes__valor').map((valor) => valor.text())
     expect(valores).toEqual(['15 de maio de 2027', '16:30', 'Capela São José', '—', '150', 'Flores brancas'])
-    expect(document.title).toBe('Ana Beatriz & Bruno · Nossia')
+    expect(document.title).toBe('Ana Beatriz & Bruno · Celebri')
     expect(wrapper!.find('[data-teste="editar-casamento"]').exists()).toBe(true)
   })
 

@@ -17,7 +17,7 @@ public class EnvioEmailSmtpServiceTestes
         "<p>Olá, Marina.</p>");
 
     [Fact]
-    public void MontarMensagem_DeveUsarMarcaNossiaComoNomeDoRemetente()
+    public void MontarMensagem_DeveUsarMarcaCelebriComoNomeDoRemetente()
     {
         var service = CriarService(new OpcoesEmail { Remetente = "nao-responda@exemplo.com" });
 
@@ -43,7 +43,7 @@ public class EnvioEmailSmtpServiceTestes
 
         using var email = service.MontarMensagem(Mensagem);
 
-        Assert.Equal("Nossia", email.From!.DisplayName);
+        Assert.Equal("Celebri", email.From!.DisplayName);
         Assert.DoesNotContain("Enlace", email.From.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 

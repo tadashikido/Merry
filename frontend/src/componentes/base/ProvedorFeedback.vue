@@ -54,21 +54,21 @@ function aoFecharToast(evento: { message: MensagemToast }) {
   >
     <template #container="{ message, closeCallback }">
       <div
-        class="toast-nossia"
-        :class="`toast-nossia--${(message as MensagemToast).severity ?? 'info'}`"
+        class="toast-feedback"
+        :class="`toast-feedback--${(message as MensagemToast).severity ?? 'info'}`"
         data-teste="toast"
       >
         <span
-          :class="['ie', iconeDe(message as MensagemToast), 'toast-nossia__icone']"
+          :class="['ie', iconeDe(message as MensagemToast), 'toast-feedback__icone']"
           aria-hidden="true"
         />
-        <div class="toast-nossia__textos">
-          <p class="toast-nossia__resumo">
+        <div class="toast-feedback__textos">
+          <p class="toast-feedback__resumo">
             {{ (message as MensagemToast).summary }}
           </p>
           <p
             v-if="(message as MensagemToast).detail"
-            class="toast-nossia__detalhe"
+            class="toast-feedback__detalhe"
           >
             {{ (message as MensagemToast).detail }}
           </p>
@@ -76,7 +76,7 @@ function aoFecharToast(evento: { message: MensagemToast }) {
         <button
           v-if="(message as MensagemToast).data?.desfazer"
           type="button"
-          class="toast-nossia__desfazer"
+          class="toast-feedback__desfazer"
           data-teste="toast-desfazer"
           @click="desfazer(message as MensagemToast, closeCallback)"
         >
@@ -84,7 +84,7 @@ function aoFecharToast(evento: { message: MensagemToast }) {
         </button>
         <button
           type="button"
-          class="toast-nossia__fechar"
+          class="toast-feedback__fechar"
           :aria-label="ROTULOS_ACOES.fechar"
           @click="closeCallback"
         >
@@ -108,7 +108,7 @@ function aoFecharToast(evento: { message: MensagemToast }) {
   box-shadow: var(--p-sombra-sobreposicao);
 }
 
-.toast-nossia {
+.toast-feedback {
   display: flex;
   align-items: flex-start;
   gap: var(--p-espaco-3);
@@ -116,25 +116,25 @@ function aoFecharToast(evento: { message: MensagemToast }) {
   color: var(--p-cor-toast-texto);
 }
 
-.toast-nossia__icone {
+.toast-feedback__icone {
   margin-top: 0.125rem;
   font-size: 1.125rem;
   color: var(--p-cor-toast-informacao);
 }
 
-.toast-nossia--success .toast-nossia__icone {
+.toast-feedback--success .toast-feedback__icone {
   color: var(--p-cor-toast-sucesso);
 }
 
-.toast-nossia--error .toast-nossia__icone {
+.toast-feedback--error .toast-feedback__icone {
   color: var(--p-cor-toast-erro);
 }
 
-.toast-nossia--warn .toast-nossia__icone {
+.toast-feedback--warn .toast-feedback__icone {
   color: var(--p-cor-toast-alerta);
 }
 
-.toast-nossia__textos {
+.toast-feedback__textos {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -143,20 +143,20 @@ function aoFecharToast(evento: { message: MensagemToast }) {
   padding-top: 0.0625rem;
 }
 
-.toast-nossia__resumo {
+.toast-feedback__resumo {
   font-size: var(--p-fonte-tamanho-controle);
   font-weight: var(--p-fonte-peso-medio);
   line-height: 1.4;
 }
 
-.toast-nossia__detalhe {
+.toast-feedback__detalhe {
   font-size: var(--p-fonte-tamanho-apoio);
   line-height: 1.45;
   color: var(--p-cor-toast-apoio);
 }
 
-.toast-nossia__desfazer,
-.toast-nossia__fechar {
+.toast-feedback__desfazer,
+.toast-feedback__fechar {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
@@ -174,12 +174,12 @@ function aoFecharToast(evento: { message: MensagemToast }) {
   border-radius: var(--p-raio-controle);
 }
 
-.toast-nossia__fechar {
+.toast-feedback__fechar {
   color: var(--p-cor-toast-apoio);
 }
 
-.toast-nossia__desfazer:hover,
-.toast-nossia__fechar:hover {
+.toast-feedback__desfazer:hover,
+.toast-feedback__fechar:hover {
   background: rgba(255, 255, 255, 0.08);
 }
 </style>

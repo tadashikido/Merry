@@ -92,7 +92,7 @@ async function abrir(painel: () => Response) {
   await flushPromises()
 }
 
-describe('PainelConfirmacoesView — reestruturação Nossia', { timeout: 20_000 }, () => {
+describe('PainelConfirmacoesView — reestruturação da fundação', { timeout: 20_000 }, () => {
   it('[COMPONENTE] contagens de RSVP viram grade de indicadores com um cartão por contagem', async () => {
     await abrir(() => respostaJson(painelExemplo()))
 

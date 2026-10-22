@@ -144,7 +144,7 @@ describe('CadastroView', () => {
     expect(wrapper!.get('#cadastro-email').attributes('aria-invalid')).toBe('true')
   })
 
-  it('[COMPONENTE] organiza grupos e ação com as primitivas de ritmo do Nossia', async () => {
+  it('[COMPONENTE] organiza grupos e ação com as primitivas de ritmo da fundação', async () => {
     await abrir()
 
     const formulario = wrapper!.get('[data-teste="formulario-cadastro"]')

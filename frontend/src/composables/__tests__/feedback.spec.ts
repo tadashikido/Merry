@@ -185,7 +185,7 @@ describe('confirmação de exclusão e toast', () => {
 
     api.sucesso('“Família Souza” foi excluído.', { desfazer, aoFechar })
     await flushPromises()
-    document.body.querySelector<HTMLButtonElement>('.toast-nossia__fechar')!.click()
+    document.body.querySelector<HTMLButtonElement>('.toast-feedback__fechar')!.click()
     await flushPromises()
 
     expect(aoFechar).toHaveBeenCalledTimes(1)

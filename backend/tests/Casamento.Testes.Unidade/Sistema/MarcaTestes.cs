@@ -8,9 +8,9 @@ public class MarcaTestes
     private const string MarcaLegada = "Enlace";
 
     [Fact]
-    public void Nome_DeveSerNossia()
+    public void Nome_DeveSerCelebri()
     {
-        Assert.Equal("Nossia", Marca.Nome);
+        Assert.Equal("Celebri", Marca.Nome);
     }
 
     [Fact]
@@ -22,9 +22,9 @@ public class MarcaTestes
     }
 
     [Fact]
-    public void AssuntoRedefinicaoSenha_DeveTerMarcaNossia()
+    public void AssuntoRedefinicaoSenha_DeveTerMarcaCelebri()
     {
-        Assert.Equal("Redefinição de senha — Nossia", ModelosEmail.AssuntoRedefinicaoSenha);
+        Assert.Equal("Redefinição de senha — Celebri", ModelosEmail.AssuntoRedefinicaoSenha);
         Assert.DoesNotContain(MarcaLegada, ModelosEmail.AssuntoRedefinicaoSenha, StringComparison.OrdinalIgnoreCase);
     }
 

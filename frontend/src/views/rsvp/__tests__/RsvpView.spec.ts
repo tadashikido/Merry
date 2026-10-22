@@ -64,7 +64,7 @@ async function clicar(seletor: string) {
 }
 
 describe('RsvpView', { timeout: 20_000 }, () => {
-  it('[E2E] convite de uma pessoa no visual Nossia: abrir, Vou e Enviar resposta (3 toques)', async () => {
+  it('[E2E] convite de uma pessoa no visual Celebri: abrir, Vou e Enviar resposta (3 toques)', async () => {
     const umaPessoa = dados({ nomeConvite: 'Helena Duarte', limiteAcompanhantes: 0, pessoas: [{ id: 'p1', nome: 'Helena Duarte', faixaEtaria: 'Adulto', resposta: 'Pendente', possuiRestricao: false }] })
     rotearFetch(
       fetchSimulado,

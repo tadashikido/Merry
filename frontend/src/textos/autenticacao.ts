@@ -87,5 +87,5 @@ export const TEXTOS_PAINEL = {
 } as const
 
 export const TEXTOS_AUTENTICACAO_LAYOUT = {
-  frase: 'Cada casamento, um só lugar.',
+  frase: 'Eventos que conectam.',
 } as const

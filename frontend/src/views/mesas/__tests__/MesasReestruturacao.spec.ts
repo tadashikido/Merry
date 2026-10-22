@@ -174,7 +174,7 @@ describe('OcupacaoMesa', () => {
     ocupacao.unmount()
   })
 
-  it('[UNITÁRIO] estilo do lugar livre é tracejado e o ocupado usa a cor primária (terracota)', () => {
+  it('[UNITÁRIO] estilo do lugar livre é tracejado e o ocupado usa a cor primária', () => {
     const css = estilo('../../../componentes/base/OcupacaoMesa.vue')
     expect(css).toMatch(/\.ocupacao-mesa__lugar \{[^}]*border: 1px dashed var\(--p-cor-borda-campo\)/)
     expect(css).toMatch(/\.ocupacao-mesa__lugar--ocupado \{[^}]*background: var\(--p-cor-primaria\)/)

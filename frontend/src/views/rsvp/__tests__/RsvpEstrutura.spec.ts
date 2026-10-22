@@ -67,7 +67,7 @@ async function abrir(token = TOKEN) {
   return wrapper
 }
 
-describe('RsvpView — estrutura Nossia', { timeout: 20_000 }, () => {
+describe('RsvpView — estrutura da fundação', { timeout: 20_000 }, () => {
   it('[COMPONENTE] com convite carregado usa a folha ampla e põe o convite antes do formulário', async () => {
     rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(dados())))
 
@@ -80,7 +80,7 @@ describe('RsvpView — estrutura Nossia', { timeout: 20_000 }, () => {
     expect(colunas[1]!.querySelector('[data-teste="rsvp-formulario"]')).not.toBeNull()
   })
 
-  it('[COMPONENTE] títulos de seção usam o rótulo do Nossia e o prazo vira legenda', async () => {
+  it('[COMPONENTE] títulos de seção usam o rótulo da fundação e o prazo vira legenda', async () => {
     rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(dados())))
 
     await abrir()

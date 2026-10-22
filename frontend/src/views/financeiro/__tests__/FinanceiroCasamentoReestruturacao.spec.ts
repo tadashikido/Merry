@@ -225,7 +225,7 @@ describe('Diálogos do financeiro — validação ao sair e ao digitar', () => {
   })
 })
 
-describe('Estilo Nossia do financeiro', () => {
+describe('Estilo da fundação no financeiro', () => {
   it('[UNITÁRIO] a view usa a largura do layout e o contêiner para a lateral', () => {
     const fonte = lerFonte('../FinanceiroCasamentoView.vue')
     expect(fonte).not.toContain('--p-dimensao-largura-ampla')

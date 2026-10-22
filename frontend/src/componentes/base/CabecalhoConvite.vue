@@ -134,7 +134,7 @@ const locais = computed<LocalConvite[]>(() => {
   font-size: 1.1875rem;
   font-style: italic;
   line-height: 1.45;
-  color: var(--p-cor-texto-quente);
+  color: var(--p-cor-texto-publico);
 }
 
 .cabecalho-convite .cabecalho-convite__casal {
@@ -173,7 +173,7 @@ const locais = computed<LocalConvite[]>(() => {
   flex-direction: column;
   font-size: var(--p-fonte-tamanho-apoio);
   line-height: 1.5;
-  color: var(--p-cor-apoio-quente);
+  color: var(--p-cor-apoio-publico);
 }
 
 .cabecalho-convite__quando span:first-child::first-letter {
@@ -186,7 +186,7 @@ const locais = computed<LocalConvite[]>(() => {
   width: 100%;
   margin: var(--p-espaco-2) 0 0;
   padding-top: var(--p-espaco-4);
-  border-top: 1px solid var(--p-cor-borda-quente);
+  border-top: 1px solid var(--p-cor-borda-publica);
 }
 
 .cabecalho-convite__local {
@@ -200,7 +200,7 @@ const locais = computed<LocalConvite[]>(() => {
   font-weight: var(--p-fonte-peso-seminegrito);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--p-cor-apoio-quente);
+  color: var(--p-cor-apoio-publico);
 }
 
 .cabecalho-convite__local dd {

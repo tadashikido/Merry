@@ -130,7 +130,7 @@ function estiloDaView(): string {
   return fonte.slice(fonte.indexOf('<style scoped>'))
 }
 
-describe('ConvidadosView — reestruturação Nossia', { timeout: 20_000 }, () => {
+describe('ConvidadosView — reestruturação da fundação', { timeout: 20_000 }, () => {
   it('[COMPONENTE] cabeçalho fica só com as ações de escrita e os atalhos vão para a faixa de visão geral', async () => {
     const tela = await abrir()
 

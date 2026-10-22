@@ -733,7 +733,7 @@ function alterarResposta() {
 }
 
 .rsvp__pessoa + .rsvp__pessoa {
-  border-top: 1px solid var(--p-cor-borda-quente);
+  border-top: 1px solid var(--p-cor-borda-publica);
 }
 
 .rsvp__rotulo-opcoes {
@@ -749,7 +749,7 @@ function alterarResposta() {
 .rsvp__lista-resumo {
   padding: 0 var(--p-ritmo-cartao);
   background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-borda-quente);
+  border: 1px solid var(--p-cor-borda-publica);
   border-radius: var(--p-raio-painel);
 }
 
@@ -764,7 +764,7 @@ function alterarResposta() {
 }
 
 .rsvp__linha-resumo + .rsvp__linha-resumo {
-  border-top: 1px solid var(--p-cor-borda-quente);
+  border-top: 1px solid var(--p-cor-borda-publica);
 }
 
 .rsvp__nome-resumo {
@@ -790,7 +790,7 @@ function alterarResposta() {
   padding-right: 0;
   padding-left: 0;
   background: var(--p-cor-fundo-convite);
-  border-top-color: var(--p-cor-borda-quente);
+  border-top-color: var(--p-cor-borda-publica);
   box-shadow: none;
 }
 

@@ -333,7 +333,7 @@ describe('FornecedoresCasamentoView — casal', () => {
 const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
 const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
 
-describe('FornecedoresCasamentoView — reestruturação Nossia', () => {
+describe('FornecedoresCasamentoView — reestruturação da fundação', () => {
   it('[COMPONENTE] resumo fica num aside rotulado antes da lista; grupos usam rótulo e cartão', async () => {
     rotear(
       fetchSimulado,
@@ -527,7 +527,7 @@ describe('FornecedorCasamentoFormularioView', () => {
   })
 })
 
-describe('FornecedorCasamentoFormularioView — reestruturação Nossia', () => {
+describe('FornecedorCasamentoFormularioView — reestruturação da fundação', () => {
   it('[COMPONENTE] adicionar usa a largura de formulário, fieldsets com rótulo e o link de cadastro ao lado do rótulo', async () => {
     rotear(
       fetchSimulado,

@@ -86,7 +86,7 @@ async function abrir(corpo: () => Response) {
   await flushPromises()
 }
 
-describe('RestricoesAlimentaresView — reestruturação Nossia', { timeout: 20_000 }, () => {
+describe('RestricoesAlimentaresView — reestruturação da fundação', { timeout: 20_000 }, () => {
   it('[COMPONENTE] lateral reúne o resumo para o buffet e o aviso de exclusão, antes da tabela no DOM', async () => {
     await abrir(() => respostaJson(relatorio()))
 

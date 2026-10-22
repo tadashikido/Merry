@@ -1,39 +1,35 @@
 <script setup lang="ts">
-import iconeMarca from '@/assets/marca/nossia-icone-claro.png'
-import logoHorizontal from '@/assets/marca/nossia-logo-horizontal.png'
+import { computed } from 'vue'
+
 import { NOME_PRODUTO } from '@/textos/rotulos'
 
-withDefaults(defineProps<{ nome?: string; somenteSimbolo?: boolean; tom?: 'escuro' | 'claro' }>(), {
+const props = withDefaults(defineProps<{ nome?: string; somenteSimbolo?: boolean; tom?: 'escuro' | 'claro'; destaque?: boolean }>(), {
   nome: NOME_PRODUTO,
   somenteSimbolo: false,
   tom: 'escuro',
+  destaque: false,
 })
+
+const inicial = computed(() => props.nome.trim().charAt(0).toUpperCase())
 </script>
 
 <template>
   <span
     class="marca"
-    :class="`marca--${tom}`"
+    :class="[`marca--${tom}`, { 'marca--destaque': destaque }]"
     data-teste="marca-produto"
   >
     <template v-if="somenteSimbolo">
-      <img
+      <span
         class="marca__simbolo"
-        :src="iconeMarca"
-        alt=""
-        width="166"
-        height="178"
-      >
+        aria-hidden="true"
+      >{{ inicial }}</span>
       <span class="somente-leitor-tela">{{ nome }}</span>
     </template>
-    <img
+    <span
       v-else
-      class="marca__logo"
-      :src="logoHorizontal"
-      :alt="nome"
-      width="397"
-      height="134"
-    >
+      class="marca__nome"
+    >{{ nome }}</span>
   </span>
 </template>
 
@@ -41,25 +37,37 @@ withDefaults(defineProps<{ nome?: string; somenteSimbolo?: boolean; tom?: 'escur
 .marca {
   display: inline-flex;
   align-items: center;
-  line-height: 0;
+  font-family: var(--p-fonte-display);
+  font-weight: var(--p-fonte-peso-leve);
+  line-height: 1;
+  color: var(--p-cor-texto);
 }
 
-.marca__simbolo,
-.marca__logo {
-  mix-blend-mode: multiply;
+.marca__nome {
+  font-size: var(--marca-tamanho, var(--marca-tamanho-tom, 1.75rem));
+  letter-spacing: 0.08em;
+  margin-inline-end: -0.08em;
 }
 
 .marca__simbolo {
-  width: auto;
-  height: var(--marca-altura-simbolo, 2.25rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--marca-tamanho-simbolo, 2.25rem);
+  height: var(--marca-tamanho-simbolo, 2.25rem);
+  font-size: calc(var(--marca-tamanho-simbolo, 2.25rem) * 0.8);
 }
 
-.marca__logo {
-  width: auto;
-  height: var(--marca-altura-logo, 2.25rem);
+.marca--claro {
+  --marca-tamanho-tom: 1.5rem;
 }
 
-.marca--claro .marca__logo {
-  --marca-altura-logo: 2rem;
+.marca--destaque {
+  --marca-tamanho-tom: var(--p-fonte-tamanho-display);
+}
+
+.marca--destaque .marca__nome {
+  letter-spacing: 0.1em;
+  margin-inline-end: -0.1em;
 }
 </style>

@@ -86,7 +86,7 @@ function grupoDe(campo: string) {
   return wrapper!.get(`#tarefa-${campo}`).element.closest('fieldset')
 }
 
-describe('TarefaFormularioView no design system Nossia', () => {
+describe('TarefaFormularioView no design system Celebri', () => {
   it('[COMPONENTE] cabeçalho e formulário dividem a largura de formulário', async () => {
     await abrir(CAMINHO_NOVA)
 

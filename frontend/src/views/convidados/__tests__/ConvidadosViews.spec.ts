@@ -117,7 +117,7 @@ describe('ConvidadosView', { timeout: 20_000 }, () => {
     expect(texto).toContain('+1')
     expect(texto).not.toContain('carla@exemplo.com')
     expect(texto).not.toContain('98765')
-    expect(document.title).toBe('Convidados · Ana Beatriz & Bruno · Nossia')
+    expect(document.title).toBe('Convidados · Ana Beatriz & Bruno · Celebri')
     expect(wrapper!.get('[data-teste="contador-resultados"]').text()).toBe('2 convites encontrados')
   })
 

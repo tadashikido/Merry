@@ -214,7 +214,7 @@ describe('NavegacaoCasamento', () => {
 })
 
 describe('LayoutPublico', () => {
-  it('[COMPONENTE] envolve o conteúdo em main com marca Nossia e rodapé', () => {
+  it('[COMPONENTE] envolve o conteúdo em main com marca Celebri e rodapé', () => {
     const wrapper = mount(LayoutPublico, {
       slots: { default: '<h1>Lívia &amp; Rafael</h1>', rodape: 'Dúvidas? Fale com a cerimonialista.' },
     })
@@ -222,7 +222,7 @@ describe('LayoutPublico', () => {
     expect(wrapper.get('main').attributes('id')).toBe('conteudo-principal')
     expect(wrapper.get('main h1').text()).toBe('Lívia & Rafael')
     expect(wrapper.get('footer').text()).toContain('Dúvidas?')
-    expect(wrapper.get('.somente-leitor-tela').text()).toBe('Nossia')
+    expect(wrapper.get('.somente-leitor-tela').text()).toBe('Celebri')
     expect(wrapper.classes()).toContain('layout-publico--padrao')
   })
 

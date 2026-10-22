@@ -70,7 +70,7 @@ function colunaDe(campo: string) {
   return wrapper!.get(`#duplicacao-${campo}`).element.closest('.duplicar__colunas')
 }
 
-describe('DuplicarCasamentoView no design system Nossia', () => {
+describe('DuplicarCasamentoView no design system Celebri', () => {
   it('[COMPONENTE] cabeçalho e formulário dividem a largura de formulário', async () => {
     rotearFetch(fetchSimulado, previaResponde(() => respostaJson(previa())))
     await abrir()

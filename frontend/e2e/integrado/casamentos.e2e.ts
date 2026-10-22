@@ -4,7 +4,7 @@ import { expect, test } from './suporte/fixtures'
 test.describe('Painel e casamentos', () => {
   test('primeiro acesso leva ao cadastro do primeiro casamento', async ({ paginaAssessoria: page }) => {
     await expect(page.getByRole('heading', { name: /Olá, Ana/ })).toBeVisible()
-    await expect(page.getByText('Boas-vindas ao Nossia.')).toBeVisible()
+    await expect(page.getByText('Boas-vindas ao Celebri.')).toBeVisible()
 
     await page.getByRole('button', { name: 'Novo casamento' }).first().click()
     await expect(page).toHaveURL(/\/casamentos\/novo$/)

@@ -32,7 +32,7 @@ function toasts(): HTMLElement[] {
   return Array.from(document.body.querySelectorAll<HTMLElement>('[data-teste="toast"]'))
 }
 
-describe('ProvedorFeedback — classes no padrão Nossia', () => {
+describe('ProvedorFeedback — classes do bloco toast-feedback', () => {
   let montado: VueWrapper | undefined
 
   afterEach(() => {
@@ -40,7 +40,7 @@ describe('ProvedorFeedback — classes no padrão Nossia', () => {
     document.body.innerHTML = ''
   })
 
-  it('[COMPONENTE] toast de sucesso usa o bloco e o modificador toast-nossia', async () => {
+  it('[COMPONENTE] toast de sucesso usa o bloco e o modificador toast-feedback', async () => {
     const { wrapper, api } = montarHarness()
     montado = wrapper
 
@@ -49,16 +49,16 @@ describe('ProvedorFeedback — classes no padrão Nossia', () => {
 
     const [toast] = toasts()
     expect(toast).toBeDefined()
-    expect(toast?.classList.contains('toast-nossia')).toBe(true)
-    expect(toast?.classList.contains('toast-nossia--success')).toBe(true)
-    expect(toast?.querySelector('.toast-nossia__icone')).not.toBeNull()
-    expect(toast?.querySelector('.toast-nossia__textos')).not.toBeNull()
-    expect(toast?.querySelector('.toast-nossia__resumo')?.textContent?.trim()).toBe('Salvo')
-    expect(toast?.querySelector('.toast-nossia__detalhe')?.textContent?.trim()).toBe('Detalhe salvo.')
-    expect(toast?.querySelector('.toast-nossia__fechar')).not.toBeNull()
+    expect(toast?.classList.contains('toast-feedback')).toBe(true)
+    expect(toast?.classList.contains('toast-feedback--success')).toBe(true)
+    expect(toast?.querySelector('.toast-feedback__icone')).not.toBeNull()
+    expect(toast?.querySelector('.toast-feedback__textos')).not.toBeNull()
+    expect(toast?.querySelector('.toast-feedback__resumo')?.textContent?.trim()).toBe('Salvo')
+    expect(toast?.querySelector('.toast-feedback__detalhe')?.textContent?.trim()).toBe('Detalhe salvo.')
+    expect(toast?.querySelector('.toast-feedback__fechar')).not.toBeNull()
   })
 
-  it('[COMPONENTE] toast de erro usa o modificador toast-nossia--error', async () => {
+  it('[COMPONENTE] toast de erro usa o modificador toast-feedback--error', async () => {
     const { wrapper, api } = montarHarness()
     montado = wrapper
 
@@ -66,10 +66,10 @@ describe('ProvedorFeedback — classes no padrão Nossia', () => {
     await flushPromises()
 
     const [toast] = toasts()
-    expect(toast?.classList.contains('toast-nossia--error')).toBe(true)
+    expect(toast?.classList.contains('toast-feedback--error')).toBe(true)
   })
 
-  it('[COMPONENTE] toast com desfazer usa toast-nossia__desfazer', async () => {
+  it('[COMPONENTE] toast com desfazer usa toast-feedback__desfazer', async () => {
     const { wrapper, api } = montarHarness()
     montado = wrapper
 
@@ -77,7 +77,7 @@ describe('ProvedorFeedback — classes no padrão Nossia', () => {
     await flushPromises()
 
     const desfazer = document.body.querySelector('[data-teste="toast-desfazer"]')
-    expect(desfazer?.classList.contains('toast-nossia__desfazer')).toBe(true)
+    expect(desfazer?.classList.contains('toast-feedback__desfazer')).toBe(true)
   })
 
   it('[COMPONENTE] nenhum elemento do toast usa classe com a marca legada', async () => {
@@ -90,6 +90,7 @@ describe('ProvedorFeedback — classes no padrão Nossia', () => {
 
     expect(toasts()).toHaveLength(2)
     expect(document.body.querySelector('[class*="enlace"]')).toBeNull()
-    expect(document.body.innerHTML).not.toMatch(/enlace/i)
+    expect(document.body.querySelector('[class*="nossia"]')).toBeNull()
+    expect(document.body.innerHTML).not.toMatch(/enlace|nossia/i)
   })
 })

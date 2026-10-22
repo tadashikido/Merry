@@ -1,15 +1,38 @@
-export const CHAVE_DISPENSA_PROXIMOS_PASSOS = 'nossia:proximos-passos-dispensados'
+export const CHAVE_DISPENSA_PROXIMOS_PASSOS = 'celebri:proximos-passos-dispensados'
+export const CHAVE_DISPENSA_PROXIMOS_PASSOS_LEGADA = 'nossia:proximos-passos-dispensados'
 
 const LIMITE_DISPENSAS = 200
 
-function lerDispensados(): string[] {
+function interpretar(bruto: string | null): string[] {
+  if (!bruto) {
+    return []
+  }
   try {
-    const bruto = window.localStorage.getItem(CHAVE_DISPENSA_PROXIMOS_PASSOS)
-    if (!bruto) {
-      return []
-    }
     const valor: unknown = JSON.parse(bruto)
     return Array.isArray(valor) ? valor.filter((item): item is string => typeof item === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+function migrarChaveLegada(): void {
+  const brutoLegado = window.localStorage.getItem(CHAVE_DISPENSA_PROXIMOS_PASSOS_LEGADA)
+  if (brutoLegado === null) {
+    return
+  }
+  const legados = interpretar(brutoLegado)
+  const atuais = interpretar(window.localStorage.getItem(CHAVE_DISPENSA_PROXIMOS_PASSOS))
+  const unidos = [...legados.filter((id) => !atuais.includes(id)), ...atuais].slice(-LIMITE_DISPENSAS)
+  if (unidos.length > 0) {
+    window.localStorage.setItem(CHAVE_DISPENSA_PROXIMOS_PASSOS, JSON.stringify(unidos))
+  }
+  window.localStorage.removeItem(CHAVE_DISPENSA_PROXIMOS_PASSOS_LEGADA)
+}
+
+function lerDispensados(): string[] {
+  try {
+    migrarChaveLegada()
+    return interpretar(window.localStorage.getItem(CHAVE_DISPENSA_PROXIMOS_PASSOS))
   } catch {
     return []
   }

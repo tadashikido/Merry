@@ -509,7 +509,7 @@ describe('Dashboard — pendências de tarefas', () => {
 const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
 const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
 
-describe('TarefasView — reestruturação Nossia', () => {
+describe('TarefasView — reestruturação da fundação', () => {
   it('[COMPONENTE] assessoria vê a lateral de progresso derivada do resumo, sem contar canceladas', async () => {
     const cancelada = tarefaExemplo({ id: 'x', titulo: 'Contratar segundo fotógrafo', status: 'Cancelada' })
     rotear(
@@ -629,7 +629,7 @@ describe('TarefasView — reestruturação Nossia', () => {
     expect(estiloView).toMatch(/\.tarefas__destaque--em-dia \{[^}]*color: var\(--p-cor-sucesso-texto\)/)
   })
 
-  it('[UNITÁRIO] ItemTarefa concluído usa verde-alecrim e nunca a cor primária', () => {
+  it('[UNITÁRIO] ItemTarefa concluído usa verde de sucesso e nunca a cor primária', () => {
     const estiloItem = estiloDe(lerFonte('componentes/base/ItemTarefa.vue'))
     expect(estiloItem).not.toMatch(/--p-cor-primaria/)
     expect(estiloItem).toMatch(/\.item-tarefa--concluida \.item-tarefa__circulo \{[^}]*background: var\(--p-cor-sucesso\)/)

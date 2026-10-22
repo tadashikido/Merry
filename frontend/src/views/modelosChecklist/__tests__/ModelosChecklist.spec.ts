@@ -298,7 +298,7 @@ describe('ModeloChecklistView', () => {
     expect(fonte).toContain('class="modelo pilha pilha--bloco"')
   })
 
-  it('[UNITÁRIO] prazo do item não usa terracota', () => {
+  it('[UNITÁRIO] prazo do item não usa a cor primária', () => {
     const fonte = readFileSync(resolve(__dirname, '../../../componentes/base/ItemModeloChecklist.vue'), 'utf-8')
     const regraPrazo = fonte.slice(fonte.indexOf('.item-modelo__prazo'), fonte.indexOf('}', fonte.indexOf('.item-modelo__prazo')))
     expect(regraPrazo).not.toContain('--p-cor-primaria')

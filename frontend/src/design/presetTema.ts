@@ -10,7 +10,7 @@ const toastEscuro = {
   detailColor: cores.toastTexto,
   shadow: sombra.sobreposicao,
   closeButton: {
-    hoverBackground: paletas.areia[900],
+    hoverBackground: paletas.marinho[700],
     focusRing: { color: cores.toastAcao, shadow: 'none' },
   },
 }
@@ -25,8 +25,8 @@ export const presetTema = definePreset(Aura, {
       lg: raio.controle,
       xl: raio.painel,
     },
-    green: paletas.alecrim,
-    emerald: paletas.alecrim,
+    green: paletas.sucesso,
+    emerald: paletas.sucesso,
     orange: paletas.alerta,
     amber: paletas.alerta,
     yellow: paletas.alerta,
@@ -35,7 +35,7 @@ export const presetTema = definePreset(Aura, {
     blue: paletas.informacao,
   },
   semantic: {
-    primary: paletas.terracota,
+    primary: paletas.marinho,
     transitionDuration: duracao.padrao,
     focusRing: {
       width: '2px',
@@ -62,18 +62,18 @@ export const presetTema = definePreset(Aura, {
     },
     colorScheme: {
       light: {
-        surface: paletas.areia,
+        surface: paletas.cinza,
         primary: {
-          color: '{primary.600}',
+          color: '{primary.800}',
           contrastColor: cores.superficie,
           hoverColor: '{primary.700}',
-          activeColor: '{primary.800}',
+          activeColor: '{primary.900}',
         },
         highlight: {
           background: '{primary.100}',
           focusBackground: '{primary.200}',
-          color: '{primary.700}',
-          focusColor: '{primary.800}',
+          color: '{primary.800}',
+          focusColor: '{primary.900}',
         },
         mask: {
           background: cores.veu,
@@ -100,14 +100,14 @@ export const presetTema = definePreset(Aura, {
           filledFocusBackground: '{surface.50}',
           borderColor: cores.bordaCampo,
           hoverBorderColor: '{surface.700}',
-          focusBorderColor: '{primary.600}',
+          focusBorderColor: '{primary.800}',
           invalidBorderColor: '{red.600}',
           color: cores.texto,
           disabledColor: '{surface.600}',
           placeholderColor: '{surface.600}',
           invalidPlaceholderColor: '{red.700}',
           floatLabelColor: '{surface.600}',
-          floatLabelFocusColor: '{primary.600}',
+          floatLabelFocusColor: '{primary.800}',
           floatLabelActiveColor: '{surface.600}',
           floatLabelInvalidColor: '{form.field.invalid.placeholder.color}',
           iconColor: '{surface.600}',
@@ -137,15 +137,15 @@ export const presetTema = definePreset(Aura, {
             primary: {
               hoverBackground: '{primary.50}',
               activeBackground: '{primary.100}',
-              borderColor: '{primary.600}',
-              color: '{primary.600}',
+              borderColor: '{primary.800}',
+              color: '{primary.800}',
             },
           },
           text: {
             primary: {
               hoverBackground: '{primary.50}',
               activeBackground: '{primary.100}',
-              color: '{primary.600}',
+              color: '{primary.800}',
             },
             secondary: {
               hoverBackground: '{surface.200}',
@@ -167,7 +167,7 @@ export const presetTema = definePreset(Aura, {
       colorScheme: {
         light: {
           secondary: { background: '{surface.200}', color: '{surface.700}' },
-          primary: { background: '{primary.100}', color: '{primary.700}' },
+          primary: { background: '{primary.100}', color: '{primary.800}' },
         },
       },
     },
@@ -323,10 +323,10 @@ export const presetTema = definePreset(Aura, {
       fundoConvite: cores.fundoConvite,
       cartaoConvite: cores.cartaoConvite,
       bordaConvite: cores.bordaConvite,
-      bordaQuente: cores.bordaQuente,
-      controleQuente: cores.controleQuente,
-      textoQuente: cores.textoQuente,
-      apoioQuente: cores.apoioQuente,
+      bordaPublica: cores.bordaPublica,
+      controlePublico: cores.controlePublico,
+      textoPublico: cores.textoPublico,
+      apoioPublico: cores.apoioPublico,
       operacaoFundo: cores.operacaoFundo,
       operacaoSuperficie: cores.operacaoSuperficie,
       operacaoTexto: cores.operacaoTexto,

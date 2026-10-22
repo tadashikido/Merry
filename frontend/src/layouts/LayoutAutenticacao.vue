@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import logoPrincipal from '@/assets/marca/nossia-logo-principal.png'
 import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
 import { TEXTOS_AUTENTICACAO_LAYOUT } from '@/textos/autenticacao'
-import { NOME_PRODUTO } from '@/textos/rotulos'
 
 withDefaults(defineProps<{ titulo: string; descricao?: string; demonstracao?: boolean }>(), {
   descricao: undefined,
@@ -22,13 +20,10 @@ const ID_TITULO = 'autenticacao-titulo'
       class="layout-autenticacao__editorial"
     >
       <MarcaProduto class="layout-autenticacao__marca" />
-      <img
+      <MarcaProduto
         class="layout-autenticacao__logo"
-        :src="logoPrincipal"
-        :alt="NOME_PRODUTO"
-        width="530"
-        height="435"
-      >
+        destaque
+      />
       <p class="layout-autenticacao__frase">
         {{ TEXTOS_AUTENTICACAO_LAYOUT.frase }}
       </p>
@@ -198,10 +193,7 @@ const ID_TITULO = 'autenticacao-titulo'
   }
 
   .layout-autenticacao__logo {
-    display: block;
-    width: min(100%, 20rem);
-    height: auto;
-    mix-blend-mode: multiply;
+    display: inline-flex;
   }
 
   .layout-autenticacao__frase {

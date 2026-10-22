@@ -259,7 +259,7 @@ describe('ChecklistView', () => {
 const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
 const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
 
-describe('ChecklistView — reestruturação Nossia', () => {
+describe('ChecklistView — reestruturação da fundação', () => {
   it('[COMPONENTE] lateral de progresso vem antes da régua e resume cada marco', async () => {
     rotearFetch(
       fetchSimulado,
@@ -337,7 +337,7 @@ describe('ChecklistView — reestruturação Nossia', () => {
     expect(wrapper.find('[data-teste="regua-marcos"]').exists()).toBe(false)
   })
 
-  it('[UNITÁRIO] estilos usam a largura do painel, o ritmo da fundação e verde-alecrim no concluído', () => {
+  it('[UNITÁRIO] estilos usam a largura do painel, o ritmo da fundação e verde de sucesso no concluído', () => {
     const view = estiloDe(lerFonte('views/checklist/ChecklistView.vue'))
     expect(view).not.toContain('--p-dimensao-largura-leitura')
     expect(view).not.toMatch(/--p-espaco-\d/)

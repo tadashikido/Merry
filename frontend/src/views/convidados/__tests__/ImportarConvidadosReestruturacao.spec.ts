@@ -64,7 +64,7 @@ async function escolherArquivo(arquivo: File = new File(['Nome\nAna'], 'lista.cs
   await flushPromises()
 }
 
-describe('ImportarConvidadosView — reestruturação Nossia', { timeout: 20_000 }, () => {
+describe('ImportarConvidadosView — reestruturação da fundação', { timeout: 20_000 }, () => {
   it('[COMPONENTE] etapa 1 agrupa envio e instruções em cartão na mesma grade', async () => {
     await abrir()
 
@@ -119,7 +119,7 @@ describe('ImportarConvidadosView — reestruturação Nossia', { timeout: 20_000
     expect(ESTILO_PREVIA).toMatch(/\.previa__grade--com-lateral \{\s*grid-template-columns: minmax\(0, 1fr\) 20rem;/)
   })
 
-  it('[COMPONENTE] etapa 3 usa o lacre padronizado em vez do selo terracota', async () => {
+  it('[COMPONENTE] etapa 3 usa o lacre padronizado em vez do selo colorido', async () => {
     const previa = previaExemplo({ linhasComProblema: [] })
     previa.convites = previa.convites.filter((convite) => convite.valido)
     await abrir(
@@ -156,7 +156,7 @@ describe('ImportarConvidadosView — reestruturação Nossia', { timeout: 20_000
     expect(ESTILO_PREVIA).toContain('@container previa (min-width: 56rem)')
   })
 
-  it('[UNITÁRIO] estilos usam só tokens Nossia: ritmo, sem cor solta, sem sombra nem gradiente', () => {
+  it('[UNITÁRIO] estilos usam só tokens da fundação: ritmo, sem cor solta, sem sombra nem gradiente', () => {
     for (const css of [ESTILO_VIEW, ESTILO_PREVIA]) {
       expect(css).not.toMatch(/--p-espaco-/)
       expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)

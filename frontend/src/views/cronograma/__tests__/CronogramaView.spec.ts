@@ -360,7 +360,7 @@ describe('CronogramaView — assessoria', () => {
   })
 })
 
-describe('CronogramaView — reestruturação Nossia', () => {
+describe('CronogramaView — reestruturação da fundação', () => {
   it('[COMPONENTE] lateral resume cerimônia, locais, totais e o intervalo de cada dia', async () => {
     const FESTA = itemCronograma({ id: 'f', inicio: '22:00', termino: '02:00', duracaoMinutos: 240, terminaEmOutroDia: true, atividade: 'Festa', minutosDesdeCerimonia: 330 })
     await abrir(SESSAO_EXEMPLO, () => respostaJson(cronogramaExemplo([MONTAGEM, MAKING, CERIMONIA, RETOQUE, FESTA])))

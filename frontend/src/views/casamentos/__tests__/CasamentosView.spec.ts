@@ -63,7 +63,7 @@ describe('resumoListaCasamentos', () => {
   })
 })
 
-describe('CasamentosView no design system Nossia', () => {
+describe('CasamentosView no design system Celebri', () => {
   it('[COMPONENTE] cabeçalho mostra o resumo da quantidade em região viva educada', async () => {
     rotearFetch(fetchSimulado, quando('GET', '/api/casamentos?situacao=Ativos', () => respostaJson(lista)))
     await abrir('/casamentos')

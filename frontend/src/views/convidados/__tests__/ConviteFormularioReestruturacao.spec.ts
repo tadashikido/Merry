@@ -92,7 +92,7 @@ function textosDeErro(): string[] {
 }
 
 describe('ConviteFormularioView reestruturado', { timeout: 20_000 }, () => {
-  it('[COMPONENTE] cabeçalho e formulário ficam em .pagina-formulario com o ritmo Nossia', async () => {
+  it('[COMPONENTE] cabeçalho e formulário ficam em .pagina-formulario com o ritmo da fundação', async () => {
     rotearFetch(fetchSimulado, ...rotasPadrao())
     await abrir(CAMINHO_NOVO)
 

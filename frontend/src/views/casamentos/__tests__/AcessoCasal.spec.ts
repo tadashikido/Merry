@@ -550,7 +550,7 @@ describe('AceiteAcessoCasalView', () => {
     expect(document.activeElement?.id).toBe('autenticacao-titulo')
   })
 
-  it('[COMPONENTE] organiza o formulário com as primitivas de ritmo do Nossia', async () => {
+  it('[COMPONENTE] organiza o formulário com as primitivas de ritmo da fundação', async () => {
     await abrirConviteValido()
 
     const formulario = wrapper!.get('[data-teste="formulario-aceite-casal"]')
