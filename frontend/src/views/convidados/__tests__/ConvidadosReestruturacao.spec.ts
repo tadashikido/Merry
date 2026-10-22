@@ -217,10 +217,21 @@ describe('ConvidadosView — reestruturação Nossia', { timeout: 20_000 }, () =
     const estilo = estiloDaView()
     expect(estilo).toMatch(/\.convidados__nome-convite \{[^}]*overflow-wrap: anywhere;/)
     expect(estilo).toMatch(/\.convidados__lista :deep\(\.p-selectbutton\) \{[^}]*flex-wrap: wrap;/)
-    expect(estilo).toMatch(/@media \(min-width: 640px\) and \(max-width: 1023px\) \{\s*\.convidados__lista :deep\(\.listagem__tabela \.convidados__whatsapp \.p-button-label\) \{\s*display: none;/)
+    expect(estilo).toMatch(/@container convidados \(max-width: 63\.99rem\) \{[^@]*\.convidados__lista :deep\(\.listagem__tabela \.convidados__whatsapp \.p-button-label\) \{\s*display: none;/)
     expect(estilo).toMatch(/\.listagem__acoes-linha\) \{\s*display: grid;\s*grid-template-columns: repeat\(2, auto\);/)
     expect(estilo).not.toContain('hyphens')
     expect(estilo).not.toContain('nowrap')
+  })
+
+  it('[REGRESSÃO] modo compacto da tabela segue a largura do conteúdo, não a viewport, para caber com a navegação lateral', () => {
+    const estilo = estiloDaView()
+    expect(estilo).toMatch(/\.convidados \{\s*container: convidados \/ inline-size;\s*\}/)
+    expect(estilo).not.toMatch(/@media/)
+    expect(estilo).toMatch(/@container convidados \(max-width: 63\.99rem\) \{\s*\.convidados__lista :deep\(\.listagem__tabela \.listagem__coluna--secundaria\) \{\s*display: none;/)
+    expect(estilo).toMatch(/@container convidados \(max-width: 63\.99rem\) \{[^@]*\.listagem__acoes-linha\) \{\s*display: grid;/)
+
+    const fonte = lerFonte('../ConvidadosView.vue')
+    expect(fonte).toMatch(/<div class="convidados pilha pilha--bloco">[\s\S]*class="convidados__lista/)
   })
 
   it('[UNITÁRIO] estilos só usam tokens de ritmo, sem px soltos nem margens negativas', () => {

@@ -535,6 +535,10 @@ function excluir(convite: ConviteDto) {
 </template>
 
 <style scoped>
+.convidados {
+  container: convidados / inline-size;
+}
+
 .convidados__atalhos {
   display: flex;
   flex-wrap: wrap;
@@ -633,7 +637,11 @@ function excluir(convite: ConviteDto) {
   margin-top: var(--p-ritmo-grupo);
 }
 
-@media (min-width: 640px) and (max-width: 1023px) {
+@container convidados (max-width: 63.99rem) {
+  .convidados__lista :deep(.listagem__tabela .listagem__coluna--secundaria) {
+    display: none;
+  }
+
   .convidados__lista :deep(.listagem__tabela .convidados__whatsapp .p-button-label) {
     display: none;
   }
