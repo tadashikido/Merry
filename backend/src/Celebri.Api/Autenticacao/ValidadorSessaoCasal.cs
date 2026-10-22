@@ -1,10 +1,10 @@
 using System.Security.Claims;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Usuarios;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Usuarios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
-namespace Casamento.Api.Autenticacao;
+namespace Celebri.Api.Autenticacao;
 
 public static class ValidadorSessaoCasal
 {

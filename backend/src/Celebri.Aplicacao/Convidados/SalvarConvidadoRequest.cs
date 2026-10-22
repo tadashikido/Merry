@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Dominio.Convidados;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Aplicacao.Convidados;
+namespace Celebri.Aplicacao.Convidados;
 
 public sealed record SalvarConvidadoRequest(
     Guid? Id,

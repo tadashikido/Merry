@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.FornecedoresCasamento;
+namespace Celebri.Aplicacao.FornecedoresCasamento;
 
 public sealed record FornecedorCasamentoDto(
     Guid Id,

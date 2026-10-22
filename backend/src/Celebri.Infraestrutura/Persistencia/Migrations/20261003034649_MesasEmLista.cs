@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Casamento.Infraestrutura.Persistencia.Migrations
+namespace Celebri.Infraestrutura.Persistencia.Migrations
 {
     /// <inheritdoc />
     public partial class MesasEmLista : Migration

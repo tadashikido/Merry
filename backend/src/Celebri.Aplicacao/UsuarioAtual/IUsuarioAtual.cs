@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.UsuarioAtual;
+namespace Celebri.Aplicacao.UsuarioAtual;
 
 public interface IUsuarioAtual
 {

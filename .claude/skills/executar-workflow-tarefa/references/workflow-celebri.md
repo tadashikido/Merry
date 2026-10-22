@@ -1,4 +1,4 @@
-# Workflow "Fluxo Completo de Feature" — projeto Casamento
+# Workflow "Fluxo Completo de Feature" — projeto Celebri ("Casamento" no SpecFlow)
 
 Retrato do workflow ativo em 2026-09-28. **O servidor é a fonte de verdade**: rode
 `wf.py workflow` no pré-voo e, se algo aqui divergir, siga o servidor e avise o

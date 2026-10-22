@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Convidados;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Aplicacao.Checklists;
+namespace Celebri.Aplicacao.Checklists;
 
 public sealed record SalvarModeloChecklistRequest(
     [Required(ErrorMessage = MensagensChecklist.NomeObrigatorio)]

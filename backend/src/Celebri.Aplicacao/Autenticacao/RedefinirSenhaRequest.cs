@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Dominio.Usuarios;
+using Celebri.Dominio.Usuarios;
 
-namespace Casamento.Aplicacao.Autenticacao;
+namespace Celebri.Aplicacao.Autenticacao;
 
 public sealed record RedefinirSenhaRequest(
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]

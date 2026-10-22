@@ -1,15 +1,15 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Dominio.Convidados;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Dominio.Convidados;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
-using static Casamento.Testes.Integracao.Convidados.ClienteConvites;
-using ClienteCasamentos = Casamento.Testes.Integracao.Casamentos.ClienteCasamentos;
+using static Celebri.Testes.Integracao.Convidados.ClienteConvites;
+using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
 
-namespace Casamento.Testes.Integracao.Convidados;
+namespace Celebri.Testes.Integracao.Convidados;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class ConvitesApiTestes : IsolamentoOrganizacaoTestesBase

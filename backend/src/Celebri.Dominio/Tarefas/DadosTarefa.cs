@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Tarefas;
+namespace Celebri.Dominio.Tarefas;
 
 public sealed record DadosTarefa(
     string? Titulo,

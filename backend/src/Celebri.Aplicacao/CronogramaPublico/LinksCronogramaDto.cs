@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.CronogramaPublico;
+namespace Celebri.Aplicacao.CronogramaPublico;
 
 public sealed record LinkCronogramaDto(Guid Id, string? Token, DateTimeOffset GeradoEm);
 

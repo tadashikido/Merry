@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Isolamento;
+namespace Celebri.Dominio.Isolamento;
 
 public interface IPertenceCasamento : IPertenceOrganizacao
 {

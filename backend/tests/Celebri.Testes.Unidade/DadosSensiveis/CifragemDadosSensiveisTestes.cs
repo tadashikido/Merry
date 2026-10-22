@@ -1,11 +1,11 @@
 using System.Security.Cryptography;
 using System.Text;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Dominio.DadosSensiveis;
-using Casamento.Infraestrutura.Seguranca;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Dominio.DadosSensiveis;
+using Celebri.Infraestrutura.Seguranca;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Testes.Unidade.DadosSensiveis;
+namespace Celebri.Testes.Unidade.DadosSensiveis;
 
 public class CifragemDadosSensiveisTestes
 {

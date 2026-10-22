@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.DadosSensiveis;
+namespace Celebri.Dominio.DadosSensiveis;
 
 public enum TipoRestricaoAlimentar
 {

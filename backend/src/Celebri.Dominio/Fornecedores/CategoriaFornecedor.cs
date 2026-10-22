@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Fornecedores;
+namespace Celebri.Dominio.Fornecedores;
 
 public enum CategoriaFornecedor
 {

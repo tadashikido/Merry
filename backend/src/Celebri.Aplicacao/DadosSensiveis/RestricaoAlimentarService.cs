@@ -1,16 +1,16 @@
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.DadosSensiveis;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.DadosSensiveis;
+using Celebri.Dominio.Excecoes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Aplicacao.DadosSensiveis;
+namespace Celebri.Aplicacao.DadosSensiveis;
 
 public partial class RestricaoAlimentarService : IRestricaoAlimentarService
 {

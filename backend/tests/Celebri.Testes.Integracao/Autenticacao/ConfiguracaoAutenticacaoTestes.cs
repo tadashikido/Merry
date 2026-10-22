@@ -1,10 +1,10 @@
 using System.Net;
-using Casamento.Infraestrutura.Seguranca;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Infraestrutura;
-using static Casamento.Testes.Integracao.Autenticacao.ClienteAutenticacao;
+using Celebri.Infraestrutura.Seguranca;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Infraestrutura;
+using static Celebri.Testes.Integracao.Autenticacao.ClienteAutenticacao;
 
-namespace Casamento.Testes.Integracao.Autenticacao;
+namespace Celebri.Testes.Integracao.Autenticacao;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public class ConfiguracaoAutenticacaoTestes

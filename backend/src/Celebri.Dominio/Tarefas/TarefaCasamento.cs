@@ -1,8 +1,8 @@
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Isolamento;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Isolamento;
 
-namespace Casamento.Dominio.Tarefas;
+namespace Celebri.Dominio.Tarefas;
 
 public class TarefaCasamento : IPertenceCasamento
 {

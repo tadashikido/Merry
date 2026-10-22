@@ -1,5 +1,5 @@
-using Casamento.Dominio.DadosSensiveis;
+using Celebri.Dominio.DadosSensiveis;
 
-namespace Casamento.Dominio.Convidados;
+namespace Celebri.Dominio.Convidados;
 
 public sealed record DadosAcompanhanteRsvp(Guid? Id, string? Nome, FaixaEtaria FaixaEtaria, AlteracaoDadosSensiveis? DadosSensiveis = null);

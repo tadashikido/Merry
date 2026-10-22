@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Cronogramas;
-using Casamento.Aplicacao.Fornecedores;
-using Casamento.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.Cronogramas;
+using Celebri.Aplicacao.Fornecedores;
+using Celebri.Aplicacao.FornecedoresCasamento;
 
-namespace Casamento.Testes.Integracao.Cronogramas;
+namespace Celebri.Testes.Integracao.Cronogramas;
 
 public static class ClienteCronograma
 {

@@ -64,7 +64,7 @@ principal() {
   dominio=$(ler_variavel_env DOMINIO)
   [ -n "$dominio" ] || falhar "DOMINIO não definido no .env"
 
-  echo "🚀 Deploy Nossia iniciado ($alvo)"
+  echo "🚀 Deploy Celebri iniciado ($alvo)"
 
   local anterior
   anterior=$(git rev-parse HEAD)
@@ -100,7 +100,7 @@ principal() {
   compose up -d --remove-orphans
 
   if alterou '^infra/nginx/'; then
-    echo "⚠️  infra/nginx/casamento.conf.template mudou: aplique a diferença à mão em /etc/nginx/sites-available/casamento.conf (o arquivo foi editado pelo certbot, não o sobrescreva) e rode 'sudo nginx -t && sudo systemctl reload nginx'"
+    echo "⚠️  infra/nginx/celebri.conf.template mudou: aplique a diferença à mão no vhost de $dominio em /etc/nginx/sites-available/ (o arquivo foi editado pelo certbot, não o sobrescreva) e rode 'sudo nginx -t && sudo systemctl reload nginx'"
   fi
 
   aguardar_saude "$dominio"

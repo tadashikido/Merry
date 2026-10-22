@@ -1,8 +1,8 @@
 using System.Text;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Dominio.DadosSensiveis;
+namespace Celebri.Dominio.DadosSensiveis;
 
 public sealed class RestricaoAlimentar
 {

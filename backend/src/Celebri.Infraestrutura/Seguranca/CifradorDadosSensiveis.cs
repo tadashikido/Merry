@@ -1,8 +1,8 @@
 using System.Text;
-using Casamento.Aplicacao.DadosSensiveis.Portas;
+using Celebri.Aplicacao.DadosSensiveis.Portas;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Infraestrutura.Seguranca;
+namespace Celebri.Infraestrutura.Seguranca;
 
 public sealed class CifradorDadosSensiveis : ICifradorDadosSensiveis
 {

@@ -1,16 +1,16 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.Convidados.Importacao;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Mesas;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Mesas;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Convidados.Importacao;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Mesas;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Mesas;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
 
-namespace Casamento.Testes.Unidade.Mesas;
+namespace Celebri.Testes.Unidade.Mesas;
 
 public class MesaServiceTestes
 {

@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Convidados.Importacao;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Convidados.Importacao;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Testes.Unidade.Convidados.Importacao;
+namespace Celebri.Testes.Unidade.Convidados.Importacao;
 
 public class MapeadorEValoresImportacaoTestes
 {

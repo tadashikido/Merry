@@ -1,6 +1,6 @@
-using Casamento.Dominio.Usuarios;
+using Celebri.Dominio.Usuarios;
 
-namespace Casamento.Testes.Unidade.Autenticacao;
+namespace Celebri.Testes.Unidade.Autenticacao;
 
 public class PoliticaSenhaTestes
 {

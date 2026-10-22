@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Financeiro;
+namespace Celebri.Aplicacao.Financeiro;
 
 public sealed record FornecedorFinanceiroDto(
     Guid FornecedorCasamentoId,

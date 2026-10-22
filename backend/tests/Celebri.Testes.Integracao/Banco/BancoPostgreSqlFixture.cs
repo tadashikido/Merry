@@ -1,7 +1,7 @@
 using Npgsql;
 using Testcontainers.PostgreSql;
 
-namespace Casamento.Testes.Integracao.Banco;
+namespace Celebri.Testes.Integracao.Banco;
 
 public class BancoPostgreSqlFixture : IAsyncLifetime
 {

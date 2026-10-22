@@ -1,8 +1,8 @@
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Mesas;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Mesas;
 
-namespace Casamento.Testes.Unidade.Mesas;
+namespace Celebri.Testes.Unidade.Mesas;
 
 public class MesaTestes
 {

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Casamento.Infraestrutura.Seguranca;
+namespace Celebri.Infraestrutura.Seguranca;
 
 public class OpcoesJwt
 {

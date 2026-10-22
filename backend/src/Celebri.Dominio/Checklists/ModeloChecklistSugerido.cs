@@ -1,6 +1,6 @@
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Dominio.Checklists;
+namespace Celebri.Dominio.Checklists;
 
 public static class ModeloChecklistSugerido
 {

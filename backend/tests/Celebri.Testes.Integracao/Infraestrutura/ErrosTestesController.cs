@@ -1,10 +1,10 @@
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Dominio.Excecoes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Casamento.Testes.Integracao.Infraestrutura;
+namespace Celebri.Testes.Integracao.Infraestrutura;
 
 [AllowAnonymous]
 [ApiController]

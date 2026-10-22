@@ -1,6 +1,6 @@
-using Casamento.Dominio.Isolamento;
+using Celebri.Dominio.Isolamento;
 
-namespace Casamento.Testes.Integracao.Isolamento;
+namespace Celebri.Testes.Integracao.Isolamento;
 
 public class RegistroIsolado : IPertenceOrganizacao
 {

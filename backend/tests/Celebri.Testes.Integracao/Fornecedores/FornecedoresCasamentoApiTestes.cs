@@ -2,18 +2,18 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Fornecedores;
-using Casamento.Aplicacao.FornecedoresCasamento;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Fornecedores;
+using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ClienteAcessoCasal = Casamento.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
-using ClienteCasamentos = Casamento.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
+using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
 
-namespace Casamento.Testes.Integracao.Fornecedores;
+namespace Celebri.Testes.Integracao.Fornecedores;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class FornecedoresCasamentoApiTestes : IsolamentoOrganizacaoTestesBase, IDisposable

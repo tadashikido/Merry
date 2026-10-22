@@ -1,6 +1,6 @@
-using Casamento.Dominio.Rsvp;
+using Celebri.Dominio.Rsvp;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface IAcessoRsvpRepository
 {

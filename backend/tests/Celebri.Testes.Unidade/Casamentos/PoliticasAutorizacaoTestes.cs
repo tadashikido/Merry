@@ -1,10 +1,10 @@
 using System.Security.Claims;
-using Casamento.Api.Autorizacao;
-using Casamento.Aplicacao.Autenticacao;
+using Celebri.Api.Autorizacao;
+using Celebri.Aplicacao.Autenticacao;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Casamento.Testes.Unidade.Casamentos;
+namespace Celebri.Testes.Unidade.Casamentos;
 
 public class PoliticasAutorizacaoTestes
 {

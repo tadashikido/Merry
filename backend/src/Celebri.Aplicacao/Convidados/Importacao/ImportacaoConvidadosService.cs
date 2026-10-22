@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Aplicacao.Convidados.Importacao;
+namespace Celebri.Aplicacao.Convidados.Importacao;
 
 public class ImportacaoConvidadosService : IImportacaoConvidadosService
 {

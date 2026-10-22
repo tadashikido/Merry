@@ -34,14 +34,14 @@ preparar_cenario() {
   cp "$SCRIPT_DEPLOY" "$DESENVOLVIMENTO/deploy.sh"
   echo "api" > "$DESENVOLVIMENTO/backend/api.txt"
   echo "web" > "$DESENVOLVIMENTO/frontend/web.txt"
-  echo "server {}" > "$DESENVOLVIMENTO/infra/nginx/casamento.conf.template"
+  echo "server {}" > "$DESENVOLVIMENTO/infra/nginx/celebri.conf.template"
   echo "services: {}" > "$DESENVOLVIMENTO/docker-compose.prod.yml"
   git -C "$DESENVOLVIMENTO" add -A
   git -C "$DESENVOLVIMENTO" commit --quiet -m "inicial"
   git -C "$DESENVOLVIMENTO" push --quiet origin main 2> /dev/null
 
   git clone --quiet "$ORIGEM" "$VPS" 2> /dev/null
-  echo "DOMINIO=casamento.teste" > "$VPS/.env"
+  echo "DOMINIO=celebri.teste" > "$VPS/.env"
 
   cat > "$STUBS/docker" <<EOF
 #!/usr/bin/env bash
@@ -141,7 +141,7 @@ alteracao_em_backend_e_frontend_reconstroi_ambos() {
 }
 
 alteracao_no_vhost_do_host_avisa_sem_build() {
-  commitar infra/nginx/casamento.conf.template > /dev/null
+  commitar infra/nginx/celebri.conf.template > /dev/null
   executar_deploy
   verificar "código de saída 0" [ "$CODIGO" -eq 0 ]
   verificar "aviso de reaplicação do vhost" grep -q "aplique a diferença à mão" <<< "$SAIDA"
@@ -212,7 +212,7 @@ health_check_falhando_retorna_erro() {
 
 health_check_usa_dominio_do_env() {
   executar_deploy
-  verificar "curl com --resolve e URL de saúde" grep -q -- "--resolve casamento.teste:443:127.0.0.1 https://casamento.teste/api/saude" "$LOG_CURL"
+  verificar "curl com --resolve e URL de saúde" grep -q -- "--resolve celebri.teste:443:127.0.0.1 https://celebri.teste/api/saude" "$LOG_CURL"
 }
 
 env_ausente_e_recusado() {
@@ -230,10 +230,10 @@ dominio_ausente_e_recusado() {
 }
 
 dominio_com_aspas_e_crlf_e_normalizado() {
-  printf 'DOMINIO="casamento.teste"\r\n' > "$VPS/.env"
+  printf 'DOMINIO="celebri.teste"\r\n' > "$VPS/.env"
   executar_deploy
   verificar "código de saída 0" [ "$CODIGO" -eq 0 ]
-  verificar "domínio sem aspas" grep -q "https://casamento.teste/api/saude" "$LOG_CURL"
+  verificar "domínio sem aspas" grep -q "https://celebri.teste/api/saude" "$LOG_CURL"
 }
 
 alteracao_local_divergente_aborta() {

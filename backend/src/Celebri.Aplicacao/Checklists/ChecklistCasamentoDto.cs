@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.Tarefas;
+using Celebri.Aplicacao.Tarefas;
 
-namespace Casamento.Aplicacao.Checklists;
+namespace Celebri.Aplicacao.Checklists;
 
 public sealed record ChecklistCasamentoDto(
     ProgressoChecklistDto Progresso,

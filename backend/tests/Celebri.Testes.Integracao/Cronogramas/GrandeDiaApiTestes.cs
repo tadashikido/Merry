@@ -3,18 +3,18 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.CronogramaPublico;
-using Casamento.Aplicacao.GrandeDia;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Infraestrutura.Calendario;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.CronogramaPublico;
+using Celebri.Aplicacao.GrandeDia;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Infraestrutura.Calendario;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
-using ClienteAcessoCasal = Casamento.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
-using ClienteCasamentos = Casamento.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
+using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
 
-namespace Casamento.Testes.Integracao.Cronogramas;
+namespace Celebri.Testes.Integracao.Cronogramas;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDisposable

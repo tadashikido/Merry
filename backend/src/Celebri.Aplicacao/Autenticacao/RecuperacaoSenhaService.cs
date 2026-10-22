@@ -1,13 +1,13 @@
-using Casamento.Aplicacao.Autenticacao.Portas;
-using Casamento.Aplicacao.Email;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Autenticacao;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Usuarios;
+using Celebri.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Email;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Autenticacao;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Usuarios;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Aplicacao.Autenticacao;
+namespace Celebri.Aplicacao.Autenticacao;
 
 public class RecuperacaoSenhaService : IRecuperacaoSenhaService
 {

@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Convidados;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Convidados;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Aplicacao.Confirmacoes;
+namespace Celebri.Aplicacao.Confirmacoes;
 
 public static class CalculadoraPainelConfirmacoes
 {

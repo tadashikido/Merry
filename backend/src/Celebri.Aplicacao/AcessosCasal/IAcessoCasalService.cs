@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Autenticacao;
 
-namespace Casamento.Aplicacao.AcessosCasal;
+namespace Celebri.Aplicacao.AcessosCasal;
 
 public interface IAcessoCasalService
 {

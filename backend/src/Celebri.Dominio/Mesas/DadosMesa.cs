@@ -1,3 +1,3 @@
-namespace Casamento.Dominio.Mesas;
+namespace Celebri.Dominio.Mesas;
 
 public sealed record DadosMesa(int Numero, string? Nome, int Capacidade, bool Especial);

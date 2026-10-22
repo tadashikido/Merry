@@ -1,11 +1,11 @@
-using Casamento.Dominio.AcessosCasal;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Usuarios;
+using Celebri.Dominio.AcessosCasal;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Usuarios;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Casamento.Infraestrutura.Persistencia.Configuracoes;
+namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 
 public class AcessoCasalConfiguration : IEntityTypeConfiguration<AcessoCasal>
 {

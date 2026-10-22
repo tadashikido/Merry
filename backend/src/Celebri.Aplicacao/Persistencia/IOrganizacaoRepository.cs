@@ -1,6 +1,6 @@
-using Casamento.Dominio.Organizacoes;
+using Celebri.Dominio.Organizacoes;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface IOrganizacaoRepository
 {

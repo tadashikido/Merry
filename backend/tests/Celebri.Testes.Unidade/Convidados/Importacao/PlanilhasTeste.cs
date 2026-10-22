@@ -1,7 +1,7 @@
 using System.Text;
-using Casamento.Aplicacao.Convidados.Importacao;
+using Celebri.Aplicacao.Convidados.Importacao;
 
-namespace Casamento.Testes.Unidade.Convidados.Importacao;
+namespace Celebri.Testes.Unidade.Convidados.Importacao;
 
 public static class PlanilhasTeste
 {

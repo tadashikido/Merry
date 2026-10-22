@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using Casamento.Aplicacao.Email;
+using Celebri.Aplicacao.Email;
 
-namespace Casamento.Testes.Integracao.Infraestrutura;
+namespace Celebri.Testes.Integracao.Infraestrutura;
 
 public class EnvioEmailMemoria : IEnvioEmailService
 {

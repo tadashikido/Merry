@@ -1,9 +1,9 @@
 using System.Net;
 using System.Text.Json;
-using Casamento.Testes.Integracao.Infraestrutura;
+using Celebri.Testes.Integracao.Infraestrutura;
 using Microsoft.Extensions.Hosting;
 
-namespace Casamento.Testes.Integracao.Api;
+namespace Celebri.Testes.Integracao.Api;
 
 public class AmbientesApiTestes
 {

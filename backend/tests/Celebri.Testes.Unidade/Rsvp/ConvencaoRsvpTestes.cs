@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Convidados;
-using Casamento.Dominio.Convidados;
-using Casamento.Testes.Unidade.Convidados;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Dominio.Convidados;
+using Celebri.Testes.Unidade.Convidados;
 
-namespace Casamento.Testes.Unidade.Rsvp;
+namespace Celebri.Testes.Unidade.Rsvp;
 
 public class ConvencaoRsvpTestes
 {
@@ -10,7 +10,7 @@ public class ConvencaoRsvpTestes
     {
         var diretorio = new DirectoryInfo(AppContext.BaseDirectory);
 
-        while (diretorio is not null && !Directory.Exists(Path.Combine(diretorio.FullName, "src", "Casamento.Aplicacao")))
+        while (diretorio is not null && !Directory.Exists(Path.Combine(diretorio.FullName, "src", "Celebri.Aplicacao")))
         {
             diretorio = diretorio.Parent;
         }

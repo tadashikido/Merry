@@ -1,9 +1,9 @@
-using Casamento.Api.Autorizacao;
-using Casamento.Aplicacao.Tarefas;
+using Celebri.Api.Autorizacao;
+using Celebri.Aplicacao.Tarefas;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Casamento.Api.Controllers;
+namespace Celebri.Api.Controllers;
 
 [ApiController]
 [Route("api/tarefas/pendencias")]

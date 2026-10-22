@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Tarefas;
+using Celebri.Aplicacao.Tarefas;
 
-namespace Casamento.Testes.Integracao.Tarefas;
+namespace Celebri.Testes.Integracao.Tarefas;
 
 public static class ClienteTarefas
 {

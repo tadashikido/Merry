@@ -1,10 +1,10 @@
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Aplicacao.Checklists;
+namespace Celebri.Aplicacao.Checklists;
 
 public class ModeloChecklistService : IModeloChecklistService
 {

@@ -1,10 +1,10 @@
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Dominio.Casamentos;
+namespace Celebri.Dominio.Casamentos;
 
 public sealed class PlanoDuplicacaoCasamento
 {

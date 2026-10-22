@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface IUnidadeTrabalho
 {

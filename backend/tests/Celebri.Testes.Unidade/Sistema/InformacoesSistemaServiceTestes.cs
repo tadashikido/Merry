@@ -1,8 +1,8 @@
 using System.Reflection;
 using System.Reflection.Emit;
-using Casamento.Aplicacao.Sistema;
+using Celebri.Aplicacao.Sistema;
 
-namespace Casamento.Testes.Unidade.Sistema;
+namespace Celebri.Testes.Unidade.Sistema;
 
 public class InformacoesSistemaServiceTestes
 {

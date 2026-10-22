@@ -1,14 +1,14 @@
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Cronogramas;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Cronogramas;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Aplicacao.GrandeDia;
+namespace Celebri.Aplicacao.GrandeDia;
 
 public class GrandeDiaService : IGrandeDiaService
 {

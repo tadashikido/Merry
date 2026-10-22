@@ -1,9 +1,9 @@
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.DadosSensiveis;
-using Casamento.Dominio.Excecoes;
-using Casamento.Testes.Unidade.Convidados;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.DadosSensiveis;
+using Celebri.Dominio.Excecoes;
+using Celebri.Testes.Unidade.Convidados;
 
-namespace Casamento.Testes.Unidade.DadosSensiveis;
+namespace Celebri.Testes.Unidade.DadosSensiveis;
 
 public class ConviteDadosSensiveisTestes
 {

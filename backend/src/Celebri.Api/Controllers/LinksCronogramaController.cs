@@ -1,9 +1,9 @@
-using Casamento.Api.Autorizacao;
-using Casamento.Aplicacao.CronogramaPublico;
+using Celebri.Api.Autorizacao;
+using Celebri.Aplicacao.CronogramaPublico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Casamento.Api.Controllers;
+namespace Celebri.Api.Controllers;
 
 [ApiController]
 [Route("api/casamentos/{casamentoId:guid}/cronograma/links")]

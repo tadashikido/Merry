@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.UsuarioAtual;
+using Celebri.Aplicacao.UsuarioAtual;
 
-namespace Casamento.Aplicacao.Isolamento;
+namespace Celebri.Aplicacao.Isolamento;
 
 public class ContextoIsolamentoUsuarioAtual : IContextoIsolamento
 {

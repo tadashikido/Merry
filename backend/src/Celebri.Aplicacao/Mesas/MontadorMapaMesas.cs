@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Convidados;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Mesas;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Mesas;
 
-namespace Casamento.Aplicacao.Mesas;
+namespace Celebri.Aplicacao.Mesas;
 
 public static class MontadorMapaMesas
 {

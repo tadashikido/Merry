@@ -1,7 +1,7 @@
-using Casamento.Aplicacao.Checklists;
-using Casamento.Dominio.Checklists;
+using Celebri.Aplicacao.Checklists;
+using Celebri.Dominio.Checklists;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface IModeloChecklistRepository
 {

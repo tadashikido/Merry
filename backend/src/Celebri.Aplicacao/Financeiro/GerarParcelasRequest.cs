@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Dominio.Financeiro;
+using Celebri.Dominio.Financeiro;
 
-namespace Casamento.Aplicacao.Financeiro;
+namespace Celebri.Aplicacao.Financeiro;
 
 public sealed record GerarParcelasRequest(
     [Required(ErrorMessage = MensagensFinanceiro.QuantidadeObrigatoria)]

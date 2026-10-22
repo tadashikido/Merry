@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.AcessosCasal;
+namespace Celebri.Aplicacao.AcessosCasal;
 
 public static class FormatoTokenConviteCasal
 {

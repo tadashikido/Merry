@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Mesas;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Mesas;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class MesaRepository : IMesaRepository
 {

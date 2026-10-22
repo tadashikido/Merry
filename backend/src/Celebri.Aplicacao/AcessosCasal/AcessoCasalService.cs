@@ -1,19 +1,19 @@
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Autenticacao.Portas;
-using Casamento.Aplicacao.Email;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.AcessosCasal;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Usuarios;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Email;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.AcessosCasal;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Usuarios;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Aplicacao.AcessosCasal;
+namespace Celebri.Aplicacao.AcessosCasal;
 
 public partial class AcessoCasalService : IAcessoCasalService
 {

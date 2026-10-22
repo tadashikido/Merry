@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Infraestrutura.Persistencia;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Infraestrutura.Persistencia;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Testes.Integracao.Isolamento;
+namespace Celebri.Testes.Integracao.Isolamento;
 
 public record RegistroIsoladoRequest(string Descricao);
 

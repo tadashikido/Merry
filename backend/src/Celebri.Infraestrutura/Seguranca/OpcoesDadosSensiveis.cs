@@ -1,4 +1,4 @@
-namespace Casamento.Infraestrutura.Seguranca;
+namespace Celebri.Infraestrutura.Seguranca;
 
 public class OpcoesDadosSensiveis
 {

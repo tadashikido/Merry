@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Aplicacao.CronogramaPublico;
+namespace Celebri.Aplicacao.CronogramaPublico;
 
 public sealed record GerarLinkCronogramaRequest(
     [Required(ErrorMessage = MensagensAcessoCronograma.TipoInvalido)]

@@ -1,11 +1,11 @@
 using System.Globalization;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Convidados;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Aplicacao.Confirmacoes;
+namespace Celebri.Aplicacao.Confirmacoes;
 
 public static class MontadorExportacaoBuffet
 {

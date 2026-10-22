@@ -1,6 +1,6 @@
-using Casamento.Dominio.Casamentos;
+using Celebri.Dominio.Casamentos;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface ICasamentoRepository
 {

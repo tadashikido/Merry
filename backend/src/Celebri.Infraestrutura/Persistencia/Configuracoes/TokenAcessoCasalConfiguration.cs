@@ -1,8 +1,8 @@
-using Casamento.Dominio.AcessosCasal;
+using Celebri.Dominio.AcessosCasal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Casamento.Infraestrutura.Persistencia.Configuracoes;
+namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 
 public class TokenAcessoCasalConfiguration : IEntityTypeConfiguration<TokenAcessoCasal>
 {

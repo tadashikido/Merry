@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Financeiro;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Financeiro;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Aplicacao.FornecedoresCasamento;
+namespace Celebri.Aplicacao.FornecedoresCasamento;
 
 public static class CalculadoraResumoOrcamento
 {

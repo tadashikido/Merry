@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Email;
+namespace Celebri.Aplicacao.Email;
 
 public interface IEnvioEmailService
 {

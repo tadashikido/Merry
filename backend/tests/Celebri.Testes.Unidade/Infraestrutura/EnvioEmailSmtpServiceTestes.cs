@@ -1,11 +1,11 @@
 using System.Net.Mail;
-using Casamento.Aplicacao.Email;
-using Casamento.Aplicacao.Sistema;
-using Casamento.Infraestrutura.Email;
+using Celebri.Aplicacao.Email;
+using Celebri.Aplicacao.Sistema;
+using Celebri.Infraestrutura.Email;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Testes.Unidade.Infraestrutura;
+namespace Celebri.Testes.Unidade.Infraestrutura;
 
 public class EnvioEmailSmtpServiceTestes
 {

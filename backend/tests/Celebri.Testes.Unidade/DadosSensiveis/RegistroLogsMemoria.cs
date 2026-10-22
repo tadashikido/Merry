@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Casamento.Testes.Unidade.DadosSensiveis;
+namespace Celebri.Testes.Unidade.DadosSensiveis;
 
 public sealed class RegistroLogsMemoria<T> : ILogger<T>
 {

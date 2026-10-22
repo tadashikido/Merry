@@ -2,24 +2,24 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Fornecedores;
-using Casamento.Aplicacao.FornecedoresCasamento;
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Tarefas;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Checklists;
-using Casamento.Testes.Integracao.Convidados;
-using Casamento.Testes.Integracao.Isolamento;
-using Casamento.Testes.Integracao.Rsvp;
-using Casamento.Testes.Integracao.Tarefas;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Fornecedores;
+using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Tarefas;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Checklists;
+using Celebri.Testes.Integracao.Convidados;
+using Celebri.Testes.Integracao.Isolamento;
+using Celebri.Testes.Integracao.Rsvp;
+using Celebri.Testes.Integracao.Tarefas;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ClienteAcessoCasal = Casamento.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
+using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
 
-namespace Casamento.Testes.Integracao.Casamentos;
+namespace Celebri.Testes.Integracao.Casamentos;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class DuplicacaoCasamentoApiTestes : IsolamentoOrganizacaoTestesBase, IDisposable

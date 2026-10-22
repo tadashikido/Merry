@@ -1,12 +1,12 @@
 using System.Net;
 using System.Net.Http.Headers;
-using Casamento.Api.Tratamento;
-using Casamento.Infraestrutura.Persistencia;
-using Casamento.Testes.Integracao.Banco;
+using Celebri.Api.Tratamento;
+using Celebri.Infraestrutura.Persistencia;
+using Celebri.Testes.Integracao.Banco;
 using Microsoft.EntityFrameworkCore;
-using static Casamento.Testes.Integracao.Autenticacao.ClienteAutenticacao;
+using static Celebri.Testes.Integracao.Autenticacao.ClienteAutenticacao;
 
-namespace Casamento.Testes.Integracao.Isolamento;
+namespace Celebri.Testes.Integracao.Isolamento;
 
 public sealed record OrganizacaoTeste(Guid OrganizacaoId, Guid UsuarioId, string Email, string TokenAcesso, HttpClient Cliente);
 

@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.DadosSensiveis;
+namespace Celebri.Aplicacao.DadosSensiveis;
 
 public interface IExecutorRetencaoDadosSensiveis
 {

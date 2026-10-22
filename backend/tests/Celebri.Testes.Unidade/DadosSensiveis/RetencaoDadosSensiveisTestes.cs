@@ -1,11 +1,11 @@
-using Casamento.Api.Tarefas;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.UsuarioAtual;
+using Celebri.Api.Tarefas;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.UsuarioAtual;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Testes.Unidade.DadosSensiveis;
+namespace Celebri.Testes.Unidade.DadosSensiveis;
 
 public class RetencaoDadosSensiveisTestes
 {
@@ -13,7 +13,7 @@ public class RetencaoDadosSensiveisTestes
     {
         var diretorio = new DirectoryInfo(AppContext.BaseDirectory);
 
-        while (diretorio is not null && !Directory.Exists(Path.Combine(diretorio.FullName, "src", "Casamento.Aplicacao")))
+        while (diretorio is not null && !Directory.Exists(Path.Combine(diretorio.FullName, "src", "Celebri.Aplicacao")))
         {
             diretorio = diretorio.Parent;
         }

@@ -1,11 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Fornecedores;
-using Casamento.Aplicacao.FornecedoresCasamento;
-using Casamento.Aplicacao.ModelosCronograma;
+using Celebri.Aplicacao.Fornecedores;
+using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.ModelosCronograma;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Casamento.Testes.Integracao.Cronogramas;
+namespace Celebri.Testes.Integracao.Cronogramas;
 
 public static class ClienteModelosCronograma
 {

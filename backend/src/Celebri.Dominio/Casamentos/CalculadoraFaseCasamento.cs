@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Casamentos;
+namespace Celebri.Dominio.Casamentos;
 
 public static class CalculadoraFaseCasamento
 {

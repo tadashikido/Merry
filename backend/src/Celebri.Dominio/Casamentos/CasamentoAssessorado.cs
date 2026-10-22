@@ -1,7 +1,7 @@
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Isolamento;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Isolamento;
 
-namespace Casamento.Dominio.Casamentos;
+namespace Celebri.Dominio.Casamentos;
 
 public class CasamentoAssessorado : IRaizCasamento
 {

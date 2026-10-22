@@ -1,7 +1,7 @@
-using Casamento.Api;
-using Casamento.Aplicacao;
-using Casamento.Infraestrutura;
-using Casamento.Infraestrutura.Persistencia;
+using Celebri.Api;
+using Celebri.Aplicacao;
+using Celebri.Infraestrutura;
+using Celebri.Infraestrutura.Persistencia;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
-using Casamento.Aplicacao.CronogramaPublico.Portas;
+using Celebri.Aplicacao.CronogramaPublico.Portas;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Infraestrutura.Seguranca;
+namespace Celebri.Infraestrutura.Seguranca;
 
 public sealed class CifradorTokenCronograma : ICifradorTokenCronograma
 {

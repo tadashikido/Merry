@@ -1,4 +1,4 @@
-namespace Casamento.Api.Autenticacao;
+namespace Celebri.Api.Autenticacao;
 
 public static class PoliticasLimiteRequisicao
 {

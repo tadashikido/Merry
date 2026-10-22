@@ -1,14 +1,14 @@
-using Casamento.Api.Autenticacao;
-using Casamento.Api.Autorizacao;
-using Casamento.Api.Filtros;
-using Casamento.Aplicacao.Arquivos;
-using Casamento.Aplicacao.FornecedoresCasamento;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Api.Autenticacao;
+using Celebri.Api.Autorizacao;
+using Celebri.Api.Filtros;
+using Celebri.Aplicacao.Arquivos;
+using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Dominio.Fornecedores;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Casamento.Api.Controllers;
+namespace Celebri.Api.Controllers;
 
 [ApiController]
 [Route("api/casamentos/{casamentoId:guid}/fornecedores")]

@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Infraestrutura.Calendario;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Infraestrutura.Calendario;
 
-namespace Casamento.Testes.Integracao.Casamentos;
+namespace Celebri.Testes.Integracao.Casamentos;
 
 public static class ClienteCasamentos
 {

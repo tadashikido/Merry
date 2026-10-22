@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Confirmacoes;
+namespace Celebri.Aplicacao.Confirmacoes;
 
 public sealed record ExportacaoBuffetDto(
     CasamentoExportacaoDto Casamento,

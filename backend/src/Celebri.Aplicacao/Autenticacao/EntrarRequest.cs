@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Casamento.Aplicacao.Autenticacao;
+namespace Celebri.Aplicacao.Autenticacao;
 
 public sealed record EntrarRequest(
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]

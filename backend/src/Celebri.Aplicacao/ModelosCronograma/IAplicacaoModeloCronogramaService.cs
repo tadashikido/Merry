@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.ModelosCronograma;
+namespace Celebri.Aplicacao.ModelosCronograma;
 
 public interface IAplicacaoModeloCronogramaService
 {

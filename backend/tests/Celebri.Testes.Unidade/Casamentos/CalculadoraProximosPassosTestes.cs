@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.AcessosCasal;
-using Casamento.Dominio.Checklists;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.AcessosCasal;
+using Celebri.Dominio.Checklists;
 
-namespace Casamento.Testes.Unidade.Casamentos;
+namespace Celebri.Testes.Unidade.Casamentos;
 
 public class CalculadoraProximosPassosTestes
 {

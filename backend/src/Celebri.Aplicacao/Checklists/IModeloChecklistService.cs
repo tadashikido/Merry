@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Checklists;
+namespace Celebri.Aplicacao.Checklists;
 
 public interface IModeloChecklistService
 {

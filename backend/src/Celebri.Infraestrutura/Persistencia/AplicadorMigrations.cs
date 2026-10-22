@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Casamento.Infraestrutura.Persistencia;
+namespace Celebri.Infraestrutura.Persistencia;
 
 public static class AplicadorMigrations
 {

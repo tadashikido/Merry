@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Autenticacao;
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Usuarios;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Autenticacao;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Usuarios;
 
-namespace Casamento.Testes.Unidade.Autenticacao.Fakes;
+namespace Celebri.Testes.Unidade.Autenticacao.Fakes;
 
 public class BancoMemoria : IUsuarioRepository, IOrganizacaoRepository, IRefreshTokenRepository, ITokenRedefinicaoSenhaRepository, IUnidadeTrabalho
 {

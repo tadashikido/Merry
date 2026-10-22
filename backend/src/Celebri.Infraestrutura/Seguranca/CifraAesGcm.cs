@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace Casamento.Infraestrutura.Seguranca;
+namespace Celebri.Infraestrutura.Seguranca;
 
 public static class CifraAesGcm
 {

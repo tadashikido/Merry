@@ -1,6 +1,6 @@
-using Casamento.Dominio.Fornecedores;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Dominio.Cronogramas;
+namespace Celebri.Dominio.Cronogramas;
 
 public static class ModeloCronogramaSugerido
 {

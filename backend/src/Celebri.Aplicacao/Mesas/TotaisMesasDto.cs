@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Mesas;
+namespace Celebri.Aplicacao.Mesas;
 
 public sealed record TotaisMesasDto(
     int Mesas,

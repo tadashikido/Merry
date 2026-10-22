@@ -1,6 +1,6 @@
-using Casamento.Dominio.Autenticacao;
+using Celebri.Dominio.Autenticacao;
 
-namespace Casamento.Testes.Unidade.Autenticacao;
+namespace Celebri.Testes.Unidade.Autenticacao;
 
 public class TokensDominioTestes
 {

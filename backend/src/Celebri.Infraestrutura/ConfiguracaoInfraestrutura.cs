@@ -1,28 +1,28 @@
-using Casamento.Aplicacao.Arquivos;
-using Casamento.Aplicacao.Auditoria;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Autenticacao.Portas;
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Aplicacao.DadosSensiveis.Portas;
-using Casamento.Aplicacao.Email;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.CronogramaPublico.Portas;
-using Casamento.Aplicacao.Rsvp.Portas;
-using Casamento.Infraestrutura.Arquivos;
-using Casamento.Infraestrutura.Calendario;
-using Casamento.Infraestrutura.Email;
-using Casamento.Infraestrutura.Persistencia;
-using Casamento.Infraestrutura.Persistencia.Auditoria;
-using Casamento.Infraestrutura.Persistencia.Isolamento;
-using Casamento.Infraestrutura.Persistencia.Repositorios;
-using Casamento.Infraestrutura.Seguranca;
+using Celebri.Aplicacao.Arquivos;
+using Celebri.Aplicacao.Auditoria;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.CronogramaPublico.Portas;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.DadosSensiveis.Portas;
+using Celebri.Aplicacao.Email;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.Rsvp.Portas;
+using Celebri.Infraestrutura.Arquivos;
+using Celebri.Infraestrutura.Calendario;
+using Celebri.Infraestrutura.Email;
+using Celebri.Infraestrutura.Persistencia;
+using Celebri.Infraestrutura.Persistencia.Auditoria;
+using Celebri.Infraestrutura.Persistencia.Isolamento;
+using Celebri.Infraestrutura.Persistencia.Repositorios;
+using Celebri.Infraestrutura.Seguranca;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Casamento.Infraestrutura;
+namespace Celebri.Infraestrutura;
 
 public static class ConfiguracaoInfraestrutura
 {

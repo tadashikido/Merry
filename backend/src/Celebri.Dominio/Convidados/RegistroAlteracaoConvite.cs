@@ -1,6 +1,6 @@
-using Casamento.Dominio.Isolamento;
+using Celebri.Dominio.Isolamento;
 
-namespace Casamento.Dominio.Convidados;
+namespace Celebri.Dominio.Convidados;
 
 public class RegistroAlteracaoConvite : IPertenceCasamento
 {

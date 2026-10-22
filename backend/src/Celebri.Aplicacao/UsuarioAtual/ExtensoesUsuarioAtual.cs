@@ -1,6 +1,6 @@
-using Casamento.Dominio.Usuarios;
+using Celebri.Dominio.Usuarios;
 
-namespace Casamento.Aplicacao.UsuarioAtual;
+namespace Celebri.Aplicacao.UsuarioAtual;
 
 public static class ExtensoesUsuarioAtual
 {

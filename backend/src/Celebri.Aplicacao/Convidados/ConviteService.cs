@@ -1,10 +1,10 @@
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Mesas;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Convidados;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Mesas;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Aplicacao.Convidados;
+namespace Celebri.Aplicacao.Convidados;
 
 public class ConviteService : IConviteService
 {

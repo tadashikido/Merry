@@ -1,8 +1,8 @@
-using Casamento.Dominio.Organizacoes;
+using Celebri.Dominio.Organizacoes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Casamento.Testes.Integracao.Isolamento;
+namespace Celebri.Testes.Integracao.Isolamento;
 
 public class CustomizadorModeloIsolamento : ModelCustomizer
 {

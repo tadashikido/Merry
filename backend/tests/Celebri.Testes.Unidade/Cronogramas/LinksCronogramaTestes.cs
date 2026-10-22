@@ -1,21 +1,21 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.CronogramaPublico;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Isolamento;
-using Casamento.Infraestrutura.Seguranca;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
-using Casamento.Testes.Unidade.Fornecedores;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.CronogramaPublico;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Isolamento;
+using Celebri.Infraestrutura.Seguranca;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Testes.Unidade.Fornecedores;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Testes.Unidade.Cronogramas;
+namespace Celebri.Testes.Unidade.Cronogramas;
 
 public class LinksCronogramaTestes
 {
@@ -479,7 +479,7 @@ public class LinksCronogramaTestes
     {
         var diretorio = new DirectoryInfo(AppContext.BaseDirectory);
 
-        while (diretorio is not null && !Directory.Exists(Path.Combine(diretorio.FullName, "src", "Casamento.Aplicacao")))
+        while (diretorio is not null && !Directory.Exists(Path.Combine(diretorio.FullName, "src", "Celebri.Aplicacao")))
         {
             diretorio = diretorio.Parent;
         }

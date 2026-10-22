@@ -1,10 +1,10 @@
-using Casamento.Api.Autorizacao;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.Rsvp;
+using Celebri.Api.Autorizacao;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Rsvp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Casamento.Api.Controllers;
+namespace Celebri.Api.Controllers;
 
 [ApiController]
 [Route("api/casamentos/{casamentoId:guid}/convites/{conviteId:guid}")]

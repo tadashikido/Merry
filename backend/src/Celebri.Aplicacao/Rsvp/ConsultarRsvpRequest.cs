@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Autenticacao;
 
-namespace Casamento.Aplicacao.Rsvp;
+namespace Celebri.Aplicacao.Rsvp;
 
 public sealed record ConsultarRsvpRequest(
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]

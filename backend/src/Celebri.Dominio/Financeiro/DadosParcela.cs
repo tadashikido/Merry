@@ -1,3 +1,3 @@
-namespace Casamento.Dominio.Financeiro;
+namespace Celebri.Dominio.Financeiro;
 
 public sealed record DadosParcela(decimal Valor, DateOnly Vencimento, string? Observacao);

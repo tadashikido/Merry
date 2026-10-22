@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Casamento.Aplicacao.Sistema;
+namespace Celebri.Aplicacao.Sistema;
 
 public class InformacoesSistemaService : IInformacoesSistemaService
 {

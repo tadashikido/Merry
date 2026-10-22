@@ -1,14 +1,14 @@
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Rsvp;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Rsvp;
 using Microsoft.Extensions.Logging;
 
-namespace Casamento.Aplicacao.Confirmacoes;
+namespace Celebri.Aplicacao.Confirmacoes;
 
 public partial class CobrancaRsvpService : ICobrancaRsvpService
 {

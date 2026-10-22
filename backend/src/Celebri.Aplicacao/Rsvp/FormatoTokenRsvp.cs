@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Rsvp;
+namespace Celebri.Aplicacao.Rsvp;
 
 public static class FormatoTokenRsvp
 {

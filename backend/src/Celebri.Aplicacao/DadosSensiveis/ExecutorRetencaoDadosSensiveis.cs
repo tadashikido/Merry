@@ -1,11 +1,11 @@
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.Persistencia;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Persistencia;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Aplicacao.DadosSensiveis;
+namespace Celebri.Aplicacao.DadosSensiveis;
 
 public sealed partial class ExecutorRetencaoDadosSensiveis : IExecutorRetencaoDadosSensiveis
 {

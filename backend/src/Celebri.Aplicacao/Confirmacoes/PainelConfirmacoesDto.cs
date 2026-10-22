@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.Convidados;
+using Celebri.Aplicacao.Convidados;
 
-namespace Casamento.Aplicacao.Confirmacoes;
+namespace Celebri.Aplicacao.Confirmacoes;
 
 public sealed record PainelConfirmacoesDto(
     SituacaoConvitesDto Convites,

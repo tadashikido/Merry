@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Banco;
 using Microsoft.EntityFrameworkCore;
-using static Casamento.Testes.Integracao.Autenticacao.ClienteAutenticacao;
+using static Celebri.Testes.Integracao.Autenticacao.ClienteAutenticacao;
 
-namespace Casamento.Testes.Integracao.Isolamento;
+namespace Celebri.Testes.Integracao.Isolamento;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class IsolamentoApiTestes : IsolamentoOrganizacaoTestesBase

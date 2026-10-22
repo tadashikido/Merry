@@ -1,10 +1,10 @@
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Tarefas;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Casamento.Infraestrutura.Persistencia.Configuracoes;
+namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 
 public class ItemModeloChecklistConfiguration : IEntityTypeConfiguration<ItemModeloChecklist>
 {

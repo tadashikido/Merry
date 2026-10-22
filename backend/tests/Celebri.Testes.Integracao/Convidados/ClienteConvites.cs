@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Convidados;
+using Celebri.Aplicacao.Convidados;
 
-namespace Casamento.Testes.Integracao.Convidados;
+namespace Celebri.Testes.Integracao.Convidados;
 
 public static class ClienteConvites
 {

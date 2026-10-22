@@ -1,12 +1,12 @@
 using System.Text;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.Rsvp;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Infraestrutura.Seguranca;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Rsvp;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Infraestrutura.Seguranca;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Testes.Unidade.Rsvp;
+namespace Celebri.Testes.Unidade.Rsvp;
 
 public class SegurancaTokenRsvpTestes
 {

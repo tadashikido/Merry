@@ -1,6 +1,6 @@
-using Casamento.Dominio.Cronogramas;
+using Celebri.Dominio.Cronogramas;
 
-namespace Casamento.Testes.Unidade.Cronogramas;
+namespace Celebri.Testes.Unidade.Cronogramas;
 
 public class MomentoGrandeDiaTestes
 {

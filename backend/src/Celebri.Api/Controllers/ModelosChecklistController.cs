@@ -1,9 +1,9 @@
-using Casamento.Api.Autorizacao;
-using Casamento.Aplicacao.Checklists;
+using Celebri.Api.Autorizacao;
+using Celebri.Aplicacao.Checklists;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Casamento.Api.Controllers;
+namespace Celebri.Api.Controllers;
 
 [ApiController]
 [Route("api/modelos-checklist")]

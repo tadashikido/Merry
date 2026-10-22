@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Isolamento;
+namespace Celebri.Aplicacao.Isolamento;
 
 public sealed class EscopoIsolamentoCronogramaPublico
 {

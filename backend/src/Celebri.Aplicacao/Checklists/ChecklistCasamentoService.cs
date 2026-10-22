@@ -1,14 +1,14 @@
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.Tarefas;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Tarefas;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.Tarefas;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Aplicacao.Checklists;
+namespace Celebri.Aplicacao.Checklists;
 
 public class ChecklistCasamentoService : IChecklistCasamentoService
 {

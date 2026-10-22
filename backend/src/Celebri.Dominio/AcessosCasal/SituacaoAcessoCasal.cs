@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.AcessosCasal;
+namespace Celebri.Dominio.AcessosCasal;
 
 public enum SituacaoAcessoCasal
 {

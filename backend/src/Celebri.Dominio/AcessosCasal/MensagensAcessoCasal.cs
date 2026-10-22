@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.AcessosCasal;
+namespace Celebri.Dominio.AcessosCasal;
 
 public static class MensagensAcessoCasal
 {

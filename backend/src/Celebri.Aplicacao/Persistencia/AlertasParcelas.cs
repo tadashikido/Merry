@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public sealed record AlertasParcelas(
     int TotalVencidas,

@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Organizacoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Organizacoes;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class OrganizacaoRepository : IOrganizacaoRepository
 {

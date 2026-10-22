@@ -1,6 +1,6 @@
-using Casamento.Dominio.Cronogramas;
+using Celebri.Dominio.Cronogramas;
 
-namespace Casamento.Aplicacao.GrandeDia;
+namespace Celebri.Aplicacao.GrandeDia;
 
 public sealed record GrandeDiaDto(
     Guid CasamentoId,

@@ -1,28 +1,28 @@
-using Casamento.Aplicacao.AcessosCasal;
-using Casamento.Aplicacao.Auditoria;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Confirmacoes;
-using Casamento.Aplicacao.CronogramaPublico;
-using Casamento.Aplicacao.Cronogramas;
-using Casamento.Aplicacao.GrandeDia;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.Convidados.Importacao;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Aplicacao.Financeiro;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.Mesas;
-using Casamento.Aplicacao.Rsvp;
-using Casamento.Aplicacao.Sistema;
-using Casamento.Aplicacao.Checklists;
-using Casamento.Aplicacao.ModelosCronograma;
-using Casamento.Aplicacao.Fornecedores;
-using Casamento.Aplicacao.FornecedoresCasamento;
-using Casamento.Aplicacao.Tarefas;
+using Celebri.Aplicacao.AcessosCasal;
+using Celebri.Aplicacao.Auditoria;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Checklists;
+using Celebri.Aplicacao.Confirmacoes;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Convidados.Importacao;
+using Celebri.Aplicacao.CronogramaPublico;
+using Celebri.Aplicacao.Cronogramas;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.Financeiro;
+using Celebri.Aplicacao.Fornecedores;
+using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.GrandeDia;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Mesas;
+using Celebri.Aplicacao.ModelosCronograma;
+using Celebri.Aplicacao.Rsvp;
+using Celebri.Aplicacao.Sistema;
+using Celebri.Aplicacao.Tarefas;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Casamento.Aplicacao;
+namespace Celebri.Aplicacao;
 
 public static class ConfiguracaoAplicacao
 {

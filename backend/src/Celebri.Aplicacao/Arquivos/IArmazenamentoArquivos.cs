@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Arquivos;
+namespace Celebri.Aplicacao.Arquivos;
 
 public interface IArmazenamentoArquivos
 {

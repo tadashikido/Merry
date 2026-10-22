@@ -1,4 +1,4 @@
-using Casamento.Infraestrutura.Persistencia;
+using Celebri.Infraestrutura.Persistencia;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Casamento.Infraestrutura.Persistencia.Migrations
+namespace Celebri.Infraestrutura.Persistencia.Migrations
 {
     [DbContext(typeof(CasamentoDbContext))]
     [Migration("20260928213327_Inicial")]

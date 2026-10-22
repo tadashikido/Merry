@@ -18,7 +18,7 @@
     <PackageReference Include="Testcontainers.PostgreSql" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Casamento.Api\Casamento.Api.csproj" />
+    <ProjectReference Include="..\..\src\Celebri.Api\Celebri.Api.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

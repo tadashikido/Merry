@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Financeiro;
+namespace Celebri.Dominio.Financeiro;
 
 public enum StatusParcela
 {

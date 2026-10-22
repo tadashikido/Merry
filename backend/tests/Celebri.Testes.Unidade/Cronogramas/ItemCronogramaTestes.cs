@@ -1,7 +1,7 @@
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Testes.Unidade.Cronogramas;
+namespace Celebri.Testes.Unidade.Cronogramas;
 
 public class ItemCronogramaTestes
 {
@@ -32,7 +32,8 @@ public class ItemCronogramaTestes
     public void Criar_DeveNormalizarTextosEComecarPrevisto()
     {
         var item = Criar(Dados(atividade: "  Entrada   dos noivos ", local: "  Capela  ", responsavel: " Fernanda  Lima ", instrucoes: "  ", notas: " nota ")
-            with { Inicio = new TimeOnly(16, 30, 45) });
+            with
+        { Inicio = new TimeOnly(16, 30, 45) });
 
         Assert.NotEqual(Guid.Empty, item.Id);
         Assert.Equal(CasamentoId, item.CasamentoId);

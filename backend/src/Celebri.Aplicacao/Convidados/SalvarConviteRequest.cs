@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Dominio.Convidados;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Aplicacao.Convidados;
+namespace Celebri.Aplicacao.Convidados;
 
 public sealed record SalvarConviteRequest(
     [StringLength(Convite.TamanhoMaximoNome, ErrorMessage = MensagensConvidados.TamanhoNome)]

@@ -1,5 +1,5 @@
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Dominio.Casamentos;
+namespace Celebri.Dominio.Casamentos;
 
 public sealed record TarefaParaDuplicar(TarefaCasamento Tarefa, int? DiasAntesDoCasamento);

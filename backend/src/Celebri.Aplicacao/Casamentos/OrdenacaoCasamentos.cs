@@ -1,6 +1,6 @@
-using Casamento.Dominio.Casamentos;
+using Celebri.Dominio.Casamentos;
 
-namespace Casamento.Aplicacao.Casamentos;
+namespace Celebri.Aplicacao.Casamentos;
 
 public static class OrdenacaoCasamentos
 {

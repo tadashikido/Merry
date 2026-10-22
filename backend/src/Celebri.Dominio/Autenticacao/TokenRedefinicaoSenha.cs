@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Autenticacao;
+namespace Celebri.Dominio.Autenticacao;
 
 public class TokenRedefinicaoSenha
 {

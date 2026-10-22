@@ -1,7 +1,7 @@
-using Casamento.Infraestrutura.Calendario;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Infraestrutura.Calendario;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
 
-namespace Casamento.Testes.Unidade.Casamentos;
+namespace Celebri.Testes.Unidade.Casamentos;
 
 public class CalendarioSaoPauloTestes
 {

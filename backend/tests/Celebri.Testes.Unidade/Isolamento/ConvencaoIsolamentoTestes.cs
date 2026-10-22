@@ -1,18 +1,18 @@
 using System.Reflection;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Dominio.AcessosCasal;
-using Casamento.Dominio.Autenticacao;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Isolamento;
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Rsvp;
-using Casamento.Dominio.Usuarios;
-using Casamento.Infraestrutura.Persistencia;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Dominio.AcessosCasal;
+using Celebri.Dominio.Autenticacao;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Isolamento;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Rsvp;
+using Celebri.Dominio.Usuarios;
+using Celebri.Infraestrutura.Persistencia;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Casamento.Testes.Unidade.Isolamento;
+namespace Celebri.Testes.Unidade.Isolamento;
 
 public class ConvencaoIsolamentoTestes
 {
@@ -135,7 +135,7 @@ public class ConvencaoIsolamentoTestes
         var casamentoId = Guid.NewGuid();
         using var contexto = CriarContexto<ModelCustomizer>(Guid.NewGuid(), [casamentoId]);
 
-        var sqlConvites = contexto.Set<Casamento.Dominio.Convidados.Convite>().ToQueryString();
+        var sqlConvites = contexto.Set<Celebri.Dominio.Convidados.Convite>().ToQueryString();
         var sqlCasamentos = contexto.Set<CasamentoAssessorado>().ToQueryString();
 
         Assert.Contains("casamento_id", sqlConvites, StringComparison.Ordinal);

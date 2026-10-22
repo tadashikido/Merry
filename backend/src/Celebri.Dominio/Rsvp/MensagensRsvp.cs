@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Rsvp;
+namespace Celebri.Dominio.Rsvp;
 
 public static class MensagensRsvp
 {

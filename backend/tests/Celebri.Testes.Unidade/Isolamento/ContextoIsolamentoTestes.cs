@@ -1,12 +1,12 @@
 using System.Security.Claims;
-using Casamento.Api.Autenticacao;
-using Casamento.Api.Tratamento;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Infraestrutura;
-using Casamento.Infraestrutura.Persistencia.Isolamento;
+using Celebri.Api.Autenticacao;
+using Celebri.Api.Tratamento;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Infraestrutura;
+using Celebri.Infraestrutura.Persistencia.Isolamento;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Casamento.Testes.Unidade.Isolamento;
+namespace Celebri.Testes.Unidade.Isolamento;
 
 public class ContextoIsolamentoTestes
 {

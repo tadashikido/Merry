@@ -1,14 +1,14 @@
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Checklists;
-using Casamento.Dominio.Checklists;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Checklists;
+using Celebri.Dominio.Checklists;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static Casamento.Testes.Integracao.Checklists.ClienteChecklist;
+using static Celebri.Testes.Integracao.Checklists.ClienteChecklist;
 
-namespace Casamento.Testes.Integracao.Checklists;
+namespace Celebri.Testes.Integracao.Checklists;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase

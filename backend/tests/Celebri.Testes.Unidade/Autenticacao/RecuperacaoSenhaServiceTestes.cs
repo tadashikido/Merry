@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Dominio.Excecoes;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Dominio.Excecoes;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
 
-namespace Casamento.Testes.Unidade.Autenticacao;
+namespace Celebri.Testes.Unidade.Autenticacao;
 
 public class RecuperacaoSenhaServiceTestes
 {

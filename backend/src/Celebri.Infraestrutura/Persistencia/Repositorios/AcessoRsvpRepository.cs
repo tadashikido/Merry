@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Rsvp;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Rsvp;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class AcessoRsvpRepository : IAcessoRsvpRepository
 {

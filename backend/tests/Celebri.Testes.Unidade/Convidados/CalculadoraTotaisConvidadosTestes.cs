@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Convidados;
-using Casamento.Dominio.Convidados;
-using static Casamento.Testes.Unidade.Convidados.ConviteTestes;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Dominio.Convidados;
+using static Celebri.Testes.Unidade.Convidados.ConviteTestes;
 
-namespace Casamento.Testes.Unidade.Convidados;
+namespace Celebri.Testes.Unidade.Convidados;
 
 public class CalculadoraTotaisConvidadosTestes
 {

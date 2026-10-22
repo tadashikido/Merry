@@ -1,5 +1,5 @@
 using System.Net;
-using Casamento.Api;
+using Celebri.Api;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Testes.Unidade.Api;
+namespace Celebri.Testes.Unidade.Api;
 
 public class ConfiguracaoApiTestes
 {

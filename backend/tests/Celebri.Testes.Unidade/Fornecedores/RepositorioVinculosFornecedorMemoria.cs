@@ -1,7 +1,7 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Testes.Unidade.Fornecedores;
+namespace Celebri.Testes.Unidade.Fornecedores;
 
 public sealed class RepositorioVinculosFornecedorMemoria : IFornecedorCasamentoRepository
 {

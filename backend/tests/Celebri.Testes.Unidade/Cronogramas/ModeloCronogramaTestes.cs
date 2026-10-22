@@ -1,9 +1,9 @@
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Testes.Unidade.Cronogramas;
+namespace Celebri.Testes.Unidade.Cronogramas;
 
 public class ModeloCronogramaTestes
 {

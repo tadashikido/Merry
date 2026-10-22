@@ -1,7 +1,7 @@
-using Casamento.Dominio.Convidados;
+using Celebri.Dominio.Convidados;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Auditoria;
+namespace Celebri.Infraestrutura.Persistencia.Auditoria;
 
 public static class RegistradorAlteracoesConvites
 {

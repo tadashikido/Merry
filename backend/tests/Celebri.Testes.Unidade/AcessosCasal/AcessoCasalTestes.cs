@@ -1,11 +1,11 @@
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Dominio.AcessosCasal;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Usuarios;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Dominio.AcessosCasal;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Usuarios;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
 
-namespace Casamento.Testes.Unidade.AcessosCasal;
+namespace Celebri.Testes.Unidade.AcessosCasal;
 
 public class AcessoCasalTestes
 {

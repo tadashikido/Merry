@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.Calendario;
+using Celebri.Aplicacao.Calendario;
 
-namespace Casamento.Infraestrutura.Calendario;
+namespace Celebri.Infraestrutura.Calendario;
 
 public class CalendarioSaoPaulo : ICalendarioLocal
 {

@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Aplicacao.Checklists;
+namespace Celebri.Aplicacao.Checklists;
 
 public sealed record SalvarItemModeloChecklistRequest(
     [Required(ErrorMessage = MensagensTarefas.TituloObrigatorio)]

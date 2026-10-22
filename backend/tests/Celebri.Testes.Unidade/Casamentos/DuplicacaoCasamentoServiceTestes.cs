@@ -1,15 +1,15 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Tarefas;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Tarefas;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
 
-namespace Casamento.Testes.Unidade.Casamentos;
+namespace Celebri.Testes.Unidade.Casamentos;
 
 public class DuplicacaoCasamentoServiceTestes
 {

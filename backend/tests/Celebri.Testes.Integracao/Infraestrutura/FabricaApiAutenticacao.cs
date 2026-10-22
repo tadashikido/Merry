@@ -1,11 +1,11 @@
-using Casamento.Aplicacao.Email;
+using Celebri.Aplicacao.Email;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Casamento.Testes.Integracao.Infraestrutura;
+namespace Celebri.Testes.Integracao.Infraestrutura;
 
 public class FabricaApiAutenticacao : FabricaApi
 {

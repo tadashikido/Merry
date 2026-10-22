@@ -22,7 +22,14 @@ preparar_cenario() {
 
 criar_deploy() {
   mkdir -p "$1"
-  printf '#!/usr/bin/env bash\necho "executado em %s com $1"\n' "$1" > "$1/deploy.sh"
+  cat > "$1/deploy.sh" <<SCRIPT
+#!/usr/bin/env bash
+echo "executado em $1 com \$1"
+SCRIPT
+}
+
+saida_nao_contem() {
+  ! grep -q "$1" <<< "$SAIDA"
 }
 
 executar() {
@@ -37,7 +44,7 @@ verificar() {
     echo "  ✓ $descricao"
   else
     echo "  ✗ $descricao"
-    echo "$SAIDA" | sed 's/^/      /'
+    echo "$SAIDA"
     FALHAS=$((FALHAS + 1))
   fi
 }
@@ -82,7 +89,7 @@ diretorio_explicito_sem_deploy_falha() {
   criar_deploy "$LEGADO"
   executar "$CENARIO/inexistente" "$SHA"
   verificar "código de saída 1" [ "$CODIGO" -eq 1 ]
-  verificar "não caiu no legado" bash -c '! grep -q "executado em" <<< "$1"' _ "$SAIDA"
+  verificar "não caiu no legado" saida_nao_contem "executado em"
 }
 
 diretorio_com_caracteres_invalidos_e_recusado() {

@@ -3,22 +3,22 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
-using Casamento.Api.Tratamento;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Dominio.Casamentos;
-using Casamento.Infraestrutura.Seguranca;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Api.Tratamento;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Dominio.Casamentos;
+using Celebri.Infraestrutura.Seguranca;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using static Casamento.Testes.Integracao.Autenticacao.ClienteAutenticacao;
-using static Casamento.Testes.Integracao.Casamentos.ClienteCasamentos;
+using static Celebri.Testes.Integracao.Autenticacao.ClienteAutenticacao;
+using static Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
 
-namespace Casamento.Testes.Integracao.Casamentos;
+namespace Celebri.Testes.Integracao.Casamentos;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class CasamentosApiTestes : IsolamentoOrganizacaoTestesBase

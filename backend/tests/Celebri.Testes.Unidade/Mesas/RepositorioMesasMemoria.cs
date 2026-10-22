@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Mesas;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Mesas;
 
-namespace Casamento.Testes.Unidade.Mesas;
+namespace Celebri.Testes.Unidade.Mesas;
 
 public sealed class RepositorioMesasMemoria : IMesaRepository
 {

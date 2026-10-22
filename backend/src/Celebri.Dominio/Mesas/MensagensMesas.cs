@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Mesas;
+namespace Celebri.Dominio.Mesas;
 
 public static class MensagensMesas
 {

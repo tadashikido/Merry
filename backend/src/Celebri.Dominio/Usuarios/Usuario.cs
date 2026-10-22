@@ -1,6 +1,6 @@
-using Casamento.Dominio.Excecoes;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Dominio.Usuarios;
+namespace Celebri.Dominio.Usuarios;
 
 public class Usuario
 {

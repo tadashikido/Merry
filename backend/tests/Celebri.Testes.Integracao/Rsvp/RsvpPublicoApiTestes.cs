@@ -2,20 +2,20 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.Rsvp;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Rsvp;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Infraestrutura;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Rsvp;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Rsvp;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Infraestrutura;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
-using static Casamento.Testes.Integracao.Rsvp.ClienteRsvp;
-using ClienteCasamentos = Casamento.Testes.Integracao.Casamentos.ClienteCasamentos;
-using ClienteConvites = Casamento.Testes.Integracao.Convidados.ClienteConvites;
+using static Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
+using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
 
-namespace Casamento.Testes.Integracao.Rsvp;
+namespace Celebri.Testes.Integracao.Rsvp;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase

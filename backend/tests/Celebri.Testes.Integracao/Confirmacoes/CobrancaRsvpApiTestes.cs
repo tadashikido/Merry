@@ -3,24 +3,24 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Confirmacoes;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Rsvp;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Confirmacoes;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Rsvp;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using static Casamento.Testes.Integracao.Rsvp.ClienteRsvp;
-using ClienteAcessoCasal = Casamento.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
-using ClienteCasamentos = Casamento.Testes.Integracao.Casamentos.ClienteCasamentos;
-using ClienteConvites = Casamento.Testes.Integracao.Convidados.ClienteConvites;
+using static Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
+using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
+using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
 
-namespace Casamento.Testes.Integracao.Confirmacoes;
+namespace Celebri.Testes.Integracao.Confirmacoes;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDisposable

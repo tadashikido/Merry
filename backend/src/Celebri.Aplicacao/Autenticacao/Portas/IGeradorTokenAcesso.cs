@@ -1,7 +1,7 @@
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Usuarios;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Usuarios;
 
-namespace Casamento.Aplicacao.Autenticacao.Portas;
+namespace Celebri.Aplicacao.Autenticacao.Portas;
 
 public sealed record TokenAcessoGerado(string Valor, DateTimeOffset ExpiraEm);
 

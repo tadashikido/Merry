@@ -1,18 +1,18 @@
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Dominio.AcessosCasal;
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Financeiro;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Mesas;
-using Casamento.Dominio.Rsvp;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Excecoes;
-using Casamento.Infraestrutura.Persistencia.Configuracoes;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.AcessosCasal;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Financeiro;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Mesas;
+using Celebri.Dominio.Rsvp;
+using Celebri.Infraestrutura.Persistencia.Configuracoes;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class UnidadeTrabalho : IUnidadeTrabalho
 {

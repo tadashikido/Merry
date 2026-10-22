@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Isolamento;
 
-namespace Casamento.Testes.Integracao.Isolamento;
+namespace Celebri.Testes.Integracao.Isolamento;
 
 public class ContextoIsolamentoFixo : IContextoIsolamento
 {

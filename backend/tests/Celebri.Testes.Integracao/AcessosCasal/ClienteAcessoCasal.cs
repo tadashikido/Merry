@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
-using Casamento.Aplicacao.AcessosCasal;
-using Casamento.Testes.Integracao.Infraestrutura;
+using Celebri.Aplicacao.AcessosCasal;
+using Celebri.Testes.Integracao.Infraestrutura;
 
-namespace Casamento.Testes.Integracao.AcessosCasal;
+namespace Celebri.Testes.Integracao.AcessosCasal;
 
 public static partial class ClienteAcessoCasal
 {

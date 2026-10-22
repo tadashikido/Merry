@@ -1,7 +1,7 @@
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Dominio.Casamentos;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Dominio.Casamentos;
 
-namespace Casamento.Testes.Unidade.Casamentos;
+namespace Celebri.Testes.Unidade.Casamentos;
 
 public class OrdenacaoCasamentosTestes
 {

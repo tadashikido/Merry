@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Auditoria;
+namespace Celebri.Aplicacao.Auditoria;
 
 public interface IAutorAlteracao
 {

@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Convidados.Importacao;
+namespace Celebri.Aplicacao.Convidados.Importacao;
 
 public sealed record MapeamentoColunas(
     IReadOnlyDictionary<ColunaImportacao, int> Indices,

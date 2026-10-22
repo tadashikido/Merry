@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Aplicacao.ModelosCronograma;
+namespace Celebri.Aplicacao.ModelosCronograma;
 
 public sealed record SalvarItemModeloCronogramaRequest(
     [Required(ErrorMessage = MensagensModeloCronograma.MinutosObrigatorios)]

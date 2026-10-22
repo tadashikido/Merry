@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
-using Casamento.Aplicacao.Rsvp.Portas;
+using Celebri.Aplicacao.Rsvp.Portas;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Infraestrutura.Seguranca;
+namespace Celebri.Infraestrutura.Seguranca;
 
 public sealed class CifradorTokenRsvp : ICifradorTokenRsvp
 {

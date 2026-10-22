@@ -24,6 +24,10 @@ jobs:
     environment: production
     timeout-minutes: 30
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: infra/deploy
+
       - name: Configurar SSH
         env:
           VPS_CHAVE_SSH: ${{ secrets.VPS_CHAVE_SSH }}
@@ -42,13 +46,15 @@ jobs:
           VPS_DIRETORIO: ${{ vars.VPS_DIRETORIO }}
           COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
+          [[ "$COMMIT" =~ ^[0-9a-f]{40}$ ]] || { echo "Commit inválido: $COMMIT" >&2; exit 1; }
+          [[ -z "$VPS_DIRETORIO" || "$VPS_DIRETORIO" =~ ^(/[A-Za-z0-9._-]+)+$ ]] || { echo "VPS_DIRETORIO inválido" >&2; exit 1; }
           ssh -i ~/.ssh/id_deploy \
             -p "${VPS_PORTA:-22}" \
             -o BatchMode=yes \
             -o StrictHostKeyChecking=yes \
             -o ServerAliveInterval=30 \
             "$VPS_USUARIO@$VPS_HOST" \
-            "bash '${VPS_DIRETORIO:-/var/www/merry}/deploy.sh' '$COMMIT'"
+            "bash -s -- '$VPS_DIRETORIO' '$COMMIT'" < infra/deploy/localizar-deploy.sh
 
       - name: Remover chave SSH
         if: always()

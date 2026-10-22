@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.UsuarioAtual;
+using Celebri.Aplicacao.UsuarioAtual;
 
-namespace Casamento.Testes.Unidade.Autenticacao.Fakes;
+namespace Celebri.Testes.Unidade.Autenticacao.Fakes;
 
 public sealed class UsuarioAtualFalso : IUsuarioAtual
 {

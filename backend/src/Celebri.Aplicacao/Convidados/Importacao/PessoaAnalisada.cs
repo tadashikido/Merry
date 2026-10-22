@@ -1,6 +1,6 @@
-using Casamento.Dominio.Convidados;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Aplicacao.Convidados.Importacao;
+namespace Celebri.Aplicacao.Convidados.Importacao;
 
 public sealed record PessoaAnalisada(
     int Linha,

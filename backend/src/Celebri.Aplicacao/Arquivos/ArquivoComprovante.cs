@@ -1,6 +1,6 @@
-using Casamento.Dominio.Financeiro;
+using Celebri.Dominio.Financeiro;
 
-namespace Casamento.Aplicacao.Arquivos;
+namespace Celebri.Aplicacao.Arquivos;
 
 public static class ArquivoComprovante
 {

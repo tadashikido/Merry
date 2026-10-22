@@ -1,16 +1,16 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Infraestrutura.Persistencia;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Infraestrutura;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Infraestrutura.Persistencia;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Infraestrutura;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
-using static Casamento.Testes.Integracao.Autenticacao.ClienteAutenticacao;
+using static Celebri.Testes.Integracao.Autenticacao.ClienteAutenticacao;
 
-namespace Casamento.Testes.Integracao.Autenticacao;
+namespace Celebri.Testes.Integracao.Autenticacao;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class AutenticacaoApiTestes : IAsyncLifetime

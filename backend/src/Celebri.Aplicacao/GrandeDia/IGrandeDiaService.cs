@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.GrandeDia;
+namespace Celebri.Aplicacao.GrandeDia;
 
 public interface IGrandeDiaService
 {

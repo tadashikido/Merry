@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.Convidados;
+using Celebri.Aplicacao.Convidados;
 
-namespace Casamento.Aplicacao.Rsvp;
+namespace Celebri.Aplicacao.Rsvp;
 
 public interface ILinkRsvpService
 {

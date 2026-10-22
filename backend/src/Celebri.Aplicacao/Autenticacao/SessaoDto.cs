@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Autenticacao;
+namespace Celebri.Aplicacao.Autenticacao;
 
 public sealed record OrganizacaoResumoDto(Guid Id, string Nome);
 

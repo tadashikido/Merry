@@ -1,7 +1,7 @@
-using Casamento.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.DadosSensiveis;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Api.Tarefas;
+namespace Celebri.Api.Tarefas;
 
 public sealed partial class TarefaRetencaoDadosSensiveis : BackgroundService
 {

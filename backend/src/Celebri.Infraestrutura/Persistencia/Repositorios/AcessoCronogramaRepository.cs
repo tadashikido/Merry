@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Cronogramas;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Cronogramas;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class AcessoCronogramaRepository : IAcessoCronogramaRepository
 {

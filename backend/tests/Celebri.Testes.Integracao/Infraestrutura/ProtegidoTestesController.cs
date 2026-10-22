@@ -1,7 +1,7 @@
-using Casamento.Aplicacao.UsuarioAtual;
+using Celebri.Aplicacao.UsuarioAtual;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Casamento.Testes.Integracao.Infraestrutura;
+namespace Celebri.Testes.Integracao.Infraestrutura;
 
 [ApiController]
 [Route("api/testes/protegido")]

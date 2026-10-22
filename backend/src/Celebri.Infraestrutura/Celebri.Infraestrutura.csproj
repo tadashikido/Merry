@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Casamento.Aplicacao\Casamento.Aplicacao.csproj" />
+    <ProjectReference Include="..\Celebri.Aplicacao\Celebri.Aplicacao.csproj" />
   </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

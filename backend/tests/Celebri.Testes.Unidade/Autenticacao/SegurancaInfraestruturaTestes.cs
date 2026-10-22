@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Autenticacao.Portas;
-using Casamento.Aplicacao.Email;
-using Casamento.Infraestrutura;
-using Casamento.Infraestrutura.Seguranca;
+using Celebri.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Email;
+using Celebri.Infraestrutura;
+using Celebri.Infraestrutura.Seguranca;
 
-namespace Casamento.Testes.Unidade.Autenticacao;
+namespace Celebri.Testes.Unidade.Autenticacao;
 
 public class SegurancaInfraestruturaTestes
 {

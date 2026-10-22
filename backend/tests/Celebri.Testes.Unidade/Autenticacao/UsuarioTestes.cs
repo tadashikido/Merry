@@ -1,7 +1,7 @@
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Usuarios;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Usuarios;
 
-namespace Casamento.Testes.Unidade.Autenticacao;
+namespace Celebri.Testes.Unidade.Autenticacao;
 
 public class UsuarioTestes
 {

@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Casamento.Dominio.Convidados;
+namespace Celebri.Dominio.Convidados;
 
 public static partial class NormalizadorTexto
 {

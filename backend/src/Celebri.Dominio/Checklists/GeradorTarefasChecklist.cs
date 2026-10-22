@@ -1,7 +1,7 @@
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Dominio.Checklists;
+namespace Celebri.Dominio.Checklists;
 
 public static class GeradorTarefasChecklist
 {

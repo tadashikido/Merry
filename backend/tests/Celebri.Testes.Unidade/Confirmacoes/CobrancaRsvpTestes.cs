@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Confirmacoes;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using static Casamento.Testes.Unidade.Convidados.ConviteTestes;
+using Celebri.Aplicacao.Confirmacoes;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using static Celebri.Testes.Unidade.Convidados.ConviteTestes;
 
-namespace Casamento.Testes.Unidade.Confirmacoes;
+namespace Celebri.Testes.Unidade.Confirmacoes;
 
 public class CobrancaRsvpTestes
 {

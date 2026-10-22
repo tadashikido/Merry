@@ -1,6 +1,6 @@
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Aplicacao.Tarefas;
+namespace Celebri.Aplicacao.Tarefas;
 
 public sealed record TarefaPendente(
     Guid Id,

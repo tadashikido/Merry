@@ -1,11 +1,11 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Tarefas;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Tarefas;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class DuplicacaoCasamentoRepository : IDuplicacaoCasamentoRepository
 {

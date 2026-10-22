@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
-using Casamento.Api.Autorizacao;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Infraestrutura.Seguranca;
+using Celebri.Api.Autorizacao;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Infraestrutura.Seguranca;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Casamento.Api.Autenticacao;
+namespace Celebri.Api.Autenticacao;
 
 public static class ConfiguracaoAutenticacaoApi
 {

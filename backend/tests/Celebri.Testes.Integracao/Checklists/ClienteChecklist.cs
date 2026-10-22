@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Checklists;
+using Celebri.Aplicacao.Checklists;
 
-namespace Casamento.Testes.Integracao.Checklists;
+namespace Celebri.Testes.Integracao.Checklists;
 
 public static class ClienteChecklist
 {

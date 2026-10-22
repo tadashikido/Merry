@@ -1,9 +1,9 @@
-using Casamento.Api.Autorizacao;
-using Casamento.Aplicacao.Mesas;
+using Celebri.Api.Autorizacao;
+using Celebri.Aplicacao.Mesas;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Casamento.Api.Controllers;
+namespace Celebri.Api.Controllers;
 
 [ApiController]
 [Route("api/casamentos/{casamentoId:guid}/mesas")]

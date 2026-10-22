@@ -1,7 +1,7 @@
 using System.Text.Encodings.Web;
-using Casamento.Aplicacao.Sistema;
+using Celebri.Aplicacao.Sistema;
 
-namespace Casamento.Aplicacao.Email;
+namespace Celebri.Aplicacao.Email;
 
 public static class ModelosEmail
 {

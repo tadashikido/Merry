@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Convidados;
+namespace Celebri.Dominio.Convidados;
 
 public static class NormalizadorTelefone
 {

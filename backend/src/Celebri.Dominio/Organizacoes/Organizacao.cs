@@ -1,6 +1,6 @@
-using Casamento.Dominio.Excecoes;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Dominio.Organizacoes;
+namespace Celebri.Dominio.Organizacoes;
 
 public class Organizacao
 {

@@ -1,10 +1,10 @@
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Dominio.Excecoes;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Casamento.Api.Tratamento;
+namespace Celebri.Api.Tratamento;
 
 public class ExcecaoGlobalHandler : IExceptionHandler
 {

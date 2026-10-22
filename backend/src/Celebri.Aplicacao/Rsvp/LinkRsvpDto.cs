@@ -1,3 +1,3 @@
-namespace Casamento.Aplicacao.Rsvp;
+namespace Celebri.Aplicacao.Rsvp;
 
 public sealed record LinkRsvpDto(string Token, DateTimeOffset GeradoEm);

@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Checklists;
+namespace Celebri.Aplicacao.Checklists;
 
 public sealed record AplicacaoModeloChecklistDto(
     int ItensNoModelo,

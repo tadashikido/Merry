@@ -1,9 +1,9 @@
-using Casamento.Dominio.DadosSensiveis;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Isolamento;
-using Casamento.Dominio.Mesas;
+using Celebri.Dominio.DadosSensiveis;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Isolamento;
+using Celebri.Dominio.Mesas;
 
-namespace Casamento.Dominio.Convidados;
+namespace Celebri.Dominio.Convidados;
 
 public class Convidado : IPertenceCasamento
 {

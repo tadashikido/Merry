@@ -1,17 +1,17 @@
 using System.Globalization;
 using System.Net;
 using System.Text.Json;
-using Casamento.Api.Autenticacao;
-using Casamento.Api.Middlewares;
-using Casamento.Api.Tarefas;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Api.Tratamento;
+using Celebri.Api.Autenticacao;
+using Celebri.Api.Middlewares;
+using Celebri.Api.Tarefas;
+using Celebri.Api.Tratamento;
+using Celebri.Aplicacao.DadosSensiveis;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using RedeIp = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
-namespace Casamento.Api;
+namespace Celebri.Api;
 
 public static class ConfiguracaoApi
 {

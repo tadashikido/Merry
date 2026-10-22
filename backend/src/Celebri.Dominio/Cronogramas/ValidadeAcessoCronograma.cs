@@ -1,6 +1,6 @@
-using Casamento.Dominio.Casamentos;
+using Celebri.Dominio.Casamentos;
 
-namespace Casamento.Dominio.Cronogramas;
+namespace Celebri.Dominio.Cronogramas;
 
 public static class ValidadeAcessoCronograma
 {

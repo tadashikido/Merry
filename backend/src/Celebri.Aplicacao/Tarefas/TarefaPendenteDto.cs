@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Tarefas;
+namespace Celebri.Aplicacao.Tarefas;
 
 public sealed record TarefaPendenteDto(
     Guid Id,

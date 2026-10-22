@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.CronogramaPublico.Portas;
+namespace Celebri.Aplicacao.CronogramaPublico.Portas;
 
 public interface ICifradorTokenCronograma
 {

@@ -1,13 +1,13 @@
-using Casamento.Aplicacao.Autenticacao.Portas;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Autenticacao;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Usuarios;
+using Celebri.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Autenticacao;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Usuarios;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Aplicacao.Autenticacao;
+namespace Celebri.Aplicacao.Autenticacao;
 
 public class AutenticacaoService : IAutenticacaoService
 {

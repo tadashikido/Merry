@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.UsuarioAtual;
+using Celebri.Aplicacao.UsuarioAtual;
 
-namespace Casamento.Aplicacao.Auditoria;
+namespace Celebri.Aplicacao.Auditoria;
 
 public class AutorAlteracaoUsuarioAtual : IAutorAlteracao
 {

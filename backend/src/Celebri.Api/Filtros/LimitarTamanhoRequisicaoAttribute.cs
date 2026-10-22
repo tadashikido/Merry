@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Casamento.Api.Filtros;
+namespace Celebri.Api.Filtros;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public sealed class LimitarTamanhoRequisicaoAttribute : Attribute, IResourceFilter

@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Financeiro;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Financeiro;
+using Celebri.Dominio.Fornecedores;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class ParcelaFornecedorRepository : IParcelaFornecedorRepository
 {

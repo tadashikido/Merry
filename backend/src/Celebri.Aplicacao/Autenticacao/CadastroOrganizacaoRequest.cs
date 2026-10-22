@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Usuarios;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Usuarios;
 
-namespace Casamento.Aplicacao.Autenticacao;
+namespace Celebri.Aplicacao.Autenticacao;
 
 public sealed record CadastroOrganizacaoRequest(
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]

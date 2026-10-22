@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Convidados.Importacao;
+namespace Celebri.Aplicacao.Convidados.Importacao;
 
 public sealed record LinhaImportacao(int Numero, IReadOnlyDictionary<ColunaImportacao, string?> Valores)
 {

@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Infraestrutura.Seguranca;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Infraestrutura.Seguranca;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Testes.Unidade.Autenticacao.Fakes;
+namespace Celebri.Testes.Unidade.Autenticacao.Fakes;
 
 public class CenarioAutenticacao
 {

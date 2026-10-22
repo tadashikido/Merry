@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.Confirmacoes;
+using Celebri.Aplicacao.Confirmacoes;
 
-namespace Casamento.Testes.Unidade.Confirmacoes;
+namespace Celebri.Testes.Unidade.Confirmacoes;
 
 public class ExportarBuffetRequestTestes
 {

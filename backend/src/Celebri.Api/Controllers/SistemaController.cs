@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Sistema;
+using Celebri.Aplicacao.Sistema;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Casamento.Api.Controllers;
+namespace Celebri.Api.Controllers;
 
 [AllowAnonymous]
 [ApiController]

@@ -1,7 +1,7 @@
 using System.Text;
-using Casamento.Dominio.Excecoes;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Aplicacao.Convidados.Importacao;
+namespace Celebri.Aplicacao.Convidados.Importacao;
 
 public static class LeitorCsv
 {

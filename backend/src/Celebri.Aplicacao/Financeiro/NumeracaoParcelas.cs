@@ -1,6 +1,6 @@
-using Casamento.Dominio.Financeiro;
+using Celebri.Dominio.Financeiro;
 
-namespace Casamento.Aplicacao.Financeiro;
+namespace Celebri.Aplicacao.Financeiro;
 
 public static class NumeracaoParcelas
 {

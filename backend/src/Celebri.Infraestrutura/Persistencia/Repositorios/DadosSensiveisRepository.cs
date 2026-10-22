@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Convidados;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Convidados;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class DadosSensiveisRepository : IDadosSensiveisRepository
 {

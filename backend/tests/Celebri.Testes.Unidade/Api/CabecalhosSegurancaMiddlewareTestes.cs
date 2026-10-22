@@ -1,7 +1,7 @@
-using Casamento.Api.Middlewares;
+using Celebri.Api.Middlewares;
 using Microsoft.AspNetCore.Http;
 
-namespace Casamento.Testes.Unidade.Api;
+namespace Celebri.Testes.Unidade.Api;
 
 public class CabecalhosSegurancaMiddlewareTestes
 {

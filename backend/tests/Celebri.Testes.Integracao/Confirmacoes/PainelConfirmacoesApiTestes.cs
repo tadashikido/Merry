@@ -3,20 +3,20 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Confirmacoes;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Confirmacoes;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
-using static Casamento.Testes.Integracao.Rsvp.ClienteRsvp;
-using ClienteCasamentos = Casamento.Testes.Integracao.Casamentos.ClienteCasamentos;
-using ClienteConvites = Casamento.Testes.Integracao.Convidados.ClienteConvites;
+using static Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
+using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
 
-namespace Casamento.Testes.Integracao.Confirmacoes;
+namespace Celebri.Testes.Integracao.Confirmacoes;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBase

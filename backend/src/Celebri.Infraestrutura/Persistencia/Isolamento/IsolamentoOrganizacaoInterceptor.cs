@@ -1,10 +1,10 @@
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Dominio.Isolamento;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Dominio.Isolamento;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Casamento.Infraestrutura.Persistencia.Isolamento;
+namespace Celebri.Infraestrutura.Persistencia.Isolamento;
 
 public sealed class IsolamentoOrganizacaoInterceptor : SaveChangesInterceptor
 {

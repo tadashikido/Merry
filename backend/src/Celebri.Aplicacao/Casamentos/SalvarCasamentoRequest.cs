@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Aplicacao.Casamentos;
+namespace Celebri.Aplicacao.Casamentos;
 
 public sealed record SalvarCasamentoRequest(
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]

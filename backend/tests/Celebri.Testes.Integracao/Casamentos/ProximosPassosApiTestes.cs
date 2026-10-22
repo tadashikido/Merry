@@ -1,15 +1,15 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Isolamento;
-using ClienteAcessoCasal = Casamento.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
-using ClienteChecklist = Casamento.Testes.Integracao.Checklists.ClienteChecklist;
-using ClienteConvites = Casamento.Testes.Integracao.Convidados.ClienteConvites;
-using ClienteRsvp = Casamento.Testes.Integracao.Rsvp.ClienteRsvp;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Isolamento;
+using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
+using ClienteChecklist = Celebri.Testes.Integracao.Checklists.ClienteChecklist;
+using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
+using ClienteRsvp = Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
 
-namespace Casamento.Testes.Integracao.Casamentos;
+namespace Celebri.Testes.Integracao.Casamentos;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class ProximosPassosApiTestes : IsolamentoOrganizacaoTestesBase

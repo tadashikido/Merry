@@ -1,13 +1,13 @@
 using System.Security.Claims;
-using Casamento.Api.Autenticacao;
-using Casamento.Api.Tratamento;
-using Casamento.Dominio.Excecoes;
+using Celebri.Api.Autenticacao;
+using Celebri.Api.Tratamento;
+using Celebri.Dominio.Excecoes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Casamento.Testes.Unidade.Api;
+namespace Celebri.Testes.Unidade.Api;
 
 public class AutenticacaoApiUnidadeTestes
 {

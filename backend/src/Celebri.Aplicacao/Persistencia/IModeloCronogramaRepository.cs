@@ -1,7 +1,7 @@
-using Casamento.Aplicacao.ModelosCronograma;
-using Casamento.Dominio.Cronogramas;
+using Celebri.Aplicacao.ModelosCronograma;
+using Celebri.Dominio.Cronogramas;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface IModeloCronogramaRepository
 {

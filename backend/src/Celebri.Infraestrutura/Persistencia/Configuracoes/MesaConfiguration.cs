@@ -1,10 +1,10 @@
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Mesas;
-using Casamento.Dominio.Organizacoes;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Mesas;
+using Celebri.Dominio.Organizacoes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Casamento.Infraestrutura.Persistencia.Configuracoes;
+namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 
 public class MesaConfiguration : IEntityTypeConfiguration<Mesa>
 {

@@ -1,13 +1,13 @@
 using System.Globalization;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Aplicacao.Cronogramas;
+namespace Celebri.Aplicacao.Cronogramas;
 
 public class CronogramaService : ICronogramaService
 {

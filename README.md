@@ -1,6 +1,6 @@
-# Casamento
+# Celebri
 
-Plataforma para cerimonialistas gerenciarem os casamentos dos seus clientes.
+*Eventos que conectam.* Plataforma para cerimonialistas e assessorias gerenciarem os eventos sociais dos seus clientes (casamento, festa de 15 anos, aniversário, comemoração).
 
 - `backend/` — .NET 8 (ASP.NET Core, EF Core, PostgreSQL), camadas `Api`, `Aplicacao`, `Dominio`, `Infraestrutura`
 - `frontend/` — Vue 3 + TypeScript + Pinia + PrimeVue (Vite)
@@ -29,10 +29,10 @@ Este compose é para desenvolvimento: a API roda em `Development` e as portas fi
 ```bash
 docker compose up -d db email
 cd backend
-dotnet user-secrets set "ConnectionStrings:Principal" "Host=localhost;Port=5432;Database=casamento;Username=casamento;Password=<senha do .env>" --project src/Casamento.Api
-dotnet user-secrets set "Jwt:ChaveAssinatura" "<valor aleatório com 32 bytes ou mais>" --project src/Casamento.Api
-dotnet user-secrets set "DadosSensiveis:ChaveCifragem" "$(openssl rand -base64 32)" --project src/Casamento.Api
-dotnet run --project src/Casamento.Api
+dotnet user-secrets set "ConnectionStrings:Principal" "Host=localhost;Port=5432;Database=casamento;Username=casamento;Password=<senha do .env>" --project src/Celebri.Api
+dotnet user-secrets set "Jwt:ChaveAssinatura" "<valor aleatório com 32 bytes ou mais>" --project src/Celebri.Api
+dotnet user-secrets set "DadosSensiveis:ChaveCifragem" "$(openssl rand -base64 32)" --project src/Celebri.Api
+dotnet run --project src/Celebri.Api
 ```
 
 ```bash
@@ -92,7 +92,7 @@ npx playwright show-report     # relatório HTML da última execução
 ```bash
 cd backend
 dotnet tool restore
-dotnet ef migrations add <Nome> --project src/Casamento.Infraestrutura --startup-project src/Casamento.Infraestrutura --output-dir Persistencia/Migrations
+dotnet ef migrations add <Nome> --project src/Celebri.Infraestrutura --startup-project src/Celebri.Infraestrutura --output-dir Persistencia/Migrations
 ```
 
 Em `Development` as migrations são aplicadas na inicialização (`Banco:AplicarMigrationsAoIniciar`). Em produção o `docker-compose.prod.yml` liga a mesma flag (uma única réplica da API); faça backup do banco antes de publicar migrations destrutivas.
@@ -115,8 +115,8 @@ O workflow `Deploy` roda após o `CI` concluir com sucesso num push em `main` (o
 1. Instale Docker Engine com o plugin compose, `git`, `curl`, `certbot`, `python3-certbot-nginx` e `gettext-base` (`envsubst`). O nginx do host continua como está. Firewall: apenas 22/tcp, 80/tcp e 443/tcp.
 2. Aponte o registro DNS `A` (e `AAAA`, se houver IPv6) do domínio para a VPS.
 3. Crie o usuário de deploy sem sudo: `sudo adduser --disabled-password deploy && sudo usermod -aG docker deploy`.
-4. Como `deploy`, gere a chave de leitura do repositório (`ssh-keygen -t ed25519 -f ~/.ssh/github_merry -N ""`), cadastre a pública como *Deploy key* somente leitura no GitHub e configure `~/.ssh/config` com `Host github.com` → `IdentityFile ~/.ssh/github_merry`.
-5. `sudo install -d -o deploy -g deploy /var/www/merry` e, como `deploy`, clone: `git clone git@github.com:tadashikido/Merry.git /var/www/merry`.
+4. Como `deploy`, gere a chave de leitura do repositório (`ssh-keygen -t ed25519 -f ~/.ssh/github_celebri -N ""`), cadastre a pública como *Deploy key* somente leitura no GitHub e configure `~/.ssh/config` com `Host github.com` → `IdentityFile ~/.ssh/github_celebri`.
+5. `sudo install -d -o deploy -g deploy /var/www/celebri` e, como `deploy`, clone: `git clone git@github.com:tadashikido/Merry.git /var/www/celebri`.
 6. `cp .env.production.example .env && chmod 600 .env` e preencha. O compose interpola `$` dentro do `.env`; se um valor tiver `$`, escreva `$$`. Valores:
    - senha do banco com `openssl rand -hex 32` (sem `;`, para não quebrar a connection string);
    - `JWT_CHAVE_ASSINATURA` com `openssl rand -base64 48`;
@@ -127,10 +127,10 @@ O workflow `Deploy` roda após o `CI` concluir com sucesso num push em `main` (o
 7. Crie o vhost no mesmo padrão dos outros sites da VPS (`server_name` + `proxy_pass` para a porta local) e deixe o certbot injetar o TLS:
 
    ```bash
-   cd /var/www/merry
-   export DOMINIO=casamento.exemplo.com.br WEB_PORTA=8090
-   envsubst '$DOMINIO $WEB_PORTA' < infra/nginx/casamento.conf.template | sudo tee /etc/nginx/sites-available/casamento.conf > /dev/null
-   sudo ln -sf /etc/nginx/sites-available/casamento.conf /etc/nginx/sites-enabled/casamento.conf
+   cd /var/www/celebri
+   export DOMINIO=celebri.exemplo.com.br WEB_PORTA=8090
+   envsubst '$DOMINIO $WEB_PORTA' < infra/nginx/celebri.conf.template | sudo tee /etc/nginx/sites-available/celebri.conf > /dev/null
+   sudo ln -sf /etc/nginx/sites-available/celebri.conf /etc/nginx/sites-enabled/celebri.conf
    sudo nginx -t && sudo systemctl reload nginx
    sudo certbot --nginx -d "$DOMINIO" --redirect
    ```
@@ -139,9 +139,9 @@ O workflow `Deploy` roda após o `CI` concluir com sucesso num push em `main` (o
    - `client_max_body_size 11m`: sem ele, PDFs de contrato acima de 1 MB recebem 413;
    - `127.0.0.1` no lugar de `localhost`: o container é publicado só em IPv4.
 
-   Para usar também `www`, acrescente-o ao `server_name` e ao certbot (`-d www.$DOMINIO`). Se o nginx do host carrega vhosts de `/etc/nginx/conf.d/`, grave em `/etc/nginx/conf.d/casamento.conf` e pule o `ln`.
+   Para usar também `www`, acrescente-o ao `server_name` e ao certbot (`-d www.$DOMINIO`). Se o nginx do host carrega vhosts de `/etc/nginx/conf.d/`, grave em `/etc/nginx/conf.d/celebri.conf` e pule o `ln`.
 
-8. Depois do certbot, o arquivo `/etc/nginx/sites-available/casamento.conf` passa a conter o TLS e é a fonte da verdade: **nunca o sobrescreva com o template**. Quando o `deploy.sh` avisar que `infra/nginx/casamento.conf.template` mudou, aplique só a diferença à mão e rode `sudo nginx -t && sudo systemctl reload nginx`. As renovações são automáticas pelo timer do certbot; confira com `sudo certbot renew --dry-run`.
+8. Depois do certbot, o arquivo `/etc/nginx/sites-available/celebri.conf` (em instalações anteriores ao Celebri, `casamento.conf`) passa a conter o TLS e é a fonte da verdade: **nunca o sobrescreva com o template**. Quando o `deploy.sh` avisar que `infra/nginx/celebri.conf.template` mudou, aplique só a diferença à mão e rode `sudo nginx -t && sudo systemctl reload nginx`. As renovações são automáticas pelo timer do certbot; confira com `sudo certbot renew --dry-run`.
 9. Primeiro deploy manual: `./deploy.sh`.
 10. Agende backup diário do banco (`docker compose -f docker-compose.prod.yml exec -T db pg_dump -U casamento casamento | gzip > backup.sql.gz`) e do volume `casamento-producao_arquivos-enlace`, copiando-os para fora da VPS.
 
@@ -150,7 +150,23 @@ O workflow `Deploy` roda após o `CI` concluir com sucesso num push em `main` (o
 1. Gere outro par de chaves só para o Actions (`ssh-keygen -t ed25519 -f deploy_actions -N ""`) e adicione a pública em `/home/deploy/.ssh/authorized_keys` com o prefixo `restrict ` (bloqueia port forwarding, agent e pty).
 2. Em *Settings → Environments*, crie o environment `production` (opcionalmente com aprovação obrigatória) e cadastre:
    - secrets `VPS_HOST`, `VPS_USUARIO` (`deploy`), `VPS_CHAVE_SSH` (conteúdo da chave privada `deploy_actions`) e `VPS_KNOWN_HOSTS` (saída de `ssh-keyscan -t ed25519 <host>`, conferida com `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` na VPS);
-   - variables `VPS_DIRETORIO` (padrão `/var/www/merry`) e `VPS_PORTA` (padrão `22`).
+   - variables `VPS_DIRETORIO` e `VPS_PORTA` (padrão `22`). Sem `VPS_DIRETORIO`, o workflow envia `infra/deploy/localizar-deploy.sh` pela conexão SSH e usa o primeiro diretório que tiver `deploy.sh`, nesta ordem: `/var/www/celebri`, `/var/www/merry` (legado).
+
+### Nomes físicos preservados no renome para Celebri
+
+O renome técnico de Casamento/Nossia para Celebri trocou solução, projetos, namespaces, imagens e caminhos internos, mas manteve de propósito tudo o que identifica dado persistente ou sessão em produção. Renomear qualquer item abaixo exige migração manual na VPS:
+
+| Item | Nome mantido | Motivo |
+|---|---|---|
+| Projeto do compose (`name:`) | `casamento` (dev) e `casamento-producao` (produção) | prefixa containers, rede e volumes; trocar sobe um projeto novo ao lado do antigo, disputando a porta publicada e a sub-rede `10.214.0.0/24` |
+| Volumes | `dados-postgres` e `arquivos-enlace` (`casamento-producao_*` na VPS) | trocar desanexa o banco e os contratos já gravados |
+| Banco e usuário PostgreSQL | valores do `.env` (`casamento`) | trocar exige dump/restore |
+| Emissor e audiência do JWT | `casamento-api` / `casamento-web` | trocar invalida as sessões em andamento |
+| `UserSecretsId` | `casamento-api` | trocar perde os user-secrets locais dos desenvolvedores |
+
+O caminho de montagem dos arquivos dentro do container mudou para `/var/lib/celebri/arquivos`. Isso não afeta os arquivos já gravados: o volume é o mesmo e a API grava caminhos relativos à raiz configurada.
+
+Migração opcional do diretório da VPS (feita à mão, fora do deploy automático): `sudo mv /var/www/merry /var/www/celebri` com nenhum deploy em andamento e, se `VPS_DIRETORIO` estiver definida no environment `production`, atualize-a. Os containers e volumes não dependem do diretório, porque o nome do projeto está fixado no compose. Confirme disparando o workflow `Deploy` manualmente.
 
 ### Rollback
 
@@ -173,7 +189,7 @@ Nenhum segredo é versionado. Variáveis relevantes:
 | `RetencaoDadosSensiveis__DiasAposCasamento` | dias após a data do casamento para apagar restrições e necessidades especiais (padrão 30; 1 a 365) |
 | `RetencaoDadosSensiveis__IntervaloMinutos` / `RetencaoDadosSensiveis__Habilitada` | intervalo do job de retenção (padrão 360) e liga/desliga (padrão `true`) |
 | `Autenticacao__UrlFrontend` | URL pública do frontend usada no link de redefinição de senha (obrigatória) |
-| `Email__Remetente`, `Email__Smtp__Host`, `Email__Smtp__Porta`, `Email__Smtp__UsarSsl`, `Email__Smtp__Usuario`, `Email__Smtp__Senha` | SMTP de envio (em desenvolvimento, o Mailpit do compose). O nome de exibição do remetente é sempre a marca Nossia e não é configurável |
-| `ArmazenamentoArquivos__Diretorio` | caminho **absoluto** onde a API guarda os contratos em PDF dos fornecedores (obrigatória). Fora do diretório da aplicação e nunca servido como estático; no `docker-compose`, volume `arquivos-enlace` em `/var/lib/nossia/arquivos` (o volume mantém o nome legado para não desanexar os arquivos já gravados). Inclua o diretório no backup |
+| `Email__Remetente`, `Email__Smtp__Host`, `Email__Smtp__Porta`, `Email__Smtp__UsarSsl`, `Email__Smtp__Usuario`, `Email__Smtp__Senha` | SMTP de envio (em desenvolvimento, o Mailpit do compose). O nome de exibição do remetente é sempre a marca Celebri e não é configurável |
+| `ArmazenamentoArquivos__Diretorio` | caminho **absoluto** onde a API guarda os contratos em PDF dos fornecedores (obrigatória). Fora do diretório da aplicação e nunca servido como estático; no `docker-compose`, volume `arquivos-enlace` em `/var/lib/celebri/arquivos` (o volume mantém o nome legado para não desanexar os arquivos já gravados). Inclua o diretório no backup |
 | `LimitesRequisicao__<politica>__Limite` / `__JanelaSegundos` | rate limiting de `entrar`, `cadastro`, `recuperacao` e `renovar` por IP; `contrato` (envio de contrato, padrão 20/60 s) por usuário |
 | `VITE_API_URL` | URL base da API no frontend (vazio = mesma origem) |

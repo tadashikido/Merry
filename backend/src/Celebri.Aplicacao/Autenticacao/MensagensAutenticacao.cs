@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Autenticacao;
+namespace Celebri.Aplicacao.Autenticacao;
 
 public static class MensagensAutenticacao
 {

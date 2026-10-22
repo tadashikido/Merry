@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Dominio.Casamentos;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Dominio.Casamentos;
 
-namespace Casamento.Aplicacao.Casamentos;
+namespace Celebri.Aplicacao.Casamentos;
 
 public sealed record DuplicarCasamentoRequest(
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]

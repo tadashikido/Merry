@@ -1,8 +1,8 @@
 ---
 name: executar-workflow-tarefa
 description: >-
-  Executa o loop completo do workflow SDD "Fluxo Completo de Feature" do projeto
-  Casamento (SpecFlow) para uma tarefa do board, de forma determinística: lê a
+  Executa o loop completo do workflow SDD "Fluxo Completo de Feature" do produto
+  Celebri (projeto "Casamento" no SpecFlow) para uma tarefa do board, de forma determinística: lê a
   constituição, busca o workflow ativo, e para cada step de agente roda
   iniciar → trabalho do agente → gravar spec via API → concluir com métricas,
   tratando condicionais de escopo (frontend/backend), paralelos, loop de
@@ -10,7 +10,7 @@ description: >-
   step de fim. Use SEMPRE que o usuário pedir para "rodar o workflow da tarefa
   X", "executar a tarefa do board", "tocar a tarefa pelo orquestrador",
   "começar o fluxo de agentes", passar um tarefaId, ou pedir uma ação de
-  MODIFICAÇÃO de código no projeto Casamento ("implemente", "crie a tela",
+  MODIFICAÇÃO de código no projeto Celebri ("implemente", "crie a tela",
   "corrija o bug", "refatore", "adicione o endpoint") — pela regra tarefa-first
   isso precisa virar tarefa no board e passar pelos steps. Acione também quando
   o usuário disser "concluí o analista, segue pro próximo step", "retoma a
@@ -19,9 +19,10 @@ description: >-
   reportadas e que a working tree fique limpa no fim.
 ---
 
-# Executar workflow SDD de uma tarefa — projeto Casamento
+# Executar workflow SDD de uma tarefa — projeto Celebri
 
-Cada tarefa do board do Casamento percorre o workflow "Fluxo Completo de
+Cada tarefa do board do Celebri (projeto "Casamento" no SpecFlow, nome
+mantido no servidor) percorre o workflow "Fluxo Completo de
 Feature"; cada step de agente produz uma spec. O `CLAUDE.md` descreve isso em
 prosa — esta skill transforma em runbook para que nada seja pulado: sinalizar
 início, gravar a spec **via API** (nunca como arquivo), reportar métricas e deixar
@@ -34,7 +35,7 @@ skill é só a sequência operacional. Quando divergirem, siga o mais forte.
 
 O grafo concreto deste projeto (quais condicionais, como funciona o loop de
 correção, quando escalonar) está em
-[references/workflow-casamento.md](references/workflow-casamento.md). **Leia-o no
+[references/workflow-celebri.md](references/workflow-celebri.md). **Leia-o no
 pré-voo** — é onde estão as decisões que não dá para inferir só do JSON.
 
 ## Ferramenta
@@ -84,7 +85,7 @@ chave (instruções no `CLAUDE.md`), sem adivinhar endpoints.
 1. **Constituição.** `wf.py constituicao`. Leia princípios, decisões técnicas,
    convenções e restrições. Confirme internamente "Constituição lida: sim".
 2. **Workflow.** `wf.py workflow` (já filtra o `ativo: true`). Compare com
-   `references/workflow-casamento.md`; se o servidor mudou, siga o servidor e
+   `references/workflow-celebri.md`; se o servidor mudou, siga o servidor e
    avise o usuário.
 3. **Tarefa.** `wf.py tarefa <id>` e `wf.py specs <id>` → em que ponto ela está e
    o que já foi produzido. Assim você retoma no meio sem refazer trabalho nem
@@ -106,7 +107,7 @@ Só rode o ciclo de agente em `tipo: agente`; os outros são roteamento e não t
 - **`paralelo`** — rode cada step de `stepsParalelos`, um ciclo completo por vez,
   na ordem listada. "Paralelo" descreve independência, não simultaneidade.
 - **`loop`** — repita `stepsLoop` respeitando `maxIteracoes`. Detalhes do loop
-  de correção do revisor em `references/workflow-casamento.md`.
+  de correção do revisor em `references/workflow-celebri.md`.
 - **`fim`** — sem agente, só move a tarefa (ver abaixo).
 
 ## Regra tarefa-first (entrada ad-hoc)

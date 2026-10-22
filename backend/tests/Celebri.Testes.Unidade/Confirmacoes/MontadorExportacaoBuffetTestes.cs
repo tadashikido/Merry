@@ -1,10 +1,10 @@
 using System.Text.Json;
-using Casamento.Aplicacao.Confirmacoes;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Dominio.Convidados;
-using static Casamento.Testes.Unidade.Convidados.ConviteTestes;
+using Celebri.Aplicacao.Confirmacoes;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Dominio.Convidados;
+using static Celebri.Testes.Unidade.Convidados.ConviteTestes;
 
-namespace Casamento.Testes.Unidade.Confirmacoes;
+namespace Celebri.Testes.Unidade.Confirmacoes;
 
 public class MontadorExportacaoBuffetTestes
 {

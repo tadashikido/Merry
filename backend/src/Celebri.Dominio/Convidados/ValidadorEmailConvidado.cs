@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Casamento.Dominio.Convidados;
+namespace Celebri.Dominio.Convidados;
 
 public static partial class ValidadorEmailConvidado
 {

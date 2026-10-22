@@ -1,11 +1,11 @@
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Usuarios;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Usuarios;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace Casamento.Testes.Unidade.Autenticacao;
+namespace Celebri.Testes.Unidade.Autenticacao;
 
 public class AutenticacaoServiceTestes
 {

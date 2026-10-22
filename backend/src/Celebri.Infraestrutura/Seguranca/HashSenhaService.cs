@@ -1,8 +1,8 @@
 using System.Security.Cryptography;
-using Casamento.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Autenticacao.Portas;
 using Microsoft.AspNetCore.Identity;
 
-namespace Casamento.Infraestrutura.Seguranca;
+namespace Celebri.Infraestrutura.Seguranca;
 
 public class HashSenhaService : IHashSenhaService
 {

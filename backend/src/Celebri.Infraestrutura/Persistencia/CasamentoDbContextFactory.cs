@@ -1,8 +1,8 @@
-using Casamento.Infraestrutura.Persistencia.Isolamento;
+using Celebri.Infraestrutura.Persistencia.Isolamento;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace Casamento.Infraestrutura.Persistencia;
+namespace Celebri.Infraestrutura.Persistencia;
 
 public class CasamentoDbContextFactory : IDesignTimeDbContextFactory<CasamentoDbContext>
 {

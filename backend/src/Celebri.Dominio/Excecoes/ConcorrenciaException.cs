@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Excecoes;
+namespace Celebri.Dominio.Excecoes;
 
 public class ConcorrenciaException : Exception
 {

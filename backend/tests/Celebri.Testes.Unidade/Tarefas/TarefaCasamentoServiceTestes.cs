@@ -1,14 +1,14 @@
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.Tarefas;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Tarefas;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.Tarefas;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Tarefas;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
 
-namespace Casamento.Testes.Unidade.Tarefas;
+namespace Celebri.Testes.Unidade.Tarefas;
 
 public class TarefaCasamentoServiceTestes
 {

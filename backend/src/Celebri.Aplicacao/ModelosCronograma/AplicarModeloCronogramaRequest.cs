@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Dominio.Cronogramas;
+using Celebri.Dominio.Cronogramas;
 
-namespace Casamento.Aplicacao.ModelosCronograma;
+namespace Celebri.Aplicacao.ModelosCronograma;
 
 public sealed record AplicarModeloCronogramaRequest(
     [Required(ErrorMessage = MensagensModeloCronograma.ModeloObrigatorio)]

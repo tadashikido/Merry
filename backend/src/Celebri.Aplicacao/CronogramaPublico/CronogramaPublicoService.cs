@@ -1,14 +1,14 @@
-using Casamento.Aplicacao.Autenticacao.Portas;
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Cronogramas;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.GrandeDia;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
+using Celebri.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Cronogramas;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.GrandeDia;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
 
-namespace Casamento.Aplicacao.CronogramaPublico;
+namespace Celebri.Aplicacao.CronogramaPublico;
 
 public class CronogramaPublicoService : ICronogramaPublicoService
 {

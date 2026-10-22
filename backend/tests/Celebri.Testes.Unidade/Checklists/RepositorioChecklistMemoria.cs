@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Checklists;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Tarefas;
+using Celebri.Aplicacao.Checklists;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Testes.Unidade.Checklists;
+namespace Celebri.Testes.Unidade.Checklists;
 
 public sealed class RepositorioChecklistMemoria : IChecklistRepository
 {

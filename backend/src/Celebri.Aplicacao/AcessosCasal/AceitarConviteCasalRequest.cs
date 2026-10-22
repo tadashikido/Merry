@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Dominio.Usuarios;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Dominio.Usuarios;
 
-namespace Casamento.Aplicacao.AcessosCasal;
+namespace Celebri.Aplicacao.AcessosCasal;
 
 public sealed record AceitarConviteCasalRequest(
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]

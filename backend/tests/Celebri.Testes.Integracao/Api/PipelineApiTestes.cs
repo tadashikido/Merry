@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Casamento.Aplicacao.Sistema;
-using Casamento.Testes.Integracao.Infraestrutura;
+using Celebri.Aplicacao.Sistema;
+using Celebri.Testes.Integracao.Infraestrutura;
 
-namespace Casamento.Testes.Integracao.Api;
+namespace Celebri.Testes.Integracao.Api;
 
 public class PipelineApiTestes : IClassFixture<FabricaApiSemBanco>
 {

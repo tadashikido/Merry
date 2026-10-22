@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text.Json.Serialization;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Aplicacao.Cronogramas;
+namespace Celebri.Aplicacao.Cronogramas;
 
 public sealed record SalvarItemCronogramaRequest(
     [property: JsonConverter(typeof(JsonStringEnumConverter<DiaCronograma>))]

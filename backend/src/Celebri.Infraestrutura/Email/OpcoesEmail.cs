@@ -1,4 +1,4 @@
-namespace Casamento.Infraestrutura.Email;
+namespace Celebri.Infraestrutura.Email;
 
 public class OpcoesEmail
 {

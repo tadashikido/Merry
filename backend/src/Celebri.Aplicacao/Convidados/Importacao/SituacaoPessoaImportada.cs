@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Convidados.Importacao;
+namespace Celebri.Aplicacao.Convidados.Importacao;
 
 public enum SituacaoPessoaImportada
 {

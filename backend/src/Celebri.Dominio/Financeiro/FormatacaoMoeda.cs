@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Casamento.Dominio.Financeiro;
+namespace Celebri.Dominio.Financeiro;
 
 public static class FormatacaoMoeda
 {

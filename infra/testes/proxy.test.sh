@@ -7,7 +7,7 @@ IMAGEM_NGINX_CONTAINER="nginxinc/nginx-unprivileged:1.27-alpine"
 IMAGEM_NGINX_HOST="nginx:1.27-alpine"
 IMAGEM_CURL="curlimages/curl:8.11.1"
 IMAGEM_PYTHON="python:3.12-alpine"
-DOMINIO_TESTE="casamento.teste"
+DOMINIO_TESTE="celebri.teste"
 IP_BORDA="192.168.250.30"
 PREFIXO="teste-proxy-$$"
 REDE_INTERNA="$PREFIXO-interna"
@@ -64,8 +64,8 @@ sed -e "s/\${DOMINIO}/$DOMINIO_TESTE/g" \
   -e "/server_name/a\\    listen 443 ssl;" \
   -e "/server_name/a\\    ssl_certificate /etc/letsencrypt/live/$DOMINIO_TESTE/fullchain.pem;" \
   -e "/server_name/a\\    ssl_certificate_key /etc/letsencrypt/live/$DOMINIO_TESTE/privkey.pem;" \
-  "$RAIZ_REPOSITORIO/infra/nginx/casamento.conf.template" > "$DIRETORIO_TEMPORARIO/borda/casamento.conf"
-cat >> "$DIRETORIO_TEMPORARIO/borda/casamento.conf" <<NGINX
+  "$RAIZ_REPOSITORIO/infra/nginx/celebri.conf.template" > "$DIRETORIO_TEMPORARIO/borda/celebri.conf"
+cat >> "$DIRETORIO_TEMPORARIO/borda/celebri.conf" <<NGINX
 
 server {
     if (\$host = $DOMINIO_TESTE) {
@@ -81,7 +81,7 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=$DOMINIO_TESTE" \
   -out "$(caminho_docker "$DIRETORIO_TEMPORARIO/certificado/fullchain.pem")" > /dev/null 2>&1
 
 ECO="$(caminho_docker "$DIRETORIO_TEMPORARIO/eco")"
-VHOST_BORDA="$(caminho_docker "$DIRETORIO_TEMPORARIO/borda/casamento.conf")"
+VHOST_BORDA="$(caminho_docker "$DIRETORIO_TEMPORARIO/borda/celebri.conf")"
 CERTIFICADO="$(caminho_docker "$DIRETORIO_TEMPORARIO/certificado")"
 NGINX_CONF="$(caminho_docker "$RAIZ_REPOSITORIO/frontend/nginx/default.conf")"
 NGINX_CABECALHOS="$(caminho_docker "$RAIZ_REPOSITORIO/frontend/nginx/cabecalhos-seguranca.conf")"

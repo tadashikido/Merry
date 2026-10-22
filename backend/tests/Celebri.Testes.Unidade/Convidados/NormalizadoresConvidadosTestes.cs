@@ -1,6 +1,6 @@
-using Casamento.Dominio.Convidados;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Testes.Unidade.Convidados;
+namespace Celebri.Testes.Unidade.Convidados;
 
 public class NormalizadoresConvidadosTestes
 {

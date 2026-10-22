@@ -1,9 +1,9 @@
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Isolamento;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Isolamento;
 
-namespace Casamento.Dominio.Financeiro;
+namespace Celebri.Dominio.Financeiro;
 
 public class ParcelaFornecedor : IPertenceCasamento
 {

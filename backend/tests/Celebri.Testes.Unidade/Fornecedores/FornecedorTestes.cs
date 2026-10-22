@@ -1,18 +1,18 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Api.Tratamento;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Fornecedores;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Api.Tratamento;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Fornecedores;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Casamento.Testes.Unidade.Fornecedores;
+namespace Celebri.Testes.Unidade.Fornecedores;
 
 public class FornecedorTestes
 {

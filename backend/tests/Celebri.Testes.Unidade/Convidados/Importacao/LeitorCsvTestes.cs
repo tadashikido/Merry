@@ -1,9 +1,9 @@
 using System.Text;
-using Casamento.Aplicacao.Convidados.Importacao;
-using Casamento.Dominio.Excecoes;
-using static Casamento.Testes.Unidade.Convidados.Importacao.PlanilhasTeste;
+using Celebri.Aplicacao.Convidados.Importacao;
+using Celebri.Dominio.Excecoes;
+using static Celebri.Testes.Unidade.Convidados.Importacao.PlanilhasTeste;
 
-namespace Casamento.Testes.Unidade.Convidados.Importacao;
+namespace Celebri.Testes.Unidade.Convidados.Importacao;
 
 public class LeitorCsvTestes
 {

@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Checklists;
+namespace Celebri.Dominio.Checklists;
 
 public sealed record ProgressoChecklist(int Total, int Concluidas, int Canceladas)
 {

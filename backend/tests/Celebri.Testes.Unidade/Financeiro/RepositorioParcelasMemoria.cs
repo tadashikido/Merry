@@ -1,10 +1,10 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Financeiro;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Testes.Unidade.Fornecedores;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Financeiro;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Testes.Unidade.Fornecedores;
 
-namespace Casamento.Testes.Unidade.Financeiro;
+namespace Celebri.Testes.Unidade.Financeiro;
 
 public sealed class RepositorioParcelasMemoria : IParcelaFornecedorRepository
 {

@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.DadosSensiveis;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.DadosSensiveis;
 
-namespace Casamento.Aplicacao.Rsvp;
+namespace Celebri.Aplicacao.Rsvp;
 
 public sealed record ResponderRsvpRequest(
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]

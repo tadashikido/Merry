@@ -1,15 +1,15 @@
-using Casamento.Aplicacao.Autenticacao.Portas;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.Rsvp.Portas;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Rsvp;
+using Celebri.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.Rsvp.Portas;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Rsvp;
 
-namespace Casamento.Aplicacao.Rsvp;
+namespace Celebri.Aplicacao.Rsvp;
 
 public class LinkRsvpService : ILinkRsvpService
 {

@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Aplicacao.Rsvp;
-using Casamento.Dominio.DadosSensiveis;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.Rsvp;
+using Celebri.Dominio.DadosSensiveis;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Testes.Unidade.DadosSensiveis;
+namespace Celebri.Testes.Unidade.DadosSensiveis;
 
 public class RestricaoAlimentarTestes
 {

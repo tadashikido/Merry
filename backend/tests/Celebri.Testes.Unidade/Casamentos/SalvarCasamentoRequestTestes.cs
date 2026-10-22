@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Testes.Unidade.Casamentos;
+namespace Celebri.Testes.Unidade.Casamentos;
 
 public class SalvarCasamentoRequestTestes
 {

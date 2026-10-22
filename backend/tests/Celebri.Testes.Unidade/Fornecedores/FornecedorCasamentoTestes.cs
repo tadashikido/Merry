@@ -1,13 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using Casamento.Aplicacao.Arquivos;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.FornecedoresCasamento;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Aplicacao.Arquivos;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Testes.Unidade.Fornecedores;
+namespace Celebri.Testes.Unidade.Fornecedores;
 
 public class FornecedorCasamentoTestes
 {

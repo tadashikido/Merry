@@ -1,6 +1,6 @@
-using Casamento.Dominio.DadosSensiveis;
+using Celebri.Dominio.DadosSensiveis;
 
-namespace Casamento.Aplicacao.DadosSensiveis;
+namespace Celebri.Aplicacao.DadosSensiveis;
 
 public static class TiposRestricaoAlimentar
 {

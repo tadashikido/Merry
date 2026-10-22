@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Convidados;
+namespace Celebri.Aplicacao.Convidados;
 
 public sealed record ConvidadoDto(
     Guid Id,

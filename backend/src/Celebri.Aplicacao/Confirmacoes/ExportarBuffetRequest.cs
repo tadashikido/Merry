@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Casamento.Aplicacao.Confirmacoes;
+namespace Celebri.Aplicacao.Confirmacoes;
 
 public sealed class ExportarBuffetRequest : IValidatableObject
 {

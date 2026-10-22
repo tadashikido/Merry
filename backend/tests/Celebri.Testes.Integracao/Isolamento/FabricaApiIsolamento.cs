@@ -1,5 +1,5 @@
-using Casamento.Infraestrutura.Persistencia;
-using Casamento.Testes.Integracao.Infraestrutura;
+using Celebri.Infraestrutura.Persistencia;
+using Celebri.Testes.Integracao.Infraestrutura;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Casamento.Testes.Integracao.Isolamento;
+namespace Celebri.Testes.Integracao.Isolamento;
 
 public class FabricaApiIsolamento : FabricaApiAutenticacao
 {

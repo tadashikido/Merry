@@ -1,7 +1,7 @@
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Mesas;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Mesas;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface IMesaRepository
 {

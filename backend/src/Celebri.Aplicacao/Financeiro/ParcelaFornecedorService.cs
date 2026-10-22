@@ -1,15 +1,15 @@
-using Casamento.Aplicacao.Arquivos;
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.FornecedoresCasamento;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Financeiro;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Aplicacao.Arquivos;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Financeiro;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Aplicacao.Financeiro;
+namespace Celebri.Aplicacao.Financeiro;
 
 public class ParcelaFornecedorService : IParcelaFornecedorService
 {

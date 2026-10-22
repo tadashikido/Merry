@@ -1,13 +1,13 @@
-using Casamento.Aplicacao.Arquivos;
-using Casamento.Infraestrutura.Arquivos;
+using Celebri.Aplicacao.Arquivos;
+using Celebri.Infraestrutura.Arquivos;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Testes.Unidade.Fornecedores;
+namespace Celebri.Testes.Unidade.Fornecedores;
 
 public sealed class ArmazenamentoArquivosDiscoTestes : IDisposable
 {
-    private readonly string _raiz = Path.Combine(Path.GetTempPath(), "nossia-testes-unidade", Guid.NewGuid().ToString("N"));
+    private readonly string _raiz = Path.Combine(Path.GetTempPath(), "celebri-testes-unidade", Guid.NewGuid().ToString("N"));
     private readonly ArmazenamentoArquivosDisco _armazenamento;
 
     public ArmazenamentoArquivosDiscoTestes()

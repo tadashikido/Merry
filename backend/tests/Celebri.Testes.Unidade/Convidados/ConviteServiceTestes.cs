@@ -1,14 +1,14 @@
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.Convidados.Importacao;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
-using Casamento.Testes.Unidade.Mesas;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Convidados.Importacao;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Testes.Unidade.Mesas;
 
-namespace Casamento.Testes.Unidade.Convidados;
+namespace Celebri.Testes.Unidade.Convidados;
 
 public class ConviteServiceTestes
 {

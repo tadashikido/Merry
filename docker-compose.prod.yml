@@ -28,7 +28,7 @@ services:
     <<: *logs
     build:
       context: ./backend
-      dockerfile: src/Casamento.Api/Dockerfile
+      dockerfile: src/Celebri.Api/Dockerfile
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
@@ -45,9 +45,9 @@ services:
       Email__Smtp__UsarSsl: ${SMTP_USAR_SSL:-true}
       Email__Smtp__Usuario: ${SMTP_USUARIO:-}
       Email__Smtp__Senha: ${SMTP_SENHA:-}
-      ArmazenamentoArquivos__Diretorio: /var/lib/nossia/arquivos
+      ArmazenamentoArquivos__Diretorio: /var/lib/celebri/arquivos
     volumes:
-      - arquivos-enlace:/var/lib/nossia/arquivos
+      - arquivos-enlace:/var/lib/celebri/arquivos
     depends_on:
       db:
         condition: service_healthy

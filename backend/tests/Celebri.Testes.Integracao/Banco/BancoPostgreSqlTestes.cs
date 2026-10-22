@@ -1,11 +1,11 @@
 using System.Net;
 using System.Text.Json;
-using Casamento.Infraestrutura.Persistencia;
-using Casamento.Testes.Integracao.Infraestrutura;
+using Celebri.Infraestrutura.Persistencia;
+using Celebri.Testes.Integracao.Infraestrutura;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Casamento.Testes.Integracao.Banco;
+namespace Celebri.Testes.Integracao.Banco;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public class BancoPostgreSqlTestes

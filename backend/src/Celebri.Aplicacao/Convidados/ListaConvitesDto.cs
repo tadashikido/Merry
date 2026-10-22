@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.Mesas;
+using Celebri.Aplicacao.Mesas;
 
-namespace Casamento.Aplicacao.Convidados;
+namespace Celebri.Aplicacao.Convidados;
 
 public sealed record ListaConvitesDto(
     IReadOnlyList<ConviteDto> Convites,

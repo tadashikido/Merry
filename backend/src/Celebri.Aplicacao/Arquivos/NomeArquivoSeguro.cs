@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Casamento.Aplicacao.Arquivos;
+namespace Celebri.Aplicacao.Arquivos;
 
 public static class NomeArquivoSeguro
 {

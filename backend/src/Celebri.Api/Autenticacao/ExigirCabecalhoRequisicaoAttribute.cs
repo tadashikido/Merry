@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Casamento.Api.Autenticacao;
+namespace Celebri.Api.Autenticacao;
 
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class ExigirCabecalhoRequisicaoAttribute : ActionFilterAttribute

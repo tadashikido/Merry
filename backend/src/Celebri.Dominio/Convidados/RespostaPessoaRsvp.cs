@@ -1,5 +1,5 @@
-using Casamento.Dominio.DadosSensiveis;
+using Celebri.Dominio.DadosSensiveis;
 
-namespace Casamento.Dominio.Convidados;
+namespace Celebri.Dominio.Convidados;
 
 public sealed record RespostaPessoaRsvp(Guid ConvidadoId, RespostaRsvp Resposta, AlteracaoDadosSensiveis? DadosSensiveis = null);

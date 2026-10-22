@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Rsvp;
-using Casamento.Testes.Integracao.Convidados;
+using Celebri.Aplicacao.Rsvp;
+using Celebri.Testes.Integracao.Convidados;
 
-namespace Casamento.Testes.Integracao.Rsvp;
+namespace Celebri.Testes.Integracao.Rsvp;
 
 public static class ClienteRsvp
 {

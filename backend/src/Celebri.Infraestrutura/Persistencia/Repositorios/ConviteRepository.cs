@@ -1,10 +1,10 @@
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.Convidados.Importacao;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Convidados;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Convidados.Importacao;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Convidados;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class ConviteRepository : IConviteRepository
 {

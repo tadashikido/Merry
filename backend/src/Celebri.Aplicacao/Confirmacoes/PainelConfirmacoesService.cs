@@ -1,11 +1,11 @@
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
 using Microsoft.Extensions.Logging;
 
-namespace Casamento.Aplicacao.Confirmacoes;
+namespace Celebri.Aplicacao.Confirmacoes;
 
 public partial class PainelConfirmacoesService : IPainelConfirmacoesService
 {

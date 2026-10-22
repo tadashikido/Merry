@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.FornecedoresCasamento;
 
-namespace Casamento.Aplicacao.Financeiro;
+namespace Celebri.Aplicacao.Financeiro;
 
 public sealed record FinanceiroCasamentoDto(
     ResumoOrcamentoDto Resumo,

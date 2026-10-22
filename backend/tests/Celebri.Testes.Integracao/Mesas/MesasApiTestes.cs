@@ -1,21 +1,21 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Mesas;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Infraestrutura.Persistencia.Repositorios;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Casamentos;
-using Casamento.Testes.Integracao.Convidados;
-using Casamento.Testes.Integracao.Isolamento;
-using Casamento.Testes.Integracao.Rsvp;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Mesas;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Infraestrutura.Persistencia.Repositorios;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Casamentos;
+using Celebri.Testes.Integracao.Convidados;
+using Celebri.Testes.Integracao.Isolamento;
+using Celebri.Testes.Integracao.Rsvp;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ClienteAcessoCasal = Casamento.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
+using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
 
-namespace Casamento.Testes.Integracao.Mesas;
+namespace Celebri.Testes.Integracao.Mesas;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class MesasApiTestes : IsolamentoOrganizacaoTestesBase, IDisposable

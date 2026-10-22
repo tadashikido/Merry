@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Aplicacao.Tarefas;
+namespace Celebri.Aplicacao.Tarefas;
 
 public sealed record AlterarStatusTarefaRequest(
     [Required(ErrorMessage = MensagensTarefas.StatusObrigatorio)]

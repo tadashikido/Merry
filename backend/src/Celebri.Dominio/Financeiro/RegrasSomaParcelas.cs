@@ -1,6 +1,6 @@
-using Casamento.Dominio.Excecoes;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Dominio.Financeiro;
+namespace Celebri.Dominio.Financeiro;
 
 public static class RegrasSomaParcelas
 {

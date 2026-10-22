@@ -1,13 +1,13 @@
-using Casamento.Aplicacao.Autenticacao.Portas;
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.CronogramaPublico.Portas;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.CronogramaPublico.Portas;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Aplicacao.CronogramaPublico;
+namespace Celebri.Aplicacao.CronogramaPublico;
 
 public class LinkCronogramaService : ILinkCronogramaService
 {

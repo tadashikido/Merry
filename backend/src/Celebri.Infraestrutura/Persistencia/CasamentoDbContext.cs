@@ -1,26 +1,26 @@
 using System.Reflection;
-using Casamento.Aplicacao.Auditoria;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Dominio.AcessosCasal;
-using Casamento.Dominio.Autenticacao;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.DadosSensiveis;
-using Casamento.Dominio.Financeiro;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Isolamento;
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Rsvp;
-using Casamento.Dominio.Tarefas;
-using Casamento.Dominio.Usuarios;
-using Casamento.Infraestrutura.Persistencia.Auditoria;
-using Casamento.Infraestrutura.Persistencia.Isolamento;
-using Casamento.Dominio.Mesas;
+using Celebri.Aplicacao.Auditoria;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Dominio.AcessosCasal;
+using Celebri.Dominio.Autenticacao;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.DadosSensiveis;
+using Celebri.Dominio.Financeiro;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Isolamento;
+using Celebri.Dominio.Mesas;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Rsvp;
+using Celebri.Dominio.Tarefas;
+using Celebri.Dominio.Usuarios;
+using Celebri.Infraestrutura.Persistencia.Auditoria;
+using Celebri.Infraestrutura.Persistencia.Isolamento;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia;
+namespace Celebri.Infraestrutura.Persistencia;
 
 public class CasamentoDbContext : DbContext
 {

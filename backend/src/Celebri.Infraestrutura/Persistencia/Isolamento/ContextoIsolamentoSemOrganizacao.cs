@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Isolamento;
 
-namespace Casamento.Infraestrutura.Persistencia.Isolamento;
+namespace Celebri.Infraestrutura.Persistencia.Isolamento;
 
 public class ContextoIsolamentoSemOrganizacao : IContextoIsolamento
 {

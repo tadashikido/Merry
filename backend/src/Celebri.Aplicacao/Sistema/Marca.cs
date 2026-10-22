@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Sistema;
+namespace Celebri.Aplicacao.Sistema;
 
 public static class Marca
 {

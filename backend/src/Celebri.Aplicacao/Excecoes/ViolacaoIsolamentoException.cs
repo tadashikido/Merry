@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Excecoes;
+namespace Celebri.Aplicacao.Excecoes;
 
 public class ViolacaoIsolamentoException : Exception
 {

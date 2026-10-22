@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Dominio.DadosSensiveis;
+using Celebri.Dominio.DadosSensiveis;
 
-namespace Casamento.Aplicacao.DadosSensiveis;
+namespace Celebri.Aplicacao.DadosSensiveis;
 
 public sealed record SalvarRestricaoAlimentarRequest(
     [MaxLength(RestricaoAlimentar.QuantidadeMaximaTipos, ErrorMessage = MensagensDadosSensiveis.TipoRepetido)]

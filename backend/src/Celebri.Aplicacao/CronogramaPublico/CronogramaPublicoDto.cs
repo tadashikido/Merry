@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.GrandeDia;
+using Celebri.Aplicacao.GrandeDia;
 
-namespace Casamento.Aplicacao.CronogramaPublico;
+namespace Celebri.Aplicacao.CronogramaPublico;
 
 public sealed record CronogramaPublicoDto(
     CasamentoCronogramaPublicoDto Casamento,

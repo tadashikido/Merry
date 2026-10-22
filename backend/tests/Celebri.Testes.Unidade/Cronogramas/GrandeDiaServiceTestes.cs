@@ -1,15 +1,15 @@
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.GrandeDia;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
-using Casamento.Testes.Unidade.Fornecedores;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.GrandeDia;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Testes.Unidade.Fornecedores;
 
-namespace Casamento.Testes.Unidade.Cronogramas;
+namespace Celebri.Testes.Unidade.Cronogramas;
 
 public class GrandeDiaServiceTestes
 {

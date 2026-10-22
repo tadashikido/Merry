@@ -1,9 +1,9 @@
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Organizacoes;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Organizacoes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Casamento.Infraestrutura.Persistencia.Configuracoes;
+namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 
 public class ModeloCronogramaConfiguration : IEntityTypeConfiguration<ModeloCronograma>
 {

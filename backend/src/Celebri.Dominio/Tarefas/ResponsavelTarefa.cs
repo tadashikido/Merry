@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Tarefas;
+namespace Celebri.Dominio.Tarefas;
 
 public enum ResponsavelTarefa
 {

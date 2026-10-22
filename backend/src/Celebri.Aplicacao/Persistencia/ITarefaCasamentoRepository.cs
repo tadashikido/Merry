@@ -1,7 +1,7 @@
-using Casamento.Aplicacao.Tarefas;
-using Casamento.Dominio.Tarefas;
+using Celebri.Aplicacao.Tarefas;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface ITarefaCasamentoRepository
 {

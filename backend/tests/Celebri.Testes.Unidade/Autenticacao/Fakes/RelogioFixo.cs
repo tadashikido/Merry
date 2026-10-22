@@ -1,4 +1,4 @@
-namespace Casamento.Testes.Unidade.Autenticacao.Fakes;
+namespace Celebri.Testes.Unidade.Autenticacao.Fakes;
 
 public class RelogioFixo : TimeProvider
 {

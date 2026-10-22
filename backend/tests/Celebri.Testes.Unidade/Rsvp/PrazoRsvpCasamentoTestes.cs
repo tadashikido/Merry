@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Excecoes;
 using System.ComponentModel.DataAnnotations;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Testes.Unidade.Rsvp;
+namespace Celebri.Testes.Unidade.Rsvp;
 
 public class PrazoRsvpCasamentoTestes
 {

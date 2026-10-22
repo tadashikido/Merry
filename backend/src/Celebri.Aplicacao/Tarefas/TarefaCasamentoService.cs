@@ -1,12 +1,12 @@
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Tarefas;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Aplicacao.Tarefas;
+namespace Celebri.Aplicacao.Tarefas;
 
 public class TarefaCasamentoService : ITarefaCasamentoService
 {

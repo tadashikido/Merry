@@ -1,13 +1,13 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.Checklists;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Isolamento;
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Tarefas;
+using Celebri.Aplicacao.Checklists;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Isolamento;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Testes.Unidade.Checklists;
+namespace Celebri.Testes.Unidade.Checklists;
 
 public class ModeloChecklistTestes
 {

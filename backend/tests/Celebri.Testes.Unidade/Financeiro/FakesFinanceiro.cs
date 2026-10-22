@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Arquivos;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.Arquivos;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Testes.Unidade.Financeiro;
+namespace Celebri.Testes.Unidade.Financeiro;
 
 public sealed class RepositorioCasamentosFinanceiro : ICasamentoRepository
 {

@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Calendario;
+namespace Celebri.Aplicacao.Calendario;
 
 public interface ICalendarioLocal
 {

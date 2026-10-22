@@ -1,10 +1,10 @@
-using Casamento.Api.Autenticacao;
-using Casamento.Aplicacao.CronogramaPublico;
+using Celebri.Api.Autenticacao;
+using Celebri.Aplicacao.CronogramaPublico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Casamento.Api.Controllers;
+namespace Celebri.Api.Controllers;
 
 [ApiController]
 [Route("api/cronograma-publico")]

@@ -1,7 +1,7 @@
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Testes.Unidade.Convidados;
+namespace Celebri.Testes.Unidade.Convidados;
 
 public class ConviteTestes
 {

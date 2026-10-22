@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Aplicacao.FornecedoresCasamento;
+namespace Celebri.Aplicacao.FornecedoresCasamento;
 
 public static class ValidacaoValoresFornecedorCasamento
 {

@@ -1,5 +1,5 @@
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Aplicacao.Checklists;
+namespace Celebri.Aplicacao.Checklists;
 
 public sealed record TarefaComPrazoRelativo(TarefaCasamento Tarefa, int DiasAntesDoCasamento);

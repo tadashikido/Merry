@@ -2,11 +2,11 @@ using System.Net;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
-using Casamento.Aplicacao.Email;
-using Casamento.Aplicacao.Sistema;
+using Celebri.Aplicacao.Email;
+using Celebri.Aplicacao.Sistema;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Infraestrutura.Email;
+namespace Celebri.Infraestrutura.Email;
 
 public class EnvioEmailSmtpService : IEnvioEmailService
 {

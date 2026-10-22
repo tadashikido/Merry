@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Casamentos;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Casamentos;
 
-namespace Casamento.Aplicacao.Casamentos;
+namespace Celebri.Aplicacao.Casamentos;
 
 public class ProximosPassosCasamentoService : IProximosPassosCasamentoService
 {

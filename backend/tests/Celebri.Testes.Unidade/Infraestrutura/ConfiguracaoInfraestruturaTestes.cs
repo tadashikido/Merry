@@ -1,10 +1,10 @@
-using Casamento.Infraestrutura;
-using Casamento.Infraestrutura.Persistencia;
+using Celebri.Infraestrutura;
+using Celebri.Infraestrutura.Persistencia;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Casamento.Testes.Unidade.Infraestrutura;
+namespace Celebri.Testes.Unidade.Infraestrutura;
 
 public class ConfiguracaoInfraestruturaTestes
 {

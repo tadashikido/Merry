@@ -1,10 +1,10 @@
-using Casamento.Api.Autenticacao;
-using Casamento.Aplicacao.Rsvp;
+using Celebri.Api.Autenticacao;
+using Celebri.Aplicacao.Rsvp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Casamento.Api.Controllers;
+namespace Celebri.Api.Controllers;
 
 [ApiController]
 [Route("api/rsvp")]

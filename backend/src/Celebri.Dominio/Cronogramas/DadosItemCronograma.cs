@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Cronogramas;
+namespace Celebri.Dominio.Cronogramas;
 
 public sealed record DadosItemCronograma(
     DiaCronograma Dia,

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Autenticacao;
 
-namespace Casamento.Aplicacao.CronogramaPublico;
+namespace Celebri.Aplicacao.CronogramaPublico;
 
 public sealed record ConsultarCronogramaPublicoRequest(
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]

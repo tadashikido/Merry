@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Casamento.Dominio.Mesas;
+using Celebri.Dominio.Mesas;
 
-namespace Casamento.Aplicacao.Mesas;
+namespace Celebri.Aplicacao.Mesas;
 
 public sealed record PessoasMesaRequest(
     [Required(ErrorMessage = MensagensMesas.PessoasObrigatorias)]

@@ -1,12 +1,12 @@
-using Casamento.Aplicacao.Arquivos;
-using Casamento.Aplicacao.Financeiro;
-using Casamento.Aplicacao.FornecedoresCasamento;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Financeiro;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Aplicacao.Arquivos;
+using Celebri.Aplicacao.Financeiro;
+using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Financeiro;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Testes.Unidade.Financeiro;
+namespace Celebri.Testes.Unidade.Financeiro;
 
 public class ParcelaFornecedorTestes
 {
@@ -453,7 +453,7 @@ public class ArquivoComprovanteTestes
     {
         var conteudo = new MemoryStream(new byte[(10 * 1024 * 1024) + 1]);
 
-        var excecao = await Assert.ThrowsAsync<Casamento.Aplicacao.Excecoes.ArquivoGrandeDemaisException>(
+        var excecao = await Assert.ThrowsAsync<Celebri.Aplicacao.Excecoes.ArquivoGrandeDemaisException>(
             () => ArquivoComprovante.LerComLimiteAsync(conteudo, CancellationToken.None));
 
         Assert.Equal(MensagensFinanceiro.ComprovanteGrandeDemais, excecao.Message);

@@ -1,4 +1,4 @@
-namespace Casamento.Dominio.Usuarios;
+namespace Celebri.Dominio.Usuarios;
 
 public enum PapelUsuario
 {

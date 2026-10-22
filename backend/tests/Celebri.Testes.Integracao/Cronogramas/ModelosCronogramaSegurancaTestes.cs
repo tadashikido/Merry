@@ -1,15 +1,15 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Casamentos;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Casamentos;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
-using static Casamento.Testes.Integracao.Cronogramas.ClienteModelosCronograma;
-using ClienteAcessoCasal = Casamento.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
+using static Celebri.Testes.Integracao.Cronogramas.ClienteModelosCronograma;
+using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
 
-namespace Casamento.Testes.Integracao.Cronogramas;
+namespace Celebri.Testes.Integracao.Cronogramas;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class ModelosCronogramaSegurancaTestes : IsolamentoOrganizacaoTestesBase, IDisposable
@@ -86,7 +86,7 @@ public sealed class ModelosCronogramaSegurancaTestes : IsolamentoOrganizacaoTest
         var resposta = await casal.GetAsync(ClienteCronograma.Rota(casamentoId));
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
-        var cronograma = (await resposta.Content.ReadFromJsonAsync<Casamento.Aplicacao.Cronogramas.CronogramaDto>())!;
+        var cronograma = (await resposta.Content.ReadFromJsonAsync<Celebri.Aplicacao.Cronogramas.CronogramaDto>())!;
         Assert.Equal(0, cronograma.HorariosDesatualizados);
         Assert.True(cronograma.SomenteLeitura);
     }

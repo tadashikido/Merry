@@ -21,7 +21,7 @@ services:
   api:
     build:
       context: ./backend
-      dockerfile: src/Casamento.Api/Dockerfile
+      dockerfile: src/Celebri.Api/Dockerfile
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Development
@@ -32,9 +32,9 @@ services:
       Email__Smtp__Host: email
       Email__Smtp__Porta: "1025"
       Email__Smtp__UsarSsl: "false"
-      ArmazenamentoArquivos__Diretorio: /var/lib/nossia/arquivos
+      ArmazenamentoArquivos__Diretorio: /var/lib/celebri/arquivos
     volumes:
-      - arquivos-enlace:/var/lib/nossia/arquivos
+      - arquivos-enlace:/var/lib/celebri/arquivos
     ports:
       - "127.0.0.1:${API_PORTA:-5080}:8080"
     depends_on:

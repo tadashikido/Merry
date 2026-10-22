@@ -1,7 +1,7 @@
-using Casamento.Dominio.Usuarios;
+using Celebri.Dominio.Usuarios;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Casamento.Api.Autorizacao;
+namespace Celebri.Api.Autorizacao;
 
 public static class PoliticasAutorizacao
 {

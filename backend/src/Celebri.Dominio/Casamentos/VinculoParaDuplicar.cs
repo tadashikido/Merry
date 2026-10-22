@@ -1,5 +1,5 @@
-using Casamento.Dominio.Fornecedores;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Dominio.Casamentos;
+namespace Celebri.Dominio.Casamentos;
 
 public sealed record VinculoParaDuplicar(FornecedorCasamento Vinculo, bool FornecedorArquivado);

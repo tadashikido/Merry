@@ -1,17 +1,17 @@
 using System.Text;
-using Casamento.Aplicacao.Arquivos;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Financeiro;
-using Casamento.Aplicacao.FornecedoresCasamento;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Financeiro;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Testes.Unidade.Autenticacao.Fakes;
-using Casamento.Testes.Unidade.Fornecedores;
+using Celebri.Aplicacao.Arquivos;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Financeiro;
+using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Financeiro;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Testes.Unidade.Autenticacao.Fakes;
+using Celebri.Testes.Unidade.Fornecedores;
 
-namespace Casamento.Testes.Unidade.Financeiro;
+namespace Celebri.Testes.Unidade.Financeiro;
 
 public class ParcelaFornecedorServiceTestes
 {
@@ -417,7 +417,7 @@ public class GanchosVinculoComParcelasTestes
         Assert.Equal(Hoje, detalhe.Parcelas!.ProximoVencimento);
     }
 
-    private sealed class RepositorioFornecedoresVazio : Casamento.Aplicacao.Persistencia.IFornecedorRepository
+    private sealed class RepositorioFornecedoresVazio : Celebri.Aplicacao.Persistencia.IFornecedorRepository
     {
         public Task<IReadOnlyList<Fornecedor>> ListarAsync(CancellationToken cancelamento) => Task.FromResult<IReadOnlyList<Fornecedor>>([]);
 

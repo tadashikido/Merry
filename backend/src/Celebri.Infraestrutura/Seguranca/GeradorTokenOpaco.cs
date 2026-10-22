@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
-using Casamento.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Autenticacao.Portas;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace Casamento.Infraestrutura.Seguranca;
+namespace Celebri.Infraestrutura.Seguranca;
 
 public class GeradorTokenOpaco : IGeradorTokenOpaco
 {

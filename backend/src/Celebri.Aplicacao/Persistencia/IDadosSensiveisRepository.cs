@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.DadosSensiveis;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface IDadosSensiveisRepository
 {

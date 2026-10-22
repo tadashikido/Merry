@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia;
+namespace Celebri.Infraestrutura.Persistencia;
 
 public static class ConfiguracaoDbContext
 {

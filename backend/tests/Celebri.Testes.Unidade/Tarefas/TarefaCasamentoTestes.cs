@@ -1,8 +1,8 @@
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Isolamento;
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Isolamento;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Testes.Unidade.Tarefas;
+namespace Celebri.Testes.Unidade.Tarefas;
 
 public class TarefaCasamentoTestes
 {

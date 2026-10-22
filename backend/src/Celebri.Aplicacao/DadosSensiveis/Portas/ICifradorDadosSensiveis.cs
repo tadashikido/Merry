@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.DadosSensiveis.Portas;
+namespace Celebri.Aplicacao.DadosSensiveis.Portas;
 
 public interface ICifradorDadosSensiveis
 {

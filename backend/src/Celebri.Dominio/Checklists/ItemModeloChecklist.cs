@@ -1,9 +1,9 @@
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Isolamento;
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Isolamento;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Dominio.Checklists;
+namespace Celebri.Dominio.Checklists;
 
 public class ItemModeloChecklist : IPertenceOrganizacao
 {

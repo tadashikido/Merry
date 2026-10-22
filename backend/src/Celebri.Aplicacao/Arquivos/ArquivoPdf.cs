@@ -1,7 +1,7 @@
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Aplicacao.Arquivos;
+namespace Celebri.Aplicacao.Arquivos;
 
 public static class ArquivoPdf
 {

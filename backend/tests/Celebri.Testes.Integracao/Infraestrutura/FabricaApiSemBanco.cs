@@ -1,4 +1,4 @@
-namespace Casamento.Testes.Integracao.Infraestrutura;
+namespace Celebri.Testes.Integracao.Infraestrutura;
 
 public class FabricaApiSemBanco : FabricaApi
 {

@@ -1,7 +1,7 @@
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.UsuarioAtual;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.UsuarioAtual;
 
-namespace Casamento.Api.Autenticacao;
+namespace Celebri.Api.Autenticacao;
 
 public class UsuarioAtualHttp : IUsuarioAtual
 {

@@ -1,19 +1,19 @@
-using Casamento.Aplicacao.Autenticacao.Portas;
-using Casamento.Aplicacao.Calendario;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Aplicacao.Isolamento;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.UsuarioAtual;
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Rsvp;
+using Celebri.Aplicacao.Autenticacao.Portas;
+using Celebri.Aplicacao.Calendario;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.UsuarioAtual;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Rsvp;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Aplicacao.Rsvp;
+namespace Celebri.Aplicacao.Rsvp;
 
 public class RsvpPublicoService : IRsvpPublicoService
 {

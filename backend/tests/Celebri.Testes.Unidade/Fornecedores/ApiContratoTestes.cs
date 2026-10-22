@@ -1,16 +1,16 @@
 using System.Net;
 using System.Security.Claims;
-using Casamento.Api.Autenticacao;
-using Casamento.Api.Tratamento;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Api.Autenticacao;
+using Celebri.Api.Tratamento;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Dominio.Fornecedores;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Casamento.Testes.Unidade.Fornecedores;
+namespace Celebri.Testes.Unidade.Fornecedores;
 
 public class ApiContratoTestes
 {

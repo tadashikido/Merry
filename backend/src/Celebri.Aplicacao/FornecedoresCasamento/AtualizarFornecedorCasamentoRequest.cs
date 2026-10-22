@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Casamento.Dominio.Fornecedores;
+using Celebri.Dominio.Fornecedores;
 
-namespace Casamento.Aplicacao.FornecedoresCasamento;
+namespace Celebri.Aplicacao.FornecedoresCasamento;
 
 public sealed record AtualizarFornecedorCasamentoRequest(
     [StringLength(FornecedorCasamento.TamanhoMaximoServico, ErrorMessage = MensagensFornecedoresCasamento.TamanhoServico)]

@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.FornecedoresCasamento;
+namespace Celebri.Aplicacao.FornecedoresCasamento;
 
 public interface IFornecedorCasamentoService
 {

@@ -1,11 +1,11 @@
-using Casamento.Api.Autenticacao;
-using Casamento.Aplicacao.AcessosCasal;
-using Casamento.Aplicacao.Autenticacao;
+using Celebri.Api.Autenticacao;
+using Celebri.Aplicacao.AcessosCasal;
+using Celebri.Aplicacao.Autenticacao;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Casamento.Api.Controllers;
+namespace Celebri.Api.Controllers;
 
 [ApiController]
 [Route("api/acesso-casal")]

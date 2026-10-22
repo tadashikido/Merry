@@ -1,12 +1,12 @@
-using Casamento.Api.Tratamento;
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Dominio.Excecoes;
+using Celebri.Api.Tratamento;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Dominio.Excecoes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Casamento.Testes.Unidade.Api;
+namespace Celebri.Testes.Unidade.Api;
 
 public class ExcecaoGlobalHandlerTestes
 {

@@ -1,13 +1,13 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Casamento.Aplicacao.Tarefas;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Tarefas;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
-using static Casamento.Testes.Integracao.Tarefas.ClienteTarefas;
-using ClienteCasamentos = Casamento.Testes.Integracao.Casamentos.ClienteCasamentos;
+using static Celebri.Testes.Integracao.Tarefas.ClienteTarefas;
+using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
 
-namespace Casamento.Testes.Integracao.Tarefas;
+namespace Celebri.Testes.Integracao.Tarefas;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class TarefasIsolamentoTestes : IsolamentoOrganizacaoTestesBase

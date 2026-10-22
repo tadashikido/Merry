@@ -1,6 +1,6 @@
-using Casamento.Dominio.Convidados;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Dominio.Rsvp;
+namespace Celebri.Dominio.Rsvp;
 
 public class AcessoRsvp
 {

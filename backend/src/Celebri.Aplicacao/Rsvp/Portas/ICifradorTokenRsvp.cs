@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Rsvp.Portas;
+namespace Celebri.Aplicacao.Rsvp.Portas;
 
 public interface ICifradorTokenRsvp
 {

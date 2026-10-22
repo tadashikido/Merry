@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Aplicacao.Tarefas;
-using Casamento.Dominio.Tarefas;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.Tarefas;
+using Celebri.Dominio.Tarefas;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class TarefaCasamentoRepository : ITarefaCasamentoRepository
 {

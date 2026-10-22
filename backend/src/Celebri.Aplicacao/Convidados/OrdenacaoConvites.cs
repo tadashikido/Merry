@@ -1,7 +1,7 @@
 using System.Globalization;
-using Casamento.Dominio.Convidados;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Aplicacao.Convidados;
+namespace Celebri.Aplicacao.Convidados;
 
 public static class OrdenacaoConvites
 {

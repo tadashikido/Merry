@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.CronogramaPublico;
+namespace Celebri.Aplicacao.CronogramaPublico;
 
 public interface ICronogramaPublicoService
 {

@@ -1,13 +1,13 @@
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Casamentos;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Casamentos;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Testes.Integracao.Cronogramas;
+namespace Celebri.Testes.Integracao.Cronogramas;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class DuplicacaoCronogramaApiTestes : IsolamentoOrganizacaoTestesBase

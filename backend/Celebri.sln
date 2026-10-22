@@ -5,19 +5,19 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5597FE75-1E12-4C56-9F6A-68D176BA3B9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Casamento.Dominio", "src\Casamento.Dominio\Casamento.Dominio.csproj", "{B9A48176-757A-4E4E-8713-E2F89F29144A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celebri.Dominio", "src\Celebri.Dominio\Celebri.Dominio.csproj", "{B9A48176-757A-4E4E-8713-E2F89F29144A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Casamento.Aplicacao", "src\Casamento.Aplicacao\Casamento.Aplicacao.csproj", "{3E0E7608-CC4C-4E88-8299-48022C8226C4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celebri.Aplicacao", "src\Celebri.Aplicacao\Celebri.Aplicacao.csproj", "{3E0E7608-CC4C-4E88-8299-48022C8226C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Casamento.Infraestrutura", "src\Casamento.Infraestrutura\Casamento.Infraestrutura.csproj", "{9BC6C858-E771-48F3-AA9E-8BB451248BDC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celebri.Infraestrutura", "src\Celebri.Infraestrutura\Celebri.Infraestrutura.csproj", "{9BC6C858-E771-48F3-AA9E-8BB451248BDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Casamento.Api", "src\Casamento.Api\Casamento.Api.csproj", "{64E187D1-C1A0-4699-84F5-36966FA606AC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celebri.Api", "src\Celebri.Api\Celebri.Api.csproj", "{64E187D1-C1A0-4699-84F5-36966FA606AC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B749701B-E998-451D-BA25-72F41A758F40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Casamento.Testes.Unidade", "tests\Casamento.Testes.Unidade\Casamento.Testes.Unidade.csproj", "{AED91C72-367A-4636-8CB2-A86D14002C41}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celebri.Testes.Unidade", "tests\Celebri.Testes.Unidade\Celebri.Testes.Unidade.csproj", "{AED91C72-367A-4636-8CB2-A86D14002C41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Casamento.Testes.Integracao", "tests\Casamento.Testes.Integracao\Casamento.Testes.Integracao.csproj", "{53F89B0C-EF52-4DB9-8A3C-99A7AAF7F2FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celebri.Testes.Integracao", "tests\Celebri.Testes.Integracao\Celebri.Testes.Integracao.csproj", "{53F89B0C-EF52-4DB9-8A3C-99A7AAF7F2FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

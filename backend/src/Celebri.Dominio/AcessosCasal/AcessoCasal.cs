@@ -1,8 +1,8 @@
-using Casamento.Dominio.Excecoes;
-using Casamento.Dominio.Isolamento;
-using Casamento.Dominio.Usuarios;
+using Celebri.Dominio.Excecoes;
+using Celebri.Dominio.Isolamento;
+using Celebri.Dominio.Usuarios;
 
-namespace Casamento.Dominio.AcessosCasal;
+namespace Celebri.Dominio.AcessosCasal;
 
 public class AcessoCasal : IPertenceCasamento
 {

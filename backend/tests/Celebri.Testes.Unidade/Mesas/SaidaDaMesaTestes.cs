@@ -1,7 +1,7 @@
-using Casamento.Dominio.Convidados;
-using static Casamento.Testes.Unidade.Mesas.MesaTestes;
+using Celebri.Dominio.Convidados;
+using static Celebri.Testes.Unidade.Mesas.MesaTestes;
 
-namespace Casamento.Testes.Unidade.Mesas;
+namespace Celebri.Testes.Unidade.Mesas;
 
 public class SaidaDaMesaTestes
 {

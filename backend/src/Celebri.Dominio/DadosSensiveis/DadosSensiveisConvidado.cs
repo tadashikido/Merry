@@ -1,6 +1,6 @@
-using Casamento.Dominio.Isolamento;
+using Celebri.Dominio.Isolamento;
 
-namespace Casamento.Dominio.DadosSensiveis;
+namespace Celebri.Dominio.DadosSensiveis;
 
 public class DadosSensiveisConvidado : IPertenceCasamento
 {

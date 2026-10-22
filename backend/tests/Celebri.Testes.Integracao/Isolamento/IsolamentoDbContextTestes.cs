@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Excecoes;
-using Casamento.Testes.Integracao.Banco;
+using Celebri.Aplicacao.Excecoes;
+using Celebri.Testes.Integracao.Banco;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Testes.Integracao.Isolamento;
+namespace Celebri.Testes.Integracao.Isolamento;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class IsolamentoDbContextTestes : IsolamentoOrganizacaoTestesBase

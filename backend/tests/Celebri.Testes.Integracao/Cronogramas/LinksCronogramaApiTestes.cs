@@ -2,19 +2,19 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.CronogramaPublico;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Infraestrutura;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.CronogramaPublico;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Infraestrutura;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ClienteAcessoCasal = Casamento.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
-using ClienteCasamentos = Casamento.Testes.Integracao.Casamentos.ClienteCasamentos;
-using ClienteConvites = Casamento.Testes.Integracao.Convidados.ClienteConvites;
+using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
+using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
 
-namespace Casamento.Testes.Integracao.Cronogramas;
+namespace Celebri.Testes.Integracao.Cronogramas;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class LinksCronogramaApiTestes : IsolamentoOrganizacaoTestesBase, IDisposable

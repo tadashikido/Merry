@@ -1,8 +1,8 @@
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Excecoes;
-using Casamento.Testes.Unidade.Convidados;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Excecoes;
+using Celebri.Testes.Unidade.Convidados;
 
-namespace Casamento.Testes.Unidade.Rsvp;
+namespace Celebri.Testes.Unidade.Rsvp;
 
 public class ConviteRsvpTestes
 {

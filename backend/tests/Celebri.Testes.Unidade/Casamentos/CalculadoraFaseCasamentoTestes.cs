@@ -1,6 +1,6 @@
-using Casamento.Dominio.Casamentos;
+using Celebri.Dominio.Casamentos;
 
-namespace Casamento.Testes.Unidade.Casamentos;
+namespace Celebri.Testes.Unidade.Casamentos;
 
 public class CalculadoraFaseCasamentoTestes
 {

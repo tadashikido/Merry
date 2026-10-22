@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Casamento.Dominio.Fornecedores;
+namespace Celebri.Dominio.Fornecedores;
 
 public static partial class NormalizadorContatoFornecedor
 {

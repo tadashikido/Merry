@@ -1,3 +1,3 @@
-namespace Casamento.Aplicacao.Convidados.Importacao;
+namespace Celebri.Aplicacao.Convidados.Importacao;
 
 public sealed record LinhaPlanilha(int Numero, IReadOnlyList<string> Celulas);

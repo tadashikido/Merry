@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Casamento.Infraestrutura.Persistencia.Migrations
+namespace Celebri.Infraestrutura.Persistencia.Migrations
 {
     public partial class Inicial : Migration
     {

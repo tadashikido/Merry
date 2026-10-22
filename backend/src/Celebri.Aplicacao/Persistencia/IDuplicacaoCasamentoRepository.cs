@@ -1,9 +1,9 @@
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface IDuplicacaoCasamentoRepository
 {

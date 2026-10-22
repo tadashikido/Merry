@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Casamentos;
+namespace Celebri.Aplicacao.Casamentos;
 
 public sealed record ProximosPassosCasamentoDto(
     bool CasalConvidado,

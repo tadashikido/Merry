@@ -1,10 +1,10 @@
-using Casamento.Dominio.Cronogramas;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Organizacoes;
+using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Organizacoes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Casamento.Infraestrutura.Persistencia.Configuracoes;
+namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 
 public class ItemModeloCronogramaConfiguration : IEntityTypeConfiguration<ItemModeloCronograma>
 {

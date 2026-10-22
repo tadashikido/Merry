@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Aplicacao.Tarefas;
+namespace Celebri.Aplicacao.Tarefas;
 
 public sealed record SalvarTarefaRequest(
     [Required(ErrorMessage = MensagensTarefas.TituloObrigatorio)]

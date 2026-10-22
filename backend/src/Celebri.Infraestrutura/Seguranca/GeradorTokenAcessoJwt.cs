@@ -1,13 +1,13 @@
 using System.Security.Claims;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Autenticacao.Portas;
-using Casamento.Dominio.Organizacoes;
-using Casamento.Dominio.Usuarios;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Autenticacao.Portas;
+using Celebri.Dominio.Organizacoes;
+using Celebri.Dominio.Usuarios;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Casamento.Infraestrutura.Seguranca;
+namespace Celebri.Infraestrutura.Seguranca;
 
 public class GeradorTokenAcessoJwt : IGeradorTokenAcesso
 {

@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Convidados.Importacao;
-using Casamento.Dominio.Convidados;
-using static Casamento.Testes.Unidade.Convidados.Importacao.PlanilhasTeste;
+using Celebri.Aplicacao.Convidados.Importacao;
+using Celebri.Dominio.Convidados;
+using static Celebri.Testes.Unidade.Convidados.Importacao.PlanilhasTeste;
 
-namespace Casamento.Testes.Unidade.Convidados.Importacao;
+namespace Celebri.Testes.Unidade.Convidados.Importacao;
 
 public class AnalisadorImportacaoConvidadosTestes
 {

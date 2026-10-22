@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Cronogramas;
+namespace Celebri.Aplicacao.Cronogramas;
 
 public sealed record ItemCronogramaDto(
     Guid Id,

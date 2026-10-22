@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Casamento.Aplicacao.DadosSensiveis;
-using Casamento.Dominio.Convidados;
+using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Aplicacao.Rsvp;
+namespace Celebri.Aplicacao.Rsvp;
 
 public sealed record AcompanhanteRsvpRequest(
     Guid? Id,

@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Arquivos;
+using Celebri.Aplicacao.Arquivos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Casamento.Infraestrutura.Arquivos;
+namespace Celebri.Infraestrutura.Arquivos;
 
 public partial class ArmazenamentoArquivosDisco : IArmazenamentoArquivos
 {

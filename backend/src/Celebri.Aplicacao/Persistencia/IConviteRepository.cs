@@ -1,8 +1,8 @@
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.Convidados.Importacao;
-using Casamento.Dominio.Convidados;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Convidados.Importacao;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface IConviteRepository
 {

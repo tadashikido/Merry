@@ -1,7 +1,7 @@
-using Casamento.Aplicacao.Email;
-using Casamento.Aplicacao.Sistema;
+using Celebri.Aplicacao.Email;
+using Celebri.Aplicacao.Sistema;
 
-namespace Casamento.Testes.Unidade.Sistema;
+namespace Celebri.Testes.Unidade.Sistema;
 
 public class MarcaTestes
 {

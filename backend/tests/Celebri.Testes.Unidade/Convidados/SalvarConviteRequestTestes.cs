@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Dominio.Convidados;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Dominio.Convidados;
 
-namespace Casamento.Testes.Unidade.Convidados;
+namespace Celebri.Testes.Unidade.Convidados;
 
 public class SalvarConviteRequestTestes
 {

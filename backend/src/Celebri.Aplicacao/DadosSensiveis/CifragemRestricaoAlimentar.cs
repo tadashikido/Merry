@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Casamento.Aplicacao.DadosSensiveis.Portas;
-using Casamento.Dominio.DadosSensiveis;
-using Casamento.Dominio.Excecoes;
+using Celebri.Aplicacao.DadosSensiveis.Portas;
+using Celebri.Dominio.DadosSensiveis;
+using Celebri.Dominio.Excecoes;
 
-namespace Casamento.Aplicacao.DadosSensiveis;
+namespace Celebri.Aplicacao.DadosSensiveis;
 
 public sealed class CifragemRestricaoAlimentar
 {

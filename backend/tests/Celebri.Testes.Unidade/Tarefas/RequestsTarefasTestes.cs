@@ -1,14 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text.Json;
-using Casamento.Api.Autorizacao;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Tarefas;
-using Casamento.Dominio.Tarefas;
+using Celebri.Api.Autorizacao;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Tarefas;
+using Celebri.Dominio.Tarefas;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Casamento.Testes.Unidade.Tarefas;
+namespace Celebri.Testes.Unidade.Tarefas;
 
 public class RequestsTarefasTestes
 {

@@ -1,3 +1,3 @@
-namespace Casamento.Aplicacao.Financeiro;
+namespace Celebri.Aplicacao.Financeiro;
 
 public sealed record ArquivoComprovanteParcela(Stream Conteudo, string NomeArquivo, string TipoConteudo);

@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Aplicacao.Mesas;
-using Casamento.Testes.Integracao.Convidados;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Mesas;
+using Celebri.Testes.Integracao.Convidados;
 
-namespace Casamento.Testes.Integracao.Mesas;
+namespace Celebri.Testes.Integracao.Mesas;
 
 public static class ClienteMesas
 {

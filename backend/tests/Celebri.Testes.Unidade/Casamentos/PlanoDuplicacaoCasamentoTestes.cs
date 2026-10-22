@@ -1,9 +1,9 @@
-using Casamento.Dominio.Casamentos;
-using Casamento.Dominio.Checklists;
-using Casamento.Dominio.Fornecedores;
-using Casamento.Dominio.Tarefas;
+using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Tarefas;
 
-namespace Casamento.Testes.Unidade.Casamentos;
+namespace Celebri.Testes.Unidade.Casamentos;
 
 public class PlanoDuplicacaoCasamentoTestes
 {

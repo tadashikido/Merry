@@ -1,6 +1,6 @@
-using Casamento.Aplicacao.Auditoria;
+using Celebri.Aplicacao.Auditoria;
 
-namespace Casamento.Infraestrutura.Persistencia.Auditoria;
+namespace Celebri.Infraestrutura.Persistencia.Auditoria;
 
 public class AutorAlteracaoAnonimo : IAutorAlteracao
 {

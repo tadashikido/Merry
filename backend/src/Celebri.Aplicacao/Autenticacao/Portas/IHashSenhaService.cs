@@ -1,4 +1,4 @@
-namespace Casamento.Aplicacao.Autenticacao.Portas;
+namespace Celebri.Aplicacao.Autenticacao.Portas;
 
 public enum ResultadoVerificacaoSenha
 {

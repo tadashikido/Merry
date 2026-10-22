@@ -1,9 +1,9 @@
-using Casamento.Aplicacao.Checklists;
-using Casamento.Aplicacao.Persistencia;
-using Casamento.Dominio.Checklists;
+using Celebri.Aplicacao.Checklists;
+using Celebri.Aplicacao.Persistencia;
+using Celebri.Dominio.Checklists;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casamento.Infraestrutura.Persistencia.Repositorios;
+namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class ModeloChecklistRepository : IModeloChecklistRepository
 {

@@ -1,4 +1,4 @@
-namespace Casamento.Api.Middlewares;
+namespace Celebri.Api.Middlewares;
 
 public class CabecalhosSegurancaMiddleware
 {

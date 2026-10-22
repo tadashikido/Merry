@@ -1,6 +1,6 @@
-using Casamento.Dominio.Financeiro;
+using Celebri.Dominio.Financeiro;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public sealed record ParcelaAlerta(
     ParcelaFornecedor Parcela,

@@ -2,24 +2,24 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
-using Casamento.Aplicacao.AcessosCasal;
-using Casamento.Aplicacao.Autenticacao;
-using Casamento.Aplicacao.Casamentos;
-using Casamento.Aplicacao.Confirmacoes;
-using Casamento.Aplicacao.Convidados;
-using Casamento.Dominio.AcessosCasal;
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.Usuarios;
-using Casamento.Testes.Integracao.Banco;
-using Casamento.Testes.Integracao.Isolamento;
+using Celebri.Aplicacao.AcessosCasal;
+using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Confirmacoes;
+using Celebri.Aplicacao.Convidados;
+using Celebri.Dominio.AcessosCasal;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Usuarios;
+using Celebri.Testes.Integracao.Banco;
+using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
-using static Casamento.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
-using ClienteAutenticacao = Casamento.Testes.Integracao.Autenticacao.ClienteAutenticacao;
-using ClienteCasamentos = Casamento.Testes.Integracao.Casamentos.ClienteCasamentos;
-using ClienteConvites = Casamento.Testes.Integracao.Convidados.ClienteConvites;
-using ClienteRsvp = Casamento.Testes.Integracao.Rsvp.ClienteRsvp;
+using static Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
+using ClienteAutenticacao = Celebri.Testes.Integracao.Autenticacao.ClienteAutenticacao;
+using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
+using ClienteRsvp = Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
 
-namespace Casamento.Testes.Integracao.AcessosCasal;
+namespace Celebri.Testes.Integracao.AcessosCasal;
 
 public sealed record CasalTeste(Guid CasamentoId, Guid AcessoId, Guid UsuarioId, string Email, string TokenAcesso, HttpClient Cliente);
 
@@ -501,12 +501,12 @@ public sealed class AcessoCasalApiTestes : IsolamentoOrganizacaoTestesBase, IDis
             new DadosConvite("Família Invasora", null, 0, [new DadosConvidado(null, "Pessoa Invasora", null, null, FaixaEtaria.Adulto, RespostaRsvp.Pendente)]),
             DateTimeOffset.UtcNow);
 
-        await using var contexto = new Casamento.Infraestrutura.Persistencia.CasamentoDbContext(
+        await using var contexto = new Celebri.Infraestrutura.Persistencia.CasamentoDbContext(
             Fabrica.CriarOpcoesDbContext(),
             new ContextoIsolamentoFixo(OrganizacaoA.OrganizacaoId, [casal.CasamentoId]));
         contexto.Convites.Add(convite);
 
-        await Assert.ThrowsAsync<Casamento.Aplicacao.Excecoes.ViolacaoIsolamentoException>(() => contexto.SaveChangesAsync());
+        await Assert.ThrowsAsync<Celebri.Aplicacao.Excecoes.ViolacaoIsolamentoException>(() => contexto.SaveChangesAsync());
         Assert.Empty(await contexto.Casamentos.Where(casamento => casamento.Id == outro.Id).ToListAsync());
         Assert.Single(await contexto.Casamentos.ToListAsync());
     }

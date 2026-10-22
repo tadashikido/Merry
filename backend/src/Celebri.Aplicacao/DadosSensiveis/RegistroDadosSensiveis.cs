@@ -1,7 +1,7 @@
-using Casamento.Dominio.Convidados;
-using Casamento.Dominio.DadosSensiveis;
+using Celebri.Dominio.Convidados;
+using Celebri.Dominio.DadosSensiveis;
 
-namespace Casamento.Aplicacao.DadosSensiveis;
+namespace Celebri.Aplicacao.DadosSensiveis;
 
 public sealed record RegistroDadosSensiveis(
     Guid ConvidadoId,

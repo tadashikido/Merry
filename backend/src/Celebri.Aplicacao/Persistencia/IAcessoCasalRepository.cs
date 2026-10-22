@@ -1,6 +1,6 @@
-using Casamento.Dominio.AcessosCasal;
+using Celebri.Dominio.AcessosCasal;
 
-namespace Casamento.Aplicacao.Persistencia;
+namespace Celebri.Aplicacao.Persistencia;
 
 public interface IAcessoCasalRepository
 {
