@@ -82,10 +82,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validar compose de produção
+      - name: Recusar segredos com valor real nos arquivos de exemplo
+        run: bash infra/testes/env-exemplo.test.sh
+
+      - name: Gerar .env descartável do CI
         run: |
-          cp .env.production.example .env
-          docker compose -f docker-compose.prod.yml config --quiet
+          senha=$(openssl rand -hex 32)
+          jwt=$(openssl rand -base64 48 | tr -d '\n')
+          cifra=$(openssl rand -base64 32 | tr -d '\n')
+          for valor in "$senha" "$jwt" "$cifra"; do echo "::add-mask::$valor"; done
+          sed -e "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$senha|" \
+              -e "s|^JWT_CHAVE_ASSINATURA=.*|JWT_CHAVE_ASSINATURA=$jwt|" \
+              -e "s|^DADOS_SENSIVEIS_CHAVE=.*|DADOS_SENSIVEIS_CHAVE=$cifra|" \
+              .env.production.example > .env.ci
+
+      - name: Validar compose de produção
+        run: docker compose -f docker-compose.prod.yml --env-file .env.ci config --quiet
 
       - name: Recusar compose de produção sem variáveis obrigatórias
         run: |
@@ -96,10 +108,10 @@ jobs:
         run: bash infra/testes/contexto-docker-web.test.sh
 
       - name: Construir imagem do frontend
-        run: docker compose -f docker-compose.prod.yml --env-file .env.production.example build web
+        run: docker compose -f docker-compose.prod.yml --env-file .env.ci build web
 
       - name: Lint dos scripts
-        run: shellcheck deploy.sh infra/deploy/localizar-deploy.sh infra/testes/deploy.test.sh infra/testes/localizar-deploy.test.sh infra/testes/proxy.test.sh infra/testes/contexto-docker-web.test.sh
+        run: shellcheck deploy.sh infra/deploy/localizar-deploy.sh infra/testes/deploy.test.sh infra/testes/localizar-deploy.test.sh infra/testes/proxy.test.sh infra/testes/contexto-docker-web.test.sh infra/testes/env-exemplo.test.sh
 
       - name: Testar deploy.sh
         run: bash infra/testes/deploy.test.sh
