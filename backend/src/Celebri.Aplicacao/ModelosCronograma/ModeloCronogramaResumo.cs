@@ -1,3 +1,5 @@
+using Celebri.Dominio.Eventos;
+
 namespace Celebri.Aplicacao.ModelosCronograma;
 
 public sealed record ModeloCronogramaResumo(
@@ -7,4 +9,5 @@ public sealed record ModeloCronogramaResumo(
     TimeOnly HorarioReferencia,
     bool Sugerido,
     int QuantidadeItens,
-    DateTimeOffset AtualizadoEm);
+    DateTimeOffset AtualizadoEm,
+    TipoEvento? TipoEvento);

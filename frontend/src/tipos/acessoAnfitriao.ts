@@ -1,3 +1,5 @@
+import type { TipoEvento } from '@/tipos/eventos'
+
 export const SITUACOES_ACESSO_ANFITRIAO = ['Pendente', 'Expirado', 'Ativo'] as const
 
 export type SituacaoAcessoAnfitriao = (typeof SITUACOES_ACESSO_ANFITRIAO)[number]
@@ -18,10 +20,11 @@ export interface ConvidarAnfitriaoRequest {
 }
 
 export interface ConviteAcessoAnfitriaoDto {
+  tipo: TipoEvento
   nome: string
   email: string
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   organizacao: string
   expiraEm: string
 }

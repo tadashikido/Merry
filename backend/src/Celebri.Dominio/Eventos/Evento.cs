@@ -12,6 +12,8 @@ public class Evento : IRaizEvento
     public const int ConvidadosMinimo = 1;
     public const int ConvidadosMaximo = 5000;
     public const int DiasAntecedenciaPadraoRsvp = 10;
+    public const string CampoTipo = "tipo";
+    public const string CampoNomeSegundaPessoa = "nomeSegundaPessoa";
 
     public static readonly DateOnly DataMinima = new(2000, 1, 1);
     public static readonly DateOnly DataMaxima = new(2100, 12, 31);
@@ -19,16 +21,17 @@ public class Evento : IRaizEvento
     private Evento()
     {
         NomePrimeiraPessoa = string.Empty;
-        NomeSegundaPessoa = string.Empty;
     }
 
     public Guid Id { get; private set; }
 
     public Guid OrganizacaoId { get; private set; }
 
+    public TipoEvento Tipo { get; private set; }
+
     public string NomePrimeiraPessoa { get; private set; }
 
-    public string NomeSegundaPessoa { get; private set; }
+    public string? NomeSegundaPessoa { get; private set; }
 
     public DateOnly Data { get; private set; }
 
@@ -106,6 +109,11 @@ public class Evento : IRaizEvento
         return CalculadoraFaseEvento.Calcular(CalcularDiasRestantes(hoje));
     }
 
+    public string FormatarNomes()
+    {
+        return NomeSegundaPessoa is null ? NomePrimeiraPessoa : $"{NomePrimeiraPessoa} & {NomeSegundaPessoa}";
+    }
+
     public DateOnly DataLimiteRsvpEfetiva()
     {
         return DataLimiteRsvp ?? Data.AddDays(-DiasAntecedenciaPadraoRsvp);
@@ -120,8 +128,13 @@ public class Evento : IRaizEvento
     {
         ArgumentNullException.ThrowIfNull(dados);
 
+        if (!RegrasTipoEvento.EhDisponivel(dados.Tipo))
+        {
+            throw new RegraNegocioException(MensagensEvento.TipoInvalido, CampoTipo);
+        }
+
         var nomePrimeiraPessoa = NormalizarNome(dados.NomePrimeiraPessoa);
-        var nomeSegundaPessoa = NormalizarNome(dados.NomeSegundaPessoa);
+        var nomeSegundaPessoa = NormalizarSegundoNome(dados.Tipo, dados.NomeSegundaPessoa);
 
         if (dados.Data < DataMinima || dados.Data > DataMaxima)
         {
@@ -138,6 +151,7 @@ public class Evento : IRaizEvento
             throw new RegraNegocioException(MensagensEvento.DataLimiteRsvpInvalida);
         }
 
+        Tipo = dados.Tipo;
         NomePrimeiraPessoa = nomePrimeiraPessoa;
         NomeSegundaPessoa = nomeSegundaPessoa;
         Data = dados.Data;
@@ -165,6 +179,23 @@ public class Evento : IRaizEvento
         }
 
         return normalizado;
+    }
+
+    private static string? NormalizarSegundoNome(TipoEvento tipo, string? nome)
+    {
+        var informado = !string.IsNullOrWhiteSpace(nome);
+
+        if (RegrasTipoEvento.ExigeSegundoNome(tipo) && !informado)
+        {
+            throw new RegraNegocioException(MensagensEvento.SegundoNomeObrigatorio, CampoNomeSegundaPessoa);
+        }
+
+        if (!RegrasTipoEvento.AceitaSegundoNome(tipo) && informado)
+        {
+            throw new RegraNegocioException(MensagensEvento.UmHomenageado, CampoNomeSegundaPessoa);
+        }
+
+        return informado ? NormalizarNome(nome) : null;
     }
 
     private static string? NormalizarOpcional(string? valor, int tamanhoMaximo, string mensagem)

@@ -55,7 +55,8 @@ public class ModeloCronogramaService : IModeloCronogramaService
                 CronogramaService.FormatarHorario(modelo.HorarioReferencia)!,
                 modelo.Sugerido,
                 modelo.QuantidadeItens,
-                modelo.AtualizadoEm))
+                modelo.AtualizadoEm,
+                modelo.TipoEvento?.ToString()))
             .ToList();
     }
 
@@ -189,14 +190,31 @@ public class ModeloCronogramaService : IModeloCronogramaService
 
         var organizacao = await _organizacaoRepository.ObterPorIdAsync(organizacaoId, cancelamento);
 
-        if (organizacao is null || organizacao.PossuiModeloCronogramaSugerido)
+        if (organizacao is null || (organizacao.PossuiModeloCronogramaSugerido && organizacao.PossuiModelosCronogramaPorTipo))
         {
             return;
         }
 
         var agora = _relogio.GetUtcNow();
-        _modeloRepository.Adicionar(ModeloCronogramaSugerido.Criar(agora));
-        organizacao.RegistrarModeloCronogramaSugerido(agora);
+
+        if (!organizacao.PossuiModeloCronogramaSugerido)
+        {
+            _modeloRepository.Adicionar(ModeloCronogramaSugerido.Criar(TipoEvento.Casamento, agora));
+            organizacao.RegistrarModeloCronogramaSugerido(agora);
+        }
+
+        if (!organizacao.PossuiModelosCronogramaPorTipo)
+        {
+            foreach (var conteudo in ModeloCronogramaSugerido.Conteudos.Where(conteudo => conteudo.Tipo != TipoEvento.Casamento))
+            {
+                if (!await _modeloRepository.ExisteNomeAsync(conteudo.Nome, null, cancelamento))
+                {
+                    _modeloRepository.Adicionar(ModeloCronogramaSugerido.Criar(conteudo.Tipo, agora));
+                }
+            }
+
+            organizacao.RegistrarModelosCronogramaPorTipo(agora);
+        }
 
         try
         {
@@ -220,7 +238,8 @@ public class ModeloCronogramaService : IModeloCronogramaService
             modelo.Sugerido,
             modelo.ItensOrdenados().Select(item => ParaDto(item, modelo.HorarioReferencia)).ToList(),
             modelo.CriadoEm,
-            modelo.AtualizadoEm);
+            modelo.AtualizadoEm,
+            modelo.TipoEvento?.ToString());
     }
 
     public static ItemModeloCronogramaDto ParaDto(ItemModeloCronograma item, TimeOnly horarioReferencia)

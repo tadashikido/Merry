@@ -1,4 +1,5 @@
 using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Isolamento;
 
@@ -29,18 +30,26 @@ public class ModeloChecklist : IPertenceOrganizacao
 
     public bool Sugerido { get; private set; }
 
+    public TipoEvento? TipoEvento { get; private set; }
+
     public DateTimeOffset CriadoEm { get; private set; }
 
     public DateTimeOffset AtualizadoEm { get; private set; }
 
     public IReadOnlyList<ItemModeloChecklist> Itens => _itens;
 
-    public static ModeloChecklist Criar(string? nome, string? descricao, DateTimeOffset agora, bool sugerido = false)
+    public static ModeloChecklist Criar(
+        string? nome,
+        string? descricao,
+        DateTimeOffset agora,
+        bool sugerido = false,
+        TipoEvento? tipoEvento = null)
     {
         var modelo = new ModeloChecklist
         {
             Id = Guid.NewGuid(),
             Sugerido = sugerido,
+            TipoEvento = tipoEvento,
             CriadoEm = agora,
         };
 

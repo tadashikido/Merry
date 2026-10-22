@@ -21,11 +21,10 @@ import { useAtualizacaoPeriodica, useRelogioDispositivo } from '@/composables/us
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useGrandeDiaStore } from '@/stores/grandeDia'
-import { TEXTOS_CRONOGRAMA_PUBLICO } from '@/textos/cronogramaPublico'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
 import type { ItemPainelGrandeDia } from '@/tipos/grandeDia'
 import type { FalhaEvento } from '@/stores/eventos'
-import { agruparRoteiro, ehHorarioDaCerimonia } from '@/utilitarios/cronogramaPublico'
+import { agruparRoteiro, ehHorarioDaCerimonia, montarLocaisOperacao } from '@/utilitarios/cronogramaPublico'
 import { formatarHora, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import {
   distribuirPainel,
@@ -74,22 +73,7 @@ const selo = computed(() => {
 
 const locais = computed<LocalOperacao[]>(() => {
   const atual = dados.value
-  if (!atual) {
-    return []
-  }
-  const lista: LocalOperacao[] = []
-  if (atual.horarioCerimonia || atual.localCerimonia) {
-    lista.push({
-      rotulo: TEXTOS_CRONOGRAMA_PUBLICO.cerimonia,
-      valor: atual.horarioCerimonia
-        ? TEXTOS_CRONOGRAMA_PUBLICO.cerimoniaComHorario(atual.horarioCerimonia, atual.localCerimonia)
-        : (atual.localCerimonia ?? ''),
-    })
-  }
-  if (atual.localRecepcao) {
-    lista.push({ rotulo: TEXTOS_CRONOGRAMA_PUBLICO.recepcao, valor: atual.localRecepcao })
-  }
-  return lista
+  return atual ? montarLocaisOperacao(atual) : []
 })
 
 const estadoErro = computed(() => {

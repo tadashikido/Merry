@@ -1,7 +1,8 @@
 import { CATEGORIAS_FORNECEDOR, type CategoriaFornecedor } from '@/tipos/fornecedores'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
 import { TEXTOS_CRONOGRAMA_PUBLICO, TEXTOS_LINKS_CRONOGRAMA } from '@/textos/cronogramaPublico'
-import type { DataCalendario } from '@/tipos/eventos'
+import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
+import { vocabularioDoTipo } from '@/textos/tiposEvento'
 import type { DiaCronograma } from '@/tipos/cronograma'
 import type {
   CronogramaPublicoDto,
@@ -11,7 +12,7 @@ import type {
   SituacaoLinkCronograma,
 } from '@/tipos/cronogramaPublico'
 import { DIAS_CRONOGRAMA } from '@/tipos/cronograma'
-import { formatarDataCalendarioComDiaSemana, formatarDataCalendarioExtenso } from '@/utilitarios/formatacao'
+import { formatarDataCalendarioComDiaSemana, formatarDataCalendarioExtenso, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { montarLinkWhatsApp } from '@/utilitarios/rsvp'
 
 export const PADRAO_TOKEN_CRONOGRAMA = /^[A-Za-z0-9_-]{43}$/
@@ -25,7 +26,7 @@ export interface GrupoRoteiro<T extends Pick<ItemCronogramaPublicoDto, 'dia' | '
 
 export interface DadosMensagemCronograma {
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   data: DataCalendario
 }
 
@@ -116,8 +117,7 @@ export function montarMensagemCronograma(
   url: string,
 ): string {
   const dados = {
-    primeiro: evento.nomePrimeiraPessoa,
-    segundo: evento.nomeSegundaPessoa,
+    nomes: formatarNomesAnfitrioes(evento.nomePrimeiraPessoa, evento.nomeSegundaPessoa),
     data: formatarDataCalendarioExtenso(evento.data),
     url,
   }
@@ -131,4 +131,28 @@ export function montarWhatsAppCronograma(
 ): string {
   const telefone = destino.tipo === 'Fornecedor' ? destino.telefone : null
   return montarLinkWhatsApp(telefone, montarMensagemCronograma(evento, destino, url))
+}
+
+export interface DadosLocaisOperacao {
+  tipo: TipoEvento
+  horarioCerimonia: string | null
+  localCerimonia: string | null
+  localRecepcao: string | null
+}
+
+export function montarLocaisOperacao(evento: DadosLocaisOperacao): { rotulo: string; valor: string }[] {
+  const vocabulario = vocabularioDoTipo(evento.tipo)
+  const lista: { rotulo: string; valor: string }[] = []
+  if (evento.horarioCerimonia || evento.localCerimonia) {
+    lista.push({
+      rotulo: vocabulario.locais.principal,
+      valor: evento.horarioCerimonia
+        ? TEXTOS_CRONOGRAMA_PUBLICO.cerimoniaComHorario(evento.horarioCerimonia, evento.localCerimonia)
+        : (evento.localCerimonia ?? ''),
+    })
+  }
+  if (evento.localRecepcao) {
+    lista.push({ rotulo: vocabulario.locais.secundario, valor: evento.localRecepcao })
+  }
+  return lista
 }

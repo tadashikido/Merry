@@ -30,6 +30,8 @@ import { focarElemento } from '@/utilitarios/foco'
 import { formatarDataCalendarioCurta, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { LIMITES_EVENTO, dataEvento, horarioEvento, nomeAnfitrioes, textoOpcional } from '@/utilitarios/validacaoEvento'
 import { obrigatorio } from '@/utilitarios/validacao'
+import { aceitaSegundoNome, vocabularioDoTipo, type VocabularioTipoEvento } from '@/textos/tiposEvento'
+import type { TipoEvento } from '@/tipos/eventos'
 
 const props = defineProps<{ origem?: string }>()
 
@@ -75,7 +77,7 @@ const formulario = useFormulario(
   },
   {
     nomePrimeiraPessoa: [obrigatorio, nomeAnfitrioes],
-    nomeSegundaPessoa: [obrigatorio, nomeAnfitrioes],
+    nomeSegundaPessoa: [regraSegundoNomeObrigatorio, regraSegundoNomeTamanho],
     data: [obrigatorio, dataEvento],
     horario: [horarioEvento],
     localCerimonia: [textoOpcional(LIMITES_EVENTO.local)],
@@ -101,6 +103,22 @@ const origemDaPrevia = computed(() => (previa.value && previa.value.origem.id ==
 const nomesOrigem = computed(() =>
   origemDaPrevia.value ? formatarNomesAnfitrioes(origemDaPrevia.value.nomePrimeiraPessoa, origemDaPrevia.value.nomeSegundaPessoa) : '',
 )
+
+const tipoOrigem = computed<TipoEvento>(
+  () => origemDaPrevia.value?.tipo ?? origens.value?.find((evento) => evento.id === origemId.value)?.tipo ?? 'Casamento',
+)
+const vocabulario = computed<VocabularioTipoEvento>(() => vocabularioDoTipo(tipoOrigem.value))
+const temSegundoNome = computed<boolean>(() => aceitaSegundoNome(tipoOrigem.value))
+
+function regraSegundoNomeObrigatorio(valor: unknown): string | null {
+  return vocabulario.value.homenageados.segundoObrigatorio ? obrigatorio(valor) : null
+}
+
+function regraSegundoNomeTamanho(valor: unknown): string | null {
+  return temSegundoNome.value ? nomeAnfitrioes(valor) : null
+}
+
+watch(tipoOrigem, () => formulario.limparErro('nomeSegundaPessoa'))
 
 const falhaBloqueante = computed(() => {
   const falha = falhaPrevia.value
@@ -287,7 +305,7 @@ function montarRequest(): DuplicarEventoRequest {
   const valores = formulario.valores
   return {
     nomePrimeiraPessoa: valores.nomePrimeiraPessoa.trim(),
-    nomeSegundaPessoa: valores.nomeSegundaPessoa.trim(),
+    nomeSegundaPessoa: temSegundoNome.value ? textoOuNulo(valores.nomeSegundaPessoa) : null,
     data: valores.data,
     horario: textoOuNulo(valores.horario),
     localCerimonia: textoOuNulo(valores.localCerimonia),
@@ -469,6 +487,7 @@ function cancelar() {
                 />
               </p>
               <p class="duplicar__origem-detalhes">
+                <span data-teste="tipo-origem">{{ vocabulario.rotulo }}</span>
                 <span class="numeros-tabulares">{{ formatarDataCalendarioCurta(origemDaPrevia.data) }}</span>
                 <BadgeStatus
                   v-if="origemDaPrevia.arquivado"
@@ -521,7 +540,7 @@ function cancelar() {
               <div class="duplicar__colunas">
                 <CampoFormulario
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.nomePrimeiraPessoa"
+                  :rotulo="vocabulario.homenageados.primeiro"
                   :id-campo="idCampo('nomePrimeiraPessoa')"
                   obrigatorio
                   :erro="formulario.erros.nomePrimeiraPessoa"
@@ -541,10 +560,11 @@ function cancelar() {
                   />
                 </CampoFormulario>
                 <CampoFormulario
+                  v-if="temSegundoNome"
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.nomeSegundaPessoa"
+                  :rotulo="vocabulario.homenageados.segundo ?? ''"
                   :id-campo="idCampo('nomeSegundaPessoa')"
-                  obrigatorio
+                  :obrigatorio="vocabulario.homenageados.segundoObrigatorio"
                   :erro="formulario.erros.nomeSegundaPessoa"
                 >
                   <InputText
@@ -552,7 +572,7 @@ function cancelar() {
                     v-model="formulario.valores.nomeSegundaPessoa"
                     autocomplete="off"
                     :maxlength="LIMITES_EVENTO.nomeMaximo"
-                    aria-required="true"
+                    :aria-required="vocabulario.homenageados.segundoObrigatorio"
                     :invalid="invalido"
                     :aria-invalid="invalido"
                     :aria-describedby="descritoPor"
@@ -593,7 +613,7 @@ function cancelar() {
                 </CampoFormulario>
                 <CampoFormulario
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.horario"
+                  :rotulo="vocabulario.horario"
                   :id-campo="idCampo('horario')"
                   :dica="TEXTOS_EVENTOS.horarioDica"
                   :erro="formulario.erros.horario"
@@ -621,7 +641,7 @@ function cancelar() {
               <div class="duplicar__colunas">
                 <CampoFormulario
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.localCerimonia"
+                  :rotulo="vocabulario.locais.campoPrincipal"
                   :id-campo="idCampo('localCerimonia')"
                   :erro="formulario.erros.localCerimonia"
                 >
@@ -639,9 +659,9 @@ function cancelar() {
                 </CampoFormulario>
                 <CampoFormulario
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.localRecepcao"
+                  :rotulo="vocabulario.locais.campoSecundario"
                   :id-campo="idCampo('localRecepcao')"
-                  :dica="TEXTOS_EVENTOS.localRecepcaoDica"
+                  :dica="vocabulario.locais.dicaSecundario"
                   :erro="formulario.erros.localRecepcao"
                 >
                   <InputText

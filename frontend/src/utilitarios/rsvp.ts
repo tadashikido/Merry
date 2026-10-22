@@ -1,10 +1,11 @@
 import { TEXTOS_COBRANCA } from '@/textos/confirmacoes'
 import { TEXTOS_ENVIO_CONVITE } from '@/textos/rsvp'
+import { vocabularioDoTipo } from '@/textos/tiposEvento'
 import type { EventoDto, DataCalendario } from '@/tipos/eventos'
 import type { ConviteDto } from '@/tipos/convidados'
 import type { EscolhaPresencaRsvp, PessoaRsvpDto } from '@/tipos/rsvp'
 import { lerDataCalendario, paraInstanteUtc } from '@/utilitarios/dataCalendario'
-import { formatarDataCalendarioExtenso } from '@/utilitarios/formatacao'
+import { formatarDataCalendarioExtenso, formatarNomesEmFrase } from '@/utilitarios/formatacao'
 
 export const PADRAO_TOKEN_RSVP = /^[A-Za-z0-9_-]{43}$/
 export const DIAS_ANTECEDENCIA_PADRAO_RSVP = 10
@@ -51,14 +52,16 @@ export function montarLinkWhatsApp(telefone: string | null | undefined, mensagem
 }
 
 export function montarMensagemConvite(
-  evento: Pick<EventoDto, 'nomePrimeiraPessoa' | 'nomeSegundaPessoa' | 'data' | 'dataLimiteRsvpEfetiva'>,
+  evento: Pick<EventoDto, 'tipo' | 'nomePrimeiraPessoa' | 'nomeSegundaPessoa' | 'data' | 'dataLimiteRsvpEfetiva'>,
   convite: Pick<ConviteDto, 'nome'>,
   url: string,
 ): string {
+  const varios = Boolean(evento.nomeSegundaPessoa?.trim())
+  const nomes = formatarNomesEmFrase(evento.nomePrimeiraPessoa, evento.nomeSegundaPessoa)
   return TEXTOS_ENVIO_CONVITE.mensagemPronta({
     nomeConvite: convite.nome,
-    primeiro: evento.nomePrimeiraPessoa,
-    segundo: evento.nomeSegundaPessoa,
+    celebracao: vocabularioDoTipo(evento.tipo).celebracao(nomes, varios),
+    varios,
     data: formatarDataCalendarioExtenso(evento.data),
     dataLimite: formatarDiaMes(evento.dataLimiteRsvpEfetiva),
     url,
@@ -72,8 +75,7 @@ export function montarMensagemLembrete(
 ): string {
   return TEXTOS_COBRANCA.mensagemLembrete({
     nomeConvite: convite.nome,
-    primeiro: evento.nomePrimeiraPessoa,
-    segundo: evento.nomeSegundaPessoa,
+    nomes: formatarNomesEmFrase(evento.nomePrimeiraPessoa, evento.nomeSegundaPessoa),
     data: formatarDataCalendarioExtenso(evento.data),
     dataLimite: formatarDiaMes(evento.dataLimiteRsvpEfetiva),
     url,

@@ -85,7 +85,7 @@ public static class ClienteModelosCronograma
 
     public static async Task<ModeloCronogramaDto> SugeridoAsync(HttpClient cliente)
     {
-        var sugerido = Assert.Single(await ListarAsync(cliente), modelo => modelo.Sugerido);
+        var sugerido = Assert.Single(await ListarAsync(cliente), modelo => modelo.Sugerido && modelo.TipoEvento == "Casamento");
         return await ObterAsync(cliente, sugerido.Id);
     }
 

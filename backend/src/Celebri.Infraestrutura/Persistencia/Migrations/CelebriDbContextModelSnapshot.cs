@@ -378,6 +378,11 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("sugerido");
 
+                    b.Property<string>("TipoEvento")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tipo_evento");
+
                     b.Property<uint>("Versao")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -976,6 +981,11 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("sugerido");
 
+                    b.Property<string>("TipoEvento")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tipo_evento");
+
                     b.Property<uint>("Versao")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -1109,7 +1119,6 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                         .HasColumnName("nome_primeira_pessoa");
 
                     b.Property<string>("NomeSegundaPessoa")
-                        .IsRequired()
                         .HasMaxLength(80)
                         .HasColumnType("character varying(80)")
                         .HasColumnName("nome_segunda_pessoa");
@@ -1123,6 +1132,12 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("uuid")
                         .HasColumnName("organizacao_id");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tipo");
 
                     b.HasKey("Id")
                         .HasName("pk_eventos");
@@ -1538,6 +1553,14 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                     b.Property<DateTimeOffset?>("ModeloCronogramaSugeridoEm")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("modelo_cronograma_sugerido_em");
+
+                    b.Property<DateTimeOffset?>("ModelosChecklistPorTipoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modelos_checklist_por_tipo_em");
+
+                    b.Property<DateTimeOffset?>("ModelosCronogramaPorTipoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modelos_cronograma_por_tipo_em");
 
                     b.Property<string>("Nome")
                         .IsRequired()

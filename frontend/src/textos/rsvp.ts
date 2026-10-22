@@ -11,8 +11,6 @@ export const TEXTOS_RSVP = {
   tituloDocumento: 'Confirmação de presença',
   conviteDe: 'Convite para',
   prazo: (data: string) => `Responda até ${data}`,
-  cerimonia: 'Cerimônia',
-  recepcao: 'Recepção',
   horario: (horario: string) => `às ${horario}`,
   conector: 'e',
   quemVai: 'Quem vai?',
@@ -100,13 +98,13 @@ export const TEXTOS_ENVIO_CONVITE = {
   acaoComNome: (acao: string, nome: string) => `${acao}: ${nome}`,
   mensagemPronta: (dados: {
     nomeConvite: string
-    primeiro: string
-    segundo: string
+    celebracao: string
+    varios: boolean
     data: string
     dataLimite: string
     url: string
   }) =>
-    `Olá, ${dados.nomeConvite}! ${dados.primeiro} e ${dados.segundo} vão se casar em ${dados.data} e querem muito contar com vocês. Confirme a presença por este link até ${dados.dataLimite}: ${dados.url}`,
+    `Olá, ${dados.nomeConvite}! ${dados.celebracao} em ${dados.data} e ${dados.varios ? 'querem' : 'quer'} muito contar com vocês. Confirme a presença por este link até ${dados.dataLimite}: ${dados.url}`,
 } as const
 
 export const VARIANTE_STATUS_ENVIO: Record<StatusEnvioConvite, VarianteStatus> = {

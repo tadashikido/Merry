@@ -10,7 +10,7 @@ public sealed record ExportacaoBuffetDto(
 
 public sealed record EventoExportacaoDto(
     string NomePrimeiraPessoa,
-    string NomeSegundaPessoa,
+    string? NomeSegundaPessoa,
     DateOnly Data,
     string? Horario,
     string? LocalRecepcao);

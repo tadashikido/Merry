@@ -236,6 +236,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
         var hoje = ClienteEventos.HojeEmSaoPaulo();
         var corpo = new
         {
+            tipo = "Casamento",
             nomePrimeiraPessoa = "Ana Beatriz",
             nomeSegundaPessoa = "Bruno",
             data = hoje.AddDays(30).ToString("yyyy-MM-dd"),
@@ -257,6 +258,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     {
         var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(ClienteEventos.Rota, new
         {
+            tipo = "Casamento",
             nomePrimeiraPessoa = "Ana",
             nomeSegundaPessoa = "Bruno",
             data = "2027-05-15",

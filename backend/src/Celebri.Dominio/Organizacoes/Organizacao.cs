@@ -36,6 +36,24 @@ public class Organizacao
         ModeloCronogramaSugeridoEm ??= agora;
     }
 
+    public DateTimeOffset? ModelosChecklistPorTipoEm { get; private set; }
+
+    public bool PossuiModelosChecklistPorTipo => ModelosChecklistPorTipoEm is not null;
+
+    public void RegistrarModelosChecklistPorTipo(DateTimeOffset agora)
+    {
+        ModelosChecklistPorTipoEm ??= agora;
+    }
+
+    public DateTimeOffset? ModelosCronogramaPorTipoEm { get; private set; }
+
+    public bool PossuiModelosCronogramaPorTipo => ModelosCronogramaPorTipoEm is not null;
+
+    public void RegistrarModelosCronogramaPorTipo(DateTimeOffset agora)
+    {
+        ModelosCronogramaPorTipoEm ??= agora;
+    }
+
     public static Organizacao Criar(string nome, DateTimeOffset agora)
     {
         var nomeNormalizado = (nome ?? string.Empty).Trim();

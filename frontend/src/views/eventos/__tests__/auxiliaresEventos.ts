@@ -13,6 +13,7 @@ export const RaizRotas = defineComponent({ render: () => h(RouterView) })
 export function resumoEvento(dados: Partial<EventoResumoDto> = {}): EventoResumoDto {
   return {
     id: ID_EVENTO,
+    tipo: 'Casamento',
     nomePrimeiraPessoa: 'Ana Beatriz',
     nomeSegundaPessoa: 'Bruno',
     data: '2027-05-15',

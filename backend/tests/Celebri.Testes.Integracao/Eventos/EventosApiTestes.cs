@@ -75,6 +75,7 @@ public sealed class EventosApiTestes : IsolamentoOrganizacaoTestesBase
     {
         var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(Rota, new
         {
+            tipo = "Casamento",
             nomePrimeiraPessoa = "Ana",
             nomeSegundaPessoa = "Bruno",
             data = "2027-05-15",
@@ -101,7 +102,7 @@ public sealed class EventosApiTestes : IsolamentoOrganizacaoTestesBase
         using var json = await LerJsonAsync(resposta);
         var erros = json.RootElement.GetProperty("errors");
         Assert.Equal(MensagensValidacao.Obrigatorio, erros.GetProperty("NomePrimeiraPessoa")[0].GetString());
-        Assert.Equal(MensagensValidacao.Obrigatorio, erros.GetProperty("NomeSegundaPessoa")[0].GetString());
+        Assert.Equal(MensagensEvento.TipoObrigatorio, erros.GetProperty("Tipo")[0].GetString());
         Assert.Equal(MensagensValidacao.Obrigatorio, erros.GetProperty("Data")[0].GetString());
         Assert.Empty(await ListarAsync(OrganizacaoA.Cliente));
     }

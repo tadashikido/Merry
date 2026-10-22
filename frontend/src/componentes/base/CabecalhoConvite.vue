@@ -2,21 +2,23 @@
 import { computed } from 'vue'
 
 import { TEXTOS_RSVP } from '@/textos/rsvp'
-import type { DataCalendario } from '@/tipos/eventos'
+import { vocabularioDoTipo } from '@/textos/tiposEvento'
+import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 import { formatarDataCalendarioComDiaSemana } from '@/utilitarios/formatacao'
 import { formatarHorarioConvite } from '@/utilitarios/rsvp'
 
 const props = withDefaults(
   defineProps<{
     primeiro: string
-    segundo: string
+    segundo?: string | null
+    tipo?: TipoEvento
     data: DataCalendario
     horario?: string | null
     localCerimonia?: string | null
     localRecepcao?: string | null
     variante?: 'completo' | 'compacto'
   }>(),
-  { horario: null, localCerimonia: null, localRecepcao: null, variante: 'completo' },
+  { segundo: null, tipo: 'Casamento', horario: null, localCerimonia: null, localRecepcao: null, variante: 'completo' },
 )
 
 const dataExtenso = computed(() => formatarDataCalendarioComDiaSemana(props.data))
@@ -30,10 +32,11 @@ interface LocalConvite {
   valor: string
 }
 
+const vocabulario = computed(() => vocabularioDoTipo(props.tipo))
 const locais = computed<LocalConvite[]>(() => {
   const candidatos: { rotulo: string; valor: string | null }[] = [
-    { rotulo: TEXTOS_RSVP.cerimonia, valor: props.localCerimonia },
-    { rotulo: TEXTOS_RSVP.recepcao, valor: props.localRecepcao },
+    { rotulo: vocabulario.value.locais.principal, valor: props.localCerimonia },
+    { rotulo: vocabulario.value.locais.secundario, valor: props.localRecepcao },
   ]
   return candidatos.filter((local): local is LocalConvite => Boolean(local.valor))
 })
@@ -46,7 +49,7 @@ const locais = computed<LocalConvite[]>(() => {
     data-teste="cabecalho-convite"
   >
     <svg
-      v-if="variante === 'completo'"
+      v-if="variante === 'completo' && vocabulario.aneisNoConvite"
       class="cabecalho-convite__aneis"
       viewBox="0 0 28 28"
       aria-hidden="true"
@@ -71,12 +74,14 @@ const locais = computed<LocalConvite[]>(() => {
     </p>
     <h1 class="cabecalho-convite__anfitriao">
       <span class="cabecalho-convite__nome">{{ primeiro }}</span>
-      <span
-        class="cabecalho-convite__e"
-        aria-hidden="true"
-      >&amp;</span>
-      <span class="somente-leitor-tela">{{ ` ${TEXTOS_RSVP.conector} ` }}</span>
-      <span class="cabecalho-convite__nome">{{ segundo }}</span>
+      <template v-if="segundo">
+        <span
+          class="cabecalho-convite__e"
+          aria-hidden="true"
+        >&amp;</span>
+        <span class="somente-leitor-tela">{{ ` ${TEXTOS_RSVP.conector} ` }}</span>
+        <span class="cabecalho-convite__nome">{{ segundo }}</span>
+      </template>
     </h1>
     <span
       v-if="variante === 'completo'"

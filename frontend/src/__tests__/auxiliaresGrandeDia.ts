@@ -45,6 +45,7 @@ export const ITENS_NO_DIA: ItemGrandeDiaDto[] = [
 export function grandeDia(dados: Partial<GrandeDiaDto> = {}): GrandeDiaDto {
   return {
     eventoId: ID_EVENTO_GRANDE_DIA,
+    tipo: 'Casamento',
     nomePrimeiraPessoa: 'Luísa',
     nomeSegundaPessoa: 'Pedro',
     data: '2027-05-15',

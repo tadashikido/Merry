@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Celebri.Aplicacao.Checklists;
 using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Eventos;
 using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.AspNetCore.Mvc;
@@ -24,11 +25,14 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
         var primeira = await ListarModelosAsync(OrganizacaoA.Cliente);
         var segunda = await ListarModelosAsync(OrganizacaoA.Cliente);
 
-        var sugerido = Assert.Single(primeira);
-        Assert.True(sugerido.Sugerido);
-        Assert.Equal(ModeloChecklistSugerido.Nome, sugerido.Nome);
-        Assert.Equal(ModeloChecklistSugerido.Itens.Count, sugerido.QuantidadeItens);
-        Assert.Equal(sugerido.Id, Assert.Single(segunda).Id);
+        Assert.All(primeira, modelo => Assert.True(modelo.Sugerido));
+        Assert.Equal(
+            ModeloChecklistSugerido.Conteudos.Select(conteudo => conteudo.Tipo.ToString()).Order(),
+            primeira.Select(modelo => modelo.TipoEvento!).Order());
+        Assert.Equal(primeira.Select(modelo => modelo.Id).Order(), segunda.Select(modelo => modelo.Id).Order());
+        var sugerido = Assert.Single(primeira, modelo => modelo.TipoEvento == nameof(TipoEvento.Casamento));
+        Assert.Equal(ModeloChecklistSugerido.Casamento.Nome, sugerido.Nome);
+        Assert.Equal(ModeloChecklistSugerido.Casamento.Itens.Count, sugerido.QuantidadeItens);
 
         var detalhe = (await OrganizacaoA.Cliente.GetFromJsonAsync<ModeloChecklistDto>(RotaModelo(sugerido.Id)))!;
         Assert.Equal(
@@ -36,9 +40,10 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
             detalhe.Itens.Select(item => item.DiasAntesDoEvento).Distinct());
 
         await using var contexto = CriarContexto(OrganizacaoA);
-        Assert.Equal(1, await contexto.ModelosChecklist.CountAsync());
+        Assert.Equal(ModeloChecklistSugerido.Conteudos.Count, await contexto.ModelosChecklist.CountAsync());
         var organizacao = await contexto.Organizacoes.SingleAsync(item => item.Id == OrganizacaoA.OrganizacaoId);
         Assert.NotNull(organizacao.ModeloChecklistSugeridoEm);
+        Assert.NotNull(organizacao.ModelosChecklistPorTipoEm);
     }
 
     [Fact]
@@ -48,15 +53,16 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
 
         Assert.All(respostas, resposta => Assert.Equal(HttpStatusCode.OK, resposta.StatusCode));
         await using var contexto = CriarContexto(OrganizacaoA);
-        Assert.Equal(1, await contexto.ModelosChecklist.CountAsync(modelo => modelo.Sugerido));
+        Assert.Equal(ModeloChecklistSugerido.Conteudos.Count, await contexto.ModelosChecklist.CountAsync(modelo => modelo.Sugerido));
     }
 
     [Fact]
     public async Task Listar_AposExcluirOSugerido_NaoDeveRecriar()
     {
-        var sugerido = Assert.Single(await ListarModelosAsync(OrganizacaoA.Cliente));
-
-        Assert.Equal(HttpStatusCode.NoContent, (await OrganizacaoA.Cliente.DeleteAsync(RotaModelo(sugerido.Id))).StatusCode);
+        foreach (var sugerido in await ListarModelosAsync(OrganizacaoA.Cliente))
+        {
+            Assert.Equal(HttpStatusCode.NoContent, (await OrganizacaoA.Cliente.DeleteAsync(RotaModelo(sugerido.Id))).StatusCode);
+        }
 
         Assert.Empty(await ListarModelosAsync(OrganizacaoA.Cliente));
     }
@@ -64,7 +70,7 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Sugerido_DeveSerEditavel()
     {
-        var sugerido = Assert.Single(await ListarModelosAsync(OrganizacaoA.Cliente));
+        var sugerido = Assert.Single(await ListarModelosAsync(OrganizacaoA.Cliente), modelo => modelo.TipoEvento == nameof(TipoEvento.Casamento));
 
         var resposta = await OrganizacaoA.Cliente.PutAsJsonAsync(RotaModelo(sugerido.Id), new { nome = "Checklist da Renata", descricao = "Ajustado" });
 
@@ -72,7 +78,8 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
         var modelo = (await resposta.Content.ReadFromJsonAsync<ModeloChecklistDto>())!;
         Assert.Equal("Checklist da Renata", modelo.Nome);
         Assert.True(modelo.Sugerido);
-        Assert.Equal(ModeloChecklistSugerido.Itens.Count, modelo.Itens.Count);
+        Assert.Equal(ModeloChecklistSugerido.Casamento.Itens.Count, modelo.Itens.Count);
+        Assert.Equal(nameof(TipoEvento.Casamento), modelo.TipoEvento);
     }
 
     [Fact]

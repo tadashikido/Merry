@@ -17,6 +17,7 @@ const requisitarSimulado = vi.mocked(requisitar)
 function resumo(id: string, diasRestantes: number, arquivado = false): EventoResumoDto {
   return {
     id,
+    tipo: 'Casamento',
     nomePrimeiraPessoa: `Pessoa ${id}`,
     nomeSegundaPessoa: 'Bruno',
     data: '2027-05-15',
@@ -43,6 +44,7 @@ function completo(id: string, arquivado = false): EventoDto {
 }
 
 const REQUEST: SalvarEventoRequest = {
+  tipo: 'Casamento',
   nomePrimeiraPessoa: 'Ana',
   nomeSegundaPessoa: 'Bruno',
   data: '2027-05-15',

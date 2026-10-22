@@ -1,4 +1,4 @@
-import type { DataCalendario } from '@/tipos/eventos'
+import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 import type { DiaCronograma, StatusItemCronograma } from '@/tipos/cronograma'
 
 export const FASES_GRANDE_DIA = ['AntesDoDia', 'NoDia', 'DepoisDoDia'] as const
@@ -42,9 +42,10 @@ export interface ItemGrandeDiaDto {
 }
 
 export interface GrandeDiaDto {
+  tipo: TipoEvento
   eventoId: string
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   data: DataCalendario
   horarioCerimonia: string | null
   localCerimonia: string | null

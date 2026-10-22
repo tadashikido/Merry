@@ -8,4 +8,5 @@ public sealed record ModeloCronogramaDto(
     bool Sugerido,
     IReadOnlyList<ItemModeloCronogramaDto> Itens,
     DateTimeOffset CriadoEm,
-    DateTimeOffset AtualizadoEm);
+    DateTimeOffset AtualizadoEm,
+    string? TipoEvento);

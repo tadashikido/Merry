@@ -8,11 +8,13 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useCronogramaStore } from '@/stores/cronograma'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
+import { modelosDoTipo } from '@/utilitarios/modelosPorTipo'
 import { ROTULOS_DIA_CRONOGRAMA } from '@/textos/cronograma'
 import { TEXTOS_APLICAR_MODELO_CRONOGRAMA } from '@/textos/modelosCronograma'
 import type { AplicacaoModeloCronogramaDto, ItemPrevistoCronogramaDto } from '@/tipos/modelosCronograma'
+import type { TipoEvento } from '@/tipos/eventos'
 
-const props = defineProps<{ eventoId: string; podeInformarHorario: boolean }>()
+const props = defineProps<{ eventoId: string; podeInformarHorario: boolean; tipoEvento?: TipoEvento | null }>()
 
 const emit = defineEmits<{ fechar: [] }>()
 
@@ -27,8 +29,10 @@ const erroPrevia = ref(false)
 const aplicando = ref(false)
 const erroAplicacao = ref<string | null>(null)
 
+const modelosDoEvento = computed(() => (modelos.lista ? modelosDoTipo(modelos.lista, props.tipoEvento) : null))
+
 const opcoesModelos = computed(() =>
-  (modelos.lista ?? []).map((modelo) => ({
+  (modelosDoEvento.value ?? []).map((modelo) => ({
     valor: modelo.id,
     rotulo: TEXTOS_APLICAR_MODELO_CRONOGRAMA.opcaoModelo(modelo.nome, modelo.quantidadeItens),
   })),
@@ -78,7 +82,7 @@ onMounted(() => {
 })
 
 watch(
-  () => modelos.lista,
+  () => modelosDoEvento.value,
   (lista) => {
     if (!lista || lista.length === 0) {
       modeloSelecionado.value = null
@@ -165,7 +169,7 @@ async function aplicar() {
     </h2>
 
     <p
-      v-if="modelos.lista && modelos.lista.length === 0"
+      v-if="modelosDoEvento && modelosDoEvento.length === 0"
       class="painel-aplicar-modelo__texto"
       data-teste="sem-modelos"
     >

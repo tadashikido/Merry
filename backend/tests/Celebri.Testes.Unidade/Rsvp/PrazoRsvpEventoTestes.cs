@@ -77,7 +77,7 @@ public class PrazoRsvpEventoTestes
     [Fact]
     public void Request_DataLimitePosteriorAoEvento_DeveGerarErroDeValidacaoNoCampo()
     {
-        var request = new SalvarEventoRequest("Ana", "Bruno", DataEvento, null, null, null, null, null, DataEvento.AddDays(3));
+        var request = new SalvarEventoRequest("Ana", "Bruno", DataEvento, null, null, null, null, null, DataEvento.AddDays(3), TipoEvento.Casamento);
 
         var erros = request.Validate(new ValidationContext(request)).ToList();
 

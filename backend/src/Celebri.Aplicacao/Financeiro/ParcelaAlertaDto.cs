@@ -4,7 +4,7 @@ public sealed record ParcelaAlertaDto(
     Guid ParcelaId,
     Guid EventoId,
     string NomePrimeiraPessoa,
-    string NomeSegundaPessoa,
+    string? NomeSegundaPessoa,
     Guid FornecedorEventoId,
     string NomeEmpresa,
     int Numero,

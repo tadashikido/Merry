@@ -123,7 +123,8 @@ public class GrandeDiaService : IGrandeDiaService
             evento.Arquivado,
             !ehAssessoria || evento.Arquivado,
             MomentoGrandeDiaDto.De(retrato, agora),
-            itens.Select(item => ParaDto(item, evento, vinculos, retrato, ehAssessoria)).ToList());
+            itens.Select(item => ParaDto(item, evento, vinculos, retrato, ehAssessoria)).ToList(),
+            evento.Tipo.ToString());
     }
 
     private static ItemGrandeDiaDto ParaDto(

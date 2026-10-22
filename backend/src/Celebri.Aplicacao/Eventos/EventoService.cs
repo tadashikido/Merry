@@ -116,7 +116,8 @@ public class EventoService : IEventoService
             evento.ConvidadosEstimados,
             evento.CalcularFase(hoje).ToString(),
             evento.CalcularDiasRestantes(hoje),
-            evento.Arquivado);
+            evento.Arquivado,
+            evento.Tipo.ToString());
     }
 
     public static EventoDto ParaDto(Evento evento, DateOnly hoje)
@@ -145,7 +146,8 @@ public class EventoService : IEventoService
             evento.CriadoEm,
             evento.AtualizadoEm,
             evento.DataLimiteRsvp,
-            evento.DataLimiteRsvpEfetiva());
+            evento.DataLimiteRsvpEfetiva(),
+            evento.Tipo.ToString());
     }
 
     private async Task<EventoDto> ParaDtoComChecklistAsync(Evento evento, CancellationToken cancelamento)

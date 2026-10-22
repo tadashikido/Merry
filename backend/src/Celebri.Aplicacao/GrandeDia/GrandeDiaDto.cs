@@ -5,7 +5,7 @@ namespace Celebri.Aplicacao.GrandeDia;
 public sealed record GrandeDiaDto(
     Guid EventoId,
     string NomePrimeiraPessoa,
-    string NomeSegundaPessoa,
+    string? NomeSegundaPessoa,
     DateOnly Data,
     string? HorarioCerimonia,
     string? LocalCerimonia,
@@ -13,7 +13,8 @@ public sealed record GrandeDiaDto(
     bool Arquivado,
     bool SomenteLeitura,
     MomentoGrandeDiaDto Momento,
-    IReadOnlyList<ItemGrandeDiaDto> Itens);
+    IReadOnlyList<ItemGrandeDiaDto> Itens,
+    string Tipo);
 
 public sealed record MomentoGrandeDiaDto(DateTime Agora, string Fase, int DiasParaOEvento)
 {

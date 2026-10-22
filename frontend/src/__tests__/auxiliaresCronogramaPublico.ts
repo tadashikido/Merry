@@ -31,6 +31,7 @@ export function itemPublico(dados: Partial<ItemCronogramaPublicoDto> = {}): Item
 export function cronogramaPublico(dados: Partial<CronogramaPublicoDto> = {}): CronogramaPublicoDto {
   return {
     evento: {
+      tipo: 'Casamento',
       nomePrimeiraPessoa: 'Ana Beatriz',
       nomeSegundaPessoa: 'Bruno',
       data: '2027-05-15',

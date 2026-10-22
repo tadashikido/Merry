@@ -5,6 +5,7 @@ import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaPr
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
+import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import { defineComponent, h } from 'vue'
 import { RouterView } from 'vue-router'
 import ProvedorFeedback from '@/componentes/base/ProvedorFeedback.vue'
@@ -197,6 +198,7 @@ describe('EventoFormularioView', () => {
 
     const [chamada] = chamadas(fetchSimulado, 'POST', '/api/eventos')
     expect(corpoDaChamada(chamada!)).toEqual({
+      tipo: 'Casamento',
       nomePrimeiraPessoa: 'Ana Beatriz',
       nomeSegundaPessoa: 'Bruno',
       data: '2027-05-15',
@@ -355,8 +357,8 @@ describe('EventoView', () => {
 
     const avisos = wrapper!.findAll('[data-teste="dados-incompletos"]')
     expect(avisos.map((aviso) => aviso.text())).toEqual([
-      expect.stringContaining(TEXTOS_EVENTOS.faltaHorario.titulo),
-      expect.stringContaining(TEXTOS_EVENTOS.faltaLocal.titulo),
+      expect.stringContaining(VOCABULARIO_TIPO_EVENTO.Casamento.faltaHorario),
+      expect.stringContaining(VOCABULARIO_TIPO_EVENTO.Casamento.faltaLocal),
     ])
     expect(avisos[0]!.get('a').attributes('href')).toBe(`/eventos/${ID_EVENTO}/editar`)
   })

@@ -25,7 +25,8 @@ public class ModeloCronogramaRepository : IModeloCronogramaRepository
                 modelo.HorarioReferencia,
                 modelo.Sugerido,
                 _contexto.ItensModeloCronograma.Count(item => item.ModeloId == modelo.Id),
-                modelo.AtualizadoEm))
+                modelo.AtualizadoEm,
+                modelo.TipoEvento))
             .ToListAsync(cancelamento);
     }
 

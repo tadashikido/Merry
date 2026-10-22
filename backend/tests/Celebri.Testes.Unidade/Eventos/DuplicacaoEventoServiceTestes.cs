@@ -313,7 +313,7 @@ public class DuplicacaoEventoServiceTestes
     {
         var request = new DuplicarEventoRequest("Carla", "Diego", new DateOnly(2028, 5, 13), null, null, null);
 
-        var dados = request.ParaDados();
+        var dados = request.ParaDados(TipoEvento.Casamento);
 
         Assert.True(request.CopiarTarefas);
         Assert.True(request.CopiarFornecedores);

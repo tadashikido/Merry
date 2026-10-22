@@ -367,6 +367,7 @@ function alterarResposta() {
           <CabecalhoConvite
             :primeiro="dados.evento.nomePrimeiraPessoa"
             :segundo="dados.evento.nomeSegundaPessoa"
+            :tipo="dados.evento.tipo"
             :data="dados.evento.data"
             :horario="dados.evento.horario"
             :local-cerimonia="dados.evento.localCerimonia"

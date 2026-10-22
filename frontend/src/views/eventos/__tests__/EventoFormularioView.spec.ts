@@ -8,6 +8,7 @@ import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularF
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
+import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from './auxiliaresEventos'
 
 let fetchSimulado: ReturnType<typeof simularFetch>
@@ -64,14 +65,15 @@ describe('EventoFormularioView no design system Celebri', () => {
 
     const formulario = wrapper!.get('[data-teste="formulario-evento"]')
     expect(formulario.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
-    const secoes = formulario.findAll('fieldset')
+    expect(formulario.find('[data-teste="escolha-tipo-evento"]').exists()).toBe(true)
+    const secoes = formulario.findAll('fieldset').filter((secao) => secao.attributes('data-teste') !== 'escolha-tipo-evento')
     expect(secoes).toHaveLength(4)
     for (const secao of secoes) {
       expect(secao.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--grupo']))
       expect(secao.get('legend').classes()).toContain('texto-rotulo')
     }
     expect(secoes.map((secao) => secao.get('legend').text())).toEqual([
-      TEXTOS_EVENTOS.grupoAnfitriao,
+      VOCABULARIO_TIPO_EVENTO.Casamento.homenageados.grupo,
       TEXTOS_EVENTOS.grupoQuando,
       TEXTOS_EVENTOS.grupoOnde,
       TEXTOS_EVENTOS.grupoPlanejamento,
@@ -144,7 +146,7 @@ describe('EventoFormularioView no design system Celebri', () => {
     const pagina = wrapper!.get('.pagina-formulario')
     expect(pagina.get('h1').text()).toBe(TEXTOS_EVENTOS.tituloEdicao)
     expect(pagina.find('header').text()).toContain('Ana Beatriz')
-    expect(pagina.findAll('fieldset')).toHaveLength(4)
+    expect(pagina.findAll('fieldset')).toHaveLength(5)
     expect((wrapper!.get('#evento-localRecepcao').element as HTMLInputElement).value).toBe('Casa Bela Vista')
     expect((wrapper!.get('#evento-data').element as HTMLInputElement).value).toBe('2027-05-15')
     expect(wrapper!.find('[data-teste="a-partir-de-outro"]').exists()).toBe(false)

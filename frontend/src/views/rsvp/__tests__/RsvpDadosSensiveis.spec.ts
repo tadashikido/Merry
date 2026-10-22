@@ -14,6 +14,7 @@ const ROTA_RESPOSTA = '/api/rsvp/resposta'
 function dados(extra: Partial<RsvpPublicoDto> = {}): RsvpPublicoDto {
   return {
     evento: {
+      tipo: 'Casamento',
       nomePrimeiraPessoa: 'Ana Beatriz',
       nomeSegundaPessoa: 'Bruno',
       data: '2027-05-22',

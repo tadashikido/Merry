@@ -13,8 +13,6 @@ export const TEXTOS_CRONOGRAMA_PUBLICO = {
   filtroGeral: 'Equipe completa',
   filtroSeus: (rotulo: string) => `Seus horários · ${rotulo}`,
   locais: 'Locais',
-  cerimonia: 'Cerimônia',
-  recepcao: 'Recepção',
   cerimoniaComHorario: (horario: string, local: string | null) => (local ? `${horario} · ${local}` : horario),
   vespera: (data: string) => `Véspera · ${data}`,
   diaDoEvento: 'Dia do evento',
@@ -88,8 +86,8 @@ export const TEXTOS_LINKS_CRONOGRAMA = {
   confirmarDesativarTitulo: (rotulo: string) => `Desativar o link de ${rotulo}?`,
   confirmarDesativarTexto: 'Quem tiver o link verá que ele não está mais ativo. Você pode gerar outro depois.',
   cancelar: 'Cancelar',
-  mensagemGeral: (dados: { primeiro: string; segundo: string; data: string; url: string }) =>
-    `Olá! Este é o cronograma do evento de ${dados.primeiro} & ${dados.segundo} (${dados.data}): ${dados.url} — ele mostra sempre a versão mais atual, é só abrir de novo quando precisar.`,
-  mensagemFiltrada: (dados: { primeiro: string; segundo: string; data: string; url: string }) =>
-    `Olá! Estes são os seus horários no evento de ${dados.primeiro} & ${dados.segundo} (${dados.data}): ${dados.url} — o link mostra sempre a versão mais atual, é só abrir de novo quando precisar.`,
+  mensagemGeral: (dados: { nomes: string; data: string; url: string }) =>
+    `Olá! Este é o cronograma do evento de ${dados.nomes} (${dados.data}): ${dados.url} — ele mostra sempre a versão mais atual, é só abrir de novo quando precisar.`,
+  mensagemFiltrada: (dados: { nomes: string; data: string; url: string }) =>
+    `Olá! Estes são os seus horários no evento de ${dados.nomes} (${dados.data}): ${dados.url} — o link mostra sempre a versão mais atual, é só abrir de novo quando precisar.`,
 } as const

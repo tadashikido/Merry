@@ -1,12 +1,13 @@
-import type { DataCalendario } from '@/tipos/eventos'
+import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 import type { FaixaEtaria, RespostaRsvp } from '@/tipos/convidados'
 import type { ConsentimentoRsvpRequest, PrivacidadeRsvpDto, RestricaoAlimentarRequest } from '@/tipos/dadosSensiveis'
 
 export type EscolhaPresencaRsvp = Extract<RespostaRsvp, 'Confirmado' | 'Recusado'>
 
 export interface EventoRsvpDto {
+  tipo: TipoEvento
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   data: DataCalendario
   horario: string | null
   localCerimonia: string | null

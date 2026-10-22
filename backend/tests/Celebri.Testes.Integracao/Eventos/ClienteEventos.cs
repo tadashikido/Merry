@@ -16,16 +16,18 @@ public static class ClienteEventos
 
     public static object CorpoValido(
         string nomePrimeiraPessoa = "Ana Beatriz",
-        string nomeSegundaPessoa = "Bruno",
+        string? nomeSegundaPessoa = "Bruno",
         string? data = "2027-05-15",
         string? horario = "16:30",
         string? localCerimonia = "Capela São José",
         string? localRecepcao = "Espaço Jardim",
         int? convidadosEstimados = 150,
-        string? observacoes = "Flores brancas")
+        string? observacoes = "Flores brancas",
+        string? tipo = "Casamento")
     {
         return new
         {
+            tipo,
             nomePrimeiraPessoa,
             nomeSegundaPessoa,
             data,

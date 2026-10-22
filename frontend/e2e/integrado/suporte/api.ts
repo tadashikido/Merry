@@ -102,6 +102,7 @@ export class ClienteApi {
       'post',
       '/api/eventos',
       {
+        tipo: 'Casamento',
         nomePrimeiraPessoa: anfitriao.nomePrimeiraPessoa,
         nomeSegundaPessoa: anfitriao.nomeSegundaPessoa,
         data,

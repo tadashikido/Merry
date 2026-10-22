@@ -357,6 +357,7 @@ function excluir(item: ItemCronogramaDto) {
           v-if="painelAplicar && podeGerenciar"
           :evento-id="id"
           :pode-informar-horario="podeInformarHorario"
+          :tipo-evento="evento?.tipo ?? null"
           @fechar="fecharPainelAplicar"
         />
 

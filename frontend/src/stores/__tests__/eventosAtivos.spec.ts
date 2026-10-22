@@ -15,6 +15,7 @@ const requisitarSimulado = vi.mocked(requisitar)
 function resumo(id: string, arquivado = false): EventoResumoDto {
   return {
     id,
+    tipo: 'Casamento',
     nomePrimeiraPessoa: `Pessoa ${id}`,
     nomeSegundaPessoa: 'Bruno',
     data: '2027-05-15',

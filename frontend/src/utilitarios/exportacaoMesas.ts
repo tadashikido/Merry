@@ -10,7 +10,7 @@ const PREFIXO_BUFFET = 'buffet-'
 
 export interface EventoArquivo {
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   data: string
 }
 

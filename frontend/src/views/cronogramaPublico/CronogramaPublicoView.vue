@@ -17,7 +17,7 @@ import { useAtualizacaoPeriodica, useRelogioDispositivo } from '@/composables/us
 import { useCronogramaPublicoStore } from '@/stores/cronogramaPublico'
 import { TEXTOS_CRONOGRAMA_PUBLICO } from '@/textos/cronogramaPublico'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
-import { agruparRoteiro, ehHorarioDaCerimonia, rotuloFiltro } from '@/utilitarios/cronogramaPublico'
+import { agruparRoteiro, ehHorarioDaCerimonia, montarLocaisOperacao, rotuloFiltro } from '@/utilitarios/cronogramaPublico'
 import { formatarDataCalendarioExtenso, formatarHora } from '@/utilitarios/formatacao'
 import {
   interpolarMomento,
@@ -56,22 +56,7 @@ const semConexaoComDados = computed(() => dados.value !== null && store.falha !=
 
 const locais = computed<LocalOperacao[]>(() => {
   const evento = dados.value?.evento
-  if (!evento) {
-    return []
-  }
-  const lista: LocalOperacao[] = []
-  if (evento.horarioCerimonia || evento.localCerimonia) {
-    lista.push({
-      rotulo: TEXTOS_CRONOGRAMA_PUBLICO.cerimonia,
-      valor: evento.horarioCerimonia
-        ? TEXTOS_CRONOGRAMA_PUBLICO.cerimoniaComHorario(evento.horarioCerimonia, evento.localCerimonia)
-        : (evento.localCerimonia ?? ''),
-    })
-  }
-  if (evento.localRecepcao) {
-    lista.push({ rotulo: TEXTOS_CRONOGRAMA_PUBLICO.recepcao, valor: evento.localRecepcao })
-  }
-  return lista
+  return evento ? montarLocaisOperacao(evento) : []
 })
 
 const estadoErro = computed(() => {

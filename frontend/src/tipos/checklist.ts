@@ -1,4 +1,4 @@
-import type { DataCalendario } from '@/tipos/eventos'
+import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 import type { CategoriaTarefa, ResponsavelTarefa, TarefaDto } from '@/tipos/tarefas'
 
 export const MARCOS_CHECKLIST = [
@@ -17,6 +17,7 @@ export const SENTIDOS_PRAZO = ['antes', 'depois'] as const
 export type SentidoPrazo = (typeof SENTIDOS_PRAZO)[number]
 
 export interface ModeloChecklistResumoDto {
+  tipoEvento: TipoEvento | null
   id: string
   nome: string
   descricao: string | null
@@ -35,6 +36,7 @@ export interface ItemModeloChecklistDto {
 }
 
 export interface ModeloChecklistDto {
+  tipoEvento: TipoEvento | null
   id: string
   nome: string
   descricao: string | null

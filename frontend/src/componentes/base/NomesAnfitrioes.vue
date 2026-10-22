@@ -2,8 +2,8 @@
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
 
 withDefaults(
-  defineProps<{ primeiro: string; segundo: string; tamanho?: 'linha' | 'cartao' | 'titulo' | 'navegacao' | 'display' }>(),
-  { tamanho: 'linha' },
+  defineProps<{ primeiro: string; segundo?: string | null; tamanho?: 'linha' | 'cartao' | 'titulo' | 'navegacao' | 'display' }>(),
+  { segundo: null, tamanho: 'linha' },
 )
 </script>
 
@@ -14,12 +14,14 @@ withDefaults(
     data-teste="nomes-anfitrioes"
   >
     <span class="nomes-anfitrioes__nome">{{ primeiro }}</span>
-    <span
-      class="nomes-anfitrioes__e"
-      aria-hidden="true"
-    >&amp;</span>
-    <span class="somente-leitor-tela">{{ ` ${TEXTOS_EVENTOS.conectorNomes} ` }}</span>
-    <span class="nomes-anfitrioes__nome">{{ segundo }}</span>
+    <template v-if="segundo">
+      <span
+        class="nomes-anfitrioes__e"
+        aria-hidden="true"
+      >&amp;</span>
+      <span class="somente-leitor-tela">{{ ` ${TEXTOS_EVENTOS.conectorNomes} ` }}</span>
+      <span class="nomes-anfitrioes__nome">{{ segundo }}</span>
+    </template>
   </span>
 </template>
 

@@ -54,6 +54,7 @@ const SESSAO_ANFITRIAO: SessaoDto = {
 const CONVITE_ANFITRIAO: ConviteAcessoAnfitriaoDto = {
   nome: 'Lívia Moraes',
   email: 'livia@exemplo.com',
+  tipo: 'Casamento',
   nomePrimeiraPessoa: 'Ana Beatriz',
   nomeSegundaPessoa: 'Bruno',
   organizacao: 'Albuquerque Assessoria',

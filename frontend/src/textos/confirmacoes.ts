@@ -95,13 +95,12 @@ export const TEXTOS_COBRANCA = {
   fechar: 'Fechar',
   mensagemLembrete: (dados: {
     nomeConvite: string
-    primeiro: string
-    segundo: string
+    nomes: string
     data: string
     dataLimite: string
     url: string
   }) =>
-    `Oi, ${dados.nomeConvite}! Passando para lembrar da confirmação de presença no evento de ${dados.primeiro} e ${dados.segundo}, em ${dados.data}. Responda até ${dados.dataLimite} pelo link: ${dados.url}`,
+    `Oi, ${dados.nomeConvite}! Passando para lembrar da confirmação de presença no evento de ${dados.nomes}, em ${dados.data}. Responda até ${dados.dataLimite} pelo link: ${dados.url}`,
 } as const
 
 export const TEXTOS_FICHA_BUFFET = {

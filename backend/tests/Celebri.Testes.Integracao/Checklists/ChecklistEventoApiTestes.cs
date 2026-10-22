@@ -175,12 +175,12 @@ public sealed class ChecklistEventoApiTestes : IsolamentoOrganizacaoTestesBase
     {
         var hoje = ClienteEventos.HojeEmSaoPaulo();
         var evento = await CriarEventoAsync(OrganizacaoA.Cliente, hoje.AddDays(20));
-        var sugerido = Assert.Single(await ListarModelosAsync(OrganizacaoA.Cliente));
+        var sugerido = Assert.Single(await ListarModelosAsync(OrganizacaoA.Cliente), modelo => modelo.TipoEvento == "Casamento");
 
         var resultado = await AplicarComSucessoAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
 
-        Assert.Equal(ModeloChecklistSugerido.Itens.Count, resultado.TarefasCriadas);
-        Assert.Equal(ModeloChecklistSugerido.Itens.Count, resultado.NascemAtrasadas);
+        Assert.Equal(ModeloChecklistSugerido.Casamento.Itens.Count, resultado.TarefasCriadas);
+        Assert.Equal(ModeloChecklistSugerido.Casamento.Itens.Count, resultado.NascemAtrasadas);
         var checklist = await ObterChecklistAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.All(checklist.Tarefas, tarefa => Assert.True(tarefa.Atrasada));
         Assert.Equal(0, checklist.PrazosDesatualizados);

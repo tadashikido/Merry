@@ -72,7 +72,7 @@ public class DuplicacaoEventoService : IDuplicacaoEventoService
         var origem = await ObterOrigemAsync(eventoOrigemId, cancelamento);
         var agora = _relogio.GetUtcNow();
         var hoje = _calendario.Hoje();
-        var evento = Evento.Criar(request.ParaDados(), agora);
+        var evento = Evento.Criar(request.ParaDados(origem.Tipo), agora);
         var plano = await MontarPlanoAsync(
             origem,
             evento.Data,

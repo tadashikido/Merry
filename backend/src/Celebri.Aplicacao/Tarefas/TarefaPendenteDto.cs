@@ -4,7 +4,7 @@ public sealed record TarefaPendenteDto(
     Guid Id,
     Guid EventoId,
     string NomePrimeiraPessoa,
-    string NomeSegundaPessoa,
+    string? NomeSegundaPessoa,
     string Titulo,
     string Responsavel,
     string Categoria,

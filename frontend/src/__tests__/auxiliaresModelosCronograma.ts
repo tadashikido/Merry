@@ -15,6 +15,7 @@ export function resumoModeloCronograma(dados: Partial<ModeloCronogramaResumoDto>
     descricao: 'Do ensaio na véspera à desmontagem.',
     horarioReferencia: '16:00',
     sugerido: true,
+    tipoEvento: 'Casamento',
     quantidadeItens: 20,
     atualizadoEm: '2026-10-01T12:00:00Z',
     ...dados,
@@ -47,6 +48,7 @@ export function modeloCronogramaCompleto(dados: Partial<ModeloCronogramaDto> = {
     descricao: 'Do ensaio na véspera à desmontagem.',
     horarioReferencia: '16:00',
     sugerido: true,
+    tipoEvento: 'Casamento',
     itens: [
       itemModeloCronograma({
         id: 'e',

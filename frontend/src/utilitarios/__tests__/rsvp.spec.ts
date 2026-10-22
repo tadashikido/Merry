@@ -7,6 +7,7 @@ import {
   formatarHorarioConvite,
   montarLinkWhatsApp,
   montarMensagemConvite,
+  montarMensagemLembrete,
   montarUrlRsvp,
   primeiroTelefone,
   telefoneWhatsApp,
@@ -55,13 +56,37 @@ describe('utilitários de RSVP', () => {
 
   it('[UNITÁRIO] monta a mensagem pronta com anfitriões, data, prazo e link', () => {
     const mensagem = montarMensagemConvite(
-      { nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bruno', data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' },
+      { tipo: 'Casamento', nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bruno', data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' },
       { nome: 'Família Souza' },
       'https://app/rsvp/x',
     )
     expect(mensagem).toBe(
       'Olá, Família Souza! Ana e Bruno vão se casar em 22 de maio de 2027 e querem muito contar com vocês. Confirme a presença por este link até 12 de maio: https://app/rsvp/x',
     )
+  })
+
+  it.each([
+    ['QuinzeAnos', null, 'Júlia vai comemorar os 15 anos em 22 de maio de 2027 e quer muito contar com vocês.'],
+    ['Aniversario', null, 'Júlia vai comemorar o aniversário em 22 de maio de 2027 e quer muito contar com vocês.'],
+    ['Comemoracao', null, 'Júlia vai celebrar em 22 de maio de 2027 e quer muito contar com vocês.'],
+    ['Comemoracao', 'Rui', 'Júlia e Rui vão celebrar em 22 de maio de 2027 e querem muito contar com vocês.'],
+  ] as const)('[UNITÁRIO] mensagem pronta de %s não fala em casamento', (tipo, segundo, trecho) => {
+    const mensagem = montarMensagemConvite(
+      { tipo, nomePrimeiraPessoa: 'Júlia', nomeSegundaPessoa: segundo, data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' },
+      { nome: 'Família Souza' },
+      'https://app/rsvp/x',
+    )
+    expect(mensagem).toContain(trecho)
+    expect(mensagem).not.toMatch(/casar|noiv| e  /)
+  })
+
+  it('[UNITÁRIO] lembrete com um homenageado não deixa conector sobrando', () => {
+    const mensagem = montarMensagemLembrete(
+      { nomePrimeiraPessoa: 'Júlia', nomeSegundaPessoa: null, data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' },
+      { nome: 'Família Souza' },
+      'https://app/rsvp/x',
+    )
+    expect(mensagem).toContain('no evento de Júlia, em 22 de maio de 2027')
   })
 
   it('[UNITÁRIO] formata horário e dia do mês', () => {

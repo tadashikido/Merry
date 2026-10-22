@@ -10,7 +10,7 @@ import { ErroApi } from '@/servicos/clienteHttp'
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
 
 const DADOS: RsvpPublicoDto = {
-  evento: { nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bruno', data: '2027-05-22', horario: null, localCerimonia: null, localRecepcao: null },
+  evento: { tipo: 'Casamento', nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bruno', data: '2027-05-22', horario: null, localCerimonia: null, localRecepcao: null },
   nomeConvite: 'Família Souza',
   limiteAcompanhantes: 0,
   dataLimiteResposta: '2027-05-12',

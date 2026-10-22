@@ -4,11 +4,16 @@ export type FaseEvento = 'Planejamento' | 'RetaFinal' | 'SemanaDoEvento' | 'DiaD
 
 export type SituacaoListagemEventos = 'Ativos' | 'Arquivados'
 
+export const TIPOS_EVENTO = ['Casamento', 'QuinzeAnos', 'Aniversario', 'Comemoracao'] as const
+
+export type TipoEvento = (typeof TIPOS_EVENTO)[number]
+
 export interface EventoResumoDto {
   [campo: string]: unknown
   id: string
+  tipo: TipoEvento
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   data: DataCalendario
   horario: string | null
   localCerimonia: string | null
@@ -30,8 +35,9 @@ export interface EventoDto extends EventoResumoDto {
 }
 
 export interface SalvarEventoRequest {
+  tipo: TipoEvento
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   data: DataCalendario
   horario: string | null
   localCerimonia: string | null

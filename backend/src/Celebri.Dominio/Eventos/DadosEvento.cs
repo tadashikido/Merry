@@ -2,11 +2,12 @@ namespace Celebri.Dominio.Eventos;
 
 public sealed record DadosEvento(
     string NomePrimeiraPessoa,
-    string NomeSegundaPessoa,
+    string? NomeSegundaPessoa,
     DateOnly Data,
     TimeOnly? Horario,
     string? LocalCerimonia,
     string? LocalRecepcao,
     int? ConvidadosEstimados,
     string? Observacoes,
-    DateOnly? DataLimiteRsvp = null);
+    DateOnly? DataLimiteRsvp = null,
+    TipoEvento Tipo = TipoEvento.Casamento);

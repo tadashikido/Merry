@@ -44,7 +44,7 @@ export interface GrupoNavegacaoEvento {
 
 export interface ContextoEvento {
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   data: DataCalendario
   diasRestantes: number
 }
@@ -60,7 +60,7 @@ export interface NivelTrilha {
 export interface OpcaoSeletorEvento {
   id: string
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   rotulo: string
   data: DataCalendario
   diasRestantes: number

@@ -4,6 +4,7 @@ public sealed record ConviteAcessoAnfitriaoDto(
     string Nome,
     string Email,
     string NomePrimeiraPessoa,
-    string NomeSegundaPessoa,
+    string? NomeSegundaPessoa,
     string Organizacao,
-    DateTimeOffset ExpiraEm);
+    DateTimeOffset ExpiraEm,
+    string Tipo);

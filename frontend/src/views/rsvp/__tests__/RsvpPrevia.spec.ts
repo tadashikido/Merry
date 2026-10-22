@@ -14,6 +14,7 @@ const ROTA_CONSULTA = '/api/rsvp/consulta'
 function dados(preVisualizacao: boolean): RsvpPublicoDto {
   return {
     evento: {
+      tipo: 'Casamento',
       nomePrimeiraPessoa: 'Ana Beatriz',
       nomeSegundaPessoa: 'Bruno',
       data: '2027-05-22',

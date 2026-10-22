@@ -37,7 +37,8 @@ public class EventoServiceTestes
             "Capela São José",
             "  ",
             150,
-            "Flores brancas");
+            "Flores brancas",
+            Tipo: TipoEvento.Casamento);
     }
 
     [Fact]

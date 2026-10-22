@@ -169,6 +169,7 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
         var hoje = ClienteEventos.HojeEmSaoPaulo();
         var cenario = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente, new
         {
+            tipo = "Casamento",
             nomePrimeiraPessoa = "Ana Beatriz",
             nomeSegundaPessoa = "Bruno",
             data = hoje.AddDays(30).ToString("yyyy-MM-dd"),

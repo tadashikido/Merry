@@ -20,6 +20,7 @@ const global = { plugins: [[PrimeVue, { unstyled: true }] as [typeof PrimeVue, {
 function dados(extra: Partial<RsvpPublicoDto> = {}): RsvpPublicoDto {
   return {
     evento: {
+      tipo: 'Casamento',
       nomePrimeiraPessoa: 'Ana Beatriz',
       nomeSegundaPessoa: 'Bruno',
       data: '2027-05-22',

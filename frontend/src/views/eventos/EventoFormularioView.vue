@@ -9,6 +9,7 @@ import LayoutPainelUsuario from '@/layouts/LayoutPainelUsuario.vue'
 import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import DialogoConfirmacao from '@/componentes/base/DialogoConfirmacao.vue'
+import EscolhaTipoEvento from '@/componentes/eventos/EscolhaTipoEvento.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
@@ -24,7 +25,8 @@ import { MENSAGENS_PADRAO } from '@/textos/mensagens'
 import { ROTULOS_ACOES } from '@/textos/rotulos'
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import { TEXTOS_DUPLICACAO_EVENTO } from '@/textos/duplicacaoEvento'
-import type { EventoDto, SalvarEventoRequest } from '@/tipos/eventos'
+import { aceitaSegundoNome, vocabularioDoTipo, type VocabularioTipoEvento } from '@/textos/tiposEvento'
+import type { EventoDto, SalvarEventoRequest, TipoEvento } from '@/tipos/eventos'
 import { focarElemento } from '@/utilitarios/foco'
 import { formatarDataCalendario, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { dataLimitePadrao } from '@/utilitarios/rsvp'
@@ -54,6 +56,7 @@ const horarioRecalculo = ref('')
 const horarioPendente = ref(false)
 
 const CAMPOS = [
+  'tipo',
   'nomePrimeiraPessoa',
   'nomeSegundaPessoa',
   'data',
@@ -77,6 +80,7 @@ const bloqueadoPorPermissao = ref(false)
 
 const formulario = useFormulario(
   {
+    tipo: 'Casamento' as TipoEvento,
     nomePrimeiraPessoa: '',
     nomeSegundaPessoa: '',
     data: '',
@@ -89,7 +93,7 @@ const formulario = useFormulario(
   },
   {
     nomePrimeiraPessoa: [obrigatorio, nomeAnfitrioes],
-    nomeSegundaPessoa: [obrigatorio, nomeAnfitrioes],
+    nomeSegundaPessoa: [regraSegundoNomeObrigatorio, regraSegundoNomeTamanho],
     data: [obrigatorio, dataEvento],
     horario: [horarioEvento],
     dataLimiteRsvp: [dataLimiteRsvp((): string => formulario.valores.data)],
@@ -102,6 +106,23 @@ const formulario = useFormulario(
 const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 const idCampo = (campo: Campo) => `evento-${campo}`
+const idFoco = (campo: Campo) => (campo === 'tipo' ? `${idCampo('tipo')}-${formulario.valores.tipo}` : idCampo(campo))
+
+const vocabulario = computed<VocabularioTipoEvento>(() => vocabularioDoTipo(formulario.valores.tipo))
+const temSegundoNome = computed<boolean>(() => aceitaSegundoNome(formulario.valores.tipo))
+
+function regraSegundoNomeObrigatorio(valor: unknown): string | null {
+  return vocabulario.value.homenageados.segundoObrigatorio ? obrigatorio(valor) : null
+}
+
+function regraSegundoNomeTamanho(valor: unknown): string | null {
+  return temSegundoNome.value ? nomeAnfitrioes(valor) : null
+}
+
+watch(
+  () => formulario.valores.tipo,
+  () => formulario.limparErro('nomeSegundaPessoa'),
+)
 
 const eventoEditado = computed(() => (edicao.value && store.atual?.id === props.id ? store.atual : null))
 const carregandoEdicao = computed(() => edicao.value && store.carregandoAtual)
@@ -125,8 +146,9 @@ const dicaDataLimite = computed(() => {
 
 function preencher(evento: EventoDto) {
   Object.assign(formulario.valores, {
+    tipo: evento.tipo,
     nomePrimeiraPessoa: evento.nomePrimeiraPessoa,
-    nomeSegundaPessoa: evento.nomeSegundaPessoa,
+    nomeSegundaPessoa: evento.nomeSegundaPessoa ?? '',
     data: evento.data,
     horario: evento.horario ?? '',
     dataLimiteRsvp: evento.dataLimiteRsvp ?? '',
@@ -158,7 +180,9 @@ onMounted(async () => {
   if (props.id) {
     await store.obter(props.id)
   }
-  if (!edicao.value || eventoEditado.value) {
+  if (!edicao.value) {
+    await focarElemento(idFoco('tipo'))
+  } else if (eventoEditado.value) {
     await focarElemento(idCampo('nomePrimeiraPessoa'))
   }
 })
@@ -172,8 +196,9 @@ function montarRequest(): SalvarEventoRequest {
   const valores = formulario.valores
   const convidados = valores.convidadosEstimados.trim()
   return {
+    tipo: valores.tipo,
     nomePrimeiraPessoa: valores.nomePrimeiraPessoa.trim(),
-    nomeSegundaPessoa: valores.nomeSegundaPessoa.trim(),
+    nomeSegundaPessoa: temSegundoNome.value ? textoOuNulo(valores.nomeSegundaPessoa) : null,
     data: valores.data,
     horario: textoOuNulo(valores.horario),
     dataLimiteRsvp: textoOuNulo(valores.dataLimiteRsvp),
@@ -189,7 +214,7 @@ async function enviar() {
   if (!formulario.validar()) {
     const campo = formulario.primeiroCampoInvalido.value
     if (campo) {
-      await focarElemento(idCampo(campo))
+      await focarElemento(idFoco(campo))
     }
     return
   }
@@ -227,7 +252,7 @@ async function enviar() {
   }
   const primeiro = camposComErro[0]
   if (primeiro) {
-    await focarElemento(idCampo(primeiro))
+    await focarElemento(idFoco(primeiro))
     return
   }
 
@@ -404,15 +429,26 @@ function cancelar() {
             data-teste="formulario-evento"
             @submit.prevent="enviar"
           >
+            <EscolhaTipoEvento
+              v-model="formulario.valores.tipo"
+              :id-campo="idCampo('tipo')"
+              :desabilitado="enviando"
+              :erro="formulario.erros.tipo"
+            />
+
             <fieldset class="formulario-evento__grupo pilha pilha--grupo">
-              <legend class="formulario-evento__legenda texto-rotulo">
-                {{ TEXTOS_EVENTOS.grupoAnfitriao }}
+              <legend
+                class="formulario-evento__legenda texto-rotulo"
+                data-teste="legenda-homenageados"
+              >
+                {{ vocabulario.homenageados.grupo }}
               </legend>
               <div class="formulario-evento__colunas">
                 <CampoFormulario
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.nomePrimeiraPessoa"
+                  :rotulo="vocabulario.homenageados.primeiro"
                   :id-campo="idCampo('nomePrimeiraPessoa')"
+                  :dica="vocabulario.homenageados.dicaPrimeiro ?? undefined"
                   obrigatorio
                   :erro="formulario.erros.nomePrimeiraPessoa"
                 >
@@ -431,10 +467,11 @@ function cancelar() {
                   />
                 </CampoFormulario>
                 <CampoFormulario
+                  v-if="temSegundoNome"
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.nomeSegundaPessoa"
+                  :rotulo="vocabulario.homenageados.segundo ?? ''"
                   :id-campo="idCampo('nomeSegundaPessoa')"
-                  obrigatorio
+                  :obrigatorio="vocabulario.homenageados.segundoObrigatorio"
                   :erro="formulario.erros.nomeSegundaPessoa"
                 >
                   <InputText
@@ -442,7 +479,7 @@ function cancelar() {
                     v-model="formulario.valores.nomeSegundaPessoa"
                     autocomplete="off"
                     :maxlength="LIMITES_EVENTO.nomeMaximo"
-                    aria-required="true"
+                    :aria-required="vocabulario.homenageados.segundoObrigatorio"
                     :invalid="invalido"
                     :aria-invalid="invalido"
                     :aria-describedby="descritoPor"
@@ -483,7 +520,7 @@ function cancelar() {
                 </CampoFormulario>
                 <CampoFormulario
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.horario"
+                  :rotulo="vocabulario.horario"
                   :id-campo="idCampo('horario')"
                   :dica="TEXTOS_EVENTOS.horarioDica"
                   :erro="formulario.erros.horario"
@@ -535,7 +572,7 @@ function cancelar() {
               <div class="formulario-evento__colunas">
                 <CampoFormulario
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.localCerimonia"
+                  :rotulo="vocabulario.locais.campoPrincipal"
                   :id-campo="idCampo('localCerimonia')"
                   :erro="formulario.erros.localCerimonia"
                 >
@@ -553,9 +590,9 @@ function cancelar() {
                 </CampoFormulario>
                 <CampoFormulario
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.localRecepcao"
+                  :rotulo="vocabulario.locais.campoSecundario"
                   :id-campo="idCampo('localRecepcao')"
-                  :dica="TEXTOS_EVENTOS.localRecepcaoDica"
+                  :dica="vocabulario.locais.dicaSecundario"
                   :erro="formulario.erros.localRecepcao"
                 >
                   <InputText

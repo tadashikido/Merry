@@ -3,7 +3,7 @@ namespace Celebri.Aplicacao.Eventos;
 public sealed record EventoDto(
     Guid Id,
     string NomePrimeiraPessoa,
-    string NomeSegundaPessoa,
+    string? NomeSegundaPessoa,
     DateOnly Data,
     string? Horario,
     string? LocalCerimonia,
@@ -18,4 +18,5 @@ public sealed record EventoDto(
     DateTimeOffset AtualizadoEm,
     DateOnly? DataLimiteRsvp,
     DateOnly DataLimiteRsvpEfetiva,
+    string Tipo,
     int? PercentualChecklist = null);

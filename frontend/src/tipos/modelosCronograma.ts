@@ -1,3 +1,4 @@
+import type { TipoEvento } from '@/tipos/eventos'
 import type { DiaCronograma } from '@/tipos/cronograma'
 import type { CategoriaFornecedor } from '@/tipos/fornecedores'
 
@@ -8,6 +9,7 @@ export type ReferenciaLocalCronograma = (typeof REFERENCIAS_LOCAL_CRONOGRAMA)[nu
 export type OpcaoLocalModelo = ReferenciaLocalCronograma | 'Outro'
 
 export interface ModeloCronogramaResumoDto {
+  tipoEvento: TipoEvento | null
   id: string
   nome: string
   descricao: string | null
@@ -34,6 +36,7 @@ export interface ItemModeloCronogramaDto {
 }
 
 export interface ModeloCronogramaDto {
+  tipoEvento: TipoEvento | null
   id: string
   nome: string
   descricao: string | null

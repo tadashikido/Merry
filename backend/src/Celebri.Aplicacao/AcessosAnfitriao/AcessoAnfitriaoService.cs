@@ -208,7 +208,8 @@ public partial class AcessoAnfitriaoService : IAcessoAnfitriaoService
             evento.NomePrimeiraPessoa,
             evento.NomeSegundaPessoa,
             organizacao.Nome,
-            acesso.ConviteExpiraEm);
+            acesso.ConviteExpiraEm,
+            evento.Tipo.ToString());
     }
 
     public async Task<ResultadoAutenticacao> AceitarConviteAsync(AceitarConviteAnfitriaoRequest request, CancellationToken cancelamento)
@@ -320,7 +321,7 @@ public partial class AcessoAnfitriaoService : IAcessoAnfitriaoService
             acesso.Nome,
             acesso.Email,
             link,
-            $"{evento.NomePrimeiraPessoa} & {evento.NomeSegundaPessoa}",
+            evento.FormatarNomes(),
             organizacao?.Nome ?? string.Empty,
             _opcoes.ValidadeConviteAnfitriaoDias);
 

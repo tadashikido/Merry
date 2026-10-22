@@ -6,4 +6,5 @@ public sealed record ModeloChecklistResumoDto(
     string? Descricao,
     bool Sugerido,
     int QuantidadeItens,
-    DateTimeOffset AtualizadoEm);
+    DateTimeOffset AtualizadoEm,
+    string? TipoEvento);

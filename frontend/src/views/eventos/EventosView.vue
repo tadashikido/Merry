@@ -14,6 +14,7 @@ import type { ColunaListagem } from '@/componentes/base/tipos'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useEventosStore } from '@/stores/eventos'
 import { ROTULOS_FASE, TEXTOS_EVENTOS, VARIANTE_FASE, resumoListaEventos } from '@/textos/eventos'
+import { vocabularioDoTipo } from '@/textos/tiposEvento'
 import type { EventoResumoDto, SituacaoListagemEventos } from '@/tipos/eventos'
 import { contemTexto } from '@/utilitarios/busca'
 import { formatarDataCalendario, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
@@ -35,6 +36,7 @@ const opcoesSituacao: { rotulo: string; valor: SituacaoListagemEventos }[] = [
 
 const colunas: ColunaListagem<EventoResumoDto>[] = [
   { campo: 'nomePrimeiraPessoa', titulo: TEXTOS_EVENTOS.colunaAnfitriao, principal: true, largura: '24%' },
+  { campo: 'tipo', titulo: TEXTOS_EVENTOS.colunaTipo },
   { campo: 'data', titulo: TEXTOS_EVENTOS.colunaData },
   { campo: 'fase', titulo: TEXTOS_EVENTOS.colunaFase },
   { campo: 'diasRestantes', titulo: TEXTOS_EVENTOS.colunaContagem },
@@ -185,6 +187,10 @@ async function alternarArquivamento(evento: EventoResumoDto) {
             :segundo="item.nomeSegundaPessoa"
           />
         </RouterLink>
+      </template>
+
+      <template #celula-tipo="{ item }">
+        <span data-teste="tipo-evento">{{ vocabularioDoTipo(item.tipo).rotulo }}</span>
       </template>
 
       <template #celula-data="{ item }">

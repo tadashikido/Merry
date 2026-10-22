@@ -23,6 +23,7 @@ import { useEventosStore } from '@/stores/eventos'
 import { useFinanceiroStore } from '@/stores/financeiro'
 import { TEXTOS_AREA_ANFITRIAO } from '@/textos/acessoAnfitriao'
 import { ROTULOS_FASE, TEXTOS_EVENTOS, VARIANTE_FASE } from '@/textos/eventos'
+import { vocabularioDoTipo } from '@/textos/tiposEvento'
 import { TEXTOS_DUPLICACAO_EVENTO } from '@/textos/duplicacaoEvento'
 import {
   formatarDataCalendarioComDiaSemana,
@@ -55,14 +56,16 @@ const quando = computed(() => {
 
 const podeEditar = computed(() => !autenticacao.ehAnfitriao && Boolean(evento.value && !evento.value.arquivado))
 
+const vocabulario = computed(() => vocabularioDoTipo(evento.value?.tipo))
+
 const dadosFaltantes = computed(() => {
   const atual = evento.value
   if (!atual || !podeEditar.value) {
     return []
   }
   return [
-    ...(atual.horario ? [] : [TEXTOS_EVENTOS.faltaHorario]),
-    ...(atual.localCerimonia ? [] : [TEXTOS_EVENTOS.faltaLocal]),
+    ...(atual.horario ? [] : [{ ...TEXTOS_EVENTOS.faltaHorario, titulo: vocabulario.value.faltaHorario }]),
+    ...(atual.localCerimonia ? [] : [{ ...TEXTOS_EVENTOS.faltaLocal, titulo: vocabulario.value.faltaLocal }]),
   ]
 })
 
@@ -73,9 +76,9 @@ const detalhes = computed<ItemDetalhe[]>(() => {
   }
   return [
     { rotulo: TEXTOS_EVENTOS.data, valor: formatarDataCalendarioExtenso(atual.data) },
-    { rotulo: TEXTOS_EVENTOS.horario, valor: atual.horario },
-    { rotulo: TEXTOS_EVENTOS.localCerimonia, valor: atual.localCerimonia },
-    { rotulo: TEXTOS_EVENTOS.localRecepcao, valor: atual.localRecepcao },
+    { rotulo: vocabulario.value.horario, valor: atual.horario },
+    { rotulo: vocabulario.value.locais.campoPrincipal, valor: atual.localCerimonia },
+    { rotulo: vocabulario.value.locais.campoSecundario, valor: atual.localRecepcao },
     { rotulo: TEXTOS_EVENTOS.convidados, valor: atual.convidadosEstimados === null ? null : formatarNumero(atual.convidadosEstimados) },
     ...(autenticacao.ehAnfitriao ? [] : [{ rotulo: TEXTOS_EVENTOS.observacoes, valor: atual.observacoes, multilinha: true }]),
   ]
@@ -188,6 +191,7 @@ async function desfazerArquivamento(id: string) {
           />
         </template>
         <template #detalhes>
+          <span data-teste="tipo-evento">{{ vocabulario.rotulo }}</span>
           <span class="numeros-tabulares evento__quando">{{ quando }}</span>
           <span v-if="evento.localCerimonia">{{ evento.localCerimonia }}</span>
           <span class="evento__situacao">

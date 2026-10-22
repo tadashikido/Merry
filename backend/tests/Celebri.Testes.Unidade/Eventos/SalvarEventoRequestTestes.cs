@@ -9,7 +9,7 @@ public class SalvarEventoRequestTestes
 {
     private static SalvarEventoRequest Valido()
     {
-        return new SalvarEventoRequest("Ana", "Bruno", new DateOnly(2027, 5, 15), "16:30", null, null, null, null);
+        return new SalvarEventoRequest("Ana", "Bruno", new DateOnly(2027, 5, 15), "16:30", null, null, null, null, Tipo: TipoEvento.Casamento);
     }
 
     private static Dictionary<string, string> ValidarRegrasCompostas(SalvarEventoRequest request)
@@ -35,9 +35,54 @@ public class SalvarEventoRequestTestes
     }
 
     [Fact]
-    public void NomesVazios_NaoGeramErroComposto_PoisObrigatoriedadeEhDoAtributo()
+    public void NomesVazios_NaoGeramErroComposto_QuandoOTipoAceitaUmHomenageado()
     {
-        Assert.Empty(ValidarRegrasCompostas(Valido() with { NomePrimeiraPessoa = "", NomeSegundaPessoa = "   " }));
+        Assert.Empty(ValidarRegrasCompostas(Valido() with { NomePrimeiraPessoa = "", NomeSegundaPessoa = "   ", Tipo = TipoEvento.Comemoracao }));
+    }
+
+    [Fact]
+    public void Casamento_SegundoNomeVazio_DeveGerarErroNoCampo()
+    {
+        var erros = ValidarRegrasCompostas(Valido() with { NomeSegundaPessoa = "   " });
+
+        Assert.Equal(MensagensEvento.SegundoNomeObrigatorio, erros[nameof(SalvarEventoRequest.NomeSegundaPessoa)]);
+    }
+
+    [Theory]
+    [InlineData(TipoEvento.QuinzeAnos)]
+    [InlineData(TipoEvento.Aniversario)]
+    public void TipoDeUmHomenageado_ComSegundoNome_DeveGerarErroNoCampo(TipoEvento tipo)
+    {
+        var erros = ValidarRegrasCompostas(Valido() with { Tipo = tipo });
+
+        Assert.Equal(MensagensEvento.UmHomenageado, erros[nameof(SalvarEventoRequest.NomeSegundaPessoa)]);
+    }
+
+    [Fact]
+    public void TipoForaDosDisponiveis_DeveGerarErroNoTipo()
+    {
+        var erros = ValidarRegrasCompostas(Valido() with { Tipo = (TipoEvento)99 });
+
+        Assert.Equal(MensagensEvento.TipoInvalido, erros[nameof(SalvarEventoRequest.Tipo)]);
+    }
+
+    [Fact]
+    public void TipoAusente_DeveFalharNaConversaoParaDados()
+    {
+        var request = Valido() with { Tipo = null };
+
+        Assert.Empty(ValidarRegrasCompostas(request with { NomeSegundaPessoa = null }));
+        var excecao = Assert.Throws<RegraNegocioException>(() => request.ParaDados());
+        Assert.Equal(MensagensEvento.TipoObrigatorio, excecao.Message);
+    }
+
+    [Fact]
+    public void ParaDados_DeveLevarOTipoEOSegundoNomeNulo()
+    {
+        var dados = (Valido() with { Tipo = TipoEvento.Aniversario, NomeSegundaPessoa = null }).ParaDados();
+
+        Assert.Equal(TipoEvento.Aniversario, dados.Tipo);
+        Assert.Null(dados.NomeSegundaPessoa);
     }
 
     [Theory]

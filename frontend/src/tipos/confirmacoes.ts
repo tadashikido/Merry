@@ -50,7 +50,7 @@ export interface PainelConfirmacoesDto {
 
 export interface EventoExportacaoDto {
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   data: DataCalendario
   horario: string | null
   localRecepcao: string | null

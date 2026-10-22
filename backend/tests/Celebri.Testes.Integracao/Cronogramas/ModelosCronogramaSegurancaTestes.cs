@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Celebri.Aplicacao.Autenticacao;
+using Celebri.Dominio.Cronogramas;
 using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Eventos;
 using Celebri.Testes.Integracao.Isolamento;
@@ -134,7 +135,7 @@ public sealed class ModelosCronogramaSegurancaTestes : IsolamentoOrganizacaoTest
         await AssertNaoEncontradoAsync(await AplicarAsync(OrganizacaoB.Cliente, eventoDeA.Id, modeloDeB.Id));
         await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaRecalculo(eventoDeA.Id)));
         await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsync(RotaRecalculo(eventoDeA.Id), null));
-        Assert.Single(await ListarAsync(OrganizacaoB.Cliente));
+        Assert.Equal(ModeloCronogramaSugerido.Conteudos.Count, (await ListarAsync(OrganizacaoB.Cliente)).Count);
     }
 
     [Fact]

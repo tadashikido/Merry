@@ -36,6 +36,8 @@ public class ModeloCronograma : IPertenceOrganizacao
 
     public bool Sugerido { get; private set; }
 
+    public TipoEvento? TipoEvento { get; private set; }
+
     public DateTimeOffset CriadoEm { get; private set; }
 
     public DateTimeOffset AtualizadoEm { get; private set; }
@@ -47,12 +49,14 @@ public class ModeloCronograma : IPertenceOrganizacao
         string? descricao,
         TimeOnly? horarioReferencia,
         DateTimeOffset agora,
-        bool sugerido = false)
+        bool sugerido = false,
+        TipoEvento? tipoEvento = null)
     {
         var modelo = new ModeloCronograma
         {
             Id = Guid.NewGuid(),
             Sugerido = sugerido,
+            TipoEvento = tipoEvento,
             CriadoEm = agora,
         };
 

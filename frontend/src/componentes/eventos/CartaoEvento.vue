@@ -6,8 +6,9 @@ import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
 import ContagemRegressiva from '@/componentes/base/ContagemRegressiva.vue'
 import NomesAnfitrioes from '@/componentes/base/NomesAnfitrioes.vue'
 import { ROTULOS_FASE, VARIANTE_FASE, descreverContagem } from '@/textos/eventos'
+import { vocabularioDoTipo } from '@/textos/tiposEvento'
 import type { EventoResumoDto } from '@/tipos/eventos'
-import { formatarDataCalendarioComDiaSemana, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
+import { formatarDataCalendarioComDiaSemana, formatarNomesEmFrase } from '@/utilitarios/formatacao'
 
 const props = defineProps<{ evento: EventoResumoDto }>()
 
@@ -16,9 +17,12 @@ const quando = computed(() => {
   return props.evento.horario ? `${data}, ${props.evento.horario}` : data
 })
 
+const tipo = computed(() => vocabularioDoTipo(props.evento.tipo).rotulo)
+
 const nomeAcessivel = computed(() =>
   [
-    formatarNomesAnfitrioes(props.evento.nomePrimeiraPessoa, props.evento.nomeSegundaPessoa).replace(' & ', ' e '),
+    formatarNomesEmFrase(props.evento.nomePrimeiraPessoa, props.evento.nomeSegundaPessoa),
+    tipo.value,
     quando.value,
     ROTULOS_FASE[props.evento.fase],
     descreverContagem(props.evento.diasRestantes),
@@ -33,7 +37,10 @@ const nomeAcessivel = computed(() =>
     :aria-label="nomeAcessivel"
     data-teste="cartao-evento"
   >
-    <span class="cartao-evento__quando numeros-tabulares">{{ quando }}</span>
+    <span class="cartao-evento__quando">
+      <span data-teste="tipo-evento">{{ tipo }}</span>
+      <span class="numeros-tabulares">{{ quando }}</span>
+    </span>
     <NomesAnfitrioes
       class="cartao-evento__nomes"
       :primeiro="evento.nomePrimeiraPessoa"
@@ -73,6 +80,9 @@ const nomeAcessivel = computed(() =>
 }
 
 .cartao-evento__quando {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--p-espaco-3);
   font-size: var(--p-fonte-tamanho-controle);
   color: var(--p-cor-texto-apoio);
 }

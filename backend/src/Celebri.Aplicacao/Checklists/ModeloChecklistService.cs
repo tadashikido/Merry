@@ -2,6 +2,7 @@ using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Excecoes;
 
 namespace Celebri.Aplicacao.Checklists;
@@ -43,7 +44,8 @@ public class ModeloChecklistService : IModeloChecklistService
                 modelo.Descricao,
                 modelo.Sugerido,
                 modelo.QuantidadeItens,
-                modelo.AtualizadoEm))
+                modelo.AtualizadoEm,
+                modelo.TipoEvento?.ToString()))
             .ToList();
     }
 
@@ -137,14 +139,31 @@ public class ModeloChecklistService : IModeloChecklistService
 
         var organizacao = await _organizacaoRepository.ObterPorIdAsync(organizacaoId, cancelamento);
 
-        if (organizacao is null || organizacao.PossuiModeloChecklistSugerido)
+        if (organizacao is null || (organizacao.PossuiModeloChecklistSugerido && organizacao.PossuiModelosChecklistPorTipo))
         {
             return;
         }
 
         var agora = _relogio.GetUtcNow();
-        _modeloRepository.Adicionar(ModeloChecklistSugerido.Criar(agora));
-        organizacao.RegistrarModeloChecklistSugerido(agora);
+
+        if (!organizacao.PossuiModeloChecklistSugerido)
+        {
+            _modeloRepository.Adicionar(ModeloChecklistSugerido.Criar(TipoEvento.Casamento, agora));
+            organizacao.RegistrarModeloChecklistSugerido(agora);
+        }
+
+        if (!organizacao.PossuiModelosChecklistPorTipo)
+        {
+            foreach (var conteudo in ModeloChecklistSugerido.Conteudos.Where(conteudo => conteudo.Tipo != TipoEvento.Casamento))
+            {
+                if (!await _modeloRepository.ExisteNomeAsync(conteudo.Nome, null, cancelamento))
+                {
+                    _modeloRepository.Adicionar(ModeloChecklistSugerido.Criar(conteudo.Tipo, agora));
+                }
+            }
+
+            organizacao.RegistrarModelosChecklistPorTipo(agora);
+        }
 
         try
         {
@@ -167,7 +186,8 @@ public class ModeloChecklistService : IModeloChecklistService
             modelo.Sugerido,
             modelo.ItensOrdenados().Select(ParaDto).ToList(),
             modelo.CriadoEm,
-            modelo.AtualizadoEm);
+            modelo.AtualizadoEm,
+            modelo.TipoEvento?.ToString());
     }
 
     public static ItemModeloChecklistDto ParaDto(ItemModeloChecklist item)

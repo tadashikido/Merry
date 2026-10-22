@@ -72,7 +72,7 @@ export interface ParcelaAlertaDto {
   parcelaId: string
   eventoId: string
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   fornecedorEventoId: string
   nomeEmpresa: string
   numero: number

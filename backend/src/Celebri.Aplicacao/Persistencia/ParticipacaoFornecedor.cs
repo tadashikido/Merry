@@ -5,7 +5,7 @@ namespace Celebri.Aplicacao.Persistencia;
 public sealed record ParticipacaoFornecedor(
     Guid EventoId,
     string NomePrimeiraPessoa,
-    string NomeSegundaPessoa,
+    string? NomeSegundaPessoa,
     DateOnly DataEvento,
     bool EventoArquivado,
     StatusFornecedorEvento Status);

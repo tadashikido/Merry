@@ -20,6 +20,9 @@ public class ModeloCronogramaConfiguration : IEntityTypeConfiguration<ModeloCron
         builder.Property(modelo => modelo.Descricao).HasMaxLength(ModeloCronograma.TamanhoMaximoDescricao);
         builder.Property(modelo => modelo.HorarioReferencia).IsRequired();
         builder.Property(modelo => modelo.Sugerido).IsRequired();
+        builder.Property(modelo => modelo.TipoEvento)
+            .HasConversion<string>()
+            .HasMaxLength(ConviteConfiguration.TamanhoMaximoEnum);
         builder.Property(modelo => modelo.CriadoEm).IsRequired();
         builder.Property(modelo => modelo.AtualizadoEm).IsRequired();
         builder.Property<uint>("Versao").IsRowVersion().HasColumnName("xmin").HasColumnType("xid");

@@ -2,7 +2,7 @@ import type { EventoDto, EventoResumoDto, DataCalendario } from '@/tipos/eventos
 
 export interface DuplicarEventoRequest {
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   data: DataCalendario
   horario: string | null
   localCerimonia: string | null

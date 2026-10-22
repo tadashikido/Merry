@@ -31,7 +31,11 @@ public class EventoConfiguration : IEntityTypeConfiguration<Evento>
         builder.HasKey(evento => evento.Id);
         builder.Property(evento => evento.Id).ValueGeneratedNever();
         builder.Property(evento => evento.NomePrimeiraPessoa).HasMaxLength(Evento.TamanhoMaximoNome).IsRequired();
-        builder.Property(evento => evento.NomeSegundaPessoa).HasMaxLength(Evento.TamanhoMaximoNome).IsRequired();
+        builder.Property(evento => evento.NomeSegundaPessoa).HasMaxLength(Evento.TamanhoMaximoNome);
+        builder.Property(evento => evento.Tipo)
+            .HasConversion<string>()
+            .HasMaxLength(ConviteConfiguration.TamanhoMaximoEnum)
+            .IsRequired();
         builder.Property(evento => evento.Data).HasColumnType("date").IsRequired();
         builder.Property(evento => evento.Horario).HasColumnType("time without time zone");
         builder.Property(evento => evento.DataLimiteRsvp).HasColumnType("date");

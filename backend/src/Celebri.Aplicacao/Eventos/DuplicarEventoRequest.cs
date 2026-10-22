@@ -8,9 +8,8 @@ public sealed record DuplicarEventoRequest(
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]
     [StringLength(Evento.TamanhoMaximoNome, MinimumLength = Evento.TamanhoMinimoNome, ErrorMessage = MensagensEvento.TamanhoNome)]
     string NomePrimeiraPessoa,
-    [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]
-    [StringLength(Evento.TamanhoMaximoNome, MinimumLength = Evento.TamanhoMinimoNome, ErrorMessage = MensagensEvento.TamanhoNome)]
-    string NomeSegundaPessoa,
+    [StringLength(Evento.TamanhoMaximoNome, ErrorMessage = MensagensEvento.TamanhoNome)]
+    string? NomeSegundaPessoa,
     [Required(ErrorMessage = MensagensValidacao.Obrigatorio)]
     DateOnly? Data,
     [RegularExpression(SalvarEventoRequest.PadraoHorario, ErrorMessage = MensagensEvento.HorarioInvalido)]
@@ -30,9 +29,9 @@ public sealed record DuplicarEventoRequest(
             yield return new ValidationResult(MensagensEvento.TamanhoNome, [nameof(NomePrimeiraPessoa)]);
         }
 
-        if (!string.IsNullOrWhiteSpace(NomeSegundaPessoa) && NomeSegundaPessoa.Trim().Length < Evento.TamanhoMinimoNome)
+        foreach (var erro in SalvarEventoRequest.ValidarHomenageados(null, NomeSegundaPessoa))
         {
-            yield return new ValidationResult(MensagensEvento.TamanhoNome, [nameof(NomeSegundaPessoa)]);
+            yield return erro;
         }
 
         if (Data is { } data && (data < Evento.DataMinima || data > Evento.DataMaxima))
@@ -41,7 +40,7 @@ public sealed record DuplicarEventoRequest(
         }
     }
 
-    public DadosEvento ParaDados()
+    public DadosEvento ParaDados(TipoEvento tipo)
     {
         return new DadosEvento(
             NomePrimeiraPessoa,
@@ -52,6 +51,7 @@ public sealed record DuplicarEventoRequest(
             LocalRecepcao,
             ConvidadosEstimados: null,
             Observacoes: null,
-            DataLimiteRsvp: null);
+            DataLimiteRsvp: null,
+            Tipo: tipo);
     }
 }

@@ -57,7 +57,7 @@ public class EventoTestes
     [Theory]
     [InlineData("", "Bruno", MensagensEvento.NomeObrigatorio)]
     [InlineData("   ", "Bruno", MensagensEvento.NomeObrigatorio)]
-    [InlineData("Ana", "", MensagensEvento.NomeObrigatorio)]
+    [InlineData("Ana", "", MensagensEvento.SegundoNomeObrigatorio)]
     [InlineData("A", "Bruno", MensagensEvento.TamanhoNome)]
     [InlineData("Ana", " B ", MensagensEvento.TamanhoNome)]
     public void Criar_NomesInvalidos_DeveLancarRegraNegocio(string primeiro, string segundo, string mensagem)

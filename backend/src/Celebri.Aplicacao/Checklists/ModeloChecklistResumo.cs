@@ -1,3 +1,5 @@
+using Celebri.Dominio.Eventos;
+
 namespace Celebri.Aplicacao.Checklists;
 
 public sealed record ModeloChecklistResumo(
@@ -6,4 +8,5 @@ public sealed record ModeloChecklistResumo(
     string? Descricao,
     bool Sugerido,
     int QuantidadeItens,
-    DateTimeOffset AtualizadoEm);
+    DateTimeOffset AtualizadoEm,
+    TipoEvento? TipoEvento);

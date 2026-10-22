@@ -141,6 +141,12 @@ export function formatarNumero(valor: number | null | undefined): string {
   return formatoNumero.format(valor)
 }
 
-export function formatarNomesAnfitrioes(primeiro: string, segundo: string): string {
-  return `${primeiro.trim()} & ${segundo.trim()}`
+export function formatarNomesAnfitrioes(primeiro: string, segundo?: string | null): string {
+  const outro = segundo?.trim()
+  return outro ? `${primeiro.trim()} & ${outro}` : primeiro.trim()
+}
+
+export function formatarNomesEmFrase(primeiro: string, segundo?: string | null): string {
+  const outro = segundo?.trim()
+  return outro ? `${primeiro.trim()} e ${outro}` : primeiro.trim()
 }

@@ -229,14 +229,14 @@ public class ModeloCronogramaTestes
     [Fact]
     public void Sugerido_DeveTerOsMomentosDoDiaSemConflitosNaReferencia()
     {
-        var modelo = ModeloCronogramaSugerido.Criar(Agora);
+        var modelo = ModeloCronogramaSugerido.Criar(TipoEvento.Casamento, Agora);
         var evento = NovoEvento(modelo.HorarioReferencia);
         var itens = modelo.ItensOrdenados()
             .Select(item => ItemCronograma.Criar(evento.Id, item.ParaDadosItem(evento, modelo.HorarioReferencia, null), null, Agora))
             .ToList();
 
         Assert.True(modelo.Sugerido);
-        Assert.Equal(ModeloCronogramaSugerido.Nome, modelo.Nome);
+        Assert.Equal(ModeloCronogramaSugerido.Casamento.Nome, modelo.Nome);
         Assert.Equal(20, modelo.Itens.Count);
         Assert.Contains(modelo.Itens, item => item.MinutosDesdeCerimonia == 0 && item.Atividade == "Cerimônia");
         Assert.Contains(modelo.Itens, item => item.Atividade.Contains("Making of", StringComparison.Ordinal));

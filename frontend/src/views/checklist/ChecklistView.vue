@@ -20,6 +20,7 @@ import { useNotificacao } from '@/composables/useNotificacao'
 import { useEventosStore } from '@/stores/eventos'
 import { useChecklistStore } from '@/stores/checklist'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
+import { modelosDoTipo } from '@/utilitarios/modelosPorTipo'
 import { COMPLEMENTO_MARCO_CHECKLIST, ROTULOS_MARCO_CHECKLIST, TEXTOS_CHECKLIST } from '@/textos/checklist'
 import { ROTULOS_STATUS_TAREFA, TEXTOS_TAREFAS } from '@/textos/tarefas'
 import type { AplicacaoModeloChecklistDto } from '@/tipos/checklist'
@@ -60,8 +61,10 @@ const descricao = computed(() =>
   evento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(evento.value.data)}` : undefined,
 )
 
+const modelosDoEvento = computed(() => (modelos.lista ? modelosDoTipo(modelos.lista, evento.value?.tipo) : null))
+
 const opcoesModelos = computed(() =>
-  (modelos.lista ?? []).map((modelo) => ({ valor: modelo.id, rotulo: modelo.nome })),
+  (modelosDoEvento.value ?? []).map((modelo) => ({ valor: modelo.id, rotulo: modelo.nome })),
 )
 
 const grupos = computed(() => {
@@ -131,7 +134,7 @@ watch(
 )
 
 watch(
-  () => modelos.lista,
+  () => modelosDoEvento.value,
   (lista) => {
     if (!lista || lista.length === 0) {
       modeloSelecionado.value = null
@@ -462,7 +465,7 @@ async function recalcular() {
                 </h2>
 
                 <p
-                  v-if="modelos.lista && modelos.lista.length === 0"
+                  v-if="modelosDoEvento && modelosDoEvento.length === 0"
                   class="checklist__sem-modelos"
                   data-teste="sem-modelos"
                 >

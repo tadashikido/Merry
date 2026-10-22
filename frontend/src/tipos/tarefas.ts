@@ -64,7 +64,7 @@ export interface TarefaPendenteDto {
   id: string
   eventoId: string
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   titulo: string
   responsavel: ResponsavelTarefa
   categoria: CategoriaTarefa

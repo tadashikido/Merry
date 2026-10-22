@@ -11,11 +11,12 @@ public sealed record CronogramaPublicoDto(
 
 public sealed record EventoCronogramaPublicoDto(
     string NomePrimeiraPessoa,
-    string NomeSegundaPessoa,
+    string? NomeSegundaPessoa,
     DateOnly Data,
     string? HorarioCerimonia,
     string? LocalCerimonia,
-    string? LocalRecepcao);
+    string? LocalRecepcao,
+    string Tipo);
 
 public sealed record FiltroCronogramaPublicoDto(string Tipo, string? Rotulo, string? Categoria);
 

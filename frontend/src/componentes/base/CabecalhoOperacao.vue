@@ -13,13 +13,13 @@ export interface LocalOperacao {
 const props = withDefaults(
   defineProps<{
     primeiro: string
-    segundo: string
+    segundo?: string | null
     data: DataCalendario
     filtro: string
     locais?: LocalOperacao[]
     nivelTitulo?: 1 | 2
   }>(),
-  { locais: () => [], nivelTitulo: 1 },
+  { segundo: null, locais: () => [], nivelTitulo: 1 },
 )
 
 const dataExtenso = computed(() => {
@@ -38,8 +38,10 @@ const tituloOculto = computed(() => TEXTOS_CRONOGRAMA_PUBLICO.tituloOculto(forma
       <span class="cabecalho-operacao__oculto">{{ tituloOculto }}</span>
       <span aria-hidden="true">
         {{ primeiro }}
-        <span class="cabecalho-operacao__e">&amp;</span>
-        {{ segundo }}
+        <template v-if="segundo">
+          <span class="cabecalho-operacao__e">&amp;</span>
+          {{ segundo }}
+        </template>
       </span>
     </component>
     <p

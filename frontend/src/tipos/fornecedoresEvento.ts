@@ -100,7 +100,7 @@ export interface ResultadoImportacaoFornecedoresDto {
 export interface ParticipacaoFornecedorDto {
   eventoId: string
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   dataEvento: string
   eventoArquivado: boolean
   status: StatusFornecedorEvento

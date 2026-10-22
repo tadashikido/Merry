@@ -7,4 +7,5 @@ public sealed record ModeloChecklistDto(
     bool Sugerido,
     IReadOnlyList<ItemModeloChecklistDto> Itens,
     DateTimeOffset CriadoEm,
-    DateTimeOffset AtualizadoEm);
+    DateTimeOffset AtualizadoEm,
+    string? TipoEvento);

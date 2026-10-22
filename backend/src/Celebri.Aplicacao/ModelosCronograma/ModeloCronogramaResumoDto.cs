@@ -7,4 +7,5 @@ public sealed record ModeloCronogramaResumoDto(
     string HorarioReferencia,
     bool Sugerido,
     int QuantidadeItens,
-    DateTimeOffset AtualizadoEm);
+    DateTimeOffset AtualizadoEm,
+    string? TipoEvento);

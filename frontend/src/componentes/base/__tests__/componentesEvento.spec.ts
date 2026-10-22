@@ -117,6 +117,7 @@ describe('CabecalhoPagina com título rico', () => {
 describe('CartaoEvento', () => {
   const evento: EventoResumoDto = {
     id: '11111111-1111-1111-1111-111111111111',
+    tipo: 'Casamento',
     nomePrimeiraPessoa: 'Ana Beatriz',
     nomeSegundaPessoa: 'Bruno',
     data: '2027-05-15',
@@ -139,7 +140,7 @@ describe('CartaoEvento', () => {
 
     const link = wrapper.get('a')
     expect(link.attributes('href')).toBe(`/eventos/${evento.id}`)
-    expect(link.attributes('aria-label')).toBe('Ana Beatriz e Bruno, sábado, 15 de maio de 2027, 16:30, Reta final, Faltam 42 dias')
+    expect(link.attributes('aria-label')).toBe('Ana Beatriz e Bruno, Casamento, sábado, 15 de maio de 2027, 16:30, Reta final, Faltam 42 dias')
     expect(wrapper.text()).toContain('sábado, 15 de maio de 2027, 16:30')
     expect(wrapper.text()).toContain('Reta final')
     expect(wrapper.text()).toContain('Faltam 42 dias')
@@ -154,6 +155,19 @@ describe('CartaoEvento', () => {
     })
     await flushPromises()
 
-    expect(wrapper.get('.cartao-evento__quando').text()).toBe('sábado, 15 de maio de 2027')
+    expect(wrapper.get('.cartao-evento__quando .numeros-tabulares').text()).toBe('sábado, 15 de maio de 2027')
+  })
+
+  it('[COMPONENTE] aniversário mostra o tipo e um único nome, sem conector', async () => {
+    const roteador = createRouter({ history: createMemoryHistory(), routes: rotas })
+    const wrapper = mount(CartaoEvento, {
+      props: { evento: { ...evento, tipo: 'Aniversario', nomePrimeiraPessoa: 'Helena', nomeSegundaPessoa: null } },
+      global: { plugins: [...global.plugins, roteador] },
+    })
+    await flushPromises()
+
+    expect(wrapper.get('[data-teste="tipo-evento"]').text()).toBe('Aniversário')
+    expect(wrapper.get('[data-teste="nomes-anfitrioes"]').text()).toBe('Helena')
+    expect(wrapper.get('a').attributes('aria-label')).toMatch(/^Helena, Aniversário, /)
   })
 })

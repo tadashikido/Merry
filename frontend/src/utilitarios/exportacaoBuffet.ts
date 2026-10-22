@@ -58,8 +58,8 @@ export function gerarCsvBuffet(exportacao: ExportacaoBuffetDto): string {
   return gerarCsv((primeira ?? []).map(String), demais)
 }
 
-function segmento(texto: string): string {
-  return texto
+function segmento(texto: string | null): string {
+  return (texto ?? '')
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
     .toLowerCase()

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Celebri.Aplicacao.ModelosCronograma;
 using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Eventos;
 using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Eventos;
 using Celebri.Testes.Integracao.Isolamento;
@@ -25,12 +26,15 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
         var primeira = await ListarAsync(OrganizacaoA.Cliente);
         var segunda = await ListarAsync(OrganizacaoA.Cliente);
 
-        var sugerido = Assert.Single(primeira);
-        Assert.True(sugerido.Sugerido);
-        Assert.Equal(ModeloCronogramaSugerido.Nome, sugerido.Nome);
-        Assert.Equal(ModeloCronogramaSugerido.Itens.Count, sugerido.QuantidadeItens);
+        Assert.All(primeira, modelo => Assert.True(modelo.Sugerido));
+        Assert.Equal(ModeloCronogramaSugerido.Conteudos.Count, primeira.Count);
+        Assert.Equal(primeira.Select(modelo => modelo.Id).Order(), segunda.Select(modelo => modelo.Id).Order());
+        var sugerido = Assert.Single(primeira, modelo => modelo.TipoEvento == nameof(TipoEvento.Casamento));
+        Assert.Equal(ModeloCronogramaSugerido.Casamento.Nome, sugerido.Nome);
+        Assert.Equal(ModeloCronogramaSugerido.Casamento.Itens.Count, sugerido.QuantidadeItens);
         Assert.Equal("16:00", sugerido.HorarioReferencia);
-        Assert.Equal(sugerido.Id, Assert.Single(segunda).Id);
+        var quinzeAnos = Assert.Single(primeira, modelo => modelo.TipoEvento == nameof(TipoEvento.QuinzeAnos));
+        Assert.Equal("20:00", quinzeAnos.HorarioReferencia);
 
         var detalhe = await ObterAsync(OrganizacaoA.Cliente, sugerido.Id);
         var cerimonia = Assert.Single(detalhe.Itens, item => item.MinutosDesdeCerimonia == 0);
@@ -44,6 +48,7 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
         await using var contexto = CriarContexto(OrganizacaoA);
         var organizacao = await contexto.Organizacoes.SingleAsync(item => item.Id == OrganizacaoA.OrganizacaoId);
         Assert.NotNull(organizacao.ModeloCronogramaSugeridoEm);
+        Assert.NotNull(organizacao.ModelosCronogramaPorTipoEm);
         Assert.Null(organizacao.ModeloChecklistSugeridoEm);
     }
 
@@ -54,15 +59,16 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
 
         Assert.All(respostas, resposta => Assert.Equal(HttpStatusCode.OK, resposta.StatusCode));
         await using var contexto = CriarContexto(OrganizacaoA);
-        Assert.Equal(1, await contexto.ModelosCronograma.CountAsync(modelo => modelo.Sugerido));
+        Assert.Equal(ModeloCronogramaSugerido.Conteudos.Count, await contexto.ModelosCronograma.CountAsync(modelo => modelo.Sugerido));
     }
 
     [Fact]
     public async Task Listar_AposExcluirOSugerido_NaoDeveRecriar()
     {
-        var sugerido = Assert.Single(await ListarAsync(OrganizacaoA.Cliente));
-
-        Assert.Equal(HttpStatusCode.NoContent, (await OrganizacaoA.Cliente.DeleteAsync(RotaModelo(sugerido.Id))).StatusCode);
+        foreach (var sugerido in await ListarAsync(OrganizacaoA.Cliente))
+        {
+            Assert.Equal(HttpStatusCode.NoContent, (await OrganizacaoA.Cliente.DeleteAsync(RotaModelo(sugerido.Id))).StatusCode);
+        }
 
         Assert.Empty(await ListarAsync(OrganizacaoA.Cliente));
         await using var contexto = CriarContexto(OrganizacaoA);

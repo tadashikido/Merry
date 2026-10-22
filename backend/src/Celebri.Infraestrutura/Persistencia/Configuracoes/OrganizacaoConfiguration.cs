@@ -15,8 +15,12 @@ public class OrganizacaoConfiguration : IEntityTypeConfiguration<Organizacao>
         builder.Property(organizacao => organizacao.CriadaEm).IsRequired();
         builder.Property(organizacao => organizacao.ModeloChecklistSugeridoEm);
         builder.Property(organizacao => organizacao.ModeloCronogramaSugeridoEm);
+        builder.Property(organizacao => organizacao.ModelosChecklistPorTipoEm);
+        builder.Property(organizacao => organizacao.ModelosCronogramaPorTipoEm);
         builder.Property<uint>("Versao").IsRowVersion().HasColumnName("xmin").HasColumnType("xid");
         builder.Ignore(organizacao => organizacao.PossuiModeloChecklistSugerido);
         builder.Ignore(organizacao => organizacao.PossuiModeloCronogramaSugerido);
+        builder.Ignore(organizacao => organizacao.PossuiModelosChecklistPorTipo);
+        builder.Ignore(organizacao => organizacao.PossuiModelosCronogramaPorTipo);
     }
 }

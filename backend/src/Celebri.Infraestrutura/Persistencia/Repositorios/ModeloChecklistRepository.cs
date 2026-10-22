@@ -24,7 +24,8 @@ public class ModeloChecklistRepository : IModeloChecklistRepository
                 modelo.Descricao,
                 modelo.Sugerido,
                 _contexto.ItensModeloChecklist.Count(item => item.ModeloId == modelo.Id),
-                modelo.AtualizadoEm))
+                modelo.AtualizadoEm,
+                modelo.TipoEvento))
             .ToListAsync(cancelamento);
     }
 

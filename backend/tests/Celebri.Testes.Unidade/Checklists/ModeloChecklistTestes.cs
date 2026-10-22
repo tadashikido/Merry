@@ -285,11 +285,12 @@ public class ModeloChecklistTestes
     [Fact]
     public void ModeloSugerido_DeveCobrirOsQuatroMarcosComItensValidos()
     {
-        var modelo = ModeloChecklistSugerido.Criar(Agora);
+        var modelo = ModeloChecklistSugerido.Criar(TipoEvento.Casamento, Agora);
 
         Assert.True(modelo.Sugerido);
-        Assert.Equal(ModeloChecklistSugerido.Nome, modelo.Nome);
-        Assert.Equal(ModeloChecklistSugerido.Itens.Count, modelo.Itens.Count);
+        Assert.Equal(TipoEvento.Casamento, modelo.TipoEvento);
+        Assert.Equal(ModeloChecklistSugerido.Casamento.Nome, modelo.Nome);
+        Assert.Equal(ModeloChecklistSugerido.Casamento.Itens.Count, modelo.Itens.Count);
         Assert.InRange(modelo.Itens.Count, 20, ModeloChecklist.LimiteItens);
         Assert.Equal(
             [ModeloChecklistSugerido.DozeMeses, ModeloChecklistSugerido.SeisMeses, ModeloChecklistSugerido.TresMeses, ModeloChecklistSugerido.TrintaDias],

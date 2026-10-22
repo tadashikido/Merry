@@ -2,8 +2,9 @@ namespace Celebri.Aplicacao.Rsvp;
 
 public sealed record EventoRsvpDto(
     string NomePrimeiraPessoa,
-    string NomeSegundaPessoa,
+    string? NomeSegundaPessoa,
     DateOnly Data,
     string? Horario,
     string? LocalCerimonia,
-    string? LocalRecepcao);
+    string? LocalRecepcao,
+    string Tipo);

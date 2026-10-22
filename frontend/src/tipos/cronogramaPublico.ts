@@ -1,4 +1,4 @@
-import type { DataCalendario } from '@/tipos/eventos'
+import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 import type { DiaCronograma, StatusItemCronograma } from '@/tipos/cronograma'
 import type { MomentoGrandeDiaDto, SituacaoItemGrandeDia } from '@/tipos/grandeDia'
 
@@ -7,8 +7,9 @@ export const TIPOS_LINK_CRONOGRAMA = ['Geral', 'Fornecedor', 'Responsavel'] as c
 export type TipoLinkCronograma = (typeof TIPOS_LINK_CRONOGRAMA)[number]
 
 export interface EventoCronogramaPublicoDto {
+  tipo: TipoEvento
   nomePrimeiraPessoa: string
-  nomeSegundaPessoa: string
+  nomeSegundaPessoa: string | null
   data: DataCalendario
   horarioCerimonia: string | null
   localCerimonia: string | null
