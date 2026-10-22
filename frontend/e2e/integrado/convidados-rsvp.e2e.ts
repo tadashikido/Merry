@@ -119,6 +119,7 @@ test.describe('Convidados, importação, RSVP e confirmações', () => {
   test('registra restrição alimentar exigindo o consentimento', async ({ paginaAssessoria: page, api }) => {
     const casamento = await api.criarCasamento()
     await api.criarConvite(casamento.id, [{ nome: 'Bianca Torres' }])
+    await page.setViewportSize({ width: 1600, height: 900 })
     await page.goto(`/casamentos/${casamento.id}/restricoes-alimentares`)
 
     await page.getByRole('button', { name: 'Registrar restrição' }).first().click()

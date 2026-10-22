@@ -41,7 +41,7 @@ test.describe('Cronograma do dia', () => {
 
     await page.getByRole('button', { name: 'Novo modelo' }).click()
     await page.getByLabel('Nome', { exact: false }).first().fill('Roteiro praia')
-    await page.getByRole('button', { name: 'Salvar modelo' }).click()
+    await page.getByRole('button', { name: 'Criar modelo' }).click()
 
     await expect(page.getByRole('heading', { level: 1, name: 'Roteiro praia' })).toBeVisible()
     await page.getByRole('button', { name: 'Adicionar item' }).first().click()
