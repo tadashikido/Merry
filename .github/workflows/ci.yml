@@ -92,8 +92,14 @@ jobs:
           : > .env
           ! docker compose -f docker-compose.prod.yml config --quiet
 
+      - name: Testar contexto Docker do frontend
+        run: bash infra/testes/contexto-docker-web.test.sh
+
+      - name: Construir imagem do frontend
+        run: docker compose -f docker-compose.prod.yml --env-file .env.production.example build web
+
       - name: Lint dos scripts
-        run: shellcheck deploy.sh infra/deploy/localizar-deploy.sh infra/testes/deploy.test.sh infra/testes/localizar-deploy.test.sh infra/testes/proxy.test.sh
+        run: shellcheck deploy.sh infra/deploy/localizar-deploy.sh infra/testes/deploy.test.sh infra/testes/localizar-deploy.test.sh infra/testes/proxy.test.sh infra/testes/contexto-docker-web.test.sh
 
       - name: Testar deploy.sh
         run: bash infra/testes/deploy.test.sh
