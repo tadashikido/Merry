@@ -21,7 +21,7 @@ import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_TAREFAS } from '@/textos/tarefas'
 import type { SessaoDto } from '@/tipos/api'
 import type { ListaTarefasDto } from '@/tipos/tarefas'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, resumoCasamento, type Rota } from '../../casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, resumoEvento, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -31,26 +31,26 @@ vi.mock('@/composables/useNotificacao', () => ({
   DURACAO_TOAST_ERRO: 6000,
 }))
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_TAREFAS = `${ROTA_CASAMENTO}/tarefas`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_TAREFAS = `${ROTA_EVENTO}/tarefas`
 
-const SESSAO_CASAL: SessaoDto = {
-  tokenAcesso: 'token-casal',
+const SESSAO_ANFITRIAO: SessaoDto = {
+  tokenAcesso: 'token-anfitriao',
   expiraEm: '2026-09-28T12:15:00Z',
   usuario: {
-    id: 'u-casal',
+    id: 'u-anfitriao',
     nome: 'Lívia Moraes',
     email: 'livia@exemplo.com',
-    papel: 'Casal',
+    papel: 'Anfitriao',
     organizacao: { id: 'o1', nome: 'Albuquerque Assessoria' },
-    casamentoId: ID_CASAMENTO,
+    eventoId: ID_EVENTO,
   },
 }
 
 const ATRASADA = tarefaExemplo({
   id: 'a',
   titulo: 'Assinar contrato da decoração',
-  responsavel: 'Casal',
+  responsavel: 'Anfitriao',
   categoria: 'Documentos',
   atrasada: true,
   diasParaPrazo: -4,
@@ -58,7 +58,7 @@ const ATRASADA = tarefaExemplo({
 })
 const SEMANA = tarefaExemplo({ id: 's', titulo: 'Confirmar buffet', venceNaSemana: true, diasParaPrazo: 2, prazo: '2026-10-02' })
 const SEM_PRAZO = tarefaExemplo({ id: 'n', titulo: 'Revisar roteiro', prazo: null, diasParaPrazo: null, categoria: 'Cerimonia' })
-const CONCLUIDA = tarefaExemplo({ id: 'c', titulo: 'Escolher música', status: 'Concluida', concluidaEm: '2026-09-28T15:00:00Z', concluidaPor: 'Casal', responsavel: 'Casal' })
+const CONCLUIDA = tarefaExemplo({ id: 'c', titulo: 'Escolher música', status: 'Concluida', concluidaEm: '2026-09-28T15:00:00Z', concluidaPor: 'Anfitriao', responsavel: 'Anfitriao' })
 
 function rotear(fetchSimulado: Mock<typeof fetch>, sessao: SessaoDto, ...rotas: Rota[]) {
   fetchSimulado.mockImplementation(async (entrada, init) => {
@@ -117,11 +117,11 @@ describe('TarefasView — assessoria', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaJson(listaPadrao())),
     )
 
-    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
 
     expect(wrapper.get('h1').text()).toBe(TEXTOS_TAREFAS.titulo)
     expect(wrapper.get('[data-teste="resumo-tarefas"]').text()).toBe('3 abertas · 1 concluída')
@@ -138,7 +138,7 @@ describe('TarefasView — assessoria', () => {
     expect(wrapper.text()).not.toContain('Escolher música')
     expect(wrapper.find('[data-teste="nova-tarefa"]').exists()).toBe(true)
     expect(wrapper.findAll('[data-teste="menu-acoes"]')).toHaveLength(3)
-    const itemMenu = wrapper.findAll('[data-teste="item-casamento"]').find((item) => item.text() === 'Tarefas')
+    const itemMenu = wrapper.findAll('[data-teste="item-evento"]').find((item) => item.text() === 'Tarefas')
     expect(itemMenu?.attributes('aria-current')).toBe('page')
   })
 
@@ -146,13 +146,13 @@ describe('TarefasView — assessoria', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaJson(listaPadrao())),
     )
-    const { wrapper, montagem } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas?situacao=concluidas`)
+    const { wrapper, montagem } = await abrir(`/eventos/${ID_EVENTO}/tarefas?situacao=concluidas`)
 
     expect(wrapper.findAll('[data-teste="titulo-tarefa"]').map((item) => item.text())).toEqual(['Escolher música'])
-    expect(wrapper.text()).toContain('Concluída pelo casal em 28/09/2026')
+    expect(wrapper.text()).toContain('Concluída pelos anfitriões em 28/09/2026')
 
     const opcoes = wrapper.get('[data-teste="filtro-situacao"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]')
     const todas = opcoes.find((opcao) => opcao.text() === 'Todas')!
@@ -161,8 +161,8 @@ describe('TarefasView — assessoria', () => {
     expect(montagem.roteador.currentRoute.value.query.situacao).toBe('todas')
     expect(wrapper.findAll('[data-teste="titulo-tarefa"]')).toHaveLength(4)
 
-    const casal = wrapper.get('[data-teste="filtro-responsavel"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]').find((opcao) => opcao.text() === 'Casal')!
-    await casal.trigger('click')
+    const anfitriao = wrapper.get('[data-teste="filtro-responsavel"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]').find((opcao) => opcao.text() === 'Anfitriões')!
+    await anfitriao.trigger('click')
     await flushPromises()
     expect(wrapper.findAll('[data-teste="titulo-tarefa"]').map((item) => item.text())).toEqual(['Assinar contrato da decoração', 'Escolher música'])
   })
@@ -172,7 +172,7 @@ describe('TarefasView — assessoria', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaJson(lista)),
       (url, init) => {
         if (url !== `${ROTA_TAREFAS}/a/status` || init?.method !== 'PATCH') {
@@ -187,7 +187,7 @@ describe('TarefasView — assessoria', () => {
         return respostaJson(atualizada)
       },
     )
-    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
 
     const anel = wrapper.get('[data-teste="grupo-atrasadas"] [data-teste="alternar-tarefa"]')
     expect(anel.attributes('aria-label')).toBe('Concluir: Assinar contrato da decoração')
@@ -214,16 +214,16 @@ describe('TarefasView — assessoria', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaJson(listaPadrao())),
-      quando('PATCH', `${ROTA_TAREFAS}/s/status`, () => respostaProblema(422, { detail: 'Este casamento está arquivado. Restaure para voltar a editar.' })),
+      quando('PATCH', `${ROTA_TAREFAS}/s/status`, () => respostaProblema(422, { detail: 'Este evento está arquivado. Restaure para voltar a editar.' })),
     )
-    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
 
     await wrapper.get('[data-teste="grupo-semana"] [data-teste="alternar-tarefa"]').trigger('click')
     await flushPromises()
 
-    expect(notificacoes.erro).toHaveBeenCalledWith('Este casamento está arquivado. Restaure para voltar a editar.')
+    expect(notificacoes.erro).toHaveBeenCalledWith('Este evento está arquivado. Restaure para voltar a editar.')
     expect(notificacoes.sucesso).not.toHaveBeenCalled()
   })
 
@@ -232,14 +232,14 @@ describe('TarefasView — assessoria', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaJson(removida ? listaTarefas([ATRASADA, SEMANA, CONCLUIDA]) : listaPadrao())),
       quando('DELETE', `${ROTA_TAREFAS}/n`, () => {
         removida = true
         return respostaVazia()
       }),
     )
-    const { wrapper, montagem } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const { wrapper, montagem } = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
     const confirmacao = useConfirmacaoExclusaoStore(montagem.pinia)
     const menus = wrapper.findAllComponents({ name: 'MenuAcoes' })
     const menuSemPrazo = menus.find((menu) => String(menu.props('rotuloAcessivel')).includes('Revisar roteiro'))!
@@ -262,12 +262,12 @@ describe('TarefasView — assessoria', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([ATRASADA, semana]))),
       quando('PATCH', `${ROTA_TAREFAS}/${ID_TAREFA}/status`, () => respostaJson({ ...semana, status: 'EmAndamento' })),
       quando('GET', `${ROTA_TAREFAS}/${ID_TAREFA}`, () => respostaJson(semana)),
     )
-    const { wrapper, montagem } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const { wrapper, montagem } = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
     const menu = wrapper.findAllComponents({ name: 'MenuAcoes' }).find((item) => String(item.props('rotuloAcessivel')).includes('Confirmar buffet'))!
 
     expect((menu.props('itens') as { chave: string }[]).map((item) => item.chave)).toEqual(['editar', 'iniciar', 'cancelar', 'excluir'])
@@ -282,20 +282,20 @@ describe('TarefasView — assessoria', () => {
     expect(montagem.roteador.currentRoute.value.params.tarefaId).toBe(ID_TAREFA)
   })
 
-  it('[COMPONENTE] estados: vazio com ação, erro com nova tentativa e casamento arquivado em somente leitura', async () => {
+  it('[COMPONENTE] estados: vazio com ação, erro com nova tentativa e evento arquivado em somente leitura', async () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([]))),
     )
-    const vazio = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const vazio = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
     expect(vazio.wrapper.get('[data-teste="estado-vazio"]').text()).toContain(TEXTOS_TAREFAS.vazioTitulo)
     expect(vazio.wrapper.find('[data-teste="nova-tarefa-vazio"]').exists()).toBe(true)
     vazio.wrapper.unmount()
 
-    rotear(fetchSimulado, SESSAO_EXEMPLO, quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())), quando('GET', ROTA_TAREFAS, () => respostaProblema(500)))
-    const erro = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    rotear(fetchSimulado, SESSAO_EXEMPLO, quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())), quando('GET', ROTA_TAREFAS, () => respostaProblema(500)))
+    const erro = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
     expect(erro.wrapper.text()).toContain(TEXTOS_TAREFAS.erroTitulo)
     expect(erro.wrapper.text()).toContain('Tentar novamente')
     erro.wrapper.unmount()
@@ -303,10 +303,10 @@ describe('TarefasView — assessoria', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ arquivado: true, arquivadoEm: '2026-09-01T12:00:00Z' }))),
-      quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([SEMANA], { casamentoArquivado: true }))),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ arquivado: true, arquivadoEm: '2026-09-01T12:00:00Z' }))),
+      quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([SEMANA], { eventoArquivado: true }))),
     )
-    const arquivado = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const arquivado = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
     expect(arquivado.wrapper.get('[data-teste="aviso-arquivado"]').text()).toContain(TEXTOS_TAREFAS.arquivado)
     expect(arquivado.wrapper.find('[data-teste="nova-tarefa"]').exists()).toBe(false)
     expect(arquivado.wrapper.find('[data-teste="menu-acoes"]').exists()).toBe(false)
@@ -316,49 +316,49 @@ describe('TarefasView — assessoria', () => {
     expect(chamadas(fetchSimulado, 'PATCH', `${ROTA_TAREFAS}/s/status`)).toHaveLength(0)
   })
 
-  it('[SEGURANÇA] casamento de outra organização mostra não encontrado', async () => {
+  it('[SEGURANÇA] evento de outra organização mostra não encontrado', async () => {
     rotear(fetchSimulado, SESSAO_EXEMPLO)
 
-    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
 
     expect(wrapper.text()).toContain(TEXTOS_TAREFAS.naoEncontradoTitulo)
     expect(wrapper.find('[data-teste="nova-tarefa"]').exists()).toBe(false)
   })
 })
 
-describe('TarefasView — casal', () => {
-  it('[SEGURANÇA] casal vê "Tarefas de vocês" sem ações da assessoria nem filtros de gestão', async () => {
+describe('TarefasView — anfitriões', () => {
+  it('[SEGURANÇA] anfitriões veem "Tarefas de vocês" sem ações da assessoria nem filtros de gestão', async () => {
     rotear(
       fetchSimulado,
-      SESSAO_CASAL,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ observacoes: null }))),
-      quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([ATRASADA, CONCLUIDA], { somenteDoCasal: true }))),
-      quando('PATCH', `${ROTA_TAREFAS}/a/status`, () => respostaJson({ ...ATRASADA, status: 'Concluida', atrasada: false, concluidaPor: 'Casal', concluidaEm: '2026-09-30T12:00:00Z' })),
+      SESSAO_ANFITRIAO,
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ observacoes: null }))),
+      quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([ATRASADA, CONCLUIDA], { somenteDoAnfitriao: true }))),
+      quando('PATCH', `${ROTA_TAREFAS}/a/status`, () => respostaJson({ ...ATRASADA, status: 'Concluida', atrasada: false, concluidaPor: 'Anfitriao', concluidaEm: '2026-09-30T12:00:00Z' })),
     )
 
-    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
 
-    expect(wrapper.get('h1').text()).toBe(TEXTOS_TAREFAS.tituloCasal)
+    expect(wrapper.get('h1').text()).toBe(TEXTOS_TAREFAS.tituloAnfitriao)
     expect(wrapper.get('[data-teste="resumo-tarefas"]').text()).toBe('1 esperando por vocês')
     expect(wrapper.find('[data-teste="nova-tarefa"]').exists()).toBe(false)
     expect(wrapper.find('[data-teste="menu-acoes"]').exists()).toBe(false)
     expect(wrapper.find('[data-teste="filtro-responsavel"]').exists()).toBe(false)
     expect(wrapper.find('[data-teste="filtro-categoria"]').exists()).toBe(false)
-    expect(wrapper.text()).toContain(TEXTOS_TAREFAS.rodapeCasal)
+    expect(wrapper.text()).toContain(TEXTOS_TAREFAS.rodapeAnfitriao)
     expect(wrapper.get('[data-teste="metadados-tarefa"]').text()).toBe('venceu há 4 dias')
 
     await wrapper.get('[data-teste="alternar-tarefa"]').trigger('click')
     await flushPromises()
 
-    expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_TAREFAS.toastConcluidaCasal, expect.objectContaining({ desfazer: expect.any(Function) }))
+    expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_TAREFAS.toastConcluidaAnfitriao, expect.objectContaining({ desfazer: expect.any(Function) }))
   })
 
-  it('[SEGURANÇA] casal que abre nova/editar tarefa é levado de volta ao próprio casamento', async () => {
-    rotear(fetchSimulado, SESSAO_CASAL, quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ observacoes: null }))))
+  it('[SEGURANÇA] anfitriões que abrem nova/editar tarefa são levados de volta ao próprio evento', async () => {
+    rotear(fetchSimulado, SESSAO_ANFITRIAO, quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ observacoes: null }))))
 
-    for (const caminho of [`/casamentos/${ID_CASAMENTO}/tarefas/nova`, `/casamentos/${ID_CASAMENTO}/tarefas/${ID_CASAMENTO}/editar`]) {
+    for (const caminho of [`/eventos/${ID_EVENTO}/tarefas/nova`, `/eventos/${ID_EVENTO}/tarefas/${ID_EVENTO}/editar`]) {
       const montagem = await prepararAplicacao(caminho)
-      expect(montagem.roteador.currentRoute.value.name).toBe('casamento')
+      expect(montagem.roteador.currentRoute.value.name).toBe('evento')
     }
   })
 })
@@ -368,11 +368,11 @@ describe('TarefaFormularioView', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('POST', ROTA_TAREFAS, () => respostaJson(tarefaExemplo({ id: 'nova' }), 201)),
       quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([tarefaExemplo({ id: 'nova' })]))),
     )
-    const { wrapper, montagem } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas/nova`)
+    const { wrapper, montagem } = await abrir(`/eventos/${ID_EVENTO}/tarefas/nova`)
 
     expect(wrapper.get('h1').text()).toBe(TEXTOS_TAREFAS.formNova)
     await wrapper.get('[data-teste="formulario-tarefa"]').trigger('submit')
@@ -382,8 +382,8 @@ describe('TarefaFormularioView', () => {
 
     await wrapper.get('[data-teste="campo-titulo"]').setValue('  Enviar lista de padrinhos ')
     await wrapper.get('[data-teste="campo-prazo"]').setValue('2026-10-10')
-    const casal = wrapper.get('[data-teste="campo-responsavel"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]').find((opcao) => opcao.text() === 'Casal')!
-    await casal.trigger('click')
+    const anfitriao = wrapper.get('[data-teste="campo-responsavel"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]').find((opcao) => opcao.text() === 'Anfitriões')!
+    await anfitriao.trigger('click')
     await wrapper.get('[data-teste="campo-descricao"]').setValue('Nomes completos')
     await wrapper.get('[data-teste="formulario-tarefa"]').trigger('submit')
     await flushPromises()
@@ -393,23 +393,23 @@ describe('TarefaFormularioView', () => {
     expect(corpoDaChamada(envio[0]!)).toEqual({
       titulo: 'Enviar lista de padrinhos',
       descricao: 'Nomes completos',
-      responsavel: 'Casal',
+      responsavel: 'Anfitriao',
       categoria: 'Geral',
       prazo: '2026-10-10',
     })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_TAREFAS.toastCriada)
-    expect(montagem.roteador.currentRoute.value.name).toBe('casamento-tarefas')
+    expect(montagem.roteador.currentRoute.value.name).toBe('evento-tarefas')
   })
 
-  it('[SEGURANÇA] edição de tarefa inexistente ou de outro casamento mostra não encontrada; id inválido cai no 404 da aplicação', async () => {
-    rotear(fetchSimulado, SESSAO_EXEMPLO, quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())))
+  it('[SEGURANÇA] edição de tarefa inexistente ou de outro evento mostra não encontrada; id inválido cai no 404 da aplicação', async () => {
+    rotear(fetchSimulado, SESSAO_EXEMPLO, quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())))
 
-    const inexistente = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas/33333333-3333-4333-8333-333333333333/editar`)
+    const inexistente = await abrir(`/eventos/${ID_EVENTO}/tarefas/33333333-3333-4333-8333-333333333333/editar`)
     expect(inexistente.wrapper.text()).toContain(TEXTOS_TAREFAS.tarefaNaoEncontradaTitulo)
     expect(inexistente.wrapper.find('[data-teste="formulario-tarefa"]').exists()).toBe(false)
     inexistente.wrapper.unmount()
 
-    const invalido = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/tarefas/abc/editar`)
+    const invalido = await prepararAplicacao(`/eventos/${ID_EVENTO}/tarefas/abc/editar`)
     expect(invalido.roteador.currentRoute.value.name).toBe('nao-encontrado')
   })
 
@@ -419,13 +419,13 @@ describe('TarefaFormularioView', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', `${ROTA_TAREFAS}/${ID_TAREFA}`, () => respostaJson(tarefa)),
       quando('PUT', `${ROTA_TAREFAS}/${ID_TAREFA}`, () => respostaJson(tarefa)),
       quando('PATCH', `${ROTA_TAREFAS}/${ID_TAREFA}/status`, () => respostaJson({ ...tarefa, status: 'Cancelada' })),
       quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([tarefa]))),
     )
-    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas/${ID_TAREFA}/editar`)
+    const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/tarefas/${ID_TAREFA}/editar`)
 
     expect(wrapper.get('h1').text()).toBe(TEXTOS_TAREFAS.formEditar)
     expect((wrapper.get('[data-teste="campo-titulo"]').element as HTMLInputElement).value).toBe('Confirmar buffet')
@@ -445,15 +445,15 @@ describe('TarefaFormularioView', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('POST', ROTA_TAREFAS, () => {
         tentativa += 1
         return tentativa === 1
           ? respostaProblema(400, { errors: { Titulo: ['Use entre 2 e 160 caracteres.'] } })
-          : respostaProblema(422, { detail: 'Este casamento já tem 500 tarefas. Exclua ou conclua algumas antes de criar novas.' })
+          : respostaProblema(422, { detail: 'Este evento já tem 500 tarefas. Exclua ou conclua algumas antes de criar novas.' })
       }),
     )
-    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas/nova`)
+    const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/tarefas/nova`)
 
     await wrapper.get('[data-teste="campo-titulo"]').setValue('Tarefa válida')
     await wrapper.get('[data-teste="formulario-tarefa"]').trigger('submit')
@@ -467,11 +467,11 @@ describe('TarefaFormularioView', () => {
 })
 
 describe('Dashboard — pendências de tarefas', () => {
-  it('[COMPONENTE] assessoria vê o bloco de pendências com link para o casamento', async () => {
+  it('[COMPONENTE] assessoria vê o bloco de pendências com link para o evento', async () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', '/api/casamentos?situacao=Ativos', () => respostaJson([resumoCasamento()])),
+      quando('GET', '/api/eventos?situacao=Ativos', () => respostaJson([resumoEvento()])),
       quando('GET', '/api/tarefas/pendencias', () => respostaJson(pendenciasExemplo())),
     )
 
@@ -480,14 +480,14 @@ describe('Dashboard — pendências de tarefas', () => {
     const bloco = wrapper.get('[data-teste="bloco-pendencias-tarefas"]')
     expect(bloco.get('[data-teste="total-atrasadas"]').text()).toBe('1')
     expect(bloco.text()).toContain('Confirmar horário do DJ')
-    expect(bloco.get('a').attributes('href')).toBe(`/casamentos/${ID_CASAMENTO}/tarefas?situacao=atrasadas`)
+    expect(bloco.get('a').attributes('href')).toBe(`/eventos/${ID_EVENTO}/tarefas?situacao=atrasadas`)
   })
 
-  it('[COMPONENTE] sem casamentos o bloco não aparece e erro nas pendências não derruba o dashboard', async () => {
+  it('[COMPONENTE] sem eventos o bloco não aparece e erro nas pendências não derruba o dashboard', async () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', '/api/casamentos?situacao=Ativos', () => respostaJson([])),
+      quando('GET', '/api/eventos?situacao=Ativos', () => respostaJson([])),
       quando('GET', '/api/tarefas/pendencias', () => respostaProblema(500)),
     )
     const vazio = await abrir('/')
@@ -497,12 +497,12 @@ describe('Dashboard — pendências de tarefas', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', '/api/casamentos?situacao=Ativos', () => respostaJson([resumoCasamento()])),
+      quando('GET', '/api/eventos?situacao=Ativos', () => respostaJson([resumoEvento()])),
       quando('GET', '/api/tarefas/pendencias', () => respostaProblema(500)),
     )
     const comErro = await abrir('/')
     expect(comErro.wrapper.get('[data-teste="bloco-pendencias-tarefas"]').text()).toContain(TEXTOS_TAREFAS.dashErro)
-    expect(comErro.wrapper.find('[data-teste="proximos-casamentos"]').exists()).toBe(true)
+    expect(comErro.wrapper.find('[data-teste="proximos-eventos"]').exists()).toBe(true)
   })
 })
 
@@ -515,11 +515,11 @@ describe('TarefasView — reestruturação da fundação', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([ATRASADA, SEMANA, SEM_PRAZO, CONCLUIDA, cancelada]))),
     )
 
-    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
 
     const lateral = wrapper.get('[data-teste="lateral-tarefas"]')
     expect(lateral.element.tagName).toBe('ASIDE')
@@ -541,18 +541,18 @@ describe('TarefasView — reestruturação da fundação', () => {
     expect(lateral.get('[data-teste="indicador-atrasadas"]').classes()).toContain('tarefas__indicador--atraso')
     expect(lateral.get('[data-teste="indicador-semana"] dd').text()).toBe('1')
     expect(lateral.get('[data-teste="indicador-canceladas"] dd').text()).toBe('1')
-    expect(lateral.text()).not.toContain(TEXTOS_TAREFAS.rodapeCasal)
+    expect(lateral.text()).not.toContain(TEXTOS_TAREFAS.rodapeAnfitriao)
   })
 
   it('[COMPONENTE] grupos usam rótulo da fundação e listas em cartão, com a lista antes da lateral', async () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaJson(listaPadrao())),
     )
 
-    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
 
     expect(wrapper.get('#grupo-atrasadas').classes()).toEqual(expect.arrayContaining(['texto-rotulo', 'tarefas__titulo-grupo--atraso']))
     expect(wrapper.get('#grupo-semana').classes()).not.toContain('tarefas__titulo-grupo--atraso')
@@ -563,32 +563,32 @@ describe('TarefasView — reestruturação da fundação', () => {
     expect(filhos[1]?.getAttribute('data-teste')).toBe('lateral-tarefas')
   })
 
-  it('[COMPONENTE] casal vê o progresso no plural, sem canceladas, e o rodapé dentro da lateral', async () => {
+  it('[COMPONENTE] anfitriões veem o progresso no plural, sem canceladas, e o rodapé dentro da lateral', async () => {
     rotear(
       fetchSimulado,
-      SESSAO_CASAL,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ observacoes: null }))),
-      quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([ATRASADA, CONCLUIDA], { somenteDoCasal: true }))),
+      SESSAO_ANFITRIAO,
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ observacoes: null }))),
+      quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([ATRASADA, CONCLUIDA], { somenteDoAnfitriao: true }))),
     )
 
-    const { wrapper } = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
 
     const lateral = wrapper.get('[data-teste="lateral-tarefas"]')
-    expect(lateral.get('#titulo-progresso-tarefas').text()).toBe(TEXTOS_TAREFAS.progressoTituloCasal)
+    expect(lateral.get('#titulo-progresso-tarefas').text()).toBe(TEXTOS_TAREFAS.progressoTituloAnfitriao)
     expect(lateral.get('[data-teste="percentual-tarefas"]').text()).toBe('50%')
     expect(lateral.get('[data-teste="legenda-progresso-tarefas"]').text()).toBe('Vocês concluíram 1 de 2')
     expect(lateral.find('[data-teste="indicador-canceladas"]').exists()).toBe(false)
-    expect(lateral.text()).toContain(TEXTOS_TAREFAS.rodapeCasal)
+    expect(lateral.text()).toContain(TEXTOS_TAREFAS.rodapeAnfitriao)
   })
 
   it('[COMPONENTE] sem tarefas, com erro de serviço ou sem permissão a lateral não aparece', async () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([]))),
     )
-    const vazio = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const vazio = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
     expect(vazio.wrapper.find('[data-teste="estado-vazio"]').exists()).toBe(true)
     expect(vazio.wrapper.find('[data-teste="lateral-tarefas"]').exists()).toBe(false)
     vazio.wrapper.unmount()
@@ -597,10 +597,10 @@ describe('TarefasView — reestruturação da fundação', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaProblema(500, { title: 'Erro interno.' })),
     )
-    const erro = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const erro = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
     expect(erro.wrapper.text()).toContain(TEXTOS_TAREFAS.erroTitulo)
     expect(erro.wrapper.find('[data-teste="lateral-tarefas"]').exists()).toBe(false)
     erro.wrapper.unmount()
@@ -609,10 +609,10 @@ describe('TarefasView — reestruturação da fundação', () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_TAREFAS, () => respostaProblema(403, { title: 'Acesso negado.' })),
     )
-    const negado = await abrir(`/casamentos/${ID_CASAMENTO}/tarefas`)
+    const negado = await abrir(`/eventos/${ID_EVENTO}/tarefas`)
     expect(negado.wrapper.text()).toContain(TEXTOS_TAREFAS.semAcesso)
     expect(negado.wrapper.find('[data-teste="lateral-tarefas"]').exists()).toBe(false)
   })

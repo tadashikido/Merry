@@ -5,7 +5,7 @@ import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaPr
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { TEXTOS_RSVP } from '@/textos/rsvp'
 import type { RsvpPublicoDto } from '@/tipos/rsvp'
-import { RaizRotas, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { RaizRotas, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
 const ROTA_CONSULTA = '/api/rsvp/consulta'
@@ -13,7 +13,7 @@ const ROTA_RESPOSTA = '/api/rsvp/resposta'
 
 function dados(extra: Partial<RsvpPublicoDto> = {}): RsvpPublicoDto {
   return {
-    casamento: {
+    evento: {
       nomePrimeiraPessoa: 'Ana Beatriz',
       nomeSegundaPessoa: 'Bruno',
       data: '2027-05-22',

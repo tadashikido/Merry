@@ -8,14 +8,14 @@ import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_DADOS_SENSIVEIS } from '@/textos/dadosSensiveis'
 import type { ListaConvitesDto } from '@/tipos/convidados'
 import type { RelatorioRestricoesAlimentaresDto } from '@/tipos/dadosSensiveis'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const ID_CONVITE = '33333333-3333-4333-8333-333333333333'
 const ID_LIA = '44444444-4444-4444-8444-444444444444'
 const ID_RUI = '55555555-5555-4555-8555-555555555555'
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_RELATORIO = `${ROTA_CASAMENTO}/restricoes-alimentares`
-const ROTA_CONVITES = `${ROTA_CASAMENTO}/convites`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_RELATORIO = `${ROTA_EVENTO}/restricoes-alimentares`
+const ROTA_CONVITES = `${ROTA_EVENTO}/convites`
 const ROTA_LIA = `${ROTA_CONVITES}/${ID_CONVITE}/convidados/${ID_LIA}/restricao-alimentar`
 const ROTA_RUI = `${ROTA_CONVITES}/${ID_CONVITE}/convidados/${ID_RUI}/restricao-alimentar`
 
@@ -93,7 +93,7 @@ const LISTA: ListaConvitesDto = {
     recusados: { adultos: 1, criancas: 0, total: 1 },
   },
   convidadosEstimados: null,
-  casamentoArquivado: false,
+  eventoArquivado: false,
 }
 
 let fetchSimulado: ReturnType<typeof simularFetch>
@@ -120,7 +120,7 @@ afterEach(() => {
 })
 
 async function abrir() {
-  const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/restricoes-alimentares`)
+  const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/restricoes-alimentares`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
   return montagem
@@ -128,7 +128,7 @@ async function abrir() {
 
 function rotas(corpo: () => Response = () => respostaJson(relatorio())) {
   return [
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
     quando('GET', ROTA_RELATORIO, corpo),
     quando('GET', ROTA_CONVITES, () => respostaJson(LISTA)),
   ]

@@ -8,56 +8,56 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class ConviteRepository : IConviteRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public ConviteRepository(CasamentoDbContext contexto)
+    public ConviteRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }
 
-    public async Task<IReadOnlyList<Convite>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<IReadOnlyList<Convite>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
         return await _contexto.Convites
             .AsNoTracking()
             .Include(convite => convite.Convidados)
             .ThenInclude(convidado => convidado.DadosSensiveis)
-            .Where(convite => convite.CasamentoId == casamentoId)
+            .Where(convite => convite.EventoId == eventoId)
             .AsSplitQuery()
             .ToListAsync(cancelamento);
     }
 
-    public async Task<IReadOnlyList<Convite>> ListarSemDadosSensiveisAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<IReadOnlyList<Convite>> ListarSemDadosSensiveisAsync(Guid eventoId, CancellationToken cancelamento)
     {
         return await _contexto.Convites
             .AsNoTracking()
             .Include(convite => convite.Convidados)
-            .Where(convite => convite.CasamentoId == casamentoId)
+            .Where(convite => convite.EventoId == eventoId)
             .AsSplitQuery()
             .ToListAsync(cancelamento);
     }
 
-    public Task<Convite?> ObterPorIdAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public Task<Convite?> ObterPorIdAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
         return _contexto.Convites
             .Include(convite => convite.Convidados)
             .ThenInclude(convidado => convidado.DadosSensiveis)
-            .FirstOrDefaultAsync(convite => convite.Id == conviteId && convite.CasamentoId == casamentoId, cancelamento);
+            .FirstOrDefaultAsync(convite => convite.Id == conviteId && convite.EventoId == eventoId, cancelamento);
     }
 
-    public Task<int> ContarConvidadosAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<int> ContarConvidadosAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        return _contexto.Convidados.CountAsync(convidado => convidado.CasamentoId == casamentoId, cancelamento);
+        return _contexto.Convidados.CountAsync(convidado => convidado.EventoId == eventoId, cancelamento);
     }
 
-    public async Task<ResumoConvidados> ObterResumoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ResumoConvidados> ObterResumoAsync(Guid eventoId, CancellationToken cancelamento)
     {
         var contagens = await _contexto.Convidados
-            .Where(convidado => convidado.CasamentoId == casamentoId)
+            .Where(convidado => convidado.EventoId == eventoId)
             .GroupBy(convidado => new { convidado.FaixaEtaria, convidado.Resposta })
             .Select(grupo => new { grupo.Key.FaixaEtaria, grupo.Key.Resposta, Quantidade = grupo.Count() })
             .ToListAsync(cancelamento);
 
-        var convites = _contexto.Convites.Where(convite => convite.CasamentoId == casamentoId);
+        var convites = _contexto.Convites.Where(convite => convite.EventoId == eventoId);
         var quantidadeConvites = await convites.CountAsync(cancelamento);
         var acompanhantes = await convites.SumAsync(
             convite => Math.Max(0, convite.LimiteAcompanhantes - convite.Convidados.Count(convidado => convidado.Acompanhante)),
@@ -69,9 +69,9 @@ public class ConviteRepository : IConviteRepository
             acompanhantes);
     }
 
-    public async Task<ResumoEnvioConvites> ObterResumoEnvioAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ResumoEnvioConvites> ObterResumoEnvioAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var convites = _contexto.Convites.Where(convite => convite.CasamentoId == casamentoId);
+        var convites = _contexto.Convites.Where(convite => convite.EventoId == eventoId);
         var possuiConvites = await convites.AnyAsync(cancelamento);
         if (!possuiConvites)
         {
@@ -82,11 +82,11 @@ public class ConviteRepository : IConviteRepository
         return new ResumoEnvioConvites(true, possuiEnviados);
     }
 
-    public async Task<IReadOnlyList<IdentificacaoConvidado>> ListarIdentificacoesAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<IReadOnlyList<IdentificacaoConvidado>> ListarIdentificacoesAsync(Guid eventoId, CancellationToken cancelamento)
     {
         return await _contexto.Convidados
             .AsNoTracking()
-            .Where(convidado => convidado.CasamentoId == casamentoId)
+            .Where(convidado => convidado.EventoId == eventoId)
             .Select(convidado => new IdentificacaoConvidado(convidado.Nome, convidado.Telefone))
             .ToListAsync(cancelamento);
     }

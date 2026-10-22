@@ -2,7 +2,7 @@ namespace Celebri.Aplicacao.CronogramaPublico.Portas;
 
 public interface ICifradorTokenCronograma
 {
-    string Cifrar(string token, Guid casamentoId);
+    string Cifrar(string token, Guid eventoId);
 
-    string? Decifrar(string tokenCifrado, Guid casamentoId);
+    string? Decifrar(string tokenCifrado, Guid eventoId);
 }

@@ -4,7 +4,7 @@ using Celebri.Aplicacao.Convidados.Importacao;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Mesas;
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Mesas;
@@ -16,51 +16,51 @@ public class MesaServiceTestes
 {
     private static readonly DateTimeOffset Agora = new(2027, 3, 10, 12, 0, 0, TimeSpan.Zero);
 
-    private readonly List<CasamentoAssessorado> _casamentos = [];
+    private readonly List<Evento> _eventos = [];
     private readonly List<Convite> _convites = [];
     private readonly RepositorioMesasMemoria _mesas;
     private readonly UnidadeTrabalhoContador _unidadeTrabalho = new();
     private readonly MesaService _service;
-    private readonly CasamentoAssessorado _casamento;
+    private readonly Evento _evento;
 
     public MesaServiceTestes()
     {
         _mesas = new RepositorioMesasMemoria(() => _convites.SelectMany(convite => convite.Convidados));
-        _service = new MesaService(new CasamentosMemoria(_casamentos), new ConvitesMemoria(_convites), _mesas, _unidadeTrabalho, new RelogioFixo(Agora));
-        _casamento = NovoCasamento();
+        _service = new MesaService(new EventosMemoria(_eventos), new ConvitesMemoria(_convites), _mesas, _unidadeTrabalho, new RelogioFixo(Agora));
+        _evento = NovoEvento();
     }
 
-    private CasamentoAssessorado NovoCasamento(bool arquivado = false)
+    private Evento NovoEvento(bool arquivado = false)
     {
-        var casamento = CasamentoAssessorado.Criar(
-            new DadosCasamento("Ana", "Bruno", new DateOnly(2027, 5, 15), null, null, null, 150, null),
+        var evento = Evento.Criar(
+            new DadosEvento("Ana", "Bruno", new DateOnly(2027, 5, 15), null, null, null, 150, null),
             Agora);
         if (arquivado)
         {
-            casamento.Arquivar(Agora);
+            evento.Arquivar(Agora);
         }
 
-        _casamentos.Add(casamento);
-        return casamento;
+        _eventos.Add(evento);
+        return evento;
     }
 
-    private Convite NovoConvite(CasamentoAssessorado casamento, string nome, params (string Nome, RespostaRsvp Resposta)[] pessoas)
+    private Convite NovoConvite(Evento evento, string nome, params (string Nome, RespostaRsvp Resposta)[] pessoas)
     {
         var dados = pessoas.Select(pessoa => new DadosConvidado(null, pessoa.Nome, null, null, FaixaEtaria.Adulto, pessoa.Resposta)).ToList();
-        var convite = Convite.Criar(casamento.Id, new DadosConvite(nome, null, 0, dados), Agora);
+        var convite = Convite.Criar(evento.Id, new DadosConvite(nome, null, 0, dados), Agora);
         _convites.Add(convite);
         return convite;
     }
 
     private async Task<MesaDto> CriarMesaAsync(int numero = 1, int capacidade = 8, bool especial = false)
     {
-        return await _service.CriarAsync(_casamento.Id, new SalvarMesaRequest(numero, null, capacidade, especial), CancellationToken.None);
+        return await _service.CriarAsync(_evento.Id, new SalvarMesaRequest(numero, null, capacidade, especial), CancellationToken.None);
     }
 
     [Fact]
     public async Task Criar_DeveAdicionarESalvar()
     {
-        var mesa = await _service.CriarAsync(_casamento.Id, new SalvarMesaRequest(2, "Padrinhos", 10, null), CancellationToken.None);
+        var mesa = await _service.CriarAsync(_evento.Id, new SalvarMesaRequest(2, "Padrinhos", 10, null), CancellationToken.None);
 
         Assert.Equal((2, "Padrinhos", 10, false, 0), (mesa.Numero, mesa.Nome, mesa.Capacidade, mesa.Especial, mesa.Ocupacao));
         Assert.Single(_mesas.Itens);
@@ -68,16 +68,16 @@ public class MesaServiceTestes
     }
 
     [Fact]
-    public async Task Criar_CasamentoInexistente_DeveLancar404()
+    public async Task Criar_EventoInexistente_DeveLancar404()
     {
         await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() =>
             _service.CriarAsync(Guid.NewGuid(), new SalvarMesaRequest(1, null, 8, false), CancellationToken.None));
     }
 
     [Fact]
-    public async Task Escritas_CasamentoArquivado_DevemLancar422ELeituraFunciona()
+    public async Task Escritas_EventoArquivado_DevemLancar422ELeituraFunciona()
     {
-        var arquivado = NovoCasamento(arquivado: true);
+        var arquivado = NovoEvento(arquivado: true);
         var convite = NovoConvite(arquivado, "Rui Fontes", ("Rui Fontes", RespostaRsvp.Confirmado));
         var pessoas = new PessoasMesaRequest([convite.Convidados[0].Id]);
 
@@ -87,8 +87,8 @@ public class MesaServiceTestes
         await Assert.ThrowsAsync<RegraNegocioException>(() => _service.DispensarAvisosAsync(arquivado.Id, pessoas, CancellationToken.None));
         await Assert.ThrowsAsync<RegraNegocioException>(() => _service.RemoverAsync(arquivado.Id, Guid.NewGuid(), CancellationToken.None));
 
-        Assert.Equal(MensagensMesas.CasamentoArquivado, criar.Message);
-        Assert.True((await _service.ObterMapaAsync(arquivado.Id, CancellationToken.None)).CasamentoArquivado);
+        Assert.Equal(MensagensMesas.EventoArquivado, criar.Message);
+        Assert.True((await _service.ObterMapaAsync(arquivado.Id, CancellationToken.None)).EventoArquivado);
         Assert.Equal(0, _unidadeTrabalho.Salvamentos);
     }
 
@@ -110,38 +110,38 @@ public class MesaServiceTestes
     {
         var mesa = await CriarMesaAsync(4, especial: true);
 
-        var atualizada = await _service.AtualizarAsync(_casamento.Id, mesa.Id, new SalvarMesaRequest(4, "Noivos", 10, true), CancellationToken.None);
+        var atualizada = await _service.AtualizarAsync(_evento.Id, mesa.Id, new SalvarMesaRequest(4, "Anfitrioes", 10, true), CancellationToken.None);
 
-        Assert.Equal(("Noivos", 10), (atualizada.Nome, atualizada.Capacidade));
+        Assert.Equal(("Anfitrioes", 10), (atualizada.Nome, atualizada.Capacidade));
     }
 
     [Fact]
     public async Task Atualizar_MesaInexistente_DeveLancar404()
     {
         await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() =>
-            _service.AtualizarAsync(_casamento.Id, Guid.NewGuid(), new SalvarMesaRequest(1, null, 8, false), CancellationToken.None));
+            _service.AtualizarAsync(_evento.Id, Guid.NewGuid(), new SalvarMesaRequest(1, null, 8, false), CancellationToken.None));
     }
 
     [Fact]
     public async Task Criar_AcimaDoLimiteDeMesas_DeveLancar422()
     {
-        for (var numero = 1; numero <= Mesa.MesasMaximoPorCasamento; numero++)
+        for (var numero = 1; numero <= Mesa.MesasMaximoPorEvento; numero++)
         {
-            _mesas.Itens.Add(Mesa.Criar(_casamento.Id, new DadosMesa(numero, null, 8, false), Agora));
+            _mesas.Itens.Add(Mesa.Criar(_evento.Id, new DadosMesa(numero, null, 8, false), Agora));
         }
 
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(() => CriarMesaAsync(999));
 
-        Assert.Equal(MensagensMesas.LimitePorCasamento, excecao.Message);
+        Assert.Equal(MensagensMesas.LimitePorEvento, excecao.Message);
     }
 
     [Fact]
     public async Task Sentar_DeveSentarSalvarEDevolverOMapa()
     {
         var mesa = await CriarMesaAsync(capacidade: 4);
-        var convite = NovoConvite(_casamento, "Família Souza", ("Carla Souza", RespostaRsvp.Confirmado), ("Pedro Souza", RespostaRsvp.Confirmado));
+        var convite = NovoConvite(_evento, "Família Souza", ("Carla Souza", RespostaRsvp.Confirmado), ("Pedro Souza", RespostaRsvp.Confirmado));
 
-        var mapa = await _service.SentarAsync(_casamento.Id, mesa.Id, new PessoasMesaRequest(convite.Convidados.Select(pessoa => pessoa.Id).ToList()), CancellationToken.None);
+        var mapa = await _service.SentarAsync(_evento.Id, mesa.Id, new PessoasMesaRequest(convite.Convidados.Select(pessoa => pessoa.Id).ToList()), CancellationToken.None);
 
         Assert.Equal(2, mapa.Mesas.Single().Ocupacao);
         Assert.Equal(2, _unidadeTrabalho.Salvamentos);
@@ -152,30 +152,30 @@ public class MesaServiceTestes
     public async Task Sentar_ConsideraOcupacaoAtualDaMesa()
     {
         var mesa = await CriarMesaAsync(capacidade: 2);
-        var souza = NovoConvite(_casamento, "Família Souza", ("Carla Souza", RespostaRsvp.Confirmado), ("Pedro Souza", RespostaRsvp.Confirmado));
-        var rui = NovoConvite(_casamento, "Rui Fontes", ("Rui Fontes", RespostaRsvp.Confirmado));
-        await _service.SentarAsync(_casamento.Id, mesa.Id, new PessoasMesaRequest(souza.Convidados.Select(pessoa => pessoa.Id).ToList()), CancellationToken.None);
+        var souza = NovoConvite(_evento, "Família Souza", ("Carla Souza", RespostaRsvp.Confirmado), ("Pedro Souza", RespostaRsvp.Confirmado));
+        var rui = NovoConvite(_evento, "Rui Fontes", ("Rui Fontes", RespostaRsvp.Confirmado));
+        await _service.SentarAsync(_evento.Id, mesa.Id, new PessoasMesaRequest(souza.Convidados.Select(pessoa => pessoa.Id).ToList()), CancellationToken.None);
 
         await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            _service.SentarAsync(_casamento.Id, mesa.Id, new PessoasMesaRequest([rui.Convidados[0].Id]), CancellationToken.None));
+            _service.SentarAsync(_evento.Id, mesa.Id, new PessoasMesaRequest([rui.Convidados[0].Id]), CancellationToken.None));
 
         Assert.Null(rui.Convidados[0].MesaId);
     }
 
     [Fact]
-    public async Task Sentar_PessoaDeOutroCasamentoOuInexistente_DeveLancar422()
+    public async Task Sentar_PessoaDeOutroEventoOuInexistente_DeveLancar422()
     {
         var mesa = await CriarMesaAsync();
-        var outro = NovoCasamento();
+        var outro = NovoEvento();
         var alheio = NovoConvite(outro, "Caio Rocha", ("Caio Rocha", RespostaRsvp.Confirmado));
 
         var deOutro = await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            _service.SentarAsync(_casamento.Id, mesa.Id, new PessoasMesaRequest([alheio.Convidados[0].Id]), CancellationToken.None));
+            _service.SentarAsync(_evento.Id, mesa.Id, new PessoasMesaRequest([alheio.Convidados[0].Id]), CancellationToken.None));
         var inexistente = await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            _service.SentarAsync(_casamento.Id, mesa.Id, new PessoasMesaRequest([Guid.NewGuid()]), CancellationToken.None));
+            _service.SentarAsync(_evento.Id, mesa.Id, new PessoasMesaRequest([Guid.NewGuid()]), CancellationToken.None));
 
-        Assert.Equal(MensagensMesas.PessoaDeOutroCasamento, deOutro.Message);
-        Assert.Equal(MensagensMesas.PessoaDeOutroCasamento, inexistente.Message);
+        Assert.Equal(MensagensMesas.PessoaDeOutroEvento, deOutro.Message);
+        Assert.Equal(MensagensMesas.PessoaDeOutroEvento, inexistente.Message);
         Assert.Null(alheio.Convidados[0].MesaId);
     }
 
@@ -185,27 +185,27 @@ public class MesaServiceTestes
         var mesa = await CriarMesaAsync();
         var id = Guid.NewGuid();
 
-        await Assert.ThrowsAsync<RegraNegocioException>(() => _service.SentarAsync(_casamento.Id, mesa.Id, new PessoasMesaRequest([]), CancellationToken.None));
-        await Assert.ThrowsAsync<RegraNegocioException>(() => _service.SentarAsync(_casamento.Id, mesa.Id, new PessoasMesaRequest([id, id]), CancellationToken.None));
+        await Assert.ThrowsAsync<RegraNegocioException>(() => _service.SentarAsync(_evento.Id, mesa.Id, new PessoasMesaRequest([]), CancellationToken.None));
+        await Assert.ThrowsAsync<RegraNegocioException>(() => _service.SentarAsync(_evento.Id, mesa.Id, new PessoasMesaRequest([id, id]), CancellationToken.None));
         await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            _service.SentarAsync(_casamento.Id, mesa.Id, new PessoasMesaRequest(Enumerable.Range(0, Mesa.PessoasMaximoPorOperacao + 1).Select(_ => Guid.NewGuid()).ToList()), CancellationToken.None));
+            _service.SentarAsync(_evento.Id, mesa.Id, new PessoasMesaRequest(Enumerable.Range(0, Mesa.PessoasMaximoPorOperacao + 1).Select(_ => Guid.NewGuid()).ToList()), CancellationToken.None));
     }
 
     [Fact]
     public async Task Sentar_MesaInexistente_DeveLancar404()
     {
-        var convite = NovoConvite(_casamento, "Rui Fontes", ("Rui Fontes", RespostaRsvp.Confirmado));
+        var convite = NovoConvite(_evento, "Rui Fontes", ("Rui Fontes", RespostaRsvp.Confirmado));
 
         await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() =>
-            _service.SentarAsync(_casamento.Id, Guid.NewGuid(), new PessoasMesaRequest([convite.Convidados[0].Id]), CancellationToken.None));
+            _service.SentarAsync(_evento.Id, Guid.NewGuid(), new PessoasMesaRequest([convite.Convidados[0].Id]), CancellationToken.None));
     }
 
     [Fact]
     public async Task Retirar_SemAlteracao_NaoSalva()
     {
-        var convite = NovoConvite(_casamento, "Rui Fontes", ("Rui Fontes", RespostaRsvp.Confirmado));
+        var convite = NovoConvite(_evento, "Rui Fontes", ("Rui Fontes", RespostaRsvp.Confirmado));
 
-        await _service.RetirarAsync(_casamento.Id, new PessoasMesaRequest([convite.Convidados[0].Id]), CancellationToken.None);
+        await _service.RetirarAsync(_evento.Id, new PessoasMesaRequest([convite.Convidados[0].Id]), CancellationToken.None);
 
         Assert.Equal(0, _unidadeTrabalho.Salvamentos);
     }
@@ -214,14 +214,14 @@ public class MesaServiceTestes
     public async Task RetirarEDispensar_DevemAlterarESalvar()
     {
         var mesa = await CriarMesaAsync();
-        var convite = NovoConvite(_casamento, "Família Souza", ("Carla Souza", RespostaRsvp.Confirmado), ("Pedro Souza", RespostaRsvp.Confirmado));
+        var convite = NovoConvite(_evento, "Família Souza", ("Carla Souza", RespostaRsvp.Confirmado), ("Pedro Souza", RespostaRsvp.Confirmado));
         var ids = convite.Convidados.Select(pessoa => pessoa.Id).ToList();
-        await _service.SentarAsync(_casamento.Id, mesa.Id, new PessoasMesaRequest(ids), CancellationToken.None);
+        await _service.SentarAsync(_evento.Id, mesa.Id, new PessoasMesaRequest(ids), CancellationToken.None);
         convite.RegistrarRespostaRsvp([new RespostaPessoaRsvp(ids[0], RespostaRsvp.Recusado), new RespostaPessoaRsvp(ids[1], RespostaRsvp.Confirmado)], [], Agora);
 
-        var antes = await _service.ObterMapaAsync(_casamento.Id, CancellationToken.None);
-        var retirado = await _service.RetirarAsync(_casamento.Id, new PessoasMesaRequest([ids[1]]), CancellationToken.None);
-        var dispensado = await _service.DispensarAvisosAsync(_casamento.Id, new PessoasMesaRequest([ids[0]]), CancellationToken.None);
+        var antes = await _service.ObterMapaAsync(_evento.Id, CancellationToken.None);
+        var retirado = await _service.RetirarAsync(_evento.Id, new PessoasMesaRequest([ids[1]]), CancellationToken.None);
+        var dispensado = await _service.DispensarAvisosAsync(_evento.Id, new PessoasMesaRequest([ids[0]]), CancellationToken.None);
 
         Assert.Single(antes.AvisosSaida);
         Assert.Equal(0, retirado.Mesas.Single().Ocupacao);
@@ -234,11 +234,11 @@ public class MesaServiceTestes
     {
         var mesa = await CriarMesaAsync();
 
-        await _service.RemoverAsync(_casamento.Id, mesa.Id, CancellationToken.None);
+        await _service.RemoverAsync(_evento.Id, mesa.Id, CancellationToken.None);
 
         Assert.Empty(_mesas.Itens);
         Assert.Single(_mesas.Removidas);
-        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => _service.RemoverAsync(_casamento.Id, mesa.Id, CancellationToken.None));
+        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => _service.RemoverAsync(_evento.Id, mesa.Id, CancellationToken.None));
     }
 
     [Fact]
@@ -259,63 +259,63 @@ public class MesaServiceTestes
 
         resultadosRepetidos.AddRange(repetidos.Validate(new ValidationContext(repetidos)));
         resultadosVazio.AddRange(vazio.Validate(new ValidationContext(vazio)));
-        Assert.Contains(resultadosVazio, resultado => resultado.ErrorMessage == MensagensMesas.PessoaDeOutroCasamento);
+        Assert.Contains(resultadosVazio, resultado => resultado.ErrorMessage == MensagensMesas.PessoaDeOutroEvento);
         Assert.Contains(resultadosRepetidos, resultado => resultado.ErrorMessage == MensagensMesas.PessoaRepetida);
     }
 
-    private sealed class CasamentosMemoria(List<CasamentoAssessorado> itens) : ICasamentoRepository
+    private sealed class EventosMemoria(List<Evento> itens) : IEventoRepository
     {
-        public Task<IReadOnlyList<CasamentoAssessorado>> ListarAsync(bool arquivados, CancellationToken cancelamento)
+        public Task<IReadOnlyList<Evento>> ListarAsync(bool arquivados, CancellationToken cancelamento)
         {
-            IReadOnlyList<CasamentoAssessorado> resultado = itens.Where(casamento => casamento.Arquivado == arquivados).ToList();
+            IReadOnlyList<Evento> resultado = itens.Where(evento => evento.Arquivado == arquivados).ToList();
             return Task.FromResult(resultado);
         }
 
-        public Task<CasamentoAssessorado?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
+        public Task<Evento?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
         {
-            return Task.FromResult(itens.FirstOrDefault(casamento => casamento.Id == id));
+            return Task.FromResult(itens.FirstOrDefault(evento => evento.Id == id));
         }
 
-        public void Adicionar(CasamentoAssessorado casamento)
+        public void Adicionar(Evento evento)
         {
-            itens.Add(casamento);
+            itens.Add(evento);
         }
     }
 
     private sealed class ConvitesMemoria(List<Convite> itens) : IConviteRepository
     {
-        public Task<IReadOnlyList<Convite>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<IReadOnlyList<Convite>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            IReadOnlyList<Convite> resultado = itens.Where(convite => convite.CasamentoId == casamentoId).ToList();
+            IReadOnlyList<Convite> resultado = itens.Where(convite => convite.EventoId == eventoId).ToList();
             return Task.FromResult(resultado);
         }
 
-        public Task<IReadOnlyList<Convite>> ListarSemDadosSensiveisAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<IReadOnlyList<Convite>> ListarSemDadosSensiveisAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            return ListarPorCasamentoAsync(casamentoId, cancelamento);
+            return ListarPorEventoAsync(eventoId, cancelamento);
         }
 
-        public Task<Convite?> ObterPorIdAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+        public Task<Convite?> ObterPorIdAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
         {
-            return Task.FromResult(itens.FirstOrDefault(convite => convite.CasamentoId == casamentoId && convite.Id == conviteId));
+            return Task.FromResult(itens.FirstOrDefault(convite => convite.EventoId == eventoId && convite.Id == conviteId));
         }
 
-        public Task<int> ContarConvidadosAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<int> ContarConvidadosAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            return Task.FromResult(itens.Where(convite => convite.CasamentoId == casamentoId).Sum(convite => convite.Convidados.Count));
+            return Task.FromResult(itens.Where(convite => convite.EventoId == eventoId).Sum(convite => convite.Convidados.Count));
         }
 
-        public Task<ResumoConvidados> ObterResumoAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<ResumoConvidados> ObterResumoAsync(Guid eventoId, CancellationToken cancelamento)
         {
             return Task.FromResult(new ResumoConvidados([], 0, 0));
         }
 
-        public Task<ResumoEnvioConvites> ObterResumoEnvioAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<ResumoEnvioConvites> ObterResumoEnvioAsync(Guid eventoId, CancellationToken cancelamento)
         {
             return Task.FromResult(ResumoEnvioConvites.Vazio);
         }
 
-        public Task<IReadOnlyList<IdentificacaoConvidado>> ListarIdentificacoesAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<IReadOnlyList<IdentificacaoConvidado>> ListarIdentificacoesAsync(Guid eventoId, CancellationToken cancelamento)
         {
             IReadOnlyList<IdentificacaoConvidado> resultado = [];
             return Task.FromResult(resultado);

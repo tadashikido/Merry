@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { fornecedorFinanceiro, parcelaExemplo } from '@/__tests__/auxiliaresFinanceiro'
-import { florista, vinculoExemplo } from '@/__tests__/auxiliaresFornecedoresCasamento'
+import { florista, vinculoExemplo } from '@/__tests__/auxiliaresFornecedoresEvento'
 import { ACEITE_COMPROVANTE, verificarArquivoComprovante } from '@/utilitarios/arquivo'
 import { deCentavos, paraCentavos, somarCentavos, temNoMaximoDuasCasas } from '@/utilitarios/centavos'
 import {
@@ -18,7 +18,7 @@ import {
   saldoAParcelarCentavos,
   valorParcelaValido,
 } from '@/utilitarios/financeiro'
-import { calcularResumoLocal, proporcoesPagamento } from '@/utilitarios/fornecedoresCasamento'
+import { calcularResumoLocal, proporcoesPagamento } from '@/utilitarios/fornecedoresEvento'
 
 function arquivo(bytes: number[], nome = 'comprovante.bin'): File {
   return new File([new Uint8Array(bytes)], nome)
@@ -129,7 +129,7 @@ describe('regras de parcela', () => {
           parcelaExemplo({ id: 'paga-recente', situacao: 'Paga', pagaEm: '2026-09-20' }),
         ],
       }),
-      fornecedorFinanceiro({ status: 'Cancelado', fornecedorCasamentoId: 'x', parcelas: [parcelaExemplo({ id: 'historico', situacao: 'Vencida' })] }),
+      fornecedorFinanceiro({ status: 'Cancelado', fornecedorEventoId: 'x', parcelas: [parcelaExemplo({ id: 'historico', situacao: 'Vencida' })] }),
     ])
 
     expect(livro.vencidas.map((parcela) => parcela.id)).toEqual(['vencida'])

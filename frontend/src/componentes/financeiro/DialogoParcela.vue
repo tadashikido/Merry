@@ -26,7 +26,7 @@ import { formatarMoeda } from '@/utilitarios/formatacao'
 const props = withDefaults(
   defineProps<{
     visivel: boolean
-    casamentoId: string
+    eventoId: string
     fornecedores: FornecedorFinanceiroDto[]
     vinculoId?: string | null
     parcela?: ParcelaDto | null
@@ -50,11 +50,11 @@ const formulario = useFormulario(
 
 const edicao = computed(() => props.parcela !== null)
 const contratados = computed(() => props.fornecedores.filter((fornecedor) => fornecedor.status === 'Contratado'))
-const vinculoAtual = computed(() => props.parcela?.fornecedorCasamentoId ?? props.vinculoId ?? vinculoEscolhido.value)
-const fornecedor = computed(() => contratados.value.find((item) => item.fornecedorCasamentoId === vinculoAtual.value) ?? null)
+const vinculoAtual = computed(() => props.parcela?.fornecedorEventoId ?? props.vinculoId ?? vinculoEscolhido.value)
+const fornecedor = computed(() => contratados.value.find((item) => item.fornecedorEventoId === vinculoAtual.value) ?? null)
 const escolherFornecedor = computed(() => !edicao.value && props.vinculoId === null)
 const opcoes = computed(() =>
-  contratados.value.map((item) => ({ valor: item.fornecedorCasamentoId, rotulo: item.nomeEmpresa })),
+  contratados.value.map((item) => ({ valor: item.fornecedorEventoId, rotulo: item.nomeEmpresa })),
 )
 
 const saldoCentavos = computed(() => {
@@ -131,8 +131,8 @@ async function salvar() {
   }
   executando.value = true
   const resultado = props.parcela
-    ? await store.atualizarParcela(props.casamentoId, vinculoAtual.value, props.parcela.id, dados)
-    : await store.criarParcela(props.casamentoId, vinculoAtual.value, dados)
+    ? await store.atualizarParcela(props.eventoId, vinculoAtual.value, props.parcela.id, dados)
+    : await store.criarParcela(props.eventoId, vinculoAtual.value, dados)
   executando.value = false
 
   if (!resultado.ok) {

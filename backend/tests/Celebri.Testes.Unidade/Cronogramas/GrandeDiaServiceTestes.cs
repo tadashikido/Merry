@@ -2,7 +2,7 @@ using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.GrandeDia;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Fornecedores;
@@ -14,27 +14,27 @@ namespace Celebri.Testes.Unidade.Cronogramas;
 public class GrandeDiaServiceTestes
 {
     private static readonly DateTimeOffset Agora = new(2027, 5, 15, 19, 34, 0, TimeSpan.Zero);
-    private static readonly DateOnly DataCasamento = new(2027, 5, 15);
+    private static readonly DateOnly DataEvento = new(2027, 5, 15);
 
-    private readonly RepositorioCasamentosMemoria _casamentos = new();
+    private readonly RepositorioEventosMemoria _eventos = new();
     private readonly RepositorioItensMemoria _itens = new();
     private readonly RepositorioVinculosFornecedorMemoria _vinculos = new();
     private readonly UnidadeTrabalhoControlada _unidadeTrabalho = new();
-    private readonly CalendarioLocalFixo _calendario = new(DataCasamento) { Hora = new TimeOnly(16, 34) };
-    private readonly CasamentoAssessorado _casamento;
+    private readonly CalendarioLocalFixo _calendario = new(DataEvento) { Hora = new TimeOnly(16, 34) };
+    private readonly Evento _evento;
 
     public GrandeDiaServiceTestes()
     {
-        _casamento = CasamentoAssessorado.Criar(
-            new DadosCasamento("Luísa", "Pedro", DataCasamento, new TimeOnly(16, 30), "Capela São José", "Espaço Jardim", null, null),
+        _evento = Evento.Criar(
+            new DadosEvento("Luísa", "Pedro", DataEvento, new TimeOnly(16, 30), "Capela São José", "Espaço Jardim", null, null),
             Agora);
-        _casamentos.Itens.Add(_casamento);
+        _eventos.Itens.Add(_evento);
     }
 
     private GrandeDiaService Service(IUsuarioAtual? usuario = null)
     {
         return new GrandeDiaService(
-            _casamentos,
+            _eventos,
             _itens,
             _vinculos,
             _unidadeTrabalho,
@@ -43,11 +43,11 @@ public class GrandeDiaServiceTestes
             usuario ?? UsuarioAtualFalso.Dono());
     }
 
-    private ItemCronograma Adicionar(int hora, int minuto, int? duracao, string atividade, Guid? fornecedor = null, Guid? casamentoId = null)
+    private ItemCronograma Adicionar(int hora, int minuto, int? duracao, string atividade, Guid? fornecedor = null, Guid? eventoId = null)
     {
         var item = ItemCronograma.Criar(
-            casamentoId ?? _casamento.Id,
-            new DadosItemCronograma(DiaCronograma.DiaDoCasamento, new TimeOnly(hora, minuto), duracao, atividade, "Capela", "Fernanda", fornecedor, "Instruções", "Pagar saldo"),
+            eventoId ?? _evento.Id,
+            new DadosItemCronograma(DiaCronograma.DiaDoEvento, new TimeOnly(hora, minuto), duracao, atividade, "Capela", "Fernanda", fornecedor, "Instruções", "Pagar saldo"),
             null,
             Agora);
         _itens.Itens.Add(item);
@@ -60,10 +60,10 @@ public class GrandeDiaServiceTestes
             new DadosFornecedor(CategoriaFornecedor.Musica, "Coral Harmonia", "Carla", telefone, null, null, null, null),
             Agora);
         _vinculos.Fornecedores[fornecedor.Id] = fornecedor;
-        var vinculo = FornecedorCasamento.Criar(
-            _casamento.Id,
+        var vinculo = FornecedorEvento.Criar(
+            _evento.Id,
             fornecedor.Id,
-            new DadosFornecedorCasamento("Música", 1_000m, null, StatusFornecedorCasamento.Cotacao, null),
+            new DadosFornecedorEvento("Música", 1_000m, null, StatusFornecedorEvento.Cotacao, null),
             null,
             Agora);
         _vinculos.Itens.Add(vinculo);
@@ -78,12 +78,12 @@ public class GrandeDiaServiceTestes
         Adicionar(16, 30, 45, "Cerimônia", vinculo);
         Adicionar(14, 0, 90, "Montagem");
 
-        var dto = await Service().ConsultarAsync(_casamento.Id, CancellationToken.None);
+        var dto = await Service().ConsultarAsync(_evento.Id, CancellationToken.None);
 
         Assert.Equal(new DateTime(2027, 5, 15, 16, 34, 0), dto.Momento.Agora);
         Assert.Equal(DateTimeKind.Unspecified, dto.Momento.Agora.Kind);
         Assert.Equal("NoDia", dto.Momento.Fase);
-        Assert.Equal(0, dto.Momento.DiasParaOCasamento);
+        Assert.Equal(0, dto.Momento.DiasParaOEvento);
         Assert.Equal(["Montagem", "Cerimônia", "Fotos com a família"], dto.Itens.Select(item => item.Atividade));
         Assert.Equal(["SemMarcar", "Agora", "Proximo"], dto.Itens.Select(item => item.Situacao));
         var cerimonia = dto.Itens[1];
@@ -96,12 +96,12 @@ public class GrandeDiaServiceTestes
     }
 
     [Fact]
-    public async Task Consultar_ComoCasal_DeveSerSomenteLeituraSemNotasInternasEComContatos()
+    public async Task Consultar_ComoAnfitriao_DeveSerSomenteLeituraSemNotasInternasEComContatos()
     {
         var vinculo = AdicionarVinculo();
         Adicionar(16, 30, 45, "Cerimônia", vinculo);
 
-        var dto = await Service(UsuarioAtualFalso.Casal(_casamento.Id)).ConsultarAsync(_casamento.Id, CancellationToken.None);
+        var dto = await Service(UsuarioAtualFalso.Anfitriao(_evento.Id)).ConsultarAsync(_evento.Id, CancellationToken.None);
 
         Assert.True(dto.SomenteLeitura);
         Assert.Null(dto.Itens[0].NotasInternas);
@@ -109,7 +109,7 @@ public class GrandeDiaServiceTestes
     }
 
     [Fact]
-    public async Task Consultar_CasamentoInexistente_DeveLancarNaoEncontrado()
+    public async Task Consultar_EventoInexistente_DeveLancarNaoEncontrado()
     {
         await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => Service().ConsultarAsync(Guid.NewGuid(), CancellationToken.None));
     }
@@ -120,7 +120,7 @@ public class GrandeDiaServiceTestes
         var cerimonia = Adicionar(16, 30, 45, "Cerimônia");
         Adicionar(17, 15, 45, "Fotos");
 
-        var dto = await Service().ConcluirItemAsync(_casamento.Id, cerimonia.Id, CancellationToken.None);
+        var dto = await Service().ConcluirItemAsync(_evento.Id, cerimonia.Id, CancellationToken.None);
 
         Assert.Equal(StatusItemCronograma.Concluido, cerimonia.Status);
         Assert.Equal(Agora, cerimonia.ConcluidoEm);
@@ -138,7 +138,7 @@ public class GrandeDiaServiceTestes
         var antes = Agora.AddMinutes(-5);
         cerimonia.MarcarConcluido(antes);
 
-        var dto = await Service().ConcluirItemAsync(_casamento.Id, cerimonia.Id, CancellationToken.None);
+        var dto = await Service().ConcluirItemAsync(_evento.Id, cerimonia.Id, CancellationToken.None);
 
         Assert.Equal(0, _unidadeTrabalho.Salvamentos);
         Assert.Equal(antes, cerimonia.ConcluidoEm);
@@ -151,7 +151,7 @@ public class GrandeDiaServiceTestes
         var cerimonia = Adicionar(16, 30, 45, "Cerimônia");
         cerimonia.MarcarConcluido(Agora.AddMinutes(-5));
 
-        var dto = await Service().ReabrirItemAsync(_casamento.Id, cerimonia.Id, CancellationToken.None);
+        var dto = await Service().ReabrirItemAsync(_evento.Id, cerimonia.Id, CancellationToken.None);
 
         Assert.Equal(StatusItemCronograma.Previsto, cerimonia.Status);
         Assert.Null(cerimonia.ConcluidoEm);
@@ -164,40 +164,40 @@ public class GrandeDiaServiceTestes
     {
         var cerimonia = Adicionar(16, 30, 45, "Cerimônia");
 
-        await Service().ReabrirItemAsync(_casamento.Id, cerimonia.Id, CancellationToken.None);
+        await Service().ReabrirItemAsync(_evento.Id, cerimonia.Id, CancellationToken.None);
 
         Assert.Equal(0, _unidadeTrabalho.Salvamentos);
     }
 
     [Fact]
-    public async Task Concluir_CasamentoArquivado_DeveLancarRegraDeNegocio()
+    public async Task Concluir_EventoArquivado_DeveLancarRegraDeNegocio()
     {
         var cerimonia = Adicionar(16, 30, 45, "Cerimônia");
-        _casamento.Arquivar(Agora);
+        _evento.Arquivar(Agora);
 
-        await Assert.ThrowsAsync<RegraNegocioException>(() => Service().ConcluirItemAsync(_casamento.Id, cerimonia.Id, CancellationToken.None));
-        await Assert.ThrowsAsync<RegraNegocioException>(() => Service().ReabrirItemAsync(_casamento.Id, cerimonia.Id, CancellationToken.None));
+        await Assert.ThrowsAsync<RegraNegocioException>(() => Service().ConcluirItemAsync(_evento.Id, cerimonia.Id, CancellationToken.None));
+        await Assert.ThrowsAsync<RegraNegocioException>(() => Service().ReabrirItemAsync(_evento.Id, cerimonia.Id, CancellationToken.None));
         Assert.Equal(StatusItemCronograma.Previsto, cerimonia.Status);
     }
 
     [Fact]
-    public async Task Consultar_CasamentoArquivado_DeveSerSomenteLeitura()
+    public async Task Consultar_EventoArquivado_DeveSerSomenteLeitura()
     {
-        _casamento.Arquivar(Agora);
+        _evento.Arquivar(Agora);
 
-        var dto = await Service().ConsultarAsync(_casamento.Id, CancellationToken.None);
+        var dto = await Service().ConsultarAsync(_evento.Id, CancellationToken.None);
 
         Assert.True(dto.Arquivado);
         Assert.True(dto.SomenteLeitura);
     }
 
     [Fact]
-    public async Task Concluir_ItemDeOutroCasamento_DeveLancarNaoEncontrado()
+    public async Task Concluir_ItemDeOutroEvento_DeveLancarNaoEncontrado()
     {
-        var outro = Adicionar(16, 30, 45, "Outro", casamentoId: Guid.NewGuid());
+        var outro = Adicionar(16, 30, 45, "Outro", eventoId: Guid.NewGuid());
 
-        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => Service().ConcluirItemAsync(_casamento.Id, outro.Id, CancellationToken.None));
-        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => Service().ConcluirItemAsync(_casamento.Id, Guid.NewGuid(), CancellationToken.None));
+        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => Service().ConcluirItemAsync(_evento.Id, outro.Id, CancellationToken.None));
+        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => Service().ConcluirItemAsync(_evento.Id, Guid.NewGuid(), CancellationToken.None));
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public class GrandeDiaServiceTestes
         var cerimonia = Adicionar(16, 30, 45, "Cerimônia");
         _unidadeTrabalho.FalharComConcorrencia = true;
 
-        var dto = await Service().ConcluirItemAsync(_casamento.Id, cerimonia.Id, CancellationToken.None);
+        var dto = await Service().ConcluirItemAsync(_evento.Id, cerimonia.Id, CancellationToken.None);
 
         Assert.Equal(1, _unidadeTrabalho.Descartes);
         Assert.Equal("Feito", dto.Itens[0].Situacao);
@@ -219,7 +219,7 @@ public class GrandeDiaServiceTestes
         _unidadeTrabalho.FalharComConcorrencia = true;
         _unidadeTrabalho.AoDescartar = () => cerimonia.Reabrir(Agora);
 
-        var excecao = await Assert.ThrowsAsync<ConcorrenciaException>(() => Service().ConcluirItemAsync(_casamento.Id, cerimonia.Id, CancellationToken.None));
+        var excecao = await Assert.ThrowsAsync<ConcorrenciaException>(() => Service().ConcluirItemAsync(_evento.Id, cerimonia.Id, CancellationToken.None));
 
         Assert.Equal(MensagensGrandeDia.AtualizadoEmOutroAparelho, excecao.Message);
         Assert.IsType<ConcorrenciaException>(excecao.InnerException);
@@ -229,14 +229,14 @@ public class GrandeDiaServiceTestes
     public async Task Consultar_ForaDoDia_DeveInformarFaseEDias()
     {
         Adicionar(16, 30, 45, "Cerimônia");
-        _calendario.Data = DataCasamento.AddDays(-12);
+        _calendario.Data = DataEvento.AddDays(-12);
 
-        var antes = await Service().ConsultarAsync(_casamento.Id, CancellationToken.None);
-        _calendario.Data = DataCasamento.AddDays(3);
-        var depois = await Service().ConsultarAsync(_casamento.Id, CancellationToken.None);
+        var antes = await Service().ConsultarAsync(_evento.Id, CancellationToken.None);
+        _calendario.Data = DataEvento.AddDays(3);
+        var depois = await Service().ConsultarAsync(_evento.Id, CancellationToken.None);
 
         Assert.Equal("AntesDoDia", antes.Momento.Fase);
-        Assert.Equal(12, antes.Momento.DiasParaOCasamento);
+        Assert.Equal(12, antes.Momento.DiasParaOEvento);
         Assert.Equal("Depois", antes.Itens[0].Situacao);
         Assert.Equal("DepoisDoDia", depois.Momento.Fase);
         Assert.Equal("SemMarcar", depois.Itens[0].Situacao);
@@ -245,7 +245,7 @@ public class GrandeDiaServiceTestes
     [Fact]
     public void MomentoDto_DeveDescartarFracoesEFuso()
     {
-        var retrato = MomentoGrandeDia.Calcular([], DataCasamento, new DateTime(2027, 5, 15, 10, 0, 0));
+        var retrato = MomentoGrandeDia.Calcular([], DataEvento, new DateTime(2027, 5, 15, 10, 0, 0));
         var dto = MomentoGrandeDiaDto.De(retrato, new DateTime(2027, 5, 15, 10, 0, 5, 750, DateTimeKind.Utc));
 
         Assert.Equal(new DateTime(2027, 5, 15, 10, 0, 5), dto.Agora);
@@ -253,24 +253,24 @@ public class GrandeDiaServiceTestes
         Assert.Throws<ArgumentNullException>(() => MomentoGrandeDiaDto.De(null!, DateTime.Now));
     }
 
-    private sealed class RepositorioCasamentosMemoria : ICasamentoRepository
+    private sealed class RepositorioEventosMemoria : IEventoRepository
     {
-        public List<CasamentoAssessorado> Itens { get; } = [];
+        public List<Evento> Itens { get; } = [];
 
-        public Task<IReadOnlyList<CasamentoAssessorado>> ListarAsync(bool arquivados, CancellationToken cancelamento)
+        public Task<IReadOnlyList<Evento>> ListarAsync(bool arquivados, CancellationToken cancelamento)
         {
-            IReadOnlyList<CasamentoAssessorado> resultado = Itens.Where(casamento => casamento.Arquivado == arquivados).ToList();
+            IReadOnlyList<Evento> resultado = Itens.Where(evento => evento.Arquivado == arquivados).ToList();
             return Task.FromResult(resultado);
         }
 
-        public Task<CasamentoAssessorado?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
+        public Task<Evento?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
         {
-            return Task.FromResult(Itens.FirstOrDefault(casamento => casamento.Id == id));
+            return Task.FromResult(Itens.FirstOrDefault(evento => evento.Id == id));
         }
 
-        public void Adicionar(CasamentoAssessorado casamento)
+        public void Adicionar(Evento evento)
         {
-            Itens.Add(casamento);
+            Itens.Add(evento);
         }
     }
 
@@ -278,20 +278,20 @@ public class GrandeDiaServiceTestes
     {
         public List<ItemCronograma> Itens { get; } = [];
 
-        public Task<IReadOnlyList<ItemCronograma>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<IReadOnlyList<ItemCronograma>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            IReadOnlyList<ItemCronograma> resultado = Itens.Where(item => item.CasamentoId == casamentoId).ToList();
+            IReadOnlyList<ItemCronograma> resultado = Itens.Where(item => item.EventoId == eventoId).ToList();
             return Task.FromResult(resultado);
         }
 
-        public Task<ItemCronograma?> ObterPorIdAsync(Guid casamentoId, Guid itemId, CancellationToken cancelamento)
+        public Task<ItemCronograma?> ObterPorIdAsync(Guid eventoId, Guid itemId, CancellationToken cancelamento)
         {
-            return Task.FromResult(Itens.FirstOrDefault(item => item.CasamentoId == casamentoId && item.Id == itemId));
+            return Task.FromResult(Itens.FirstOrDefault(item => item.EventoId == eventoId && item.Id == itemId));
         }
 
-        public Task<int> ContarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<int> ContarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            return Task.FromResult(Itens.Count(item => item.CasamentoId == casamentoId));
+            return Task.FromResult(Itens.Count(item => item.EventoId == eventoId));
         }
 
         public void Adicionar(ItemCronograma item)

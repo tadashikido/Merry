@@ -8,12 +8,12 @@ import { previaExemplo } from '@/__tests__/auxiliaresImportacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_PREVIA = `${ROTA_CASAMENTO}/convites/importacao/pre-visualizacao`
-const ROTA_IMPORTACAO = `${ROTA_CASAMENTO}/convites/importacao`
-const CAMINHO = `/casamentos/${ID_CASAMENTO}/convidados/importar`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_PREVIA = `${ROTA_EVENTO}/convites/importacao/pre-visualizacao`
+const ROTA_IMPORTACAO = `${ROTA_EVENTO}/convites/importacao`
+const CAMINHO = `/eventos/${ID_EVENTO}/convidados/importar`
 
 function lerArquivo(caminho: string): string {
   return readFileSync(resolve(__dirname, caminho), 'utf-8')
@@ -51,7 +51,7 @@ afterEach(() => {
 })
 
 async function abrir(...rotas: Parameters<typeof rotearFetch>[1][]) {
-  rotearFetch(fetchSimulado, quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())), ...rotas)
+  rotearFetch(fetchSimulado, quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())), ...rotas)
   const montagem = await prepararAplicacao(CAMINHO)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()

@@ -19,12 +19,12 @@ public static class ArquivoPdf
 
     public static string SanitizarNome(string? nomeOriginal)
     {
-        return NomeArquivoSeguro.Sanitizar(nomeOriginal, Extensao, NomePadrao, FornecedorCasamento.TamanhoMaximoNomeContrato);
+        return NomeArquivoSeguro.Sanitizar(nomeOriginal, Extensao, NomePadrao, FornecedorEvento.TamanhoMaximoNomeContrato);
     }
 
     public static Task<byte[]> LerComLimiteAsync(Stream conteudo, CancellationToken cancelamento)
     {
-        return LerComLimiteAsync(conteudo, MensagensFornecedoresCasamento.ContratoGrandeDemais, cancelamento);
+        return LerComLimiteAsync(conteudo, MensagensFornecedoresEvento.ContratoGrandeDemais, cancelamento);
     }
 
     public static async Task<byte[]> LerComLimiteAsync(Stream conteudo, string mensagemTamanho, CancellationToken cancelamento)

@@ -10,31 +10,31 @@ import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoPrimeiroAcesso from '@/componentes/base/EstadoPrimeiroAcesso.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
 import type { PassoPrimeiroAcesso } from '@/componentes/base/tipos'
-import CartaoCasamento from '@/componentes/casamentos/CartaoCasamento.vue'
+import CartaoEvento from '@/componentes/eventos/CartaoEvento.vue'
 import BlocoAlertasPagamentos from '@/componentes/base/BlocoAlertasPagamentos.vue'
 import BlocoPendenciasTarefas from '@/componentes/tarefas/BlocoPendenciasTarefas.vue'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useFinanceiroStore } from '@/stores/financeiro'
 import { useTarefasStore } from '@/stores/tarefas'
 import { TEXTOS_PAINEL } from '@/textos/autenticacao'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
+import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import { PASSOS_PRIMEIRO_ACESSO } from '@/textos/proximosPassos'
 import { primeiroNome } from '@/utilitarios/formatacao'
 
 const autenticacao = useAutenticacaoStore()
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const tarefas = useTarefasStore()
 const financeiro = useFinanceiroStore()
 const roteador = useRouter()
 
 const nomeUsuario = computed(() => autenticacao.usuario?.nome ?? '')
 const nomeOrganizacao = computed(() => autenticacao.usuario?.organizacao.nome ?? '')
-const semPermissao = computed(() => casamentos.falha?.tipo === 'semPermissao')
-const primeiroAcesso = computed(() => casamentos.carregado && !casamentos.falha && casamentos.itens.length === 0)
-const temRealizados = computed(() => casamentos.itens.length > casamentos.proximos.length)
+const semPermissao = computed(() => eventos.falha?.tipo === 'semPermissao')
+const primeiroAcesso = computed(() => eventos.carregado && !eventos.falha && eventos.itens.length === 0)
+const temRealizados = computed(() => eventos.itens.length > eventos.proximos.length)
 const exibirPendencias = computed(
-  () => !autenticacao.ehCasal && casamentos.carregado && !casamentos.falha && casamentos.itens.length > 0,
+  () => !autenticacao.ehAnfitriao && eventos.carregado && !eventos.falha && eventos.itens.length > 0,
 )
 
 const passosPrimeiroAcesso: PassoPrimeiroAcesso[] = PASSOS_PRIMEIRO_ACESSO.map((rotulo, indice) => ({
@@ -44,12 +44,12 @@ const passosPrimeiroAcesso: PassoPrimeiroAcesso[] = PASSOS_PRIMEIRO_ACESSO.map((
 }))
 
 function carregar() {
-  void casamentos.carregar('Ativos')
+  void eventos.carregar('Ativos')
   carregarPendencias()
 }
 
 function carregarPendencias() {
-  if (!autenticacao.ehCasal) {
+  if (!autenticacao.ehAnfitriao) {
     void tarefas.carregarPendencias()
     void financeiro.carregarAlertasOrganizacao()
   }
@@ -59,8 +59,8 @@ function carregarAlertasPagamentos() {
   void financeiro.carregarAlertasOrganizacao()
 }
 
-function novoCasamento() {
-  void roteador.push({ name: 'casamento-novo' })
+function novoEvento() {
+  void roteador.push({ name: 'evento-novo' })
 }
 
 onMounted(carregar)
@@ -77,10 +77,10 @@ onMounted(carregar)
         #acoes
       >
         <Button
-          :label="TEXTOS_CASAMENTOS.novoCasamento"
+          :label="TEXTOS_EVENTOS.novoEvento"
           icon="ie ie-mais"
-          data-teste="novo-casamento"
-          @click="novoCasamento"
+          data-teste="novo-evento"
+          @click="novoEvento"
         />
       </template>
     </CabecalhoPagina>
@@ -115,20 +115,20 @@ onMounted(carregar)
               id="titulo-proximos"
               class="painel-inicio__titulo-secao"
             >
-              {{ TEXTOS_CASAMENTOS.proximosTitulo }}
+              {{ TEXTOS_EVENTOS.proximosTitulo }}
             </h2>
             <p
-              v-if="casamentos.proximos.length > 0"
+              v-if="eventos.proximos.length > 0"
               class="texto-legenda"
             >
-              {{ TEXTOS_CASAMENTOS.proximosLegenda }}
+              {{ TEXTOS_EVENTOS.proximosLegenda }}
             </p>
           </div>
           <Button
-            v-if="casamentos.proximos.length > 0 || temRealizados"
+            v-if="eventos.proximos.length > 0 || temRealizados"
             :as="RouterLink"
-            :to="{ name: 'casamentos' }"
-            :label="TEXTOS_CASAMENTOS.verTodos"
+            :to="{ name: 'eventos' }"
+            :label="TEXTOS_EVENTOS.verTodos"
             severity="secondary"
             outlined
             class="painel-inicio__ver-todos"
@@ -137,23 +137,23 @@ onMounted(carregar)
         </div>
 
         <EstadoCarregando
-          v-if="casamentos.carregando"
+          v-if="eventos.carregando"
           variante="cartao"
           :linhas="3"
         />
 
         <EstadoErro
           v-else-if="semPermissao"
-          :titulo="TEXTOS_CASAMENTOS.erroCarregarTitulo"
-          :mensagem="TEXTOS_CASAMENTOS.semAcesso"
+          :titulo="TEXTOS_EVENTOS.erroCarregarTitulo"
+          :mensagem="TEXTOS_EVENTOS.semAcesso"
           :pode-tentar-novamente="false"
           variante="semPermissao"
         />
 
         <EstadoErro
-          v-else-if="casamentos.falha"
-          :titulo="TEXTOS_CASAMENTOS.erroCarregarTitulo"
-          :mensagem="TEXTOS_CASAMENTOS.erroCarregarTexto"
+          v-else-if="eventos.falha"
+          :titulo="TEXTOS_EVENTOS.erroCarregarTitulo"
+          :mensagem="TEXTOS_EVENTOS.erroCarregarTexto"
           @tentar-novamente="carregar"
         />
 
@@ -162,36 +162,36 @@ onMounted(carregar)
           :titulo="TEXTOS_PAINEL.primeiroAcessoTitulo"
           :descricao="TEXTOS_PAINEL.primeiroAcessoTexto"
           :passos="passosPrimeiroAcesso"
-          :rotulo-acao="TEXTOS_CASAMENTOS.novoCasamento"
-          @continuar="novoCasamento"
+          :rotulo-acao="TEXTOS_EVENTOS.novoEvento"
+          @continuar="novoEvento"
         />
 
         <EstadoVazio
-          v-else-if="casamentos.proximos.length === 0"
+          v-else-if="eventos.proximos.length === 0"
           icone="calendario"
-          :titulo="TEXTOS_CASAMENTOS.painelVazioTitulo"
-          :descricao="TEXTOS_CASAMENTOS.painelVazioTexto"
+          :titulo="TEXTOS_EVENTOS.painelVazioTitulo"
+          :descricao="TEXTOS_EVENTOS.painelVazioTexto"
         >
           <template #acao>
             <Button
-              :label="TEXTOS_CASAMENTOS.novoCasamento"
+              :label="TEXTOS_EVENTOS.novoEvento"
               severity="secondary"
               outlined
-              @click="novoCasamento"
+              @click="novoEvento"
             />
           </template>
         </EstadoVazio>
 
         <ul
           v-else
-          class="grade grade--larga painel-inicio__casamentos"
-          data-teste="proximos-casamentos"
+          class="grade grade--larga painel-inicio__eventos"
+          data-teste="proximos-eventos"
         >
           <li
-            v-for="casamento in casamentos.proximos"
-            :key="casamento.id"
+            v-for="evento in eventos.proximos"
+            :key="evento.id"
           >
-            <CartaoCasamento :casamento="casamento" />
+            <CartaoEvento :evento="evento" />
           </li>
         </ul>
       </section>
@@ -213,7 +213,7 @@ onMounted(carregar)
   line-height: var(--p-fonte-entrelinha-titulo);
 }
 
-.painel-inicio__casamentos {
+.painel-inicio__eventos {
   margin: 0;
   padding: 0;
   list-style: none;

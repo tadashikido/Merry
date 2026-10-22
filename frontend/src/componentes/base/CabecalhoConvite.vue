@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 import { TEXTOS_RSVP } from '@/textos/rsvp'
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 import { formatarDataCalendarioComDiaSemana } from '@/utilitarios/formatacao'
 import { formatarHorarioConvite } from '@/utilitarios/rsvp'
 
@@ -69,7 +69,7 @@ const locais = computed<LocalConvite[]>(() => {
     >
       {{ TEXTOS_RSVP.fraseConvite }}
     </p>
-    <h1 class="cabecalho-convite__casal">
+    <h1 class="cabecalho-convite__anfitriao">
       <span class="cabecalho-convite__nome">{{ primeiro }}</span>
       <span
         class="cabecalho-convite__e"
@@ -137,7 +137,7 @@ const locais = computed<LocalConvite[]>(() => {
   color: var(--p-cor-texto-publico);
 }
 
-.cabecalho-convite .cabecalho-convite__casal {
+.cabecalho-convite .cabecalho-convite__anfitriao {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -215,7 +215,7 @@ const locais = computed<LocalConvite[]>(() => {
   padding: var(--p-espaco-5) var(--p-espaco-5);
 }
 
-.cabecalho-convite--compacto .cabecalho-convite__casal {
+.cabecalho-convite--compacto .cabecalho-convite__anfitriao {
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
@@ -229,11 +229,11 @@ const locais = computed<LocalConvite[]>(() => {
 }
 
 @media (min-width: 640px) {
-  .cabecalho-convite .cabecalho-convite__casal {
+  .cabecalho-convite .cabecalho-convite__anfitriao {
     font-size: 3.625rem;
   }
 
-  .cabecalho-convite--compacto .cabecalho-convite__casal {
+  .cabecalho-convite--compacto .cabecalho-convite__anfitriao {
     font-size: var(--p-fonte-tamanho-pagina);
   }
 

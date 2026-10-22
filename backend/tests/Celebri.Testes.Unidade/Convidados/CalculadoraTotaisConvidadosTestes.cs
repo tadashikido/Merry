@@ -7,21 +7,21 @@ namespace Celebri.Testes.Unidade.Convidados;
 public class CalculadoraTotaisConvidadosTestes
 {
     private static readonly DateTimeOffset Agora = new(2027, 3, 10, 12, 0, 0, TimeSpan.Zero);
-    private static readonly Guid CasamentoId = Guid.NewGuid();
+    private static readonly Guid EventoId = Guid.NewGuid();
 
     [Fact]
     public void Calcular_CenarioDoCriterioDeAceite_DeveSomarPorRespostaEFaixa()
     {
         var convites = new[]
         {
-            Convite.Criar(CasamentoId, Dados("Zélia", null, 1,
+            Convite.Criar(EventoId, Dados("Zélia", null, 1,
                 Pessoa("Zélia", resposta: RespostaRsvp.Confirmado),
                 Pessoa("Rui", resposta: RespostaRsvp.Confirmado),
                 Pessoa("Téo", faixaEtaria: FaixaEtaria.Crianca, resposta: RespostaRsvp.Confirmado)), Agora),
-            Convite.Criar(CasamentoId, Dados("Álvaro", null, 0,
+            Convite.Criar(EventoId, Dados("Álvaro", null, 0,
                 Pessoa("Álvaro", resposta: RespostaRsvp.Confirmado),
                 Pessoa("Bia")), Agora),
-            Convite.Criar(CasamentoId, Dados("Beto", null, 2,
+            Convite.Criar(EventoId, Dados("Beto", null, 2,
                 Pessoa("Beto"),
                 Pessoa("Lia", faixaEtaria: FaixaEtaria.Crianca, resposta: RespostaRsvp.Recusado)), Agora),
         };
@@ -68,11 +68,11 @@ public class CalculadoraTotaisConvidadosTestes
     [Fact]
     public void Ordenar_DeveIgnorarAcentosECaixaEDesempatarPelaCriacao()
     {
-        var primeiroBeto = Convite.Criar(CasamentoId, Dados("beto", null, 0, Pessoa("Beto")), Agora);
-        var segundoBeto = Convite.Criar(CasamentoId, Dados("Beto", null, 0, Pessoa("Beto")), Agora.AddMinutes(1));
-        var alvaro = Convite.Criar(CasamentoId, Dados("Álvaro", null, 0, Pessoa("Álvaro")), Agora);
-        var zelia = Convite.Criar(CasamentoId, Dados("Zélia", null, 0, Pessoa("Zélia")), Agora);
-        var amanda = Convite.Criar(CasamentoId, Dados("amanda", null, 0, Pessoa("Amanda")), Agora);
+        var primeiroBeto = Convite.Criar(EventoId, Dados("beto", null, 0, Pessoa("Beto")), Agora);
+        var segundoBeto = Convite.Criar(EventoId, Dados("Beto", null, 0, Pessoa("Beto")), Agora.AddMinutes(1));
+        var alvaro = Convite.Criar(EventoId, Dados("Álvaro", null, 0, Pessoa("Álvaro")), Agora);
+        var zelia = Convite.Criar(EventoId, Dados("Zélia", null, 0, Pessoa("Zélia")), Agora);
+        var amanda = Convite.Criar(EventoId, Dados("amanda", null, 0, Pessoa("Amanda")), Agora);
 
         var ordenados = OrdenacaoConvites.Ordenar([zelia, segundoBeto, primeiroBeto, alvaro, amanda]);
 

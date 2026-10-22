@@ -2,7 +2,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { ErroApi, registrarProvedorAutenticacao, requisitar } from '@/servicos/clienteHttp'
-import type { ConviteAcessoCasalDto } from '@/tipos/acessoCasal'
+import type { ConviteAcessoAnfitriaoDto } from '@/tipos/acessoAnfitriao'
 import type {
   CadastroOrganizacaoRequest,
   EntrarRequest,
@@ -19,14 +19,14 @@ export const ROTAS_AUTENTICACAO = {
   eu: '/api/autenticacao/eu',
   esqueciSenha: '/api/autenticacao/esqueci-senha',
   redefinirSenha: '/api/autenticacao/redefinir-senha',
-  consultarConviteCasal: '/api/acesso-casal/consulta',
-  aceitarConviteCasal: '/api/acesso-casal/aceite',
+  consultarConviteAnfitriao: '/api/acesso-anfitriao/consulta',
+  aceitarConviteAnfitriao: '/api/acesso-anfitriao/aceite',
 } as const
 
-export const PAPEL_CASAL = 'Casal'
-export const DETALHE_CONVITE_CASAL_INVALIDO = 'Este convite não vale mais.'
+export const PAPEL_ANFITRIAO = 'Anfitriao'
+export const DETALHE_CONVITE_ANFITRIAO_INVALIDO = 'Este convite não vale mais.'
 
-export const NOME_TRAVA_RENOVACAO = 'casamento-renovacao-sessao'
+export const NOME_TRAVA_RENOVACAO = 'celebri-renovacao-sessao'
 export const DETALHE_LINK_INVALIDO = 'Link de redefinição inválido ou expirado.'
 
 export type AvisoEntrada = 'sessaoTerminou' | 'saiu' | 'senhaRedefinida'
@@ -35,12 +35,12 @@ export type TipoFalha = 'credenciais' | 'limite' | 'conexao' | 'conflito' | 'lin
 
 export type ResultadoAcao = { ok: true } | { ok: false; tipo: TipoFalha; errosCampos: Record<string, string> }
 
-export type ResultadoConsultaConvite = { ok: true; convite: ConviteAcessoCasalDto } | { ok: false; tipo: TipoFalha }
+export type ResultadoConsultaConvite = { ok: true; convite: ConviteAcessoAnfitriaoDto } | { ok: false; tipo: TipoFalha }
 
-export function interpretarFalhaConviteCasal(falha: unknown): Extract<ResultadoAcao, { ok: false }> {
+export function interpretarFalhaConviteAnfitriao(falha: unknown): Extract<ResultadoAcao, { ok: false }> {
   if (falha instanceof ErroApi && falha.status === 422) {
     const detalhe = falha.detalhes?.detail ?? falha.message
-    return detalhe === DETALHE_CONVITE_CASAL_INVALIDO
+    return detalhe === DETALHE_CONVITE_ANFITRIAO_INVALIDO
       ? { ok: false, tipo: 'linkInvalido', errosCampos: {} }
       : { ok: false, tipo: 'validacao', errosCampos: { senha: detalhe } }
   }
@@ -102,8 +102,8 @@ export const useAutenticacaoStore = defineStore('autenticacao', () => {
   const emailInformado = ref('')
 
   const autenticado = computed(() => tokenAcesso.value !== null && usuario.value !== null)
-  const ehCasal = computed(() => autenticado.value && usuario.value?.papel === PAPEL_CASAL)
-  const casamentoDoCasal = computed(() => (ehCasal.value ? (usuario.value?.casamentoId ?? null) : null))
+  const ehAnfitriao = computed(() => autenticado.value && usuario.value?.papel === PAPEL_ANFITRIAO)
+  const eventoDoAnfitriao = computed(() => (ehAnfitriao.value ? (usuario.value?.eventoId ?? null) : null))
 
   let renovacaoEmAndamento: Promise<boolean> | null = null
 
@@ -214,27 +214,27 @@ export const useAutenticacaoStore = defineStore('autenticacao', () => {
     }
   }
 
-  async function consultarConviteCasal(token: string): Promise<ResultadoConsultaConvite> {
+  async function consultarConviteAnfitriao(token: string): Promise<ResultadoConsultaConvite> {
     try {
-      const convite = await requisitar<ConviteAcessoCasalDto>(ROTAS_AUTENTICACAO.consultarConviteCasal, {
+      const convite = await requisitar<ConviteAcessoAnfitriaoDto>(ROTAS_AUTENTICACAO.consultarConviteAnfitriao, {
         metodo: 'POST',
         corpo: { token },
         anonima: true,
       })
       return { ok: true, convite }
     } catch (falha) {
-      return { ok: false, tipo: interpretarFalhaConviteCasal(falha).tipo }
+      return { ok: false, tipo: interpretarFalhaConviteAnfitriao(falha).tipo }
     }
   }
 
-  async function aceitarConviteCasal(token: string, senha: string): Promise<ResultadoAcao> {
+  async function aceitarConviteAnfitriao(token: string, senha: string): Promise<ResultadoAcao> {
     try {
       aplicarSessao(
-        await requisitar<SessaoDto>(ROTAS_AUTENTICACAO.aceitarConviteCasal, { metodo: 'POST', corpo: { token, senha }, anonima: true }),
+        await requisitar<SessaoDto>(ROTAS_AUTENTICACAO.aceitarConviteAnfitriao, { metodo: 'POST', corpo: { token, senha }, anonima: true }),
       )
       return { ok: true }
     } catch (falha) {
-      return interpretarFalhaConviteCasal(falha)
+      return interpretarFalhaConviteAnfitriao(falha)
     }
   }
 
@@ -252,8 +252,8 @@ export const useAutenticacaoStore = defineStore('autenticacao', () => {
     avisoEntrada,
     emailInformado,
     autenticado,
-    ehCasal,
-    casamentoDoCasal,
+    ehAnfitriao,
+    eventoDoAnfitriao,
     garantirSessaoVerificada,
     renovar,
     entrar,
@@ -262,8 +262,8 @@ export const useAutenticacaoStore = defineStore('autenticacao', () => {
     carregarUsuario,
     solicitarRecuperacao,
     redefinirSenha,
-    consultarConviteCasal,
-    aceitarConviteCasal,
+    consultarConviteAnfitriao,
+    aceitarConviteAnfitriao,
     consumirAviso,
   }
 })

@@ -18,7 +18,7 @@ import {
   formatarData,
   formatarDataCalendarioComDiaSemana,
   formatarDataHora,
-  formatarNomesCasal,
+  formatarNomesAnfitrioes,
   formatarNumero,
 } from '@/utilitarios/formatacao'
 
@@ -31,15 +31,15 @@ const carregando = ref(false)
 const falha = ref<FalhaConvidados | null>(null)
 
 const nomes = computed(() =>
-  ficha.value ? formatarNomesCasal(ficha.value.casamento.nomePrimeiraPessoa, ficha.value.casamento.nomeSegundaPessoa) : '',
+  ficha.value ? formatarNomesAnfitrioes(ficha.value.evento.nomePrimeiraPessoa, ficha.value.evento.nomeSegundaPessoa) : '',
 )
 
 const quando = computed(() => {
   if (!ficha.value) {
     return ''
   }
-  const data = formatarDataCalendarioComDiaSemana(ficha.value.casamento.data)
-  return ficha.value.casamento.horario ? `${data}, ${ficha.value.casamento.horario}` : data
+  const data = formatarDataCalendarioComDiaSemana(ficha.value.evento.data)
+  return ficha.value.evento.horario ? `${data}, ${ficha.value.evento.horario}` : data
 })
 
 const linhasContagem = computed<LinhaCardapio[]>(() =>
@@ -173,17 +173,17 @@ function imprimir() {
           </p>
         </div>
         <div class="ficha__identificacao pilha pilha--campo">
-          <h1 class="ficha__casal">
+          <h1 class="ficha__anfitriao">
             {{ nomes }}
           </h1>
           <p class="ficha__quando numeros-tabulares">
             {{ quando }}
           </p>
           <p
-            v-if="ficha.casamento.localRecepcao"
+            v-if="ficha.evento.localRecepcao"
             class="ficha__local"
           >
-            {{ ficha.casamento.localRecepcao }}
+            {{ ficha.evento.localRecepcao }}
           </p>
         </div>
       </header>
@@ -361,7 +361,7 @@ function imprimir() {
   min-width: 0;
 }
 
-.ficha__casal {
+.ficha__anfitriao {
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina-celular);
   font-weight: var(--p-fonte-peso-leve);
@@ -592,7 +592,7 @@ function imprimir() {
 }
 
 @container ficha (min-width: 36rem) {
-  .ficha__casal {
+  .ficha__anfitriao {
     font-size: var(--p-fonte-tamanho-pagina);
   }
 
@@ -616,7 +616,7 @@ function imprimir() {
     --pilha-espaco: var(--p-ritmo-cartao);
   }
 
-  .ficha__casal {
+  .ficha__anfitriao {
     font-size: var(--p-fonte-tamanho-pagina-celular);
   }
 

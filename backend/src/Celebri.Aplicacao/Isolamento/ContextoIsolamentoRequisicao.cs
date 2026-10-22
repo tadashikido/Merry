@@ -4,20 +4,20 @@ public class ContextoIsolamentoRequisicao : IContextoIsolamento
 {
     private readonly ContextoIsolamentoUsuarioAtual _usuarioAtual;
     private readonly EscopoIsolamentoRsvp _escopoRsvp;
-    private readonly EscopoIsolamentoAcessoCasal _escopoAcessoCasal;
+    private readonly EscopoIsolamentoAcessoAnfitriao _escopoAcessoAnfitriao;
     private readonly EscopoIsolamentoSistema _escopoSistema;
     private readonly EscopoIsolamentoCronogramaPublico _escopoCronogramaPublico;
 
     public ContextoIsolamentoRequisicao(
         ContextoIsolamentoUsuarioAtual usuarioAtual,
         EscopoIsolamentoRsvp escopoRsvp,
-        EscopoIsolamentoAcessoCasal escopoAcessoCasal,
+        EscopoIsolamentoAcessoAnfitriao escopoAcessoAnfitriao,
         EscopoIsolamentoSistema escopoSistema,
         EscopoIsolamentoCronogramaPublico escopoCronogramaPublico)
     {
         _usuarioAtual = usuarioAtual;
         _escopoRsvp = escopoRsvp;
-        _escopoAcessoCasal = escopoAcessoCasal;
+        _escopoAcessoAnfitriao = escopoAcessoAnfitriao;
         _escopoSistema = escopoSistema;
         _escopoCronogramaPublico = escopoCronogramaPublico;
     }
@@ -25,11 +25,11 @@ public class ContextoIsolamentoRequisicao : IContextoIsolamento
     public Guid? OrganizacaoId =>
         _escopoRsvp.OrganizacaoId
         ?? _escopoCronogramaPublico.OrganizacaoId
-        ?? _escopoAcessoCasal.OrganizacaoId
+        ?? _escopoAcessoAnfitriao.OrganizacaoId
         ?? _escopoSistema.OrganizacaoId
         ?? _usuarioAtual.OrganizacaoId;
 
-    public IReadOnlyCollection<Guid>? CasamentosPermitidos
+    public IReadOnlyCollection<Guid>? EventosPermitidos
     {
         get
         {
@@ -38,17 +38,17 @@ public class ContextoIsolamentoRequisicao : IContextoIsolamento
                 return null;
             }
 
-            if (_escopoCronogramaPublico.CasamentoId is { } casamentoDoLink)
+            if (_escopoCronogramaPublico.EventoId is { } eventoDoLink)
             {
-                return [casamentoDoLink];
+                return [eventoDoLink];
             }
 
-            if (_escopoAcessoCasal.CasamentoId is { } casamentoDoConvite)
+            if (_escopoAcessoAnfitriao.EventoId is { } eventoDoConvite)
             {
-                return [casamentoDoConvite];
+                return [eventoDoConvite];
             }
 
-            return _escopoSistema.OrganizacaoId is not null ? null : _usuarioAtual.CasamentosPermitidos;
+            return _escopoSistema.OrganizacaoId is not null ? null : _usuarioAtual.EventosPermitidos;
         }
     }
 }

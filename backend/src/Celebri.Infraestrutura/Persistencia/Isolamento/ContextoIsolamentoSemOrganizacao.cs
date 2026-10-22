@@ -6,5 +6,5 @@ public class ContextoIsolamentoSemOrganizacao : IContextoIsolamento
 {
     public Guid? OrganizacaoId => null;
 
-    public IReadOnlyCollection<Guid>? CasamentosPermitidos => [];
+    public IReadOnlyCollection<Guid>? EventosPermitidos => [];
 }

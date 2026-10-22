@@ -1,11 +1,11 @@
 import type {
   AlertasPagamentosDto,
-  FinanceiroCasamentoDto,
+  FinanceiroEventoDto,
   FornecedorFinanceiroDto,
   ParcelaAlertaDto,
   ParcelaDto,
 } from '@/tipos/financeiro'
-import type { ResumoOrcamentoDto } from '@/tipos/fornecedoresCasamento'
+import type { ResumoOrcamentoDto } from '@/tipos/fornecedoresEvento'
 
 export const ID_VINCULO_FINANCEIRO = '77777777-7777-4777-8777-777777777777'
 export const ID_VINCULO_FINANCEIRO_2 = '88888888-8888-4888-8888-888888888888'
@@ -14,7 +14,7 @@ export const HOJE_TESTE = '2026-09-30'
 export function parcelaExemplo(dados: Partial<ParcelaDto> = {}): ParcelaDto {
   return {
     id: 'p1',
-    fornecedorCasamentoId: ID_VINCULO_FINANCEIRO,
+    fornecedorEventoId: ID_VINCULO_FINANCEIRO,
     numero: 1,
     totalParcelas: 3,
     valor: 6166.66,
@@ -32,7 +32,7 @@ export function parcelaExemplo(dados: Partial<ParcelaDto> = {}): ParcelaDto {
 
 export function fornecedorFinanceiro(dados: Partial<FornecedorFinanceiroDto> = {}): FornecedorFinanceiroDto {
   return {
-    fornecedorCasamentoId: ID_VINCULO_FINANCEIRO,
+    fornecedorEventoId: ID_VINCULO_FINANCEIRO,
     fornecedorId: 'f1',
     nomeEmpresa: 'Buffet São João',
     categoria: 'Buffet',
@@ -66,7 +66,7 @@ export function resumoPagamentos(dados: Partial<ResumoOrcamentoDto> = {}): Resum
   }
 }
 
-export function financeiroExemplo(dados: Partial<FinanceiroCasamentoDto> = {}): FinanceiroCasamentoDto {
+export function financeiroExemplo(dados: Partial<FinanceiroEventoDto> = {}): FinanceiroEventoDto {
   return {
     resumo: resumoPagamentos(),
     alertas: { totalVencidas: 1, valorVencidas: 3250, totalProximas: 1, valorProximas: 3250 },
@@ -86,7 +86,7 @@ export function financeiroExemplo(dados: Partial<FinanceiroCasamentoDto> = {}): 
       }),
     ],
     hoje: HOJE_TESTE,
-    casamentoArquivado: false,
+    eventoArquivado: false,
     somenteLeitura: false,
     ...dados,
   }
@@ -95,10 +95,10 @@ export function financeiroExemplo(dados: Partial<FinanceiroCasamentoDto> = {}): 
 export function alertaExemplo(dados: Partial<ParcelaAlertaDto> = {}): ParcelaAlertaDto {
   return {
     parcelaId: 'a1',
-    casamentoId: '22222222-2222-4222-8222-222222222222',
+    eventoId: '22222222-2222-4222-8222-222222222222',
     nomePrimeiraPessoa: 'Ana',
     nomeSegundaPessoa: 'João',
-    fornecedorCasamentoId: ID_VINCULO_FINANCEIRO,
+    fornecedorEventoId: ID_VINCULO_FINANCEIRO,
     nomeEmpresa: 'Fotografia Lumière',
     numero: 3,
     totalParcelas: 4,
@@ -115,7 +115,7 @@ export function alertasExemplo(dados: Partial<AlertasPagamentosDto> = {}): Alert
     valorVencidas: 5250,
     totalProximas: 1,
     valorProximas: 4900,
-    casamentosComVencidas: 2,
+    eventosComVencidas: 2,
     hoje: HOJE_TESTE,
     vencidas: [alertaExemplo(), alertaExemplo({ parcelaId: 'a2', nomePrimeiraPessoa: 'Beatriz', nomeSegundaPessoa: 'Rafael', nomeEmpresa: 'Buffet São João', valor: 3250, diasParaVencimento: -5 })],
     proximas: [alertaExemplo({ parcelaId: 'a3', nomeEmpresa: 'Decoração Jardim', valor: 4900, vencimento: '2026-10-02', diasParaVencimento: 2 })],

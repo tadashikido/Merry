@@ -15,12 +15,12 @@ import {
   tituloTarefa,
 } from '@/utilitarios/tarefas'
 
-const atrasada = tarefaExemplo({ id: 'a', atrasada: true, diasParaPrazo: -3, prazo: '2026-09-27', responsavel: 'Casal', categoria: 'Documentos' })
+const atrasada = tarefaExemplo({ id: 'a', atrasada: true, diasParaPrazo: -3, prazo: '2026-09-27', responsavel: 'Anfitriao', categoria: 'Documentos' })
 const semana = tarefaExemplo({ id: 's', venceNaSemana: true, diasParaPrazo: 2, prazo: '2026-10-02' })
 const hoje = tarefaExemplo({ id: 'h', venceNaSemana: true, diasParaPrazo: 0, prazo: '2026-09-30', status: 'EmAndamento' })
 const adiante = tarefaExemplo({ id: 'd', diasParaPrazo: 40, prazo: '2026-11-09', categoria: 'Geral' })
 const semPrazo = tarefaExemplo({ id: 'n', prazo: null, diasParaPrazo: null })
-const concluida = tarefaExemplo({ id: 'c', status: 'Concluida', concluidaEm: '2026-09-28T15:00:00Z', concluidaPor: 'Casal', responsavel: 'Casal' })
+const concluida = tarefaExemplo({ id: 'c', status: 'Concluida', concluidaEm: '2026-09-28T15:00:00Z', concluidaPor: 'Anfitriao', responsavel: 'Anfitriao' })
 const cancelada = tarefaExemplo({ id: 'x', status: 'Cancelada' })
 const todas = [atrasada, semana, hoje, adiante, semPrazo, concluida, cancelada]
 
@@ -38,7 +38,7 @@ describe('filtros de tarefas', () => {
   })
 
   it('[UNITÁRIO] combina responsável e categoria', () => {
-    expect(filtrarTarefas(todas, { situacao: 'todas', responsavel: 'Casal', categoria: 'Todas' }).map((tarefa) => tarefa.id)).toEqual(['a', 'c'])
+    expect(filtrarTarefas(todas, { situacao: 'todas', responsavel: 'Anfitriao', categoria: 'Todas' }).map((tarefa) => tarefa.id)).toEqual(['a', 'c'])
     expect(filtrarTarefas(todas, { situacao: 'abertas', responsavel: 'Todos', categoria: 'Documentos' }).map((tarefa) => tarefa.id)).toEqual(['a'])
     expect(filtrarTarefas(todas, { situacao: 'abertas', responsavel: 'Assessoria', categoria: 'Documentos' })).toEqual([])
   })
@@ -84,17 +84,17 @@ describe('textos derivados da tarefa', () => {
     expect(badgeTarefa(cancelada)).toEqual({ texto: 'Cancelada', variante: 'neutro' })
   })
 
-  it('[UNITÁRIO] conclusão fala com o casal por "vocês" e com a assessoria pelo papel', () => {
+  it('[UNITÁRIO] conclusão fala com os anfitriões por "vocês" e com a assessoria pelo papel', () => {
     expect(descreverConclusao(concluida, true)).toBe('Concluída por vocês em 28/09/2026')
-    expect(descreverConclusao(concluida, false)).toBe('Concluída pelo casal em 28/09/2026')
+    expect(descreverConclusao(concluida, false)).toBe('Concluída pelos anfitriões em 28/09/2026')
     expect(descreverConclusao(tarefaExemplo({ status: 'Concluida', concluidaEm: '2026-09-28T15:00:00Z', concluidaPor: 'Assessoria' }), true)).toBe(
       'Concluída pela assessoria em 28/09/2026',
     )
     expect(descreverConclusao(atrasada, false)).toBeNull()
   })
 
-  it('[UNITÁRIO] metadados: assessoria vê responsável e categoria; casal vê só o prazo', () => {
-    expect(metadadosTarefa(atrasada, false)).toEqual(['Casal', 'venceu há 3 dias', 'Documentos'])
+  it('[UNITÁRIO] metadados: assessoria vê responsável e categoria; anfitriões veem só o prazo', () => {
+    expect(metadadosTarefa(atrasada, false)).toEqual(['Anfitriões', 'venceu há 3 dias', 'Documentos'])
     expect(metadadosTarefa(adiante, false)).toEqual(['Assessoria', 'vence em 40 dias · 09/11/2026'])
     expect(metadadosTarefa(atrasada, true)).toEqual(['venceu há 3 dias'])
   })

@@ -5,7 +5,7 @@ using Celebri.Aplicacao.CronogramaPublico;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Fornecedores;
@@ -21,30 +21,30 @@ public class LinksCronogramaTestes
 {
     private const string ChaveDadosSensiveis = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=";
     private static readonly DateTimeOffset Agora = new(2027, 3, 10, 12, 0, 0, TimeSpan.Zero);
-    private static readonly DateOnly DataCasamento = new(2027, 5, 15);
+    private static readonly DateOnly DataEvento = new(2027, 5, 15);
 
-    private readonly RepositorioCasamentosMemoria _casamentos = new();
+    private readonly RepositorioEventosMemoria _eventos = new();
     private readonly RepositorioItensMemoria _itens = new();
     private readonly RepositorioVinculosFornecedorMemoria _vinculos = new();
     private readonly RepositorioAcessosMemoria _acessos = new();
     private readonly UnidadeTrabalhoContador _unidadeTrabalho = new();
     private readonly CalendarioFixo _calendario = new(new DateOnly(2027, 3, 10));
-    private readonly CasamentoAssessorado _casamento;
+    private readonly Evento _evento;
     private readonly Guid _organizacaoId = Guid.NewGuid();
 
     public LinksCronogramaTestes()
     {
-        _casamento = NovoCasamento(_organizacaoId);
-        _casamentos.Itens.Add(_casamento);
+        _evento = NovoEvento(_organizacaoId);
+        _eventos.Itens.Add(_evento);
     }
 
-    private static CasamentoAssessorado NovoCasamento(Guid organizacaoId, DateOnly? data = null)
+    private static Evento NovoEvento(Guid organizacaoId, DateOnly? data = null)
     {
-        var casamento = CasamentoAssessorado.Criar(
-            new DadosCasamento("Ana", "João", data ?? DataCasamento, new TimeOnly(16, 30), "Capela", "Salão", null, "Observação interna"),
+        var evento = Evento.Criar(
+            new DadosEvento("Ana", "João", data ?? DataEvento, new TimeOnly(16, 30), "Capela", "Salão", null, "Observação interna"),
             Agora);
-        typeof(CasamentoAssessorado).GetProperty(nameof(CasamentoAssessorado.OrganizacaoId))!.SetValue(casamento, organizacaoId);
-        return casamento;
+        typeof(Evento).GetProperty(nameof(Evento.OrganizacaoId))!.SetValue(evento, organizacaoId);
+        return evento;
     }
 
     private static CifradorTokenCronograma Cifrador(string chave = ChaveDadosSensiveis)
@@ -55,7 +55,7 @@ public class LinksCronogramaTestes
     private LinkCronogramaService ServicoLinks()
     {
         return new LinkCronogramaService(
-            _casamentos,
+            _eventos,
             _itens,
             _vinculos,
             _acessos,
@@ -69,7 +69,7 @@ public class LinksCronogramaTestes
     private (CronogramaPublicoService Servico, EscopoIsolamentoCronogramaPublico Escopo) ServicoPublico()
     {
         var escopo = new EscopoIsolamentoCronogramaPublico();
-        return (new CronogramaPublicoService(_acessos, _casamentos, _itens, _vinculos, escopo, new GeradorTokenOpaco(), _calendario), escopo);
+        return (new CronogramaPublicoService(_acessos, _eventos, _itens, _vinculos, escopo, new GeradorTokenOpaco(), _calendario), escopo);
     }
 
     private ItemCronograma Adicionar(
@@ -77,11 +77,11 @@ public class LinksCronogramaTestes
         string atividade,
         string? responsavel = null,
         Guid? fornecedor = null,
-        Guid? casamentoId = null,
-        DiaCronograma dia = DiaCronograma.DiaDoCasamento)
+        Guid? eventoId = null,
+        DiaCronograma dia = DiaCronograma.DiaDoEvento)
     {
         var item = ItemCronograma.Criar(
-            casamentoId ?? _casamento.Id,
+            eventoId ?? _evento.Id,
             new DadosItemCronograma(dia, new TimeOnly(hora, 0), 30, atividade, "Salão", responsavel, fornecedor, "Instrução pública", "Pagar saldo de R$ 4.000 em espécie"),
             null,
             Agora);
@@ -89,16 +89,16 @@ public class LinksCronogramaTestes
         return item;
     }
 
-    private Guid AdicionarVinculo(string nome, StatusFornecedorCasamento status = StatusFornecedorCasamento.Contratado, Guid? casamentoId = null, string? telefone = "(11) 98765-4321")
+    private Guid AdicionarVinculo(string nome, StatusFornecedorEvento status = StatusFornecedorEvento.Contratado, Guid? eventoId = null, string? telefone = "(11) 98765-4321")
     {
         var fornecedor = Fornecedor.Criar(
             new DadosFornecedor(CategoriaFornecedor.Buffet, nome, "Marcos", telefone, "contato@buffet.com", null, null, "Observação do fornecedor"),
             Agora);
         _vinculos.Fornecedores[fornecedor.Id] = fornecedor;
-        var vinculo = FornecedorCasamento.Criar(
-            casamentoId ?? _casamento.Id,
+        var vinculo = FornecedorEvento.Criar(
+            eventoId ?? _evento.Id,
             fornecedor.Id,
-            new DadosFornecedorCasamento("Buffet", 9_000m, status == StatusFornecedorCasamento.Contratado ? 8_500m : null, status, "Nota do vínculo"),
+            new DadosFornecedorEvento("Buffet", 9_000m, status == StatusFornecedorEvento.Contratado ? 8_500m : null, status, "Nota do vínculo"),
             null,
             Agora);
         _vinculos.Itens.Add(vinculo);
@@ -140,64 +140,64 @@ public class LinksCronogramaTestes
     }
 
     [Fact]
-    public void AtendeItem_DeveFiltrarPorDestinoECasamento()
+    public void AtendeItem_DeveFiltrarPorDestinoEEvento()
     {
         var vinculo = Guid.NewGuid();
         var doFornecedor = Adicionar(9, "Montagem", fornecedor: vinculo);
         var deOutro = Adicionar(10, "Som", fornecedor: Guid.NewGuid());
         var semFornecedor = Adicionar(11, "Fotos", "Ana");
-        var deOutroCasamento = Adicionar(12, "Outro", fornecedor: vinculo, casamentoId: Guid.NewGuid());
-        var acesso = AcessoCronograma.Gerar(_casamento, DestinoAcessoCronograma.DoFornecedor(vinculo), new string('a', 64), "cifrado", Agora);
-        var geral = AcessoCronograma.Gerar(_casamento, DestinoAcessoCronograma.Geral(), new string('b', 64), "cifrado", Agora);
+        var deOutroEvento = Adicionar(12, "Outro", fornecedor: vinculo, eventoId: Guid.NewGuid());
+        var acesso = AcessoCronograma.Gerar(_evento, DestinoAcessoCronograma.DoFornecedor(vinculo), new string('a', 64), "cifrado", Agora);
+        var geral = AcessoCronograma.Gerar(_evento, DestinoAcessoCronograma.Geral(), new string('b', 64), "cifrado", Agora);
 
         Assert.True(acesso.AtendeItem(doFornecedor));
         Assert.False(acesso.AtendeItem(deOutro));
         Assert.False(acesso.AtendeItem(semFornecedor));
-        Assert.False(acesso.AtendeItem(deOutroCasamento));
+        Assert.False(acesso.AtendeItem(deOutroEvento));
         Assert.True(geral.AtendeItem(semFornecedor));
-        Assert.False(geral.AtendeItem(deOutroCasamento));
+        Assert.False(geral.AtendeItem(deOutroEvento));
     }
 
     [Fact]
-    public void Gerar_DeveCopiarOrganizacaoECasamentoEExigirHashDe64()
+    public void Gerar_DeveCopiarOrganizacaoEEventoEExigirHashDe64()
     {
-        var acesso = AcessoCronograma.Gerar(_casamento, DestinoAcessoCronograma.Geral(), new string('c', 64), "cifrado", Agora);
+        var acesso = AcessoCronograma.Gerar(_evento, DestinoAcessoCronograma.Geral(), new string('c', 64), "cifrado", Agora);
 
         Assert.Equal(_organizacaoId, acesso.OrganizacaoId);
-        Assert.Equal(_casamento.Id, acesso.CasamentoId);
+        Assert.Equal(_evento.Id, acesso.EventoId);
         Assert.Throws<ArgumentException>(() => acesso.Renovar("curto", "cifrado", Agora));
         Assert.Throws<InvalidOperationException>(() =>
-            AcessoCronograma.Gerar(NovoCasamento(Guid.Empty), DestinoAcessoCronograma.Geral(), new string('c', 64), "x", Agora));
+            AcessoCronograma.Gerar(NovoEvento(Guid.Empty), DestinoAcessoCronograma.Geral(), new string('c', 64), "x", Agora));
     }
 
     [Fact]
     public void Validade_DeveValerAteSeteDiasDepoisEDesligarArquivado()
     {
-        Assert.Equal(new DateOnly(2027, 5, 22), ValidadeAcessoCronograma.ValidoAte(DataCasamento));
-        Assert.False(ValidadeAcessoCronograma.Expirado(DataCasamento, new DateOnly(2027, 5, 22)));
-        Assert.True(ValidadeAcessoCronograma.Expirado(DataCasamento, new DateOnly(2027, 5, 23)));
-        Assert.True(ValidadeAcessoCronograma.Ativo(_casamento, new DateOnly(2027, 5, 22)));
+        Assert.Equal(new DateOnly(2027, 5, 22), ValidadeAcessoCronograma.ValidoAte(DataEvento));
+        Assert.False(ValidadeAcessoCronograma.Expirado(DataEvento, new DateOnly(2027, 5, 22)));
+        Assert.True(ValidadeAcessoCronograma.Expirado(DataEvento, new DateOnly(2027, 5, 23)));
+        Assert.True(ValidadeAcessoCronograma.Ativo(_evento, new DateOnly(2027, 5, 22)));
 
-        _casamento.Arquivar(Agora);
+        _evento.Arquivar(Agora);
 
-        Assert.False(ValidadeAcessoCronograma.Ativo(_casamento, new DateOnly(2027, 3, 10)));
+        Assert.False(ValidadeAcessoCronograma.Ativo(_evento, new DateOnly(2027, 3, 10)));
     }
 
     [Fact]
-    public void Cifrador_DeveIrEVoltarEFalharComOutroCasamentoOuOutraChave()
+    public void Cifrador_DeveIrEVoltarEFalharComOutroEventoOuOutraChave()
     {
         var cifrador = Cifrador();
         var token = new GeradorTokenOpaco().Gerar();
-        var casamentoId = Guid.NewGuid();
+        var eventoId = Guid.NewGuid();
 
-        var cifrado = cifrador.Cifrar(token, casamentoId);
+        var cifrado = cifrador.Cifrar(token, eventoId);
 
         Assert.DoesNotContain(token, cifrado, StringComparison.Ordinal);
         Assert.True(cifrado.Length <= AcessoCronograma.TamanhoMaximoTokenCifrado);
-        Assert.Equal(token, cifrador.Decifrar(cifrado, casamentoId));
+        Assert.Equal(token, cifrador.Decifrar(cifrado, eventoId));
         Assert.Null(cifrador.Decifrar(cifrado, Guid.NewGuid()));
-        Assert.Null(Cifrador("BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=").Decifrar(cifrado, casamentoId));
-        Assert.Null(cifrador.Decifrar("nao-base64!", casamentoId));
+        Assert.Null(Cifrador("BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=").Decifrar(cifrado, eventoId));
+        Assert.Null(cifrador.Decifrar("nao-base64!", eventoId));
     }
 
     [Fact]
@@ -222,24 +222,24 @@ public class LinksCronogramaTestes
     }
 
     [Fact]
-    public void Escopo_DeveSerUnicoERestringirOrganizacaoECasamento()
+    public void Escopo_DeveSerUnicoERestringirOrganizacaoEEvento()
     {
         var escopo = new EscopoIsolamentoCronogramaPublico();
         var contexto = new ContextoIsolamentoRequisicao(
             new ContextoIsolamentoUsuarioAtual(UsuarioAtualFalso.Dono()),
             new EscopoIsolamentoRsvp(),
-            new EscopoIsolamentoAcessoCasal(),
+            new EscopoIsolamentoAcessoAnfitriao(),
             new EscopoIsolamentoSistema(),
             escopo);
         var organizacao = Guid.NewGuid();
-        var casamento = Guid.NewGuid();
+        var evento = Guid.NewGuid();
 
-        escopo.Restringir(organizacao, casamento);
+        escopo.Restringir(organizacao, evento);
 
         Assert.Equal(organizacao, contexto.OrganizacaoId);
-        Assert.Equal(new[] { casamento }, contexto.CasamentosPermitidos!);
-        Assert.Throws<InvalidOperationException>(() => escopo.Restringir(organizacao, casamento));
-        Assert.Throws<InvalidOperationException>(() => new EscopoIsolamentoCronogramaPublico().Restringir(Guid.Empty, casamento));
+        Assert.Equal(new[] { evento }, contexto.EventosPermitidos!);
+        Assert.Throws<InvalidOperationException>(() => escopo.Restringir(organizacao, evento));
+        Assert.Throws<InvalidOperationException>(() => new EscopoIsolamentoCronogramaPublico().Restringir(Guid.Empty, evento));
         Assert.Throws<InvalidOperationException>(() => new EscopoIsolamentoCronogramaPublico().Restringir(organizacao, Guid.Empty));
     }
 
@@ -258,8 +258,8 @@ public class LinksCronogramaTestes
     {
         var servico = ServicoLinks();
 
-        var primeiro = await servico.GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
-        var segundo = await servico.GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
+        var primeiro = await servico.GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
+        var segundo = await servico.GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
 
         var acesso = Assert.Single(_acessos.Itens);
         Assert.True(FormatoTokenCronograma.Valido(primeiro.Token));
@@ -273,22 +273,22 @@ public class LinksCronogramaTestes
     [Fact]
     public async Task Gerar_ComCopiaIrrecuperavel_DeveRetornarConflito()
     {
-        _acessos.Itens.Add(AcessoCronograma.Gerar(_casamento, DestinoAcessoCronograma.Geral(), new string('d', 64), "invalido", Agora));
+        _acessos.Itens.Add(AcessoCronograma.Gerar(_evento, DestinoAcessoCronograma.Geral(), new string('d', 64), "invalido", Agora));
 
         await Assert.ThrowsAsync<ConflitoException>(() =>
-            ServicoLinks().GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default));
+            ServicoLinks().GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default));
     }
 
     [Fact]
-    public async Task Gerar_FornecedorCanceladoOuDeOutroCasamento_DeveRetornar422NoCampo()
+    public async Task Gerar_FornecedorCanceladoOuDeOutroEvento_DeveRetornar422NoCampo()
     {
-        var cancelado = AdicionarVinculo("Cancelado", StatusFornecedorCasamento.Cancelado);
-        var outroCasamento = AdicionarVinculo("Outro", casamentoId: Guid.NewGuid());
+        var cancelado = AdicionarVinculo("Cancelado", StatusFornecedorEvento.Cancelado);
+        var outroEvento = AdicionarVinculo("Outro", eventoId: Guid.NewGuid());
 
         var erroCancelado = await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            ServicoLinks().GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Fornecedor, cancelado, null), default));
+            ServicoLinks().GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Fornecedor, cancelado, null), default));
         var erroOutro = await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            ServicoLinks().GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Fornecedor, outroCasamento, null), default));
+            ServicoLinks().GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Fornecedor, outroEvento, null), default));
 
         Assert.Equal(DestinoAcessoCronograma.CampoFornecedor, erroCancelado.Campo);
         Assert.Equal(DestinoAcessoCronograma.CampoFornecedor, erroOutro.Campo);
@@ -301,26 +301,26 @@ public class LinksCronogramaTestes
         Adicionar(10, "Recepção", "Carlos");
 
         var erro = await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            ServicoLinks().GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Responsavel, null, "Fernanda"), default));
+            ServicoLinks().GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Responsavel, null, "Fernanda"), default));
 
         Assert.Equal(DestinoAcessoCronograma.CampoResponsavel, erro.Campo);
     }
 
     [Fact]
-    public async Task GerarERegenerar_CasamentoArquivadoOuExpirado_DevemRetornar422MasRevogarContinuaPermitido()
+    public async Task GerarERegenerar_EventoArquivadoOuExpirado_DevemRetornar422MasRevogarContinuaPermitido()
     {
-        var link = await ServicoLinks().GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
+        var link = await ServicoLinks().GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
         _calendario.Data = new DateOnly(2027, 5, 23);
 
-        await Assert.ThrowsAsync<RegraNegocioException>(() => ServicoLinks().RegenerarAsync(_casamento.Id, link.Id, default));
+        await Assert.ThrowsAsync<RegraNegocioException>(() => ServicoLinks().RegenerarAsync(_evento.Id, link.Id, default));
         await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            ServicoLinks().GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default));
+            ServicoLinks().GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default));
 
         _calendario.Data = new DateOnly(2027, 3, 10);
-        _casamento.Arquivar(Agora);
+        _evento.Arquivar(Agora);
 
-        await Assert.ThrowsAsync<RegraNegocioException>(() => ServicoLinks().RegenerarAsync(_casamento.Id, link.Id, default));
-        await ServicoLinks().RevogarAsync(_casamento.Id, link.Id, default);
+        await Assert.ThrowsAsync<RegraNegocioException>(() => ServicoLinks().RegenerarAsync(_evento.Id, link.Id, default));
+        await ServicoLinks().RevogarAsync(_evento.Id, link.Id, default);
         Assert.Empty(_acessos.Itens);
     }
 
@@ -328,9 +328,9 @@ public class LinksCronogramaTestes
     public async Task Regenerar_DeveTrocarTokenEManterDestino()
     {
         var servico = ServicoLinks();
-        var original = await servico.GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
+        var original = await servico.GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
 
-        var novo = await servico.RegenerarAsync(_casamento.Id, original.Id, default);
+        var novo = await servico.RegenerarAsync(_evento.Id, original.Id, default);
 
         Assert.Equal(original.Id, novo.Id);
         Assert.NotEqual(original.Token, novo.Token);
@@ -338,14 +338,14 @@ public class LinksCronogramaTestes
     }
 
     [Fact]
-    public async Task LinkDeOutroCasamento_DeveSerNaoEncontrado()
+    public async Task LinkDeOutroEvento_DeveSerNaoEncontrado()
     {
-        var outro = NovoCasamento(_organizacaoId);
-        _casamentos.Itens.Add(outro);
+        var outro = NovoEvento(_organizacaoId);
+        _eventos.Itens.Add(outro);
         var link = await ServicoLinks().GerarAsync(outro.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
 
-        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => ServicoLinks().RegenerarAsync(_casamento.Id, link.Id, default));
-        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => ServicoLinks().RevogarAsync(_casamento.Id, link.Id, default));
+        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => ServicoLinks().RegenerarAsync(_evento.Id, link.Id, default));
+        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => ServicoLinks().RevogarAsync(_evento.Id, link.Id, default));
         await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => ServicoLinks().ListarAsync(Guid.NewGuid(), default));
     }
 
@@ -354,16 +354,16 @@ public class LinksCronogramaTestes
     {
         var buffet = AdicionarVinculo("Buffet Sabor");
         AdicionarVinculo("Arte Floral", telefone: null);
-        AdicionarVinculo("Cancelado sem link", StatusFornecedorCasamento.Cancelado);
+        AdicionarVinculo("Cancelado sem link", StatusFornecedorEvento.Cancelado);
         Adicionar(9, "Montagem", "Fernanda", buffet);
         Adicionar(10, "Recepção", "fernanda ");
         Adicionar(11, "Fotos", "Carlos");
         var servico = ServicoLinks();
-        await servico.GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Fornecedor, buffet, null), default);
-        await servico.GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Responsavel, null, "Carlos"), default);
+        await servico.GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Fornecedor, buffet, null), default);
+        await servico.GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Responsavel, null, "Carlos"), default);
         _itens.Itens.RemoveAll(item => item.Responsavel == "Carlos");
 
-        var lista = await servico.ListarAsync(_casamento.Id, default);
+        var lista = await servico.ListarAsync(_evento.Id, default);
 
         Assert.Equal(new DateOnly(2027, 5, 22), lista.ValidoAte);
         Assert.False(lista.Expirado);
@@ -393,13 +393,13 @@ public class LinksCronogramaTestes
         Adicionar(9, "Making of", "Ana", null, dia: DiaCronograma.Vespera);
         Adicionar(19, "Jantar", null, buffet);
         Adicionar(21, "Pista", "Fernanda", outro);
-        var link = await ServicoLinks().GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Fornecedor, buffet, null), default);
+        var link = await ServicoLinks().GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Fornecedor, buffet, null), default);
         var (servico, escopo) = ServicoPublico();
 
         var dto = await servico.ConsultarAsync(new ConsultarCronogramaPublicoRequest(link.Token), default);
 
         Assert.Equal(_organizacaoId, escopo.OrganizacaoId);
-        Assert.Equal(_casamento.Id, escopo.CasamentoId);
+        Assert.Equal(_evento.Id, escopo.EventoId);
         Assert.Equal(["Montagem do buffet", "Jantar"], dto.Itens.Select(item => item.Atividade));
         Assert.Equal("Fornecedor", dto.Filtro.Tipo);
         Assert.Equal("Buffet Sabor", dto.Filtro.Rotulo);
@@ -407,7 +407,7 @@ public class LinksCronogramaTestes
         Assert.Equal("Buffet Sabor", dto.Itens[0].Fornecedor!.NomeEmpresa);
         Assert.Equal("Instrução pública", dto.Itens[0].Instrucoes);
         Assert.Equal(new DateOnly(2027, 5, 22), dto.ValidoAte);
-        Assert.Equal("16:30", dto.Casamento.HorarioCerimonia);
+        Assert.Equal("16:30", dto.Evento.HorarioCerimonia);
         Assert.DoesNotContain(
             typeof(ItemCronogramaPublicoDto).GetProperties(BindingFlags.Public | BindingFlags.Instance),
             propriedade => propriedade.Name is "NotasInternas" or "Id" or "Conflitos");
@@ -419,7 +419,7 @@ public class LinksCronogramaTestes
         Adicionar(10, "Recepção", "Fernanda");
         Adicionar(11, "Brinde", "FERNANDA");
         Adicionar(12, "Fotos", "Carlos");
-        var link = await ServicoLinks().GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Responsavel, null, " fernanda"), default);
+        var link = await ServicoLinks().GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Responsavel, null, " fernanda"), default);
 
         var dto = await ServicoPublico().Servico.ConsultarAsync(new ConsultarCronogramaPublicoRequest(link.Token), default);
 
@@ -430,7 +430,7 @@ public class LinksCronogramaTestes
     [Fact]
     public async Task ConsultaPublica_TokenInvalidoExpiradoOuArquivado_DeveSerNaoEncontradoComMesmaMensagem()
     {
-        var link = await ServicoLinks().GerarAsync(_casamento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
+        var link = await ServicoLinks().GerarAsync(_evento.Id, new GerarLinkCronogramaRequest(TipoAcessoCronograma.Geral, null, null), default);
 
         var malformado = await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() =>
             ServicoPublico().Servico.ConsultarAsync(new ConsultarCronogramaPublicoRequest("curto"), default));
@@ -441,7 +441,7 @@ public class LinksCronogramaTestes
             ServicoPublico().Servico.ConsultarAsync(new ConsultarCronogramaPublicoRequest(link.Token), default));
         _calendario.Data = new DateOnly(2027, 5, 22);
         await ServicoPublico().Servico.ConsultarAsync(new ConsultarCronogramaPublicoRequest(link.Token), default);
-        _casamento.Arquivar(Agora);
+        _evento.Arquivar(Agora);
         var arquivado = await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() =>
             ServicoPublico().Servico.ConsultarAsync(new ConsultarCronogramaPublicoRequest(link.Token), default));
 
@@ -459,7 +459,7 @@ public class LinksCronogramaTestes
             .ToList();
 
         Assert.Equal(
-            ["CasamentoId", "Destino", "FornecedorCasamentoId", "GeradoEm", "Id", "OrganizacaoId", "ResponsavelChave", "Tipo", "TokenCifrado", "TokenHash"],
+            ["Destino", "EventoId", "FornecedorEventoId", "GeradoEm", "Id", "OrganizacaoId", "ResponsavelChave", "Tipo", "TokenCifrado", "TokenHash"],
             propriedades);
         Assert.False(typeof(IPertenceOrganizacao).IsAssignableFrom(typeof(AcessoCronograma)));
     }
@@ -512,24 +512,24 @@ public class LinksCronogramaTestes
         }
     }
 
-    private sealed class RepositorioCasamentosMemoria : ICasamentoRepository
+    private sealed class RepositorioEventosMemoria : IEventoRepository
     {
-        public List<CasamentoAssessorado> Itens { get; } = [];
+        public List<Evento> Itens { get; } = [];
 
-        public Task<IReadOnlyList<CasamentoAssessorado>> ListarAsync(bool arquivados, CancellationToken cancelamento)
+        public Task<IReadOnlyList<Evento>> ListarAsync(bool arquivados, CancellationToken cancelamento)
         {
-            IReadOnlyList<CasamentoAssessorado> resultado = Itens.Where(casamento => casamento.Arquivado == arquivados).ToList();
+            IReadOnlyList<Evento> resultado = Itens.Where(evento => evento.Arquivado == arquivados).ToList();
             return Task.FromResult(resultado);
         }
 
-        public Task<CasamentoAssessorado?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
+        public Task<Evento?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
         {
-            return Task.FromResult(Itens.FirstOrDefault(casamento => casamento.Id == id));
+            return Task.FromResult(Itens.FirstOrDefault(evento => evento.Id == id));
         }
 
-        public void Adicionar(CasamentoAssessorado casamento)
+        public void Adicionar(Evento evento)
         {
-            Itens.Add(casamento);
+            Itens.Add(evento);
         }
     }
 
@@ -537,20 +537,20 @@ public class LinksCronogramaTestes
     {
         public List<ItemCronograma> Itens { get; } = [];
 
-        public Task<IReadOnlyList<ItemCronograma>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<IReadOnlyList<ItemCronograma>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            IReadOnlyList<ItemCronograma> resultado = Itens.Where(item => item.CasamentoId == casamentoId).ToList();
+            IReadOnlyList<ItemCronograma> resultado = Itens.Where(item => item.EventoId == eventoId).ToList();
             return Task.FromResult(resultado);
         }
 
-        public Task<ItemCronograma?> ObterPorIdAsync(Guid casamentoId, Guid itemId, CancellationToken cancelamento)
+        public Task<ItemCronograma?> ObterPorIdAsync(Guid eventoId, Guid itemId, CancellationToken cancelamento)
         {
-            return Task.FromResult(Itens.FirstOrDefault(item => item.CasamentoId == casamentoId && item.Id == itemId));
+            return Task.FromResult(Itens.FirstOrDefault(item => item.EventoId == eventoId && item.Id == itemId));
         }
 
-        public Task<int> ContarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<int> ContarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            return Task.FromResult(Itens.Count(item => item.CasamentoId == casamentoId));
+            return Task.FromResult(Itens.Count(item => item.EventoId == eventoId));
         }
 
         public void Adicionar(ItemCronograma item)
@@ -573,15 +573,15 @@ public class LinksCronogramaTestes
             return Task.FromResult(Itens.FirstOrDefault(acesso => acesso.TokenHash == tokenHash));
         }
 
-        public Task<IReadOnlyList<AcessoCronograma>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<IReadOnlyList<AcessoCronograma>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            IReadOnlyList<AcessoCronograma> resultado = Itens.Where(acesso => acesso.CasamentoId == casamentoId).ToList();
+            IReadOnlyList<AcessoCronograma> resultado = Itens.Where(acesso => acesso.EventoId == eventoId).ToList();
             return Task.FromResult(resultado);
         }
 
-        public Task<AcessoCronograma?> ObterAsync(Guid casamentoId, Guid acessoId, CancellationToken cancelamento)
+        public Task<AcessoCronograma?> ObterAsync(Guid eventoId, Guid acessoId, CancellationToken cancelamento)
         {
-            return Task.FromResult(Itens.FirstOrDefault(acesso => acesso.CasamentoId == casamentoId && acesso.Id == acessoId));
+            return Task.FromResult(Itens.FirstOrDefault(acesso => acesso.EventoId == eventoId && acesso.Id == acessoId));
         }
 
         public void Adicionar(AcessoCronograma acesso)

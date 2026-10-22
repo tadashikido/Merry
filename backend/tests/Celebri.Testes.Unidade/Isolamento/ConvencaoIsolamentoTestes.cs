@@ -1,8 +1,8 @@
 using System.Reflection;
 using Celebri.Aplicacao.Isolamento;
-using Celebri.Dominio.AcessosCasal;
+using Celebri.Dominio.AcessosAnfitriao;
 using Celebri.Dominio.Autenticacao;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Isolamento;
 using Celebri.Dominio.Organizacoes;
@@ -27,7 +27,7 @@ public class ConvencaoIsolamentoTestes
     private static readonly Type[] EntidadesDeResolucaoPublicaForaDoIsolamento =
     [
         typeof(AcessoRsvp),
-        typeof(TokenAcessoCasal),
+        typeof(TokenAcessoAnfitriao),
         typeof(AcessoCronograma),
     ];
 
@@ -40,7 +40,7 @@ public class ConvencaoIsolamentoTestes
     [Fact]
     public void Modelo_TodaEntidadeForaDaListaDeAutenticacao_DeveImplementarIPertenceOrganizacao()
     {
-        using var contexto = new CasamentoDbContextFactory().CreateDbContext([]);
+        using var contexto = new CelebriDbContextFactory().CreateDbContext([]);
 
         var semIsolamento = contexto.Model.GetEntityTypes()
             .Where(tipo => !tipo.IsOwned())
@@ -58,7 +58,7 @@ public class ConvencaoIsolamentoTestes
     [Fact]
     public void Modelo_TodaEntidadeIsolada_DevePossuirFiltroETokenDeConcorrenciaPorOrganizacao()
     {
-        using var contexto = new CasamentoDbContextFactory().CreateDbContext([]);
+        using var contexto = new CelebriDbContextFactory().CreateDbContext([]);
 
         foreach (var tipo in contexto.Model.GetEntityTypes().Where(tipo => typeof(IPertenceOrganizacao).IsAssignableFrom(tipo.ClrType)))
         {
@@ -96,52 +96,52 @@ public class ConvencaoIsolamentoTestes
             .ToList();
 
         Assert.Equal(
-            ["CasamentoId", "ConviteId", "GeradoEm", "Id", "OrganizacaoId", "TokenCifrado", "TokenHash"],
+            ["ConviteId", "EventoId", "GeradoEm", "Id", "OrganizacaoId", "TokenCifrado", "TokenHash"],
             propriedades);
         Assert.False(typeof(IPertenceOrganizacao).IsAssignableFrom(typeof(AcessoRsvp)));
     }
 
     [Fact]
-    public void TokenAcessoCasal_DeveExporSomenteIdentificadoresEHash()
+    public void TokenAcessoAnfitriao_DeveExporSomenteIdentificadoresEHash()
     {
-        var propriedades = typeof(TokenAcessoCasal).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+        var propriedades = typeof(TokenAcessoAnfitriao).GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Select(propriedade => propriedade.Name)
             .Order()
             .ToList();
 
-        Assert.Equal(["AcessoCasalId", "CasamentoId", "GeradoEm", "Id", "OrganizacaoId", "TokenHash"], propriedades);
-        Assert.False(typeof(IPertenceOrganizacao).IsAssignableFrom(typeof(TokenAcessoCasal)));
+        Assert.Equal(["AcessoAnfitriaoId", "EventoId", "GeradoEm", "Id", "OrganizacaoId", "TokenHash"], propriedades);
+        Assert.False(typeof(IPertenceOrganizacao).IsAssignableFrom(typeof(TokenAcessoAnfitriao)));
     }
 
     [Fact]
-    public void Dominio_TodaClasseComCasamentoId_DeveImplementarIPertenceCasamentoOuSerExcecaoConhecida()
+    public void Dominio_TodaClasseComEventoId_DeveImplementarIPertenceEventoOuSerExcecaoConhecida()
     {
-        var excecoes = new[] { typeof(Usuario), typeof(AcessoRsvp), typeof(TokenAcessoCasal), typeof(AcessoCronograma) };
+        var excecoes = new[] { typeof(Usuario), typeof(AcessoRsvp), typeof(TokenAcessoAnfitriao), typeof(AcessoCronograma) };
 
         var violacoes = typeof(IPertenceOrganizacao).Assembly.GetTypes()
             .Where(tipo => tipo is { IsClass: true, IsAbstract: false })
-            .Where(tipo => tipo.GetProperty(nameof(IPertenceCasamento.CasamentoId), BindingFlags.Public | BindingFlags.Instance) is not null)
-            .Where(tipo => !typeof(IPertenceCasamento).IsAssignableFrom(tipo))
+            .Where(tipo => tipo.GetProperty(nameof(IPertenceEvento.EventoId), BindingFlags.Public | BindingFlags.Instance) is not null)
+            .Where(tipo => !typeof(IPertenceEvento).IsAssignableFrom(tipo))
             .Where(tipo => !excecoes.Contains(tipo))
             .Select(tipo => tipo.FullName)
             .ToList();
 
-        Assert.True(violacoes.Count == 0, $"Classes de domínio com CasamentoId sem IPertenceCasamento: {string.Join(", ", violacoes)}.");
+        Assert.True(violacoes.Count == 0, $"Classes de domínio com EventoId sem IPertenceEvento: {string.Join(", ", violacoes)}.");
     }
 
     [Fact]
-    public void Modelo_EntidadesComCasamento_DevemTerFiltroPorCasamento()
+    public void Modelo_EntidadesComEvento_DevemTerFiltroPorEvento()
     {
-        var casamentoId = Guid.NewGuid();
-        using var contexto = CriarContexto<ModelCustomizer>(Guid.NewGuid(), [casamentoId]);
+        var eventoId = Guid.NewGuid();
+        using var contexto = CriarContexto<ModelCustomizer>(Guid.NewGuid(), [eventoId]);
 
         var sqlConvites = contexto.Set<Celebri.Dominio.Convidados.Convite>().ToQueryString();
-        var sqlCasamentos = contexto.Set<CasamentoAssessorado>().ToQueryString();
+        var sqlEventos = contexto.Set<Evento>().ToQueryString();
 
-        Assert.Contains("casamento_id", sqlConvites, StringComparison.Ordinal);
-        Assert.Contains(casamentoId.ToString(), sqlConvites, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains(casamentoId.ToString(), sqlCasamentos, StringComparison.OrdinalIgnoreCase);
-        Assert.True(typeof(IRaizCasamento).IsAssignableFrom(typeof(CasamentoAssessorado)));
+        Assert.Contains("evento_id", sqlConvites, StringComparison.Ordinal);
+        Assert.Contains(eventoId.ToString(), sqlConvites, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(eventoId.ToString(), sqlEventos, StringComparison.OrdinalIgnoreCase);
+        Assert.True(typeof(IRaizEvento).IsAssignableFrom(typeof(Evento)));
     }
 
     [Fact]
@@ -177,27 +177,27 @@ public class ConvencaoIsolamentoTestes
         Assert.Contains(nameof(EntidadeFicticiaComFiltroProprio), excecao.Message, StringComparison.Ordinal);
     }
 
-    private static CasamentoDbContext CriarContexto<TCustomizador>(Guid? organizacaoId, IReadOnlyCollection<Guid>? casamentosPermitidos = null)
+    private static CelebriDbContext CriarContexto<TCustomizador>(Guid? organizacaoId, IReadOnlyCollection<Guid>? eventosPermitidos = null)
         where TCustomizador : class, IModelCustomizer
     {
-        var opcoes = new DbContextOptionsBuilder<CasamentoDbContext>();
-        opcoes.ConfigurarPostgreSql("Host=localhost;Database=casamento_convencao");
+        var opcoes = new DbContextOptionsBuilder<CelebriDbContext>();
+        opcoes.ConfigurarPostgreSql("Host=localhost;Database=evento_convencao");
         opcoes.ReplaceService<IModelCustomizer, TCustomizador>();
-        return new CasamentoDbContext(opcoes.Options, new ContextoIsolamentoFixoTeste(organizacaoId, casamentosPermitidos));
+        return new CelebriDbContext(opcoes.Options, new ContextoIsolamentoFixoTeste(organizacaoId, eventosPermitidos));
     }
 }
 
 public sealed class ContextoIsolamentoFixoTeste : IContextoIsolamento
 {
-    public ContextoIsolamentoFixoTeste(Guid? organizacaoId, IReadOnlyCollection<Guid>? casamentosPermitidos = null)
+    public ContextoIsolamentoFixoTeste(Guid? organizacaoId, IReadOnlyCollection<Guid>? eventosPermitidos = null)
     {
         OrganizacaoId = organizacaoId;
-        CasamentosPermitidos = casamentosPermitidos;
+        EventosPermitidos = eventosPermitidos;
     }
 
     public Guid? OrganizacaoId { get; }
 
-    public IReadOnlyCollection<Guid>? CasamentosPermitidos { get; }
+    public IReadOnlyCollection<Guid>? EventosPermitidos { get; }
 }
 
 public class EntidadeFicticiaIsolada : IPertenceOrganizacao

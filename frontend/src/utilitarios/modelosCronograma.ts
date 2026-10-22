@@ -17,7 +17,7 @@ export const HORARIO_REFERENCIA_PADRAO = '16:00'
 
 const DESLOCAMENTO_DIA: Record<DiaCronograma, number> = {
   Vespera: -1,
-  DiaDoCasamento: 0,
+  DiaDoEvento: 0,
   DiaSeguinte: 1,
 }
 
@@ -38,7 +38,7 @@ export function posicaoNaReferencia(minutos: number, referencia: string): { dia:
     return null
   }
   const posicao = Math.min(Math.max(cerimonia + minutos, LIMITES_MODELO_CRONOGRAMA.posicaoMinima), LIMITES_MODELO_CRONOGRAMA.posicaoMaxima)
-  const dia: DiaCronograma = posicao < 0 ? 'Vespera' : posicao < MINUTOS_POR_DIA ? 'DiaDoCasamento' : 'DiaSeguinte'
+  const dia: DiaCronograma = posicao < 0 ? 'Vespera' : posicao < MINUTOS_POR_DIA ? 'DiaDoEvento' : 'DiaSeguinte'
   return { dia, inicio: minutosParaHorario(posicao) }
 }
 
@@ -47,7 +47,7 @@ export function opcaoLocalDoItem(item: Pick<ItemModeloCronogramaDto, 'referencia
 }
 
 export function agruparItensModeloPorDia(itens: ItemModeloCronogramaDto[]): { dia: DiaCronograma; itens: ItemModeloCronogramaDto[] }[] {
-  const dias: DiaCronograma[] = ['Vespera', 'DiaDoCasamento', 'DiaSeguinte']
+  const dias: DiaCronograma[] = ['Vespera', 'DiaDoEvento', 'DiaSeguinte']
   return dias
     .map((dia) => ({ dia, itens: itens.filter((item) => item.dia === dia) }))
     .filter((grupo) => grupo.itens.length > 0)

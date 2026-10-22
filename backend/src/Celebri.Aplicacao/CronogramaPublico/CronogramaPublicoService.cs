@@ -5,7 +5,7 @@ using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.GrandeDia;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 
 namespace Celebri.Aplicacao.CronogramaPublico;
@@ -13,24 +13,24 @@ namespace Celebri.Aplicacao.CronogramaPublico;
 public class CronogramaPublicoService : ICronogramaPublicoService
 {
     private readonly IAcessoCronogramaRepository _acessoRepository;
-    private readonly ICasamentoRepository _casamentoRepository;
+    private readonly IEventoRepository _eventoRepository;
     private readonly IItemCronogramaRepository _itemRepository;
-    private readonly IFornecedorCasamentoRepository _vinculoRepository;
+    private readonly IFornecedorEventoRepository _vinculoRepository;
     private readonly EscopoIsolamentoCronogramaPublico _escopo;
     private readonly IGeradorTokenOpaco _geradorToken;
     private readonly ICalendarioLocal _calendario;
 
     public CronogramaPublicoService(
         IAcessoCronogramaRepository acessoRepository,
-        ICasamentoRepository casamentoRepository,
+        IEventoRepository eventoRepository,
         IItemCronogramaRepository itemRepository,
-        IFornecedorCasamentoRepository vinculoRepository,
+        IFornecedorEventoRepository vinculoRepository,
         EscopoIsolamentoCronogramaPublico escopo,
         IGeradorTokenOpaco geradorToken,
         ICalendarioLocal calendario)
     {
         _acessoRepository = acessoRepository;
-        _casamentoRepository = casamentoRepository;
+        _eventoRepository = eventoRepository;
         _itemRepository = itemRepository;
         _vinculoRepository = vinculoRepository;
         _escopo = escopo;
@@ -50,35 +50,35 @@ public class CronogramaPublicoService : ICronogramaPublicoService
         var acesso = await _acessoRepository.ObterPorHashAsync(_geradorToken.CalcularHash(request.Token!), cancelamento)
             ?? throw LinkInvalido();
 
-        _escopo.Restringir(acesso.OrganizacaoId, acesso.CasamentoId);
+        _escopo.Restringir(acesso.OrganizacaoId, acesso.EventoId);
 
-        var casamento = await _casamentoRepository.ObterPorIdAsync(acesso.CasamentoId, cancelamento)
+        var evento = await _eventoRepository.ObterPorIdAsync(acesso.EventoId, cancelamento)
             ?? throw LinkInvalido();
 
-        if (!ValidadeAcessoCronograma.Ativo(casamento, _calendario.Hoje()))
+        if (!ValidadeAcessoCronograma.Ativo(evento, _calendario.Hoje()))
         {
             throw LinkInvalido();
         }
 
-        var vinculos = (await _vinculoRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento))
+        var vinculos = (await _vinculoRepository.ListarPorEventoAsync(evento.Id, cancelamento))
             .ToDictionary(vinculo => vinculo.Vinculo.Id);
-        var itens = OrdenacaoCronograma.Ordenar(await _itemRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento))
+        var itens = OrdenacaoCronograma.Ordenar(await _itemRepository.ListarPorEventoAsync(evento.Id, cancelamento))
             .Where(acesso.AtendeItem)
             .ToList();
         var agora = _calendario.Agora();
-        var retrato = MomentoGrandeDia.Calcular(itens, casamento.Data, agora);
+        var retrato = MomentoGrandeDia.Calcular(itens, evento.Data, agora);
 
         return new CronogramaPublicoDto(
-            new CasamentoCronogramaPublicoDto(
-                casamento.NomePrimeiraPessoa,
-                casamento.NomeSegundaPessoa,
-                casamento.Data,
-                CronogramaService.FormatarHorario(casamento.Horario),
-                casamento.LocalCerimonia,
-                casamento.LocalRecepcao),
+            new EventoCronogramaPublicoDto(
+                evento.NomePrimeiraPessoa,
+                evento.NomeSegundaPessoa,
+                evento.Data,
+                CronogramaService.FormatarHorario(evento.Horario),
+                evento.LocalCerimonia,
+                evento.LocalRecepcao),
             ParaFiltroDto(acesso, itens, vinculos),
-            itens.Select(item => ParaItemDto(item, casamento, vinculos, retrato)).ToList(),
-            ValidadeAcessoCronograma.ValidoAte(casamento.Data),
+            itens.Select(item => ParaItemDto(item, evento, vinculos, retrato)).ToList(),
+            ValidadeAcessoCronograma.ValidoAte(evento.Data),
             MomentoGrandeDiaDto.De(retrato, agora));
     }
 
@@ -94,7 +94,7 @@ public class CronogramaPublicoService : ICronogramaPublicoService
     {
         return acesso.Tipo switch
         {
-            TipoAcessoCronograma.Fornecedor when acesso.FornecedorCasamentoId is { } id && vinculos.TryGetValue(id, out var vinculo) =>
+            TipoAcessoCronograma.Fornecedor when acesso.FornecedorEventoId is { } id && vinculos.TryGetValue(id, out var vinculo) =>
                 new FiltroCronogramaPublicoDto(acesso.Tipo.ToString(), vinculo.Fornecedor.NomeEmpresa, vinculo.Fornecedor.Categoria.ToString()),
             TipoAcessoCronograma.Responsavel => new FiltroCronogramaPublicoDto(
                 acesso.Tipo.ToString(),
@@ -106,17 +106,17 @@ public class CronogramaPublicoService : ICronogramaPublicoService
 
     private static ItemCronogramaPublicoDto ParaItemDto(
         ItemCronograma item,
-        CasamentoAssessorado casamento,
+        Evento evento,
         IReadOnlyDictionary<Guid, VinculoFornecedor> vinculos,
         RetratoGrandeDia retrato)
     {
-        var fornecedor = item.FornecedorCasamentoId is { } vinculoId && vinculos.TryGetValue(vinculoId, out var vinculo)
+        var fornecedor = item.FornecedorEventoId is { } vinculoId && vinculos.TryGetValue(vinculoId, out var vinculo)
             ? new FornecedorCronogramaPublicoDto(vinculo.Fornecedor.NomeEmpresa, vinculo.Fornecedor.Categoria.ToString())
             : null;
 
         return new ItemCronogramaPublicoDto(
             item.Dia.ToString(),
-            item.CalcularData(casamento.Data),
+            item.CalcularData(evento.Data),
             CronogramaService.FormatarHorario(item.Inicio)!,
             item.DuracaoMinutos,
             CronogramaService.FormatarHorario(item.Termino),

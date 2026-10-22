@@ -4,12 +4,12 @@ namespace Celebri.Testes.Unidade.Autenticacao.Fakes;
 
 public sealed class UsuarioAtualFalso : IUsuarioAtual
 {
-    private UsuarioAtualFalso(bool autenticado, string? papel, Guid? organizacaoId, Guid? casamentoId)
+    private UsuarioAtualFalso(bool autenticado, string? papel, Guid? organizacaoId, Guid? eventoId)
     {
         Autenticado = autenticado;
         Papel = papel;
         OrganizacaoId = organizacaoId;
-        CasamentoId = casamentoId;
+        EventoId = eventoId;
         UsuarioId = autenticado ? Guid.NewGuid() : null;
     }
 
@@ -19,7 +19,7 @@ public sealed class UsuarioAtualFalso : IUsuarioAtual
 
     public Guid? OrganizacaoId { get; }
 
-    public Guid? CasamentoId { get; }
+    public Guid? EventoId { get; }
 
     public string? Papel { get; }
 
@@ -28,9 +28,9 @@ public sealed class UsuarioAtualFalso : IUsuarioAtual
         return new UsuarioAtualFalso(true, "Dono", organizacaoId ?? Guid.NewGuid(), null);
     }
 
-    public static UsuarioAtualFalso Casal(Guid casamentoId, Guid? organizacaoId = null)
+    public static UsuarioAtualFalso Anfitriao(Guid eventoId, Guid? organizacaoId = null)
     {
-        return new UsuarioAtualFalso(true, "Casal", organizacaoId ?? Guid.NewGuid(), casamentoId);
+        return new UsuarioAtualFalso(true, "Anfitriao", organizacaoId ?? Guid.NewGuid(), eventoId);
     }
 
     public static UsuarioAtualFalso Anonimo()

@@ -4,7 +4,7 @@ using Celebri.Dominio.Isolamento;
 
 namespace Celebri.Dominio.Cronogramas;
 
-public class ItemCronograma : IPertenceCasamento
+public class ItemCronograma : IPertenceEvento
 {
     public const int TamanhoMinimoAtividade = 2;
     public const int TamanhoMaximoAtividade = 160;
@@ -13,7 +13,7 @@ public class ItemCronograma : IPertenceCasamento
     public const int TamanhoMaximoTexto = 2000;
     public const int DuracaoMinima = 5;
     public const int DuracaoMaxima = 1440;
-    public const int LimitePorCasamento = 200;
+    public const int LimitePorEvento = 200;
     public const int MinutosPorDia = 1440;
     public const int PosicaoMinima = -MinutosPorDia;
     public const int PosicaoMaxima = (2 * MinutosPorDia) - 1;
@@ -24,7 +24,7 @@ public class ItemCronograma : IPertenceCasamento
     public const string CampoAtividade = "atividade";
     public const string CampoLocal = "local";
     public const string CampoResponsavel = "responsavel";
-    public const string CampoFornecedor = "fornecedorCasamentoId";
+    public const string CampoFornecedor = "fornecedorEventoId";
     public const string CampoInstrucoes = "instrucoes";
     public const string CampoNotasInternas = "notasInternas";
 
@@ -37,7 +37,7 @@ public class ItemCronograma : IPertenceCasamento
 
     public Guid OrganizacaoId { get; private set; }
 
-    public Guid CasamentoId { get; private set; }
+    public Guid EventoId { get; private set; }
 
     public DiaCronograma Dia { get; private set; }
 
@@ -53,7 +53,7 @@ public class ItemCronograma : IPertenceCasamento
 
     public string? ResponsavelChave { get; private set; }
 
-    public Guid? FornecedorCasamentoId { get; private set; }
+    public Guid? FornecedorEventoId { get; private set; }
 
     public string? Instrucoes { get; private set; }
 
@@ -84,20 +84,20 @@ public class ItemCronograma : IPertenceCasamento
     public bool TerminaEmOutroDia => DuracaoMinutos is { } duracao && (Inicio.Hour * 60) + Inicio.Minute + duracao >= MinutosPorDia;
 
     public static ItemCronograma Criar(
-        Guid casamentoId,
+        Guid eventoId,
         DadosItemCronograma dados,
         Guid? criadoPorUsuarioId,
         DateTimeOffset agora)
     {
-        if (casamentoId == Guid.Empty)
+        if (eventoId == Guid.Empty)
         {
-            throw new ArgumentException("O casamento do item é obrigatório.", nameof(casamentoId));
+            throw new ArgumentException("O evento do item é obrigatório.", nameof(eventoId));
         }
 
         var item = new ItemCronograma
         {
             Id = Guid.NewGuid(),
-            CasamentoId = casamentoId,
+            EventoId = eventoId,
             Status = StatusItemCronograma.Previsto,
             CriadoPorUsuarioId = criadoPorUsuarioId,
             CriadoEm = agora,
@@ -108,7 +108,7 @@ public class ItemCronograma : IPertenceCasamento
     }
 
     public static ItemCronograma CriarDeModelo(
-        Guid casamentoId,
+        Guid eventoId,
         DadosItemCronograma dados,
         Guid origemModeloItemId,
         TimeOnly horarioCerimonia,
@@ -120,7 +120,7 @@ public class ItemCronograma : IPertenceCasamento
             throw new ArgumentException("A origem do item é obrigatória.", nameof(origemModeloItemId));
         }
 
-        var item = Criar(casamentoId, dados, criadoPorUsuarioId, agora);
+        var item = Criar(eventoId, dados, criadoPorUsuarioId, agora);
         item.OrigemModeloItemId = origemModeloItemId;
         item.MinutosRelativosCerimonia = item.MinutoInicial - MinutoDoDia(horarioCerimonia);
         return item;
@@ -197,18 +197,18 @@ public class ItemCronograma : IPertenceCasamento
     }
 
     public ItemCronograma CopiarPara(
-        Guid casamentoDestinoId,
+        Guid eventoDestinoId,
         int deslocamentoMinutos,
         string? local,
-        Guid? fornecedorCasamentoId,
+        Guid? fornecedorEventoId,
         Guid? criadoPorUsuarioId,
         DateTimeOffset agora)
     {
         var (dia, inicio) = DePosicao(Math.Clamp(MinutoInicial + deslocamentoMinutos, PosicaoMinima, PosicaoMaxima));
 
         var copia = Criar(
-            casamentoDestinoId,
-            new DadosItemCronograma(dia, inicio, DuracaoMinutos, Atividade, local, Responsavel, fornecedorCasamentoId, Instrucoes, null),
+            eventoDestinoId,
+            new DadosItemCronograma(dia, inicio, DuracaoMinutos, Atividade, local, Responsavel, fornecedorEventoId, Instrucoes, null),
             criadoPorUsuarioId,
             agora);
         copia.OrigemModeloItemId = OrigemModeloItemId;
@@ -216,9 +216,9 @@ public class ItemCronograma : IPertenceCasamento
         return copia;
     }
 
-    public DateOnly CalcularData(DateOnly dataCasamento)
+    public DateOnly CalcularData(DateOnly dataEvento)
     {
-        return dataCasamento.AddDays((int)Dia);
+        return dataEvento.AddDays((int)Dia);
     }
 
     public int? MinutosDesdeCerimonia(TimeOnly? horarioCerimonia)
@@ -267,7 +267,7 @@ public class ItemCronograma : IPertenceCasamento
         return minutoAbsoluto switch
         {
             < 0 => DiaCronograma.Vespera,
-            < MinutosPorDia => DiaCronograma.DiaDoCasamento,
+            < MinutosPorDia => DiaCronograma.DiaDoEvento,
             _ => DiaCronograma.DiaSeguinte,
         };
     }
@@ -294,7 +294,7 @@ public class ItemCronograma : IPertenceCasamento
             throw new RegraNegocioException(MensagensCronograma.DuracaoInvalida, CampoDuracao);
         }
 
-        if (dados.FornecedorCasamentoId == Guid.Empty)
+        if (dados.FornecedorEventoId == Guid.Empty)
         {
             throw new RegraNegocioException(MensagensCronograma.FornecedorInvalido, CampoFornecedor);
         }
@@ -315,7 +315,7 @@ public class ItemCronograma : IPertenceCasamento
         Local = local;
         Responsavel = responsavel;
         ResponsavelChave = NormalizadorTexto.ChaveComparacao(responsavel);
-        FornecedorCasamentoId = dados.FornecedorCasamentoId;
+        FornecedorEventoId = dados.FornecedorEventoId;
         Instrucoes = instrucoes;
         NotasInternas = notas;
         AtualizadoEm = agora;

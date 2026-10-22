@@ -1,6 +1,6 @@
 import { TEXTOS_COBRANCA } from '@/textos/confirmacoes'
 import { TEXTOS_ENVIO_CONVITE } from '@/textos/rsvp'
-import type { CasamentoDto, DataCalendario } from '@/tipos/casamentos'
+import type { EventoDto, DataCalendario } from '@/tipos/eventos'
 import type { ConviteDto } from '@/tipos/convidados'
 import type { EscolhaPresencaRsvp, PessoaRsvpDto } from '@/tipos/rsvp'
 import { lerDataCalendario, paraInstanteUtc } from '@/utilitarios/dataCalendario'
@@ -51,31 +51,31 @@ export function montarLinkWhatsApp(telefone: string | null | undefined, mensagem
 }
 
 export function montarMensagemConvite(
-  casamento: Pick<CasamentoDto, 'nomePrimeiraPessoa' | 'nomeSegundaPessoa' | 'data' | 'dataLimiteRsvpEfetiva'>,
+  evento: Pick<EventoDto, 'nomePrimeiraPessoa' | 'nomeSegundaPessoa' | 'data' | 'dataLimiteRsvpEfetiva'>,
   convite: Pick<ConviteDto, 'nome'>,
   url: string,
 ): string {
   return TEXTOS_ENVIO_CONVITE.mensagemPronta({
     nomeConvite: convite.nome,
-    primeiro: casamento.nomePrimeiraPessoa,
-    segundo: casamento.nomeSegundaPessoa,
-    data: formatarDataCalendarioExtenso(casamento.data),
-    dataLimite: formatarDiaMes(casamento.dataLimiteRsvpEfetiva),
+    primeiro: evento.nomePrimeiraPessoa,
+    segundo: evento.nomeSegundaPessoa,
+    data: formatarDataCalendarioExtenso(evento.data),
+    dataLimite: formatarDiaMes(evento.dataLimiteRsvpEfetiva),
     url,
   })
 }
 
 export function montarMensagemLembrete(
-  casamento: Pick<CasamentoDto, 'nomePrimeiraPessoa' | 'nomeSegundaPessoa' | 'data' | 'dataLimiteRsvpEfetiva'>,
+  evento: Pick<EventoDto, 'nomePrimeiraPessoa' | 'nomeSegundaPessoa' | 'data' | 'dataLimiteRsvpEfetiva'>,
   convite: Pick<ConviteDto, 'nome'>,
   url: string,
 ): string {
   return TEXTOS_COBRANCA.mensagemLembrete({
     nomeConvite: convite.nome,
-    primeiro: casamento.nomePrimeiraPessoa,
-    segundo: casamento.nomeSegundaPessoa,
-    data: formatarDataCalendarioExtenso(casamento.data),
-    dataLimite: formatarDiaMes(casamento.dataLimiteRsvpEfetiva),
+    primeiro: evento.nomePrimeiraPessoa,
+    segundo: evento.nomeSegundaPessoa,
+    data: formatarDataCalendarioExtenso(evento.data),
+    dataLimite: formatarDiaMes(evento.dataLimiteRsvpEfetiva),
     url,
   })
 }
@@ -94,11 +94,11 @@ export function formatarHorarioConvite(horario: string | null | undefined): stri
   return minutos === '00' ? `${Number(horas)}h` : `${Number(horas)}h${minutos}`
 }
 
-export function dataLimitePadrao(dataCasamento: DataCalendario | null | undefined): DataCalendario | null {
-  if (!lerDataCalendario(dataCasamento)) {
+export function dataLimitePadrao(dataEvento: DataCalendario | null | undefined): DataCalendario | null {
+  if (!lerDataCalendario(dataEvento)) {
     return null
   }
-  const instante = paraInstanteUtc(dataCasamento as DataCalendario)
+  const instante = paraInstanteUtc(dataEvento as DataCalendario)
   if (!instante) {
     return null
   }

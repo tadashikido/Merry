@@ -10,7 +10,7 @@ export const OUTRO_TOKEN_CRONOGRAMA = 'ZyXwVuTsRqPoNmLkJiHgFeDcBa9876543210-_edc
 
 export function itemPublico(dados: Partial<ItemCronogramaPublicoDto> = {}): ItemCronogramaPublicoDto {
   return {
-    dia: 'DiaDoCasamento',
+    dia: 'DiaDoEvento',
     data: '2027-05-15',
     inicio: '14:00',
     duracaoMinutos: 90,
@@ -30,7 +30,7 @@ export function itemPublico(dados: Partial<ItemCronogramaPublicoDto> = {}): Item
 
 export function cronogramaPublico(dados: Partial<CronogramaPublicoDto> = {}): CronogramaPublicoDto {
   return {
-    casamento: {
+    evento: {
       nomePrimeiraPessoa: 'Ana Beatriz',
       nomeSegundaPessoa: 'Bruno',
       data: '2027-05-15',
@@ -46,7 +46,7 @@ export function cronogramaPublico(dados: Partial<CronogramaPublicoDto> = {}): Cr
       itemPublico({ dia: 'Vespera', data: '2027-05-14', inicio: '19:00', termino: '20:00', atividade: 'Ensaio', fornecedor: null, instrucoes: null }),
     ],
     validoAte: '2027-05-22',
-    momento: { agora: '2027-05-01T10:00:00', fase: 'AntesDoDia', diasParaOCasamento: 14 },
+    momento: { agora: '2027-05-01T10:00:00', fase: 'AntesDoDia', diasParaOEvento: 14 },
     ...dados,
   }
 }
@@ -54,7 +54,7 @@ export function cronogramaPublico(dados: Partial<CronogramaPublicoDto> = {}): Cr
 export function destino(dados: Partial<DestinoLinkCronogramaDto> = {}): DestinoLinkCronogramaDto {
   return {
     tipo: 'Geral',
-    fornecedorCasamentoId: null,
+    fornecedorEventoId: null,
     responsavel: null,
     rotulo: null,
     categoria: null,
@@ -75,7 +75,7 @@ export function linksExemplo(dados: Partial<LinksCronogramaDto> = {}): LinksCron
       destino({ link: { id: 'l-geral', token: TOKEN_CRONOGRAMA, geradoEm: '2027-03-10T12:00:00Z' } }),
       destino({
         tipo: 'Fornecedor',
-        fornecedorCasamentoId: 'v-buffet',
+        fornecedorEventoId: 'v-buffet',
         rotulo: 'Buffet Sabor',
         categoria: 'Buffet',
         telefone: '11987654321',

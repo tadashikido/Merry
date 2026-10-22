@@ -21,7 +21,7 @@ public static class NumeracaoParcelas
 
         var resultado = new Dictionary<Guid, PosicaoParcela>();
 
-        foreach (var grupo in parcelas.GroupBy(parcela => parcela.FornecedorCasamentoId))
+        foreach (var grupo in parcelas.GroupBy(parcela => parcela.FornecedorEventoId))
         {
             var ordenadas = Ordenar(grupo);
 

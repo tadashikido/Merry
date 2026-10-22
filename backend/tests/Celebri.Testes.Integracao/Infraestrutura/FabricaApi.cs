@@ -8,10 +8,10 @@ namespace Celebri.Testes.Integracao.Infraestrutura;
 
 public class FabricaApi : WebApplicationFactory<Program>
 {
-    public const string OrigemPermitida = "https://app.casamento.teste";
+    public const string OrigemPermitida = "https://app.evento.teste";
     public const string ChaveJwtTeste = "chave-de-assinatura-exclusiva-dos-testes-de-integracao";
     public const string ChaveDadosSensiveisTeste = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=";
-    public const string UrlFrontendTeste = "https://app.casamento.teste";
+    public const string UrlFrontendTeste = "https://app.evento.teste";
     public const string StringConexaoInalcancavel = "Host=127.0.0.1;Port=1;Database=inexistente;Username=teste;Password=teste;Timeout=2;Command Timeout=2";
 
     private readonly string _stringConexao;

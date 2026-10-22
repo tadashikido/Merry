@@ -13,10 +13,10 @@ import {
   tarefaChecklist,
 } from '@/__tests__/auxiliaresChecklist'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { caminhoChecklist, useChecklistStore } from '@/stores/checklist'
 import { ROTA_MODELOS_CHECKLIST, caminhoModelo, useModelosChecklistStore } from '@/stores/modelosChecklist'
-import { casamentoCompleto } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { eventoCompleto } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const ID = '11111111-1111-4111-8111-111111111111'
 
@@ -70,11 +70,11 @@ describe('useModelosChecklistStore', () => {
       descricao: null,
       responsavel: 'Assessoria',
       categoria: 'Cerimonia',
-      diasAntesDoCasamento: 365,
+      diasAntesDoEvento: 365,
     })
     expect(item.ok).toBe(true)
     expect(String(fetchSimulado.mock.calls[1]![0])).toBe(`/api/modelos-checklist/${ID_MODELO}/itens`)
-    expect(corpoDaChamada(fetchSimulado.mock.calls[1]!)).toMatchObject({ diasAntesDoCasamento: 365 })
+    expect(corpoDaChamada(fetchSimulado.mock.calls[1]!)).toMatchObject({ diasAntesDoEvento: 365 })
     await Promise.resolve()
     await Promise.resolve()
 
@@ -106,9 +106,9 @@ describe('useModelosChecklistStore', () => {
 })
 
 describe('useChecklistStore', () => {
-  it('[UNITÁRIO] carrega o checklist e atualiza o percentual do casamento atual', async () => {
-    const casamentos = useCasamentosStore()
-    casamentos.atual = casamentoCompleto({ id: ID })
+  it('[UNITÁRIO] carrega o checklist e atualiza o percentual do evento atual', async () => {
+    const eventos = useEventosStore()
+    eventos.atual = eventoCompleto({ id: ID })
     const store = useChecklistStore()
     fetchSimulado.mockResolvedValueOnce(respostaJson(checklistExemplo([tarefaChecklist({ status: 'Concluida' }), tarefaChecklist({ id: 't2' })])))
 
@@ -116,12 +116,12 @@ describe('useChecklistStore', () => {
 
     expect(String(fetchSimulado.mock.calls[0]![0])).toBe(caminhoChecklist(ID))
     expect(store.dados?.progresso.percentual).toBe(50)
-    expect(casamentos.atual?.percentualChecklist).toBe(50)
+    expect(eventos.atual?.percentualChecklist).toBe(50)
   })
 
-  it('[UNITÁRIO] prévia e aplicação usam as rotas do casamento e recarregam', async () => {
-    const casamentos = useCasamentosStore()
-    casamentos.atual = casamentoCompleto({ id: ID })
+  it('[UNITÁRIO] prévia e aplicação usam as rotas do evento e recarregam', async () => {
+    const eventos = useEventosStore()
+    eventos.atual = eventoCompleto({ id: ID })
     const store = useChecklistStore()
     fetchSimulado
       .mockResolvedValueOnce(respostaJson(aplicacaoExemplo({ tarefasCriadas: 2 })))
@@ -136,20 +136,20 @@ describe('useChecklistStore', () => {
     expect(aplicacao.ok).toBe(true)
     expect(String(fetchSimulado.mock.calls[1]![0])).toBe(caminhoChecklist(ID, 'aplicacoes'))
     expect(corpoDaChamada(fetchSimulado.mock.calls[1]!)).toEqual({ modeloId: ID_MODELO })
-    expect(casamentos.atual?.percentualChecklist).toBe(0)
+    expect(eventos.atual?.percentualChecklist).toBe(0)
   })
 
   it('[UNITÁRIO] traduz 409 e 422 da aplicação', async () => {
     const store = useChecklistStore()
     fetchSimulado
       .mockResolvedValueOnce(respostaProblema(409, { title: 'O checklist mudou em outra tela.' }))
-      .mockResolvedValueOnce(respostaProblema(422, { title: 'Regra', detail: 'Este casamento passaria de 500 tarefas.' }))
+      .mockResolvedValueOnce(respostaProblema(422, { title: 'Regra', detail: 'Este evento passaria de 500 tarefas.' }))
 
     const conflito = await store.aplicar(ID, ID_MODELO)
     const limite = await store.aplicar(ID, ID_MODELO)
 
     expect(!conflito.ok && conflito.falha.tipo).toBe('conflito')
-    expect(!limite.ok && limite.falha.mensagem).toBe('Este casamento passaria de 500 tarefas.')
+    expect(!limite.ok && limite.falha.mensagem).toBe('Este evento passaria de 500 tarefas.')
   })
 
   it('[UNITÁRIO] consulta e executa o recálculo de prazos', async () => {

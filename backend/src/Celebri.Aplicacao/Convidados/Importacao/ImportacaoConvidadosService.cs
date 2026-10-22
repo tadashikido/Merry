@@ -9,10 +9,10 @@ public class ImportacaoConvidadosService : IImportacaoConvidadosService
     private readonly IConviteRepository _conviteRepository;
     private readonly IUnidadeTrabalho _unidadeTrabalho;
     private readonly TimeProvider _relogio;
-    private readonly VerificadorCasamentoConvidados _verificador;
+    private readonly VerificadorEventoConvidados _verificador;
 
     public ImportacaoConvidadosService(
-        ICasamentoRepository casamentoRepository,
+        IEventoRepository eventoRepository,
         IConviteRepository conviteRepository,
         IUnidadeTrabalho unidadeTrabalho,
         TimeProvider relogio)
@@ -20,21 +20,21 @@ public class ImportacaoConvidadosService : IImportacaoConvidadosService
         _conviteRepository = conviteRepository;
         _unidadeTrabalho = unidadeTrabalho;
         _relogio = relogio;
-        _verificador = new VerificadorCasamentoConvidados(casamentoRepository, conviteRepository);
+        _verificador = new VerificadorEventoConvidados(eventoRepository, conviteRepository);
     }
 
-    public async Task<PreVisualizacaoImportacaoDto> PreVisualizarAsync(Guid casamentoId, Stream conteudo, CancellationToken cancelamento)
+    public async Task<PreVisualizacaoImportacaoDto> PreVisualizarAsync(Guid eventoId, Stream conteudo, CancellationToken cancelamento)
     {
         ArgumentNullException.ThrowIfNull(conteudo);
 
-        var casamento = await _verificador.ObterEditavelAsync(casamentoId, cancelamento);
-        var (analise, existentes) = await AnalisarAsync(casamento.Id, conteudo, cancelamento);
+        var evento = await _verificador.ObterEditavelAsync(eventoId, cancelamento);
+        var (analise, existentes) = await AnalisarAsync(evento.Id, conteudo, cancelamento);
 
         return MontarPreVisualizacao(analise, existentes);
     }
 
     public async Task<ResultadoImportacaoDto> ImportarAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Stream conteudo,
         ConfirmarImportacaoRequest request,
         CancellationToken cancelamento)
@@ -42,8 +42,8 @@ public class ImportacaoConvidadosService : IImportacaoConvidadosService
         ArgumentNullException.ThrowIfNull(conteudo);
         ArgumentNullException.ThrowIfNull(request);
 
-        var casamento = await _verificador.ObterEditavelAsync(casamentoId, cancelamento);
-        var (analise, _) = await AnalisarAsync(casamento.Id, conteudo, cancelamento);
+        var evento = await _verificador.ObterEditavelAsync(eventoId, cancelamento);
+        var (analise, _) = await AnalisarAsync(evento.Id, conteudo, cancelamento);
         var validos = analise.ConvitesValidos;
 
         if (validos.Count == 0)
@@ -63,11 +63,11 @@ public class ImportacaoConvidadosService : IImportacaoConvidadosService
             throw new RegraNegocioException(MensagensImportacaoConvidados.PlanilhaAlterada);
         }
 
-        await _verificador.GarantirLimiteAsync(casamento.Id, pessoas, 0, cancelamento);
+        await _verificador.GarantirLimiteAsync(evento.Id, pessoas, 0, cancelamento);
 
         var agora = _relogio.GetUtcNow();
         var convites = validos
-            .Select(convite => Convite.Criar(casamento.Id, AnalisadorImportacaoConvidados.ParaRequest(convite).ParaDados(), agora))
+            .Select(convite => Convite.Criar(evento.Id, AnalisadorImportacaoConvidados.ParaRequest(convite).ParaDados(), agora))
             .ToList();
 
         _conviteRepository.AdicionarVarios(convites);
@@ -123,7 +123,7 @@ public class ImportacaoConvidadosService : IImportacaoConvidadosService
             ContarLinhas(analise, TipoProblemaLinha.Duplicado),
             ContarLinhas(analise, TipoProblemaLinha.Aviso),
             convidadosExistentes,
-            Convite.ConvidadosMaximoPorCasamento);
+            Convite.ConvidadosMaximoPorEvento);
 
         var convites = analise.Convites
             .Select(convite => new ConvitePreVisualizadoDto(
@@ -159,11 +159,11 @@ public class ImportacaoConvidadosService : IImportacaoConvidadosService
             linhasComProblema);
     }
 
-    private async Task<(AnaliseImportacao Analise, int Existentes)> AnalisarAsync(Guid casamentoId, Stream conteudo, CancellationToken cancelamento)
+    private async Task<(AnaliseImportacao Analise, int Existentes)> AnalisarAsync(Guid eventoId, Stream conteudo, CancellationToken cancelamento)
     {
         var bytes = await LerConteudoAsync(conteudo, cancelamento);
         var planilha = LeitorCsv.Ler(bytes);
-        var existentes = await _conviteRepository.ListarIdentificacoesAsync(casamentoId, cancelamento);
+        var existentes = await _conviteRepository.ListarIdentificacoesAsync(eventoId, cancelamento);
 
         return (AnalisadorImportacaoConvidados.Analisar(planilha, existentes), existentes.Count);
     }

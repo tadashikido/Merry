@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { descreverContagem, descreverContagemAcessivel, legendaContagemDestaque } from '@/textos/casamentos'
+import { descreverContagem, descreverContagemAcessivel, legendaContagemDestaque } from '@/textos/eventos'
 
 const props = withDefaults(defineProps<{ dias: number; variante?: 'compacta' | 'destaque' | 'cabecalho' }>(), {
   variante: 'compacta',

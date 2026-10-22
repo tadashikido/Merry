@@ -1,11 +1,11 @@
 import type { GrandeDiaDto, ItemGrandeDiaDto, ItemPainelGrandeDia } from '@/tipos/grandeDia'
 
-export const ID_CASAMENTO_GRANDE_DIA = '11111111-1111-4111-8111-111111111111'
+export const ID_EVENTO_GRANDE_DIA = '11111111-1111-4111-8111-111111111111'
 
 export function itemGrandeDia(dados: Partial<ItemGrandeDiaDto> = {}): ItemGrandeDiaDto {
   return {
     id: 'i1',
-    dia: 'DiaDoCasamento',
+    dia: 'DiaDoEvento',
     data: '2027-05-15',
     inicio: '16:30',
     duracaoMinutos: 45,
@@ -44,7 +44,7 @@ export const ITENS_NO_DIA: ItemGrandeDiaDto[] = [
 
 export function grandeDia(dados: Partial<GrandeDiaDto> = {}): GrandeDiaDto {
   return {
-    casamentoId: ID_CASAMENTO_GRANDE_DIA,
+    eventoId: ID_EVENTO_GRANDE_DIA,
     nomePrimeiraPessoa: 'Luísa',
     nomeSegundaPessoa: 'Pedro',
     data: '2027-05-15',
@@ -53,7 +53,7 @@ export function grandeDia(dados: Partial<GrandeDiaDto> = {}): GrandeDiaDto {
     localRecepcao: 'Espaço Jardim',
     arquivado: false,
     somenteLeitura: false,
-    momento: { agora: '2027-05-15T16:34:00', fase: 'NoDia', diasParaOCasamento: 0 },
+    momento: { agora: '2027-05-15T16:34:00', fase: 'NoDia', diasParaOEvento: 0 },
     itens: ITENS_NO_DIA,
     ...dados,
   }
@@ -62,7 +62,7 @@ export function grandeDia(dados: Partial<GrandeDiaDto> = {}): GrandeDiaDto {
 export function itemPainel(dados: Partial<ItemPainelGrandeDia> = {}): ItemPainelGrandeDia {
   return {
     chave: dados.atividade ?? 'item',
-    dia: 'DiaDoCasamento',
+    dia: 'DiaDoEvento',
     inicio: '16:30',
     termino: '17:15',
     terminaEmOutroDia: false,

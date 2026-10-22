@@ -5,7 +5,7 @@ using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
 using static Celebri.Testes.Integracao.Tarefas.ClienteTarefas;
-using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 
 namespace Celebri.Testes.Integracao.Tarefas;
 
@@ -17,26 +17,26 @@ public sealed class TarefasIsolamentoTestes : IsolamentoOrganizacaoTestesBase
     {
     }
 
-    private async Task<(Guid CasamentoId, TarefaDto Tarefa)> CriarDeAAsync()
+    private async Task<(Guid EventoId, TarefaDto Tarefa)> CriarDeAAsync()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var tarefa = await CriarAsync(OrganizacaoA.Cliente, casamento.Id, Corpo("Contratar fotógrafo Souza"));
-        return (casamento.Id, tarefa);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var tarefa = await CriarAsync(OrganizacaoA.Cliente, evento.Id, Corpo("Contratar fotógrafo Souza"));
+        return (evento.Id, tarefa);
     }
 
-    private async Task AssertTarefaDeAIntactaAsync(Guid casamentoId, TarefaDto original)
+    private async Task AssertTarefaDeAIntactaAsync(Guid eventoId, TarefaDto original)
     {
-        var atual = await OrganizacaoA.Cliente.GetFromJsonAsync<TarefaDto>(Rota(casamentoId, original.Id));
+        var atual = await OrganizacaoA.Cliente.GetFromJsonAsync<TarefaDto>(Rota(eventoId, original.Id));
         Assert.Equal(original.Titulo, atual!.Titulo);
         Assert.Equal("AFazer", atual.Status);
     }
 
     [Fact]
-    public async Task Listar_TarefasDeCasamentoDeOutraOrganizacao_DeveRetornar404SemDados()
+    public async Task Listar_TarefasDeEventoDeOutraOrganizacao_DeveRetornar404SemDados()
     {
-        var (casamentoId, _) = await CriarDeAAsync();
+        var (eventoId, _) = await CriarDeAAsync();
 
-        var resposta = await OrganizacaoB.Cliente.GetAsync(Rota(casamentoId));
+        var resposta = await OrganizacaoB.Cliente.GetAsync(Rota(eventoId));
 
         await AssertNaoEncontradoAsync(resposta);
         Assert.DoesNotContain("Souza", await resposta.Content.ReadAsStringAsync(), StringComparison.Ordinal);
@@ -45,9 +45,9 @@ public sealed class TarefasIsolamentoTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Obter_TarefaDeOutraOrganizacao_DeveSerIndistinguivelDeInexistente()
     {
-        var (casamentoId, tarefa) = await CriarDeAAsync();
+        var (eventoId, tarefa) = await CriarDeAAsync();
 
-        var alheia = await OrganizacaoB.Cliente.GetAsync(Rota(casamentoId, tarefa.Id));
+        var alheia = await OrganizacaoB.Cliente.GetAsync(Rota(eventoId, tarefa.Id));
         var inexistente = await OrganizacaoB.Cliente.GetAsync(Rota(Guid.NewGuid(), Guid.NewGuid()));
 
         await AssertNaoEncontradoAsync(alheia);
@@ -60,37 +60,37 @@ public sealed class TarefasIsolamentoTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Escritas_EmTarefaDeOutraOrganizacao_DevemRetornar404ENaoAlterar()
     {
-        var (casamentoId, tarefa) = await CriarDeAAsync();
+        var (eventoId, tarefa) = await CriarDeAAsync();
 
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsJsonAsync(Rota(casamentoId), Corpo("Invasores")));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PutAsJsonAsync(Rota(casamentoId, tarefa.Id), Corpo("Invasores")));
-        await AssertNaoEncontradoAsync(await AlterarStatusAsync(OrganizacaoB.Cliente, casamentoId, tarefa.Id, "Concluida"));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.DeleteAsync(Rota(casamentoId, tarefa.Id)));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsJsonAsync(Rota(eventoId), Corpo("Invasores")));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PutAsJsonAsync(Rota(eventoId, tarefa.Id), Corpo("Invasores")));
+        await AssertNaoEncontradoAsync(await AlterarStatusAsync(OrganizacaoB.Cliente, eventoId, tarefa.Id, "Concluida"));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.DeleteAsync(Rota(eventoId, tarefa.Id)));
 
-        await AssertTarefaDeAIntactaAsync(casamentoId, tarefa);
+        await AssertTarefaDeAIntactaAsync(eventoId, tarefa);
         await using var contexto = CriarContexto(OrganizacaoA);
-        Assert.False(await contexto.TarefasCasamento.AnyAsync(item => item.Titulo == "Invasores"));
+        Assert.False(await contexto.TarefasEvento.AnyAsync(item => item.Titulo == "Invasores"));
     }
 
     [Fact]
-    public async Task TarefaDeAViaCasamentoDeB_DeveRetornar404()
+    public async Task TarefaDeAViaEventoDeB_DeveRetornar404()
     {
         var (_, tarefa) = await CriarDeAAsync();
-        var casamentoDeB = await ClienteCasamentos.CriarAsync(OrganizacaoB.Cliente);
+        var eventoDeB = await ClienteEventos.CriarAsync(OrganizacaoB.Cliente);
 
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(Rota(casamentoDeB.Id, tarefa.Id)));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PutAsJsonAsync(Rota(casamentoDeB.Id, tarefa.Id), Corpo("Invasores")));
-        await AssertNaoEncontradoAsync(await AlterarStatusAsync(OrganizacaoB.Cliente, casamentoDeB.Id, tarefa.Id, "Cancelada"));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.DeleteAsync(Rota(casamentoDeB.Id, tarefa.Id)));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(Rota(eventoDeB.Id, tarefa.Id)));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PutAsJsonAsync(Rota(eventoDeB.Id, tarefa.Id), Corpo("Invasores")));
+        await AssertNaoEncontradoAsync(await AlterarStatusAsync(OrganizacaoB.Cliente, eventoDeB.Id, tarefa.Id, "Cancelada"));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.DeleteAsync(Rota(eventoDeB.Id, tarefa.Id)));
     }
 
     [Fact]
     public async Task ListagemEPendenciasDeB_NaoDevemConterTarefasDeA()
     {
         await CriarDeAAsync();
-        var casamentoDeB = await ClienteCasamentos.CriarAsync(OrganizacaoB.Cliente);
+        var eventoDeB = await ClienteEventos.CriarAsync(OrganizacaoB.Cliente);
 
-        var lista = await ListarAsync(OrganizacaoB.Cliente, casamentoDeB.Id);
+        var lista = await ListarAsync(OrganizacaoB.Cliente, eventoDeB.Id);
         var pendencias = await OrganizacaoB.Cliente.GetFromJsonAsync<PendenciasTarefasDto>(RotaPendencias);
 
         Assert.Empty(lista.Tarefas);
@@ -105,7 +105,7 @@ public sealed class TarefasIsolamentoTestes : IsolamentoOrganizacaoTestesBase
         await using var contextoB = CriarContexto(OrganizacaoB);
         await using var contextoSemOrganizacao = CriarContextoSemOrganizacao();
 
-        Assert.Empty(await contextoB.TarefasCasamento.ToListAsync());
-        Assert.Empty(await contextoSemOrganizacao.TarefasCasamento.ToListAsync());
+        Assert.Empty(await contextoB.TarefasEvento.ToListAsync());
+        Assert.Empty(await contextoSemOrganizacao.TarefasEvento.ToListAsync());
     }
 }

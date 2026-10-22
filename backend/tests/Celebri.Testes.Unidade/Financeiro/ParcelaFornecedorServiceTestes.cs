@@ -2,9 +2,9 @@ using System.Text;
 using Celebri.Aplicacao.Arquivos;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Financeiro;
-using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.FornecedoresEvento;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Financeiro;
 using Celebri.Dominio.Fornecedores;
@@ -18,31 +18,31 @@ public class ParcelaFornecedorServiceTestes
     private static readonly DateTimeOffset Agora = new(2026, 9, 30, 15, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly Hoje = new(2026, 9, 30);
 
-    private readonly RepositorioCasamentosFinanceiro _casamentos = new();
+    private readonly RepositorioEventosFinanceiro _eventos = new();
     private readonly RepositorioVinculosFornecedorMemoria _vinculos = new();
     private readonly RepositorioParcelasMemoria _parcelas;
     private readonly ArmazenamentoFinanceiroMemoria _armazenamento = new();
     private readonly UnidadeTrabalhoFinanceiro _unidade = new();
     private readonly CalendarioLocalFixo _calendario = new(Hoje);
-    private readonly CasamentoAssessorado _casamento;
-    private readonly FornecedorCasamento _buffet;
+    private readonly Evento _evento;
+    private readonly FornecedorEvento _buffet;
 
     public ParcelaFornecedorServiceTestes()
     {
         _parcelas = new RepositorioParcelasMemoria(_vinculos);
-        _casamento = CasamentoAssessorado.Criar(
-            new DadosCasamento("Ana", "João", new DateOnly(2026, 12, 12), null, null, null, null, null),
+        _evento = Evento.Criar(
+            new DadosEvento("Ana", "João", new DateOnly(2026, 12, 12), null, null, null, null, null),
             Agora);
-        _casamentos.Itens.Add(_casamento);
-        _parcelas.Casamentos[_casamento.Id] = _casamento;
+        _eventos.Itens.Add(_evento);
+        _parcelas.Eventos[_evento.Id] = _evento;
         _buffet = NovoVinculo("Buffet São João", CategoriaFornecedor.Buffet, 18_500m);
     }
 
-    private FornecedorCasamento NovoVinculo(string nome, CategoriaFornecedor categoria, decimal? contratado, StatusFornecedorCasamento status = StatusFornecedorCasamento.Contratado)
+    private FornecedorEvento NovoVinculo(string nome, CategoriaFornecedor categoria, decimal? contratado, StatusFornecedorEvento status = StatusFornecedorEvento.Contratado)
     {
         var fornecedor = Fornecedor.Criar(new DadosFornecedor(categoria, nome, null, "11987654321", null, null, null, null), Agora);
         _vinculos.Fornecedores[fornecedor.Id] = fornecedor;
-        var vinculo = FornecedorCasamento.Criar(_casamento.Id, fornecedor.Id, new DadosFornecedorCasamento(null, contratado, contratado, status, "Comissão"), null, Agora);
+        var vinculo = FornecedorEvento.Criar(_evento.Id, fornecedor.Id, new DadosFornecedorEvento(null, contratado, contratado, status, "Comissão"), null, Agora);
         _vinculos.Itens.Add(vinculo);
         return vinculo;
     }
@@ -50,7 +50,7 @@ public class ParcelaFornecedorServiceTestes
     private ParcelaFornecedorService Service(IUsuarioAtual? usuario = null)
     {
         return new ParcelaFornecedorService(
-            _casamentos,
+            _eventos,
             _vinculos,
             _parcelas,
             _armazenamento,
@@ -70,7 +70,7 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task Criar_DeveGravarTocarOVinculoENumerar()
     {
-        var dto = await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(6_000m, observacao: "Sinal"), CancellationToken.None);
+        var dto = await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(6_000m, observacao: "Sinal"), CancellationToken.None);
 
         Assert.Equal(1, dto.Numero);
         Assert.Equal(1, dto.TotalParcelas);
@@ -84,10 +84,10 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task Criar_QuandoASomaPassaDoContratado_DeveRecusarNoCampoValorSemGravar()
     {
-        await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(18_000m), CancellationToken.None);
+        await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(18_000m), CancellationToken.None);
 
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(
-            () => Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(500.01m), CancellationToken.None));
+            () => Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(500.01m), CancellationToken.None));
 
         Assert.Equal(ParcelaFornecedor.CampoValor, excecao.Campo);
         Assert.Contains("R$ 0,01", excecao.Message);
@@ -97,39 +97,39 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task Criar_EmVinculoEmNegociacao_DeveRecusar()
     {
-        var negociacao = NovoVinculo("Florista", CategoriaFornecedor.Decoracao, null, StatusFornecedorCasamento.EmNegociacao);
+        var negociacao = NovoVinculo("Florista", CategoriaFornecedor.Decoracao, null, StatusFornecedorEvento.EmNegociacao);
 
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(
-            () => Service().CriarAsync(_casamento.Id, negociacao.Id, Parcela(10m), CancellationToken.None));
+            () => Service().CriarAsync(_evento.Id, negociacao.Id, Parcela(10m), CancellationToken.None));
 
         Assert.Equal(MensagensFinanceiro.VinculoNaoContratado, excecao.Message);
     }
 
     [Fact]
-    public async Task Criar_EmCasamentoArquivado_DeveRecusar()
+    public async Task Criar_EmEventoArquivado_DeveRecusar()
     {
-        _casamento.Arquivar(Agora);
+        _evento.Arquivar(Agora);
 
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(
-            () => Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(10m), CancellationToken.None));
+            () => Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(10m), CancellationToken.None));
 
-        Assert.Equal(MensagensCasamento.ArquivadoSemEdicao, excecao.Message);
+        Assert.Equal(MensagensEvento.ArquivadoSemEdicao, excecao.Message);
     }
 
     [Fact]
     public async Task Criar_EmVinculoInexistente_DeveRetornarNaoEncontrado()
     {
         await Assert.ThrowsAsync<RecursoNaoEncontradoException>(
-            () => Service().CriarAsync(_casamento.Id, Guid.NewGuid(), Parcela(10m), CancellationToken.None));
+            () => Service().CriarAsync(_evento.Id, Guid.NewGuid(), Parcela(10m), CancellationToken.None));
     }
 
     [Fact]
     public async Task Gerar_SemValorTotal_DeveUsarOSaldoEAjustarCentavos()
     {
-        await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(500m), CancellationToken.None);
+        await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(500m), CancellationToken.None);
 
         var cronograma = await Service().GerarAsync(
-            _casamento.Id,
+            _evento.Id,
             _buffet.Id,
             new GerarParcelasRequest(3, null, new DateOnly(2027, 1, 31), null),
             CancellationToken.None);
@@ -146,13 +146,13 @@ public class ParcelaFornecedorServiceTestes
     public async Task Gerar_AcimaDoSaldoOuDoLimite_DeveRecusar()
     {
         var soma = await Assert.ThrowsAsync<RegraNegocioException>(() => Service().GerarAsync(
-            _casamento.Id,
+            _evento.Id,
             _buffet.Id,
             new GerarParcelasRequest(2, 18_500.02m, Hoje, null),
             CancellationToken.None));
-        await Service().GerarAsync(_casamento.Id, _buffet.Id, new GerarParcelasRequest(59, 5_900m, Hoje, null), CancellationToken.None);
+        await Service().GerarAsync(_evento.Id, _buffet.Id, new GerarParcelasRequest(59, 5_900m, Hoje, null), CancellationToken.None);
         var limite = await Assert.ThrowsAsync<RegraNegocioException>(() => Service().GerarAsync(
-            _casamento.Id,
+            _evento.Id,
             _buffet.Id,
             new GerarParcelasRequest(2, 2m, Hoje, null),
             CancellationToken.None));
@@ -165,10 +165,10 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task Gerar_SemSaldo_DeveRecusar()
     {
-        await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(18_500m), CancellationToken.None);
+        await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(18_500m), CancellationToken.None);
 
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(() => Service().GerarAsync(
-            _casamento.Id,
+            _evento.Id,
             _buffet.Id,
             new GerarParcelasRequest(2, null, Hoje, null),
             CancellationToken.None));
@@ -179,9 +179,9 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task Atualizar_DeveDesconsiderarAPropriaParcelaNaSoma()
     {
-        var criada = await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(18_500m), CancellationToken.None);
+        var criada = await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(18_500m), CancellationToken.None);
 
-        var dto = await Service().AtualizarAsync(_casamento.Id, _buffet.Id, criada.Id, Parcela(18_000m, Hoje.AddDays(-2)), CancellationToken.None);
+        var dto = await Service().AtualizarAsync(_evento.Id, _buffet.Id, criada.Id, Parcela(18_000m, Hoje.AddDays(-2)), CancellationToken.None);
 
         Assert.Equal(18_000m, dto.Valor);
         Assert.Equal("Vencida", dto.Situacao);
@@ -190,16 +190,16 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task PagarEDesfazer_DeveApagarOComprovanteSomenteDepoisDoCommit()
     {
-        var criada = await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(1_000m), CancellationToken.None);
-        var paga = await Service().RegistrarPagamentoAsync(_casamento.Id, _buffet.Id, criada.Id, new RegistrarPagamentoRequest(null), CancellationToken.None);
-        var comComprovante = await Service().AnexarComprovanteAsync(_casamento.Id, _buffet.Id, criada.Id, "pix.png", new MemoryStream([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x01]), CancellationToken.None);
+        var criada = await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(1_000m), CancellationToken.None);
+        var paga = await Service().RegistrarPagamentoAsync(_evento.Id, _buffet.Id, criada.Id, new RegistrarPagamentoRequest(null), CancellationToken.None);
+        var comComprovante = await Service().AnexarComprovanteAsync(_evento.Id, _buffet.Id, criada.Id, "pix.png", new MemoryStream([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x01]), CancellationToken.None);
 
         Assert.Equal("Paga", paga.Situacao);
         Assert.Equal(Hoje, paga.PagaEm);
         Assert.Equal(ArquivoComprovante.TipoPng, comComprovante.Comprovante!.TipoConteudo);
         Assert.Single(_armazenamento.Arquivos);
 
-        var desfeita = await Service().DesfazerPagamentoAsync(_casamento.Id, _buffet.Id, criada.Id, CancellationToken.None);
+        var desfeita = await Service().DesfazerPagamentoAsync(_evento.Id, _buffet.Id, criada.Id, CancellationToken.None);
 
         Assert.Equal("Pendente", desfeita.Situacao);
         Assert.Null(desfeita.Comprovante);
@@ -210,15 +210,15 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task AnexarComprovante_SemPagamentoOuComFormatoInvalido_NaoDeveGravarArquivo()
     {
-        var criada = await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(1_000m), CancellationToken.None);
+        var criada = await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(1_000m), CancellationToken.None);
 
         var semPagamento = await Assert.ThrowsAsync<RegraNegocioException>(
-            () => Service().AnexarComprovanteAsync(_casamento.Id, _buffet.Id, criada.Id, "a.pdf", Arquivo("%PDF-1.7"), CancellationToken.None));
-        await Service().RegistrarPagamentoAsync(_casamento.Id, _buffet.Id, criada.Id, new RegistrarPagamentoRequest(Hoje.AddDays(-1)), CancellationToken.None);
+            () => Service().AnexarComprovanteAsync(_evento.Id, _buffet.Id, criada.Id, "a.pdf", Arquivo("%PDF-1.7"), CancellationToken.None));
+        await Service().RegistrarPagamentoAsync(_evento.Id, _buffet.Id, criada.Id, new RegistrarPagamentoRequest(Hoje.AddDays(-1)), CancellationToken.None);
         var formato = await Assert.ThrowsAsync<RegraNegocioException>(
-            () => Service().AnexarComprovanteAsync(_casamento.Id, _buffet.Id, criada.Id, "virus.pdf", Arquivo("MZ executavel"), CancellationToken.None));
+            () => Service().AnexarComprovanteAsync(_evento.Id, _buffet.Id, criada.Id, "virus.pdf", Arquivo("MZ executavel"), CancellationToken.None));
         var vazio = await Assert.ThrowsAsync<RegraNegocioException>(
-            () => Service().AnexarComprovanteAsync(_casamento.Id, _buffet.Id, criada.Id, "vazio.pdf", new MemoryStream(), CancellationToken.None));
+            () => Service().AnexarComprovanteAsync(_evento.Id, _buffet.Id, criada.Id, "vazio.pdf", new MemoryStream(), CancellationToken.None));
 
         Assert.Equal(MensagensFinanceiro.ComprovanteSemPagamento, semPagamento.Message);
         Assert.Equal(MensagensFinanceiro.ComprovanteFormatoInvalido, formato.Message);
@@ -229,12 +229,12 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task AnexarComprovante_QuandoOCommitFalha_DeveApagarOArquivoNovo()
     {
-        var criada = await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(1_000m), CancellationToken.None);
-        await Service().RegistrarPagamentoAsync(_casamento.Id, _buffet.Id, criada.Id, new RegistrarPagamentoRequest(null), CancellationToken.None);
+        var criada = await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(1_000m), CancellationToken.None);
+        await Service().RegistrarPagamentoAsync(_evento.Id, _buffet.Id, criada.Id, new RegistrarPagamentoRequest(null), CancellationToken.None);
         _unidade.FalharProxima = true;
 
         await Assert.ThrowsAsync<ConcorrenciaException>(
-            () => Service().AnexarComprovanteAsync(_casamento.Id, _buffet.Id, criada.Id, "a.pdf", Arquivo("%PDF-1.7 recibo"), CancellationToken.None));
+            () => Service().AnexarComprovanteAsync(_evento.Id, _buffet.Id, criada.Id, "a.pdf", Arquivo("%PDF-1.7 recibo"), CancellationToken.None));
 
         Assert.Empty(_armazenamento.Arquivos);
         Assert.Single(_armazenamento.Removidos);
@@ -243,13 +243,13 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task RemoverOuEditar_ParcelaPaga_DeveRecusar()
     {
-        var criada = await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(1_000m), CancellationToken.None);
-        await Service().RegistrarPagamentoAsync(_casamento.Id, _buffet.Id, criada.Id, new RegistrarPagamentoRequest(null), CancellationToken.None);
+        var criada = await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(1_000m), CancellationToken.None);
+        await Service().RegistrarPagamentoAsync(_evento.Id, _buffet.Id, criada.Id, new RegistrarPagamentoRequest(null), CancellationToken.None);
 
         var remover = await Assert.ThrowsAsync<RegraNegocioException>(
-            () => Service().RemoverAsync(_casamento.Id, _buffet.Id, criada.Id, CancellationToken.None));
+            () => Service().RemoverAsync(_evento.Id, _buffet.Id, criada.Id, CancellationToken.None));
         var editar = await Assert.ThrowsAsync<RegraNegocioException>(
-            () => Service().AtualizarAsync(_casamento.Id, _buffet.Id, criada.Id, Parcela(10m), CancellationToken.None));
+            () => Service().AtualizarAsync(_evento.Id, _buffet.Id, criada.Id, Parcela(10m), CancellationToken.None));
 
         Assert.Equal(MensagensFinanceiro.ParcelaPagaSemEdicao, remover.Message);
         Assert.Equal(MensagensFinanceiro.ParcelaPagaSemEdicao, editar.Message);
@@ -259,26 +259,26 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task Pagar_EmVinculoCancelado_DeveRecusarPorSerHistorico()
     {
-        var criada = await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(1_000m), CancellationToken.None);
-        _buffet.Atualizar(new DadosFornecedorCasamento(null, 18_500m, 18_500m, StatusFornecedorCasamento.Cancelado, null), Agora);
+        var criada = await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(1_000m), CancellationToken.None);
+        _buffet.Atualizar(new DadosFornecedorEvento(null, 18_500m, 18_500m, StatusFornecedorEvento.Cancelado, null), Agora);
 
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(() => Service().RegistrarPagamentoAsync(
-            _casamento.Id, _buffet.Id, criada.Id, new RegistrarPagamentoRequest(null), CancellationToken.None));
+            _evento.Id, _buffet.Id, criada.Id, new RegistrarPagamentoRequest(null), CancellationToken.None));
 
         Assert.Equal(MensagensFinanceiro.VinculoCancelado, excecao.Message);
     }
 
     [Fact]
-    public async Task ObterFinanceiro_ParaOCasal_DeveSerSomenteLeituraComTotaisEAlertas()
+    public async Task ObterFinanceiro_ParaOAnfitriao_DeveSerSomenteLeituraComTotaisEAlertas()
     {
         var musica = NovoVinculo("Banda Aurora", CategoriaFornecedor.Musica, 4_200m);
-        NovoVinculo("Florista", CategoriaFornecedor.Decoracao, 3_000m, StatusFornecedorCasamento.Cotacao);
-        var vencida = await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(3_250m, Hoje.AddDays(-1)), CancellationToken.None);
-        await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(3_250m, Hoje.AddDays(5)), CancellationToken.None);
-        var paga = await Service().CriarAsync(_casamento.Id, musica.Id, Parcela(2_500m, Hoje.AddDays(-10)), CancellationToken.None);
-        await Service().RegistrarPagamentoAsync(_casamento.Id, musica.Id, paga.Id, new RegistrarPagamentoRequest(null), CancellationToken.None);
+        NovoVinculo("Florista", CategoriaFornecedor.Decoracao, 3_000m, StatusFornecedorEvento.Cotacao);
+        var vencida = await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(3_250m, Hoje.AddDays(-1)), CancellationToken.None);
+        await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(3_250m, Hoje.AddDays(5)), CancellationToken.None);
+        var paga = await Service().CriarAsync(_evento.Id, musica.Id, Parcela(2_500m, Hoje.AddDays(-10)), CancellationToken.None);
+        await Service().RegistrarPagamentoAsync(_evento.Id, musica.Id, paga.Id, new RegistrarPagamentoRequest(null), CancellationToken.None);
 
-        var financeiro = await Service(UsuarioAtualFalso.Casal(_casamento.Id)).ObterFinanceiroAsync(_casamento.Id, CancellationToken.None);
+        var financeiro = await Service(UsuarioAtualFalso.Anfitriao(_evento.Id)).ObterFinanceiroAsync(_evento.Id, CancellationToken.None);
 
         Assert.True(financeiro.SomenteLeitura);
         Assert.Equal(Hoje, financeiro.Hoje);
@@ -294,10 +294,10 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task ObterFinanceiro_ComVinculoCanceladoComParcelas_DeveListarComoHistoricoForaDosTotais()
     {
-        await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(1_000m, Hoje.AddDays(-3)), CancellationToken.None);
-        _buffet.Atualizar(new DadosFornecedorCasamento(null, 18_500m, 18_500m, StatusFornecedorCasamento.Cancelado, null), Agora);
+        await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(1_000m, Hoje.AddDays(-3)), CancellationToken.None);
+        _buffet.Atualizar(new DadosFornecedorEvento(null, 18_500m, 18_500m, StatusFornecedorEvento.Cancelado, null), Agora);
 
-        var financeiro = await Service().ObterFinanceiroAsync(_casamento.Id, CancellationToken.None);
+        var financeiro = await Service().ObterFinanceiroAsync(_evento.Id, CancellationToken.None);
 
         var cancelado = Assert.Single(financeiro.Fornecedores);
         Assert.Equal("Cancelado", cancelado.Status);
@@ -307,14 +307,14 @@ public class ParcelaFornecedorServiceTestes
     }
 
     [Fact]
-    public async Task Alertas_DevemNumerarAsParcelasEIgnorarCasamentoArquivado()
+    public async Task Alertas_DevemNumerarAsParcelasEIgnorarEventoArquivado()
     {
-        await Service().GerarAsync(_casamento.Id, _buffet.Id, new GerarParcelasRequest(3, 900m, Hoje.AddMonths(-1), null), CancellationToken.None);
+        await Service().GerarAsync(_evento.Id, _buffet.Id, new GerarParcelasRequest(3, 900m, Hoje.AddMonths(-1), null), CancellationToken.None);
 
         var alertas = await Service().ObterAlertasOrganizacaoAsync(CancellationToken.None);
 
         Assert.Equal(1, alertas.TotalVencidas);
-        Assert.Equal(1, alertas.CasamentosComVencidas);
+        Assert.Equal(1, alertas.EventosComVencidas);
         var item = Assert.Single(alertas.Vencidas);
         Assert.Equal(1, item.Numero);
         Assert.Equal(3, item.TotalParcelas);
@@ -323,7 +323,7 @@ public class ParcelaFornecedorServiceTestes
         Assert.Equal(1, alertas.TotalProximas);
         Assert.Equal(2, alertas.Proximas.Single().Numero);
 
-        _casamento.Arquivar(Agora);
+        _evento.Arquivar(Agora);
         var depois = await Service().ObterAlertasOrganizacaoAsync(CancellationToken.None);
         Assert.Equal(0, depois.TotalVencidas + depois.TotalProximas);
     }
@@ -331,12 +331,12 @@ public class ParcelaFornecedorServiceTestes
     [Fact]
     public async Task VirarODia_DeveMudarAParcelaParaVencidaSemEscrita()
     {
-        await Service().CriarAsync(_casamento.Id, _buffet.Id, Parcela(100m, Hoje), CancellationToken.None);
+        await Service().CriarAsync(_evento.Id, _buffet.Id, Parcela(100m, Hoje), CancellationToken.None);
         var salvamentos = _unidade.Salvamentos;
 
-        var antes = await Service().ObterFinanceiroAsync(_casamento.Id, CancellationToken.None);
+        var antes = await Service().ObterFinanceiroAsync(_evento.Id, CancellationToken.None);
         _calendario.Data = Hoje.AddDays(1);
-        var depois = await Service().ObterFinanceiroAsync(_casamento.Id, CancellationToken.None);
+        var depois = await Service().ObterFinanceiroAsync(_evento.Id, CancellationToken.None);
 
         Assert.Equal("Pendente", antes.Fornecedores[0].Parcelas[0].Situacao);
         Assert.Equal("Vencida", depois.Fornecedores[0].Parcelas[0].Situacao);
@@ -349,28 +349,28 @@ public class GanchosVinculoComParcelasTestes
     private static readonly DateTimeOffset Agora = new(2026, 9, 30, 15, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly Hoje = new(2026, 9, 30);
 
-    private readonly RepositorioCasamentosFinanceiro _casamentos = new();
+    private readonly RepositorioEventosFinanceiro _eventos = new();
     private readonly RepositorioVinculosFornecedorMemoria _vinculos = new();
     private readonly RepositorioParcelasMemoria _parcelas;
-    private readonly CasamentoAssessorado _casamento;
-    private readonly FornecedorCasamento _vinculo;
+    private readonly Evento _evento;
+    private readonly FornecedorEvento _vinculo;
 
     public GanchosVinculoComParcelasTestes()
     {
         _parcelas = new RepositorioParcelasMemoria(_vinculos);
-        _casamento = CasamentoAssessorado.Criar(new DadosCasamento("Ana", "João", new DateOnly(2026, 12, 12), null, null, null, null, null), Agora);
-        _casamentos.Itens.Add(_casamento);
+        _evento = Evento.Criar(new DadosEvento("Ana", "João", new DateOnly(2026, 12, 12), null, null, null, null, null), Agora);
+        _eventos.Itens.Add(_evento);
         var fornecedor = Fornecedor.Criar(new DadosFornecedor(CategoriaFornecedor.Buffet, "Buffet", null, "11987654321", null, null, null, null), Agora);
         _vinculos.Fornecedores[fornecedor.Id] = fornecedor;
-        _vinculo = FornecedorCasamento.Criar(_casamento.Id, fornecedor.Id, new DadosFornecedorCasamento(null, 10_000m, 10_000m, StatusFornecedorCasamento.Contratado, null), null, Agora);
+        _vinculo = FornecedorEvento.Criar(_evento.Id, fornecedor.Id, new DadosFornecedorEvento(null, 10_000m, 10_000m, StatusFornecedorEvento.Contratado, null), null, Agora);
         _vinculos.Itens.Add(_vinculo);
         _parcelas.Itens.Add(ParcelaFornecedor.Criar(_vinculo, new DadosParcela(4_000m, Hoje, null), null, Agora));
     }
 
-    private FornecedorCasamentoService Service()
+    private FornecedorEventoService Service()
     {
-        return new FornecedorCasamentoService(
-            _casamentos,
+        return new FornecedorEventoService(
+            _eventos,
             new RepositorioFornecedoresVazio(),
             _vinculos,
             _parcelas,
@@ -385,7 +385,7 @@ public class GanchosVinculoComParcelasTestes
     public async Task Remover_VinculoComParcelas_DeveRecusarSemApagar()
     {
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(
-            () => Service().RemoverAsync(_casamento.Id, _vinculo.Id, CancellationToken.None));
+            () => Service().RemoverAsync(_evento.Id, _vinculo.Id, CancellationToken.None));
 
         Assert.Equal(MensagensFinanceiro.VinculoComParcelas, excecao.Message);
         Assert.Single(_vinculos.Itens);
@@ -395,20 +395,20 @@ public class GanchosVinculoComParcelasTestes
     public async Task Atualizar_ParaEmNegociacaoOuAbaixoDaSoma_DeveRecusar()
     {
         var status = await Assert.ThrowsAsync<RegraNegocioException>(() => Service().AtualizarAsync(
-            _casamento.Id, _vinculo.Id, new AtualizarFornecedorCasamentoRequest(null, 10_000m, null, StatusFornecedorCasamento.EmNegociacao, null), CancellationToken.None));
+            _evento.Id, _vinculo.Id, new AtualizarFornecedorEventoRequest(null, 10_000m, null, StatusFornecedorEvento.EmNegociacao, null), CancellationToken.None));
         var valor = await Assert.ThrowsAsync<RegraNegocioException>(() => Service().AtualizarAsync(
-            _casamento.Id, _vinculo.Id, new AtualizarFornecedorCasamentoRequest(null, 10_000m, 3_999.99m, StatusFornecedorCasamento.Contratado, null), CancellationToken.None));
+            _evento.Id, _vinculo.Id, new AtualizarFornecedorEventoRequest(null, 10_000m, 3_999.99m, StatusFornecedorEvento.Contratado, null), CancellationToken.None));
 
-        Assert.Equal(FornecedorCasamento.CampoStatus, status.Campo);
-        Assert.Equal(FornecedorCasamento.CampoValorContratado, valor.Campo);
+        Assert.Equal(FornecedorEvento.CampoStatus, status.Campo);
+        Assert.Equal(FornecedorEvento.CampoValorContratado, valor.Campo);
         Assert.Equal(10_000m, _vinculo.ValorContratado);
     }
 
     [Fact]
     public async Task ListarEObter_DevemTrazerResumoDeParcelasEPagamentos()
     {
-        var lista = await Service().ListarAsync(_casamento.Id, CancellationToken.None);
-        var detalhe = await Service().ObterAsync(_casamento.Id, _vinculo.Id, CancellationToken.None);
+        var lista = await Service().ListarAsync(_evento.Id, CancellationToken.None);
+        var detalhe = await Service().ObterAsync(_evento.Id, _vinculo.Id, CancellationToken.None);
 
         Assert.Equal(1, lista.Vinculos.Single().Parcelas!.Quantidade);
         Assert.Equal(6_000m, lista.Vinculos.Single().Parcelas!.SaldoAParcelar);

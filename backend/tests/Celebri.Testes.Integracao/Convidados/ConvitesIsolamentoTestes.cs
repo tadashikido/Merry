@@ -5,7 +5,7 @@ using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
 using static Celebri.Testes.Integracao.Convidados.ClienteConvites;
-using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 
 namespace Celebri.Testes.Integracao.Convidados;
 
@@ -19,38 +19,38 @@ public sealed class ConvitesIsolamentoTestes : IsolamentoOrganizacaoTestesBase
 
     protected override bool IncluirEntidadeTeste => false;
 
-    private async Task<(Guid CasamentoId, ConviteDto Convite)> CriarDeAAsync()
+    private async Task<(Guid EventoId, ConviteDto Convite)> CriarDeAAsync()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var convite = await CriarAsync(OrganizacaoA.Cliente, casamento.Id);
-        return (casamento.Id, convite);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var convite = await CriarAsync(OrganizacaoA.Cliente, evento.Id);
+        return (evento.Id, convite);
     }
 
-    private async Task AssertConviteDeAIntactoAsync(Guid casamentoId, ConviteDto original)
+    private async Task AssertConviteDeAIntactoAsync(Guid eventoId, ConviteDto original)
     {
-        var atual = await OrganizacaoA.Cliente.GetFromJsonAsync<ConviteDto>(Rota(casamentoId, original.Id));
+        var atual = await OrganizacaoA.Cliente.GetFromJsonAsync<ConviteDto>(Rota(eventoId, original.Id));
         Assert.Equal(original.Nome, atual!.Nome);
         Assert.Equal(original.Convidados.Select(convidado => convidado.Nome), atual.Convidados.Select(convidado => convidado.Nome));
     }
 
     [Fact]
-    public async Task Listar_ConvitesDeCasamentoDeOutraOrganizacao_DeveRetornar404SemDados()
+    public async Task Listar_ConvitesDeEventoDeOutraOrganizacao_DeveRetornar404SemDados()
     {
-        var (casamentoId, _) = await CriarDeAAsync();
+        var (eventoId, _) = await CriarDeAAsync();
 
-        var resposta = await OrganizacaoB.Cliente.GetAsync(Rota(casamentoId));
+        var resposta = await OrganizacaoB.Cliente.GetAsync(Rota(eventoId));
 
         await AssertNaoEncontradoAsync(resposta);
         Assert.DoesNotContain("Souza", await resposta.Content.ReadAsStringAsync(), StringComparison.Ordinal);
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync($"{Rota(casamentoId)}/totais"));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync($"{Rota(eventoId)}/totais"));
     }
 
     [Fact]
     public async Task Obter_ConviteDeOutraOrganizacao_DeveSerIndistinguivelDeInexistente()
     {
-        var (casamentoId, convite) = await CriarDeAAsync();
+        var (eventoId, convite) = await CriarDeAAsync();
 
-        var alheio = await OrganizacaoB.Cliente.GetAsync(Rota(casamentoId, convite.Id));
+        var alheio = await OrganizacaoB.Cliente.GetAsync(Rota(eventoId, convite.Id));
         var inexistente = await OrganizacaoB.Cliente.GetAsync(Rota(Guid.NewGuid(), Guid.NewGuid()));
 
         await AssertNaoEncontradoAsync(alheio);
@@ -62,11 +62,11 @@ public sealed class ConvitesIsolamentoTestes : IsolamentoOrganizacaoTestesBase
     }
 
     [Fact]
-    public async Task Criar_EmCasamentoDeOutraOrganizacao_DeveRetornar404ENaoGravar()
+    public async Task Criar_EmEventoDeOutraOrganizacao_DeveRetornar404ENaoGravar()
     {
-        var (casamentoId, _) = await CriarDeAAsync();
+        var (eventoId, _) = await CriarDeAAsync();
 
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsJsonAsync(Rota(casamentoId), CorpoValido("Invasores")));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsJsonAsync(Rota(eventoId), CorpoValido("Invasores")));
 
         await using var contexto = CriarContexto(OrganizacaoA);
         Assert.False(await contexto.Convites.AnyAsync(convite => convite.Nome == "Invasores"));
@@ -75,57 +75,57 @@ public sealed class ConvitesIsolamentoTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Atualizar_ConviteDeOutraOrganizacao_DeveRetornar404ENaoAlterar()
     {
-        var (casamentoId, convite) = await CriarDeAAsync();
+        var (eventoId, convite) = await CriarDeAAsync();
 
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PutAsJsonAsync(Rota(casamentoId, convite.Id), CorpoValido("Invasores")));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PutAsJsonAsync(Rota(eventoId, convite.Id), CorpoValido("Invasores")));
 
-        await AssertConviteDeAIntactoAsync(casamentoId, convite);
+        await AssertConviteDeAIntactoAsync(eventoId, convite);
     }
 
     [Fact]
     public async Task Remover_ConviteDeOutraOrganizacao_DeveRetornar404ENaoExcluir()
     {
-        var (casamentoId, convite) = await CriarDeAAsync();
+        var (eventoId, convite) = await CriarDeAAsync();
 
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.DeleteAsync(Rota(casamentoId, convite.Id)));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.DeleteAsync(Rota(eventoId, convite.Id)));
 
-        await AssertConviteDeAIntactoAsync(casamentoId, convite);
+        await AssertConviteDeAIntactoAsync(eventoId, convite);
     }
 
     [Fact]
-    public async Task ConviteDeAViaCasamentoDeB_DeveRetornar404()
+    public async Task ConviteDeAViaEventoDeB_DeveRetornar404()
     {
         var (_, convite) = await CriarDeAAsync();
-        var casamentoDeB = await ClienteCasamentos.CriarAsync(OrganizacaoB.Cliente);
+        var eventoDeB = await ClienteEventos.CriarAsync(OrganizacaoB.Cliente);
 
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(Rota(casamentoDeB.Id, convite.Id)));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PutAsJsonAsync(Rota(casamentoDeB.Id, convite.Id), CorpoValido("Invasores")));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.DeleteAsync(Rota(casamentoDeB.Id, convite.Id)));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(Rota(eventoDeB.Id, convite.Id)));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PutAsJsonAsync(Rota(eventoDeB.Id, convite.Id), CorpoValido("Invasores")));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.DeleteAsync(Rota(eventoDeB.Id, convite.Id)));
     }
 
     [Fact]
     public async Task Atualizar_ComIdDeConvidadoDeOutraOrganizacao_DeveRejeitarENaoAlterar()
     {
-        var (casamentoIdA, conviteA) = await CriarDeAAsync();
-        var casamentoDeB = await ClienteCasamentos.CriarAsync(OrganizacaoB.Cliente);
-        var conviteB = await CriarAsync(OrganizacaoB.Cliente, casamentoDeB.Id);
+        var (eventoIdA, conviteA) = await CriarDeAAsync();
+        var eventoDeB = await ClienteEventos.CriarAsync(OrganizacaoB.Cliente);
+        var conviteB = await CriarAsync(OrganizacaoB.Cliente, eventoDeB.Id);
 
         var resposta = await OrganizacaoB.Cliente.PutAsJsonAsync(
-            Rota(casamentoDeB.Id, conviteB.Id),
+            Rota(eventoDeB.Id, conviteB.Id),
             CorpoValido("Família B", null, 0, Pessoa("Sequestro", id: conviteA.Convidados[0].Id)));
 
         Assert.Equal(System.Net.HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
-        await AssertConviteDeAIntactoAsync(casamentoIdA, conviteA);
+        await AssertConviteDeAIntactoAsync(eventoIdA, conviteA);
     }
 
     [Fact]
     public async Task Listagem_DeB_NaoContemConvitesDeA()
     {
         await CriarDeAAsync();
-        var casamentoDeB = await ClienteCasamentos.CriarAsync(OrganizacaoB.Cliente);
-        await CriarAsync(OrganizacaoB.Cliente, casamentoDeB.Id, CorpoValido("Família B", null, 0, Pessoa("Beatriz")));
+        var eventoDeB = await ClienteEventos.CriarAsync(OrganizacaoB.Cliente);
+        await CriarAsync(OrganizacaoB.Cliente, eventoDeB.Id, CorpoValido("Família B", null, 0, Pessoa("Beatriz")));
 
-        var lista = await ListarAsync(OrganizacaoB.Cliente, casamentoDeB.Id);
+        var lista = await ListarAsync(OrganizacaoB.Cliente, eventoDeB.Id);
 
         Assert.Equal("Família B", Assert.Single(lista.Convites).Nome);
         Assert.Equal(1, lista.Totais.Pessoas);

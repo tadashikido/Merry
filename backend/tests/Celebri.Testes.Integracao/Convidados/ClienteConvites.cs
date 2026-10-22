@@ -6,14 +6,14 @@ namespace Celebri.Testes.Integracao.Convidados;
 
 public static class ClienteConvites
 {
-    public static string Rota(Guid casamentoId)
+    public static string Rota(Guid eventoId)
     {
-        return $"/api/casamentos/{casamentoId}/convites";
+        return $"/api/eventos/{eventoId}/convites";
     }
 
-    public static string Rota(Guid casamentoId, Guid conviteId)
+    public static string Rota(Guid eventoId, Guid conviteId)
     {
-        return $"{Rota(casamentoId)}/{conviteId}";
+        return $"{Rota(eventoId)}/{conviteId}";
     }
 
     public static object Pessoa(
@@ -44,16 +44,16 @@ public static class ClienteConvites
         };
     }
 
-    public static async Task<ConviteDto> CriarAsync(HttpClient cliente, Guid casamentoId, object? corpo = null)
+    public static async Task<ConviteDto> CriarAsync(HttpClient cliente, Guid eventoId, object? corpo = null)
     {
-        var resposta = await cliente.PostAsJsonAsync(Rota(casamentoId), corpo ?? CorpoValido());
+        var resposta = await cliente.PostAsJsonAsync(Rota(eventoId), corpo ?? CorpoValido());
         Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<ConviteDto>())!;
     }
 
-    public static async Task<ListaConvitesDto> ListarAsync(HttpClient cliente, Guid casamentoId)
+    public static async Task<ListaConvitesDto> ListarAsync(HttpClient cliente, Guid eventoId)
     {
-        var resposta = await cliente.GetAsync(Rota(casamentoId));
+        var resposta = await cliente.GetAsync(Rota(eventoId));
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<ListaConvitesDto>())!;
     }

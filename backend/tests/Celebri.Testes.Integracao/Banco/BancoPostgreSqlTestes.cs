@@ -25,7 +25,7 @@ public class BancoPostgreSqlTestes
         await AplicadorMigrations.AplicarMigrationsAsync(fabrica.Services);
 
         await using var escopo = fabrica.Services.CreateAsyncScope();
-        var contexto = escopo.ServiceProvider.GetRequiredService<CasamentoDbContext>();
+        var contexto = escopo.ServiceProvider.GetRequiredService<CelebriDbContext>();
         var aplicadas = await contexto.Database.GetAppliedMigrationsAsync();
         var pendentes = await contexto.Database.GetPendingMigrationsAsync();
         Assert.Contains(aplicadas, migration => migration.EndsWith("_Inicial", StringComparison.Ordinal));
@@ -41,7 +41,7 @@ public class BancoPostgreSqlTestes
         await AplicadorMigrations.AplicarMigrationsAsync(fabrica.Services);
 
         await using var escopo = fabrica.Services.CreateAsyncScope();
-        var contexto = escopo.ServiceProvider.GetRequiredService<CasamentoDbContext>();
+        var contexto = escopo.ServiceProvider.GetRequiredService<CelebriDbContext>();
         Assert.Empty(await contexto.Database.GetPendingMigrationsAsync());
     }
 
@@ -54,7 +54,7 @@ public class BancoPostgreSqlTestes
         using var cliente = fabrica.CreateClient();
 
         await using var escopo = fabrica.Services.CreateAsyncScope();
-        var contexto = escopo.ServiceProvider.GetRequiredService<CasamentoDbContext>();
+        var contexto = escopo.ServiceProvider.GetRequiredService<CelebriDbContext>();
         var aplicadas = await contexto.Database.GetAppliedMigrationsAsync();
         Assert.Contains(aplicadas, migration => migration.EndsWith("_Inicial", StringComparison.Ordinal));
         Assert.Empty(await contexto.Database.GetPendingMigrationsAsync());

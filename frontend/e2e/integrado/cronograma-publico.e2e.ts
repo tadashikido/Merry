@@ -9,24 +9,24 @@ test.describe('Cronograma para a equipe e fornecedores', () => {
     api,
     browser,
   }) => {
-    const casamento = await api.criarCasamento({ horario: '16:30', localCerimonia: 'Capela Santa Luzia' })
+    const evento = await api.criarEvento({ horario: '16:30', localCerimonia: 'Capela Santa Luzia' })
     const nomeBuffet = `Buffet Sabor ${Date.now()}`
     const fornecedor = await api.criarFornecedor(nomeBuffet, 'Buffet')
-    const vinculo = await api.vincularFornecedor(casamento.id, fornecedor.id)
-    await api.criarItemCronograma(casamento.id, {
+    const vinculo = await api.vincularFornecedor(evento.id, fornecedor.id)
+    await api.criarItemCronograma(evento.id, {
       inicio: '14:00',
       duracaoMinutos: 90,
       atividade: 'Montagem do buffet',
       local: 'Espaço Jardim',
       responsavel: 'Fernanda',
-      fornecedorCasamentoId: vinculo.id,
+      fornecedorEventoId: vinculo.id,
       instrucoes: 'Entrada pela rua lateral.',
       notasInternas: NOTA_INTERNA,
     })
-    await api.criarItemCronograma(casamento.id, { inicio: '16:30', duracaoMinutos: 45, atividade: 'Cerimônia', responsavel: 'Celebrante', notasInternas: NOTA_INTERNA })
-    await api.criarItemCronograma(casamento.id, { inicio: '19:00', duracaoMinutos: 120, atividade: 'Jantar', fornecedorCasamentoId: vinculo.id })
+    await api.criarItemCronograma(evento.id, { inicio: '16:30', duracaoMinutos: 45, atividade: 'Cerimônia', responsavel: 'Celebrante', notasInternas: NOTA_INTERNA })
+    await api.criarItemCronograma(evento.id, { inicio: '19:00', duracaoMinutos: 120, atividade: 'Jantar', fornecedorEventoId: vinculo.id })
 
-    await page.goto(`/casamentos/${casamento.id}/cronograma`)
+    await page.goto(`/eventos/${evento.id}/cronograma`)
     await page.getByRole('button', { name: 'Links para a equipe' }).click()
     const painel = dialogo(page)
     await expect(painel.getByText('Os links valem até')).toBeVisible()
@@ -37,7 +37,7 @@ test.describe('Cronograma para a equipe e fornecedores', () => {
     await linhaBuffet.getByRole('button', { name: 'Gerar link' }).click()
     await expect(linhaBuffet).toContainText('Link ativo')
 
-    const destino = (await api.listarLinksCronograma(casamento.id)).destinos.find((item) => item.fornecedorCasamentoId === vinculo.id)
+    const destino = (await api.listarLinksCronograma(evento.id)).destinos.find((item) => item.fornecedorEventoId === vinculo.id)
     const token = destino?.link?.token
     expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/)
 
@@ -45,7 +45,7 @@ test.describe('Cronograma para a equipe e fornecedores', () => {
     const publica = await contextoPublico.newPage()
     await publica.goto(`/cronograma/${token}`)
 
-    await expect(publica.getByRole('heading', { level: 1 })).toContainText(casamento.nomePrimeiraPessoa)
+    await expect(publica.getByRole('heading', { level: 1 })).toContainText(evento.nomePrimeiraPessoa)
     await expect(publica.getByTestId('cabecalho-operacao-filtro')).toHaveText(`Seus horários · ${nomeBuffet}`)
     await expect(publica.getByTestId('item-roteiro')).toHaveCount(2)
     await expect(publica.getByText('Montagem do buffet')).toBeVisible()
@@ -67,15 +67,15 @@ test.describe('Cronograma para a equipe e fornecedores', () => {
   })
 
   test('link geral mostra a equipe completa e reflete a alteração ao atualizar', async ({ paginaAssessoria: page, api, browser }) => {
-    const casamento = await api.criarCasamento()
-    const item = await api.criarItemCronograma(casamento.id, { inicio: '15:00', atividade: 'Making of', responsavel: 'Ana' })
+    const evento = await api.criarEvento()
+    const item = await api.criarItemCronograma(evento.id, { inicio: '15:00', atividade: 'Making of', responsavel: 'Ana' })
 
-    await page.goto(`/casamentos/${casamento.id}/cronograma`)
+    await page.goto(`/eventos/${evento.id}/cronograma`)
     await page.getByRole('button', { name: 'Links para a equipe' }).click()
     const linhaGeral = dialogo(page).locator('[data-destino="geral"]')
     await linhaGeral.getByRole('button', { name: 'Gerar link' }).click()
     await expect(linhaGeral).toContainText('Link ativo')
-    const token = (await api.listarLinksCronograma(casamento.id)).destinos.find((destino) => destino.tipo === 'Geral')?.link?.token
+    const token = (await api.listarLinksCronograma(evento.id)).destinos.find((destino) => destino.tipo === 'Geral')?.link?.token
 
     const contextoPublico = await browser.newContext({ viewport: { width: 390, height: 844 } })
     const publica = await contextoPublico.newPage()
@@ -83,7 +83,7 @@ test.describe('Cronograma para a equipe e fornecedores', () => {
     await expect(publica.getByTestId('cabecalho-operacao-filtro')).toHaveText('Equipe completa')
     await expect(publica.locator('time').first()).toHaveText('15:00')
 
-    await api.atualizarItemCronograma(casamento.id, item.id, { inicio: '15:30', atividade: 'Making of', responsavel: 'Ana' })
+    await api.atualizarItemCronograma(evento.id, item.id, { inicio: '15:30', atividade: 'Making of', responsavel: 'Ana' })
 
     await publica.getByRole('button', { name: 'Atualizar' }).click()
     await expect(publica.locator('time').first()).toHaveText('15:30')
@@ -97,7 +97,7 @@ test.describe('Cronograma para a equipe e fornecedores', () => {
     await publica.goto('/cronograma/AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde')
 
     await expect(publica.getByText('Este link não está mais ativo')).toBeVisible()
-    await expect(publica.getByText('Peça um novo link para a assessoria do casamento.')).toBeVisible()
+    await expect(publica.getByText('Peça um novo link para a assessoria do evento.')).toBeVisible()
     await contexto.close()
   })
 })

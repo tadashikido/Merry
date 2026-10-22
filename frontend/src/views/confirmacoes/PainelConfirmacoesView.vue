@@ -22,10 +22,10 @@ import DialogoCobrancaPendentes from '@/componentes/confirmacoes/DialogoCobranca
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useEnvioConvite, type ConviteParaEnvio } from '@/composables/useEnvioConvite'
 import { useNotificacao } from '@/composables/useNotificacao'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useConfirmacoesStore } from '@/stores/confirmacoes'
 import { useRestricoesAlimentaresStore } from '@/stores/restricoesAlimentares'
-import { TEXTOS_AREA_CASAL } from '@/textos/acessoCasal'
+import { TEXTOS_AREA_ANFITRIAO } from '@/textos/acessoAnfitriao'
 import { TEXTOS_COBRANCA, TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
 import { ROTULOS_STATUS_ENVIO } from '@/textos/convidados'
 import { ROTULOS_TIPO_RESTRICAO, TEXTOS_DADOS_SENSIVEIS } from '@/textos/dadosSensiveis'
@@ -34,7 +34,7 @@ import { TEXTOS_ENVIO_CONVITE, VARIANTE_STATUS_ENVIO } from '@/textos/rsvp'
 import type { ConvitePendenteDto } from '@/tipos/confirmacoes'
 import { baixarTexto } from '@/utilitarios/arquivo'
 import { gerarCsvBuffet, nomeArquivoBuffet } from '@/utilitarios/exportacaoBuffet'
-import { formatarDataCalendarioComDiaSemana, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarDataCalendarioComDiaSemana, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { filaCobranca, filtrarPendentes, segmentosEnvio, textoEstimativa } from '@/utilitarios/painelConfirmacoes'
 import { itensResumoConvidados } from '@/utilitarios/resumoConvidados'
 
@@ -50,7 +50,7 @@ const props = defineProps<{ id: string }>()
 
 const autenticacao = useAutenticacaoStore()
 
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const store = useConfirmacoesStore()
 const restricoes = useRestricoesAlimentaresStore()
 const roteador = useRouter()
@@ -60,18 +60,18 @@ const busca = ref('')
 const exportando = ref(false)
 const cobrancaAberta = ref(false)
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
-const painel = computed(() => (store.casamentoId === props.id ? store.painel : null))
-const falha = computed(() => (store.casamentoId === props.id ? store.falha : null))
-const relatorio = computed(() => (restricoes.casamentoId === props.id ? restricoes.relatorio : null))
-const falhaRestricoes = computed(() => (restricoes.casamentoId === props.id ? restricoes.falha : null))
-const arquivado = computed(() => painel.value?.casamentoArquivado ?? casamento.value?.arquivado ?? false)
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
+const painel = computed(() => (store.eventoId === props.id ? store.painel : null))
+const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
+const relatorio = computed(() => (restricoes.eventoId === props.id ? restricoes.relatorio : null))
+const falhaRestricoes = computed(() => (restricoes.eventoId === props.id ? restricoes.falha : null))
+const arquivado = computed(() => painel.value?.eventoArquivado ?? evento.value?.arquivado ?? false)
 
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
 const descricao = computed(() =>
-  casamento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(casamento.value.data)}` : undefined,
+  evento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(evento.value.data)}` : undefined,
 )
 
 const semConvites = computed(() => painel.value !== null && painel.value.convites.total === 0)
@@ -89,9 +89,9 @@ const rotuloBarra = computed(() => {
   return TEXTOS_CONFIRMACOES.caminhoAcessivel(painel.value.convites.total, partes)
 })
 
-const linhasRestricoesCasal = computed<LinhaCardapio[]>(() => {
+const linhasRestricoesAnfitriao = computed<LinhaCardapio[]>(() => {
   const total = painel.value?.pessoasComRestricaoAlimentar ?? 0
-  return total > 0 ? [{ chave: 'total', rotulo: TEXTOS_AREA_CASAL.restricoesRotulo, valor: total }] : []
+  return total > 0 ? [{ chave: 'total', rotulo: TEXTOS_AREA_ANFITRIAO.restricoesRotulo, valor: total }] : []
 })
 
 const linhasCardapio = computed<LinhaCardapio[]>(() => {
@@ -140,8 +140,8 @@ async function recarregar() {
 }
 
 const envio = useEnvioConvite({
-  casamentoId: () => props.id,
-  casamento: () => casamento.value,
+  eventoId: () => props.id,
+  evento: () => evento.value,
   arquivado: () => arquivado.value,
   aoAlterar: recarregar,
 })
@@ -160,9 +160,9 @@ watch(
   (id) => {
     busca.value = ''
     cobrancaAberta.value = false
-    void casamentos.obter(id)
+    void eventos.obter(id)
     void store.carregar(id)
-    if (!autenticacao.ehCasal) {
+    if (!autenticacao.ehAnfitriao) {
       void restricoes.carregar(id)
     }
   },
@@ -205,7 +205,7 @@ function abrirImpressao() {
 }
 
 function alterarPrazo() {
-  void roteador.push({ name: 'casamento-editar', params: { id: props.id } })
+  void roteador.push({ name: 'evento-editar', params: { id: props.id } })
 }
 
 function adicionar() {
@@ -230,10 +230,10 @@ function importar() {
       />
       <RouterLink
         class="confirmacoes__voltar"
-        :to="{ name: 'casamentos' }"
-        data-teste="voltar-casamentos"
+        :to="{ name: 'eventos' }"
+        data-teste="voltar-eventos"
       >
-        {{ TEXTOS_CONFIRMACOES.voltarCasamentos }}
+        {{ TEXTOS_CONFIRMACOES.voltarEventos }}
       </RouterLink>
     </div>
 
@@ -243,7 +243,7 @@ function importar() {
         :descricao="descricao"
       >
         <template #acoes>
-          <template v-if="painel && !semConvites && !autenticacao.ehCasal">
+          <template v-if="painel && !semConvites && !autenticacao.ehAnfitriao">
             <Button
               :label="TEXTOS_CONFIRMACOES.exportarImpressao"
               icon="ie ie-imprimir"
@@ -324,7 +324,7 @@ function importar() {
             :aceita-respostas="painel.prazo.aceitaRespostas"
           >
             <template
-              v-if="!arquivado && !autenticacao.ehCasal"
+              v-if="!arquivado && !autenticacao.ehAnfitriao"
               #acao
             >
               <Button
@@ -366,17 +366,17 @@ function importar() {
             </BarraProgressoEnvio>
 
             <div
-              v-if="autenticacao.ehCasal"
+              v-if="autenticacao.ehAnfitriao"
               class="confirmacoes__restricoes"
-              data-teste="restricoes-casal"
+              data-teste="restricoes-anfitriao"
             >
               <ResumoCardapio
-                :titulo="TEXTOS_AREA_CASAL.restricoesTitulo"
-                :linhas="linhasRestricoesCasal"
-                :vazio="TEXTOS_AREA_CASAL.restricoesVazio"
+                :titulo="TEXTOS_AREA_ANFITRIAO.restricoesTitulo"
+                :linhas="linhasRestricoesAnfitriao"
+                :vazio="TEXTOS_AREA_ANFITRIAO.restricoesVazio"
               >
                 <template #rodape>
-                  <span>{{ TEXTOS_AREA_CASAL.restricoesApoio }}</span>
+                  <span>{{ TEXTOS_AREA_ANFITRIAO.restricoesApoio }}</span>
                 </template>
               </ResumoCardapio>
             </div>
@@ -524,7 +524,7 @@ function importar() {
       <DialogoCobrancaPendentes
         v-model:visivel="cobrancaAberta"
         :fila="fila"
-        :casamento="casamento"
+        :evento="evento"
         :convite-em-andamento="conviteEmAndamento"
         :anuncio="anuncioCobranca"
         @whatsapp="envio.enviarLembreteWhatsApp(paraEnvio($event))"

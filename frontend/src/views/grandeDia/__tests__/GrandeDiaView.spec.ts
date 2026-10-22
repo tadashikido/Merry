@@ -11,7 +11,7 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
 import type { SessaoDto } from '@/tipos/api'
 import type { GrandeDiaDto } from '@/tipos/grandeDia'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, type Rota } from '../../casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -21,20 +21,20 @@ vi.mock('@/composables/useNotificacao', () => ({
   DURACAO_TOAST_ERRO: 6000,
 }))
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_GRANDE_DIA = `${ROTA_CASAMENTO}/grande-dia`
-const CAMINHO = `/casamentos/${ID_CASAMENTO}/grande-dia`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_GRANDE_DIA = `${ROTA_EVENTO}/grande-dia`
+const CAMINHO = `/eventos/${ID_EVENTO}/grande-dia`
 
-const SESSAO_CASAL: SessaoDto = {
-  tokenAcesso: 'token-casal',
+const SESSAO_ANFITRIAO: SessaoDto = {
+  tokenAcesso: 'token-anfitriao',
   expiraEm: '2026-09-28T12:15:00Z',
   usuario: {
-    id: 'u-casal',
+    id: 'u-anfitriao',
     nome: 'Lívia Moraes',
     email: 'livia@exemplo.com',
-    papel: 'Casal',
+    papel: 'Anfitriao',
     organizacao: { id: 'o1', nome: 'Albuquerque Assessoria' },
-    casamentoId: ID_CASAMENTO,
+    eventoId: ID_EVENTO,
   },
 }
 
@@ -83,7 +83,7 @@ async function abrir(sessao: SessaoDto, resposta: () => Response, ...extras: Rot
   rotear(
     fetchSimulado,
     sessao,
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
     quando('GET', ROTA_GRANDE_DIA, resposta),
     ...extras,
   )
@@ -119,7 +119,7 @@ describe('GrandeDiaView — assessoria no dia', { timeout: 20_000 }, () => {
     expect(wrapper!.get('[data-teste="grande-dia-marcar-feito"]').attributes('aria-label')).toBe('Marcar “Cerimônia” como feito')
     expect(wrapper!.find('.barra-acao-fixa--operacao').exists()).toBe(true)
     expect(texto('[data-teste="grande-dia-atualizado"]')).toMatch(/^Atualizado às \d{2}:\d{2}$/)
-    const itemMenu = wrapper!.findAll('[data-teste="item-casamento"]').find((item) => item.text() === 'Grande Dia')
+    const itemMenu = wrapper!.findAll('[data-teste="item-evento"]').find((item) => item.text() === 'Grande Dia')
     expect(itemMenu?.attributes('aria-current')).toBe('page')
     expect(document.title).toBe('Grande Dia · Luísa & Pedro')
   })
@@ -230,8 +230,8 @@ describe('GrandeDiaView — assessoria no dia', { timeout: 20_000 }, () => {
 })
 
 describe('GrandeDiaView — leitura, fases e estados', { timeout: 20_000 }, () => {
-  it('[SEGURANÇA] casal vê Agora e contatos, sem nenhuma ação de marcar ou reabrir', async () => {
-    await abrir(SESSAO_CASAL, () => respostaJson(grandeDia({ somenteLeitura: true })))
+  it('[SEGURANÇA] anfitriões veem Agora e contatos, sem nenhuma ação de marcar ou reabrir', async () => {
+    await abrir(SESSAO_ANFITRIAO, () => respostaJson(grandeDia({ somenteLeitura: true })))
 
     expect(texto('[data-teste="cartao-agora-atividade"]')).toBe('Cerimônia')
     expect(wrapper!.find('[data-teste="contato-ligar"]').exists()).toBe(true)
@@ -243,7 +243,7 @@ describe('GrandeDiaView — leitura, fases e estados', { timeout: 20_000 }, () =
 
   it('[COMPONENTE] antes do dia mostra a fase, os dias que faltam e o roteiro em leitura', async () => {
     const antes: GrandeDiaDto = grandeDia({
-      momento: { agora: '2027-05-03T10:12:00', fase: 'AntesDoDia', diasParaOCasamento: 12 },
+      momento: { agora: '2027-05-03T10:12:00', fase: 'AntesDoDia', diasParaOEvento: 12 },
       itens: [
         itemGrandeDia({ id: 'e', dia: 'Vespera', data: '2027-05-14', inicio: '19:00', atividade: 'Ensaio', situacao: 'Depois' }),
         itemGrandeDia({ id: 'c', situacao: 'Depois' }),
@@ -261,7 +261,7 @@ describe('GrandeDiaView — leitura, fases e estados', { timeout: 20_000 }, () =
 
   it('[COMPONENTE] depois do dia mostra que já passou e os feitos', async () => {
     const depois = grandeDia({
-      momento: { agora: '2027-05-18T09:00:00', fase: 'DepoisDoDia', diasParaOCasamento: -3 },
+      momento: { agora: '2027-05-18T09:00:00', fase: 'DepoisDoDia', diasParaOEvento: -3 },
       itens: [itemGrandeDia({ status: 'Concluido', situacao: 'Feito', concluidoEm: '2027-05-15T20:00:00Z' })],
     })
     await abrir(SESSAO_EXEMPLO, () => respostaJson(depois))
@@ -282,13 +282,13 @@ describe('GrandeDiaView — leitura, fases e estados', { timeout: 20_000 }, () =
     await abrir(SESSAO_EXEMPLO, () => respostaJson(grandeDia({ itens: [] })))
 
     expect(texto('[data-teste="grande-dia-vazio"]')).toContain(TEXTOS_GRANDE_DIA.vazioTitulo)
-    expect(wrapper!.get('[data-teste="grande-dia-montar"]').attributes('href')).toBe(`/casamentos/${ID_CASAMENTO}/cronograma`)
+    expect(wrapper!.get('[data-teste="grande-dia-montar"]').attributes('href')).toBe(`/eventos/${ID_EVENTO}/cronograma`)
   })
 
-  it('[COMPONENTE] vazio para o casal não oferece montar', async () => {
-    await abrir(SESSAO_CASAL, () => respostaJson(grandeDia({ itens: [], somenteLeitura: true })))
+  it('[COMPONENTE] vazio para os anfitriões não oferece montar', async () => {
+    await abrir(SESSAO_ANFITRIAO, () => respostaJson(grandeDia({ itens: [], somenteLeitura: true })))
 
-    expect(texto('[data-teste="grande-dia-vazio"]')).toContain(TEXTOS_GRANDE_DIA.vazioTextoCasal)
+    expect(texto('[data-teste="grande-dia-vazio"]')).toContain(TEXTOS_GRANDE_DIA.vazioTextoAnfitriao)
     expect(wrapper!.find('[data-teste="grande-dia-montar"]').exists()).toBe(false)
   })
 
@@ -313,7 +313,7 @@ describe('GrandeDiaView — leitura, fases e estados', { timeout: 20_000 }, () =
 
     await abrir(SESSAO_EXEMPLO, () => respostaProblema(404, { title: 'Não encontrado' }))
     expect(wrapper!.text()).toContain(TEXTOS_GRANDE_DIA.naoEncontradoTitulo)
-    expect(wrapper!.get('[data-teste="voltar"]').text()).toBe(TEXTOS_GRANDE_DIA.voltarCasamentos)
+    expect(wrapper!.get('[data-teste="voltar"]').text()).toBe(TEXTOS_GRANDE_DIA.voltarEventos)
   })
 })
 
@@ -352,8 +352,8 @@ describe('GrandeDiaView — layout reestruturado', { timeout: 20_000 }, () => {
     expect(envelope.find('[data-teste="cartao-agora"]').exists()).toBe(true)
   })
 
-  it('[SEGURANÇA] casal no dia não recebe a área de ação principal', async () => {
-    await abrir(SESSAO_CASAL, () => respostaJson(grandeDia({ somenteLeitura: true })))
+  it('[SEGURANÇA] anfitriões no dia não recebem a área de ação principal', async () => {
+    await abrir(SESSAO_ANFITRIAO, () => respostaJson(grandeDia({ somenteLeitura: true })))
 
     const envelope = wrapper!.get('[data-teste="grande-dia"]')
     expect(envelope.classes()).not.toContain('grande-dia--com-acao')
@@ -362,7 +362,7 @@ describe('GrandeDiaView — layout reestruturado', { timeout: 20_000 }, () => {
 
   it('[COMPONENTE] antes do dia agrupa o roteiro por dia na grade, sem lateral', async () => {
     const antes = grandeDia({
-      momento: { agora: '2027-05-03T10:12:00', fase: 'AntesDoDia', diasParaOCasamento: 12 },
+      momento: { agora: '2027-05-03T10:12:00', fase: 'AntesDoDia', diasParaOEvento: 12 },
       itens: [
         itemGrandeDia({ id: 'e', dia: 'Vespera', data: '2027-05-14', inicio: '19:00', atividade: 'Ensaio', situacao: 'Depois' }),
         itemGrandeDia({ id: 'c', situacao: 'Depois' }),

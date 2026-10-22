@@ -1,7 +1,7 @@
 export interface MetaTrilha {
   rotulo?: string
   pai?: string
-  casamento?: true
+  evento?: true
 }
 
 declare module 'vue-router' {

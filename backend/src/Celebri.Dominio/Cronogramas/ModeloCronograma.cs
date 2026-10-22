@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Fornecedores;
@@ -63,16 +63,16 @@ public class ModeloCronograma : IPertenceOrganizacao
     public static ModeloCronograma CriarDeCronograma(
         string? nome,
         string? descricao,
-        CasamentoAssessorado casamento,
+        Evento evento,
         IReadOnlyList<ItemCronograma> itens,
         IReadOnlyDictionary<Guid, CategoriaFornecedor> categoriasPorVinculo,
         DateTimeOffset agora)
     {
-        ArgumentNullException.ThrowIfNull(casamento);
+        ArgumentNullException.ThrowIfNull(evento);
         ArgumentNullException.ThrowIfNull(itens);
         ArgumentNullException.ThrowIfNull(categoriasPorVinculo);
 
-        var cerimonia = casamento.Horario
+        var cerimonia = evento.Horario
             ?? throw new RegraNegocioException(MensagensModeloCronograma.HorarioCerimoniaObrigatorio, "horario");
 
         if (itens.Count == 0)
@@ -84,8 +84,8 @@ public class ModeloCronograma : IPertenceOrganizacao
 
         foreach (var item in OrdenacaoCronograma.Ordenar(itens))
         {
-            var (referencia, local) = MapearLocal(item.Local, casamento);
-            CategoriaFornecedor? categoria = item.FornecedorCasamentoId is { } vinculoId
+            var (referencia, local) = MapearLocal(item.Local, evento);
+            CategoriaFornecedor? categoria = item.FornecedorEventoId is { } vinculoId
                 && categoriasPorVinculo.TryGetValue(vinculoId, out var encontrada)
                     ? encontrada
                     : null;
@@ -106,9 +106,9 @@ public class ModeloCronograma : IPertenceOrganizacao
         return modelo;
     }
 
-    public static (ReferenciaLocalCronograma? Referencia, string? Local) MapearLocal(string? local, CasamentoAssessorado casamento)
+    public static (ReferenciaLocalCronograma? Referencia, string? Local) MapearLocal(string? local, Evento evento)
     {
-        ArgumentNullException.ThrowIfNull(casamento);
+        ArgumentNullException.ThrowIfNull(evento);
 
         var chave = NormalizadorTexto.ChaveComparacao(local);
 
@@ -117,12 +117,12 @@ public class ModeloCronograma : IPertenceOrganizacao
             return (null, null);
         }
 
-        if (chave == NormalizadorTexto.ChaveComparacao(casamento.LocalCerimonia))
+        if (chave == NormalizadorTexto.ChaveComparacao(evento.LocalCerimonia))
         {
             return (ReferenciaLocalCronograma.Cerimonia, null);
         }
 
-        if (chave == NormalizadorTexto.ChaveComparacao(casamento.LocalRecepcao))
+        if (chave == NormalizadorTexto.ChaveComparacao(evento.LocalRecepcao))
         {
             return (ReferenciaLocalCronograma.Recepcao, null);
         }

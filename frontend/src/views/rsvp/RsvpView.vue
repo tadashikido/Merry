@@ -365,12 +365,12 @@ function alterarResposta() {
       <div class="rsvp__grade">
         <div class="rsvp__coluna-convite">
           <CabecalhoConvite
-            :primeiro="dados.casamento.nomePrimeiraPessoa"
-            :segundo="dados.casamento.nomeSegundaPessoa"
-            :data="dados.casamento.data"
-            :horario="dados.casamento.horario"
-            :local-cerimonia="dados.casamento.localCerimonia"
-            :local-recepcao="dados.casamento.localRecepcao"
+            :primeiro="dados.evento.nomePrimeiraPessoa"
+            :segundo="dados.evento.nomeSegundaPessoa"
+            :data="dados.evento.data"
+            :horario="dados.evento.horario"
+            :local-cerimonia="dados.evento.localCerimonia"
+            :local-recepcao="dados.evento.localRecepcao"
             :variante="modo === 'resumo' && recemEnviado ? 'compacto' : 'completo'"
           />
         </div>

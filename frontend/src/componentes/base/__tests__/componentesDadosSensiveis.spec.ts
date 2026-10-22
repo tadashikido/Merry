@@ -138,7 +138,7 @@ describe('AvisoPrivacidade', () => {
     const secao = wrapper.get('[data-teste="aviso-privacidade"]')
     expect(secao.text()).toContain(TEXTOS_DADOS_SENSIVEIS.avisoTitulo)
     expect(secao.text()).toContain('buffet')
-    expect(secao.text()).toContain('45 dias depois do casamento')
+    expect(secao.text()).toContain('45 dias depois do evento')
     expect(secao.attributes('aria-labelledby')).toBe(wrapper.get('h3').attributes('id'))
     expect(wrapper.find('[data-teste="slot"]').exists()).toBe(true)
   })

@@ -8,12 +8,12 @@ import LinhaParcela from './LinhaParcela.vue'
 import { TEXTOS_ALERTAS_PAGAMENTOS } from '@/textos/financeiro'
 import { ROTULOS_ACOES } from '@/textos/rotulos'
 import type { AlertasPagamentosDto, ParcelaAlertaDto } from '@/tipos/financeiro'
-import { formatarMoeda, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarMoeda, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 
 const props = withDefaults(
   defineProps<{
     alertas: AlertasPagamentosDto | null
-    contexto?: 'organizacao' | 'casamento'
+    contexto?: 'organizacao' | 'evento'
     carregando?: boolean
     comErro?: boolean
     destinoFinanceiro?: RouteLocationRaw | null
@@ -47,11 +47,11 @@ const grupos = computed<GrupoAlertas[]>(() => {
 const semAlertas = computed(() => props.alertas !== null && grupos.value.length === 0)
 
 function destinoItem(item: ParcelaAlertaDto): RouteLocationRaw {
-  return { name: 'casamento-financeiro', params: { id: item.casamentoId } }
+  return { name: 'evento-financeiro', params: { id: item.eventoId } }
 }
 
-function nomesCasal(item: ParcelaAlertaDto): string | null {
-  return props.contexto === 'organizacao' ? formatarNomesCasal(item.nomePrimeiraPessoa, item.nomeSegundaPessoa) : null
+function nomesAnfitrioes(item: ParcelaAlertaDto): string | null {
+  return props.contexto === 'organizacao' ? formatarNomesAnfitrioes(item.nomePrimeiraPessoa, item.nomeSegundaPessoa) : null
 }
 </script>
 
@@ -85,8 +85,8 @@ function nomesCasal(item: ParcelaAlertaDto): string | null {
       <div class="alertas-pagamentos__numero alertas-pagamentos__numero--vencidas">
         <dt class="alertas-pagamentos__rotulo">
           {{ TEXTOS_ALERTAS_PAGAMENTOS.vencidas(alertas.totalVencidas) }}
-          <template v-if="contexto === 'organizacao' && alertas.casamentosComVencidas > 0">
-            {{ TEXTOS_ALERTAS_PAGAMENTOS.casamentos(alertas.casamentosComVencidas) }}
+          <template v-if="contexto === 'organizacao' && alertas.eventosComVencidas > 0">
+            {{ TEXTOS_ALERTAS_PAGAMENTOS.eventos(alertas.eventosComVencidas) }}
           </template>
         </dt>
         <dd
@@ -176,7 +176,7 @@ function nomesCasal(item: ParcelaAlertaDto): string | null {
             :situacao="grupo.chave === 'vencidas' ? 'Vencida' : 'Pendente'"
             :dias-para-vencimento="item.diasParaVencimento"
             :vence-em-breve="grupo.chave === 'proximas'"
-            :nomes-casal="nomesCasal(item)"
+            :nomes-anfitrioes="nomesAnfitrioes(item)"
             :destino="destinoItem(item)"
             compacta
           />

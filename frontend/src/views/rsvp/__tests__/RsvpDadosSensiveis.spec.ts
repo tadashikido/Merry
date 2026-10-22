@@ -5,7 +5,7 @@ import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaPr
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { TEXTOS_DADOS_SENSIVEIS, VERSAO_TERMO_PRIVACIDADE } from '@/textos/dadosSensiveis'
 import type { RsvpPublicoDto } from '@/tipos/rsvp'
-import { RaizRotas, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { RaizRotas, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
 const ROTA_CONSULTA = '/api/rsvp/consulta'
@@ -13,7 +13,7 @@ const ROTA_RESPOSTA = '/api/rsvp/resposta'
 
 function dados(extra: Partial<RsvpPublicoDto> = {}): RsvpPublicoDto {
   return {
-    casamento: {
+    evento: {
       nomePrimeiraPessoa: 'Ana Beatriz',
       nomeSegundaPessoa: 'Bruno',
       data: '2027-05-22',
@@ -90,7 +90,7 @@ describe('RsvpView — restrição alimentar e consentimento', { timeout: 20_000
     await clicar('[data-teste="rsvp-todos-vao"]')
 
     expect(wrapper!.findAll('[data-teste="seletor-restricao"]')).toHaveLength(2)
-    expect(wrapper!.get('[data-teste="aviso-privacidade"]').text()).toContain('45 dias depois do casamento')
+    expect(wrapper!.get('[data-teste="aviso-privacidade"]').text()).toContain('45 dias depois do evento')
     expect(wrapper!.find('[data-teste="caixa-consentimento"]').exists()).toBe(false)
   })
 

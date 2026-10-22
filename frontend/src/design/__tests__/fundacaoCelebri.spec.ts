@@ -7,7 +7,7 @@ import PrimeVue from 'primevue/config'
 import { dimensoes, espacamento, raio, ritmo, tipografia } from '@/design/tokens'
 import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
-import { TEXTOS_FORNECEDORES_CASAMENTO } from '@/textos/fornecedoresCasamento'
+import { TEXTOS_FORNECEDORES_EVENTO } from '@/textos/fornecedoresEvento'
 import { TEXTOS_AUTENTICACAO_LAYOUT, TEXTOS_PAINEL } from '@/textos/autenticacao'
 import { NOME_PRODUTO } from '@/textos/rotulos'
 
@@ -108,7 +108,7 @@ describe('fundação Celebri: marca e textos', () => {
     expect(NOME_PRODUTO).toBe('Celebri')
     expect(TEXTOS_PAINEL.primeiroAcessoTitulo).toBe('Boas-vindas ao Celebri.')
     expect(TEXTOS_CONVIDADOS.tituloDocumento('Ana & Bruno')).toBe('Convidados · Ana & Bruno · Celebri')
-    expect(TEXTOS_FORNECEDORES_CASAMENTO.tituloDocumento('Ana & Bruno')).toBe('Fornecedores · Ana & Bruno · Celebri')
+    expect(TEXTOS_FORNECEDORES_EVENTO.tituloDocumento('Ana & Bruno')).toBe('Fornecedores · Ana & Bruno · Celebri')
     expect(TEXTOS_AUTENTICACAO_LAYOUT.frase).toBe('Eventos que conectam.')
   })
 

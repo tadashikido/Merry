@@ -141,7 +141,7 @@ export const cores = {
   toastErro: paletas.erro[300],
   toastInformacao: paletas.informacao[300],
   toastAlerta: paletas.alerta[300],
-  fundoCasal: paletas.marinho[50],
+  fundoAnfitriao: paletas.marinho[50],
   fundoConvite: paletas.marinho[50],
   cartaoConvite: paletas.cinza[0],
   bordaConvite: paletas.cinza[300],
@@ -260,7 +260,7 @@ export const duracao = {
 
 export const dimensoes = {
   larguraRail: '4.5rem',
-  larguraNavegacaoCasamento: '14.5rem',
+  larguraNavegacaoEvento: '14.5rem',
   larguraGaveta: '19rem',
   alturaBarraCelular: '3.5rem',
   alturaControle: '2.5rem',

@@ -1,3 +1,4 @@
+using Celebri.Aplicacao.DadosSensiveis;
 using Celebri.Infraestrutura;
 using Celebri.Infraestrutura.Persistencia;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,7 @@ public class ConfiguracaoInfraestruturaTestes
     public void AdicionarInfraestrutura_ComStringDeConexao_DeveRegistrarDbContextComNpgsql()
     {
         var configuracao = new ConfigurationBuilder()
-            .AddInMemoryCollection([new KeyValuePair<string, string?>("ConnectionStrings:Principal", "Host=localhost;Database=casamento_teste")])
+            .AddInMemoryCollection([new KeyValuePair<string, string?>("ConnectionStrings:Principal", "Host=localhost;Database=evento_teste")])
             .Build();
         var servicos = new ServiceCollection();
         servicos.AddLogging();
@@ -35,15 +36,15 @@ public class ConfiguracaoInfraestruturaTestes
         servicos.AdicionarInfraestrutura(configuracao);
         using var provedor = servicos.BuildServiceProvider();
         using var escopo = provedor.CreateScope();
-        var contexto = escopo.ServiceProvider.GetRequiredService<CasamentoDbContext>();
+        var contexto = escopo.ServiceProvider.GetRequiredService<CelebriDbContext>();
 
         Assert.Equal("Npgsql.EntityFrameworkCore.PostgreSQL", contexto.Database.ProviderName);
     }
 
     [Fact]
-    public void CasamentoDbContextFactory_DeveCriarContextoParaDesignSemSegredos()
+    public void CelebriDbContextFactory_DeveCriarContextoParaDesignSemSegredos()
     {
-        using var contexto = new CasamentoDbContextFactory().CreateDbContext([]);
+        using var contexto = new CelebriDbContextFactory().CreateDbContext([]);
 
         var stringConexao = contexto.Database.GetConnectionString();
 
@@ -52,12 +53,35 @@ public class ConfiguracaoInfraestruturaTestes
     }
 
     [Fact]
-    public void CasamentoDbContext_DeveConterMigrationInicial()
+    public void CelebriDbContext_DeveConterMigrationInicial()
     {
-        using var contexto = new CasamentoDbContextFactory().CreateDbContext([]);
+        using var contexto = new CelebriDbContextFactory().CreateDbContext([]);
 
         var migrations = contexto.Database.GetMigrations();
 
         Assert.Contains(migrations, migration => migration.EndsWith("_Inicial", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(null, null, 30)]
+    [InlineData(null, "45", 45)]
+    [InlineData("60", "45", 60)]
+    [InlineData("60", null, 60)]
+    public void RetencaoDadosSensiveis_DeveLerAChaveNovaEAceitarANomeAntigoSoQuandoANovaFaltar(string? diasAposEvento, string? chaveLegada, int esperado)
+    {
+        var configuracao = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+            [
+                new KeyValuePair<string, string?>($"{OpcoesRetencaoDadosSensiveis.Secao}:{nameof(OpcoesRetencaoDadosSensiveis.DiasAposEvento)}", diasAposEvento),
+                new KeyValuePair<string, string?>($"{OpcoesRetencaoDadosSensiveis.Secao}:{OpcoesRetencaoDadosSensiveis.ChaveLegadaDiasAposEvento}", chaveLegada),
+            ])
+            .Build();
+        var opcoes = new OpcoesRetencaoDadosSensiveis();
+        var secao = configuracao.GetSection(OpcoesRetencaoDadosSensiveis.Secao);
+        secao.Bind(opcoes);
+
+        ConfiguracaoInfraestrutura.AplicarChaveLegadaRetencao(opcoes, secao);
+
+        Assert.Equal(esperado, opcoes.DiasAposEvento);
     }
 }

@@ -24,9 +24,9 @@ import { useGrandeDiaStore } from '@/stores/grandeDia'
 import { TEXTOS_CRONOGRAMA_PUBLICO } from '@/textos/cronogramaPublico'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
 import type { ItemPainelGrandeDia } from '@/tipos/grandeDia'
-import type { FalhaCasamento } from '@/stores/casamentos'
+import type { FalhaEvento } from '@/stores/eventos'
 import { agruparRoteiro, ehHorarioDaCerimonia } from '@/utilitarios/cronogramaPublico'
-import { formatarHora, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarHora, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import {
   distribuirPainel,
   horaLocalDoInstante,
@@ -44,11 +44,11 @@ const store = useGrandeDiaStore()
 const notificacao = useNotificacao()
 const agoraDispositivo = useRelogioDispositivo(INTERVALO_RELOGIO_MS)
 
-const dados = computed(() => (store.casamentoId === props.id ? store.dados : null))
-const falha = computed(() => (store.casamentoId === props.id ? store.falha : null))
+const dados = computed(() => (store.eventoId === props.id ? store.dados : null))
+const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
 const fase = computed(() => dados.value?.momento.fase ?? null)
 const noDia = computed(() => fase.value === 'NoDia')
-const podeMarcar = computed(() => dados.value !== null && !dados.value.somenteLeitura && !autenticacao.ehCasal && noDia.value)
+const podeMarcar = computed(() => dados.value !== null && !dados.value.somenteLeitura && !autenticacao.ehAnfitriao && noDia.value)
 const itensPainel = computed(() => (dados.value ? itensPainelDoGrandeDia(dados.value.itens, dados.value.horarioCerimonia) : []))
 const distribuicao = computed(() => distribuirPainel(itensPainel.value))
 const grupos = computed(() => agruparRoteiro(dados.value?.itens ?? []))
@@ -69,7 +69,7 @@ const selo = computed(() => {
   if (!atual || atual.fase === 'NoDia') {
     return TEXTOS_GRANDE_DIA.aoVivo
   }
-  return atual.fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.faltamDias(atual.diasParaOCasamento) : TEXTOS_GRANDE_DIA.diaPassou
+  return atual.fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.faltamDias(atual.diasParaOEvento) : TEXTOS_GRANDE_DIA.diaPassou
 })
 
 const locais = computed<LocalOperacao[]>(() => {
@@ -114,7 +114,7 @@ watch(
   dados,
   (valor) => {
     if (valor) {
-      document.title = TEXTOS_GRANDE_DIA.tituloDocumento(formatarNomesCasal(valor.nomePrimeiraPessoa, valor.nomeSegundaPessoa))
+      document.title = TEXTOS_GRANDE_DIA.tituloDocumento(formatarNomesAnfitrioes(valor.nomePrimeiraPessoa, valor.nomeSegundaPessoa))
     }
   },
   { immediate: true },
@@ -132,7 +132,7 @@ function focarAgora() {
   void nextTick(() => document.getElementById('grande-dia-agora')?.focus())
 }
 
-function mensagemFalha(tipo: FalhaCasamento['tipo'], mensagem: string | null): string {
+function mensagemFalha(tipo: FalhaEvento['tipo'], mensagem: string | null): string {
   if (tipo === 'conflito') {
     return TEXTOS_GRANDE_DIA.conflito
   }
@@ -181,10 +181,10 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
       />
       <RouterLink
         class="grande-dia__voltar"
-        :to="autenticacao.casamentoDoCasal ? { name: 'casamento', params: { id: autenticacao.casamentoDoCasal } } : { name: 'casamentos' }"
+        :to="autenticacao.eventoDoAnfitriao ? { name: 'evento', params: { id: autenticacao.eventoDoAnfitriao } } : { name: 'eventos' }"
         data-teste="voltar"
       >
-        {{ autenticacao.casamentoDoCasal ? TEXTOS_GRANDE_DIA.voltarNossoCasamento : TEXTOS_GRANDE_DIA.voltarCasamentos }}
+        {{ autenticacao.eventoDoAnfitriao ? TEXTOS_GRANDE_DIA.voltarNossoEvento : TEXTOS_GRANDE_DIA.voltarEventos }}
       </RouterLink>
     </div>
 
@@ -256,15 +256,15 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
           class="grande-dia__painel"
           icone="cronograma"
           :titulo="TEXTOS_GRANDE_DIA.vazioTitulo"
-          :descricao="autenticacao.ehCasal ? TEXTOS_GRANDE_DIA.vazioTextoCasal : TEXTOS_GRANDE_DIA.vazioTexto"
+          :descricao="autenticacao.ehAnfitriao ? TEXTOS_GRANDE_DIA.vazioTextoAnfitriao : TEXTOS_GRANDE_DIA.vazioTexto"
           data-teste="grande-dia-vazio"
         >
           <template
-            v-if="!autenticacao.ehCasal && !dados.arquivado"
+            v-if="!autenticacao.ehAnfitriao && !dados.arquivado"
             #acao
           >
             <RouterLink
-              :to="{ name: 'casamento-cronograma', params: { id } }"
+              :to="{ name: 'evento-cronograma', params: { id } }"
               data-teste="grande-dia-montar"
             >
               {{ TEXTOS_GRANDE_DIA.montarCronograma }}

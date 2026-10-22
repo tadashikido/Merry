@@ -36,7 +36,7 @@ public sealed class ArmazenamentoArquivosDiscoTestes : IDisposable
     }
 
     [Fact]
-    public async Task SalvarAbrirERemover_DevemUsarCaminhoSoComGuidsIsoladoPorOrganizacaoECasamento()
+    public async Task SalvarAbrirERemover_DevemUsarCaminhoSoComGuidsIsoladoPorOrganizacaoEEvento()
     {
         var chave = Chave();
         var conteudo = "%PDF-1.7 contrato"u8.ToArray();
@@ -45,7 +45,7 @@ public sealed class ArmazenamentoArquivosDiscoTestes : IDisposable
 
         var caminho = _armazenamento.MontarCaminho(chave);
         Assert.Equal(
-            Path.Combine(Path.GetFullPath(_raiz), chave.OrganizacaoId.ToString("N"), chave.CasamentoId.ToString("N"), chave.ArquivoId.ToString("N")),
+            Path.Combine(Path.GetFullPath(_raiz), chave.OrganizacaoId.ToString("N"), chave.EventoId.ToString("N"), chave.ArquivoId.ToString("N")),
             caminho);
         Assert.True(File.Exists(caminho));
         Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(caminho)!, "*.tmp"));

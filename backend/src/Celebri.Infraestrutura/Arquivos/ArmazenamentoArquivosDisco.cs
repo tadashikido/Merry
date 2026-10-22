@@ -83,7 +83,7 @@ public partial class ArmazenamentoArquivosDisco : IArmazenamentoArquivos
     {
         ArgumentNullException.ThrowIfNull(chave);
 
-        if (chave.OrganizacaoId == Guid.Empty || chave.CasamentoId == Guid.Empty || chave.ArquivoId == Guid.Empty)
+        if (chave.OrganizacaoId == Guid.Empty || chave.EventoId == Guid.Empty || chave.ArquivoId == Guid.Empty)
         {
             throw new ArgumentException("A chave do arquivo está incompleta.", nameof(chave));
         }
@@ -91,7 +91,7 @@ public partial class ArmazenamentoArquivosDisco : IArmazenamentoArquivos
         var caminho = Path.GetFullPath(Path.Combine(
             _raiz,
             chave.OrganizacaoId.ToString("N"),
-            chave.CasamentoId.ToString("N"),
+            chave.EventoId.ToString("N"),
             chave.ArquivoId.ToString("N")));
 
         if (!caminho.StartsWith(_raiz + Path.DirectorySeparatorChar, StringComparison.Ordinal))

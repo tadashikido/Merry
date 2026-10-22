@@ -1,8 +1,8 @@
 using System.Globalization;
-using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.DadosSensiveis;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 
 namespace Celebri.Aplicacao.Confirmacoes;
@@ -13,12 +13,12 @@ public static class MontadorExportacaoBuffet
         CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace);
 
     public static ExportacaoBuffetDto Montar(
-        CasamentoAssessorado casamento,
+        Evento evento,
         IReadOnlyList<Convite> convites,
         RelatorioRestricoesAlimentaresDto relatorio,
         DateTimeOffset agora)
     {
-        ArgumentNullException.ThrowIfNull(casamento);
+        ArgumentNullException.ThrowIfNull(evento);
         ArgumentNullException.ThrowIfNull(convites);
         ArgumentNullException.ThrowIfNull(relatorio);
 
@@ -50,12 +50,12 @@ public static class MontadorExportacaoBuffet
             .ToList();
 
         return new ExportacaoBuffetDto(
-            new CasamentoExportacaoDto(
-                casamento.NomePrimeiraPessoa,
-                casamento.NomeSegundaPessoa,
-                casamento.Data,
-                CasamentoService.FormatarHorario(casamento.Horario),
-                casamento.LocalRecepcao),
+            new EventoExportacaoDto(
+                evento.NomePrimeiraPessoa,
+                evento.NomeSegundaPessoa,
+                evento.Data,
+                EventoService.FormatarHorario(evento.Horario),
+                evento.LocalRecepcao),
             agora,
             new ContagemBuffetDto(totais.Confirmados.Adultos, totais.Confirmados.Criancas, totais.Confirmados.Total),
             totais.Pendentes.Total,

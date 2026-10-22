@@ -21,7 +21,7 @@ import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
 import { useEnvioConvite, type ConviteParaEnvio } from '@/composables/useEnvioConvite'
 import { useNotificacao } from '@/composables/useNotificacao'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useConvidadosStore } from '@/stores/convidados'
 import { TEXTOS_MESAS } from '@/textos/mesas'
 import { TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
@@ -43,7 +43,7 @@ import {
   listarGrupos,
   type ConviteFiltrado,
 } from '@/utilitarios/filtroConvidados'
-import { formatarData, formatarDataCalendarioComDiaSemana, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarData, formatarDataCalendarioComDiaSemana, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { primeiroTelefone } from '@/utilitarios/rsvp'
 import { complementoResumoConvidados, itensResumoConvidados } from '@/utilitarios/resumoConvidados'
 import { rotuloMesaPorId } from '@/utilitarios/mesas'
@@ -63,7 +63,7 @@ const props = defineProps<{ id: string }>()
 
 const autenticacao = useAutenticacaoStore()
 
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const store = useConvidadosStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
@@ -71,8 +71,8 @@ const { confirmarExclusao } = useConfirmarExclusao()
 const { desfazerExclusao } = useDesfazerExclusao()
 
 const envio = useEnvioConvite({
-  casamentoId: () => props.id,
-  casamento: () => casamento.value,
+  eventoId: () => props.id,
+  evento: () => evento.value,
   arquivado: () => arquivado.value,
 })
 const { conviteEmAndamento, confirmacaoLink, executandoConfirmacao, itensMenuLink } = envio
@@ -82,7 +82,7 @@ function paraEnvio(convite: ConviteDto): ConviteParaEnvio {
 }
 
 function abrirMesas() {
-  void roteador.push({ name: 'casamento-mesas', params: { id: props.id } })
+  void roteador.push({ name: 'evento-mesas', params: { id: props.id } })
 }
 
 function mesaDaPessoa(mesaId: string | null | undefined): string | null {
@@ -97,17 +97,17 @@ const busca = ref('')
 const grupo = ref(GRUPO_TODOS)
 const resposta = ref<FiltroResposta>('Todas')
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
 const descricao = computed(() =>
-  casamento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(casamento.value.data)}` : undefined,
+  evento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(evento.value.data)}` : undefined,
 )
 
-const lista = computed(() => (store.casamentoId === props.id ? store.lista : null))
-const falha = computed(() => (store.casamentoId === props.id ? store.falha : null))
-const arquivado = computed(() => lista.value?.casamentoArquivado ?? casamento.value?.arquivado ?? false)
+const lista = computed(() => (store.eventoId === props.id ? store.lista : null))
+const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
+const arquivado = computed(() => lista.value?.eventoArquivado ?? evento.value?.arquivado ?? false)
 
 const opcoesGrupo = computed(() => {
   const { grupos, temSemGrupo } = listarGrupos(lista.value?.convites ?? [])
@@ -166,7 +166,7 @@ watch(
     busca.value = ''
     grupo.value = GRUPO_TODOS
     resposta.value = 'Todas'
-    void casamentos.obter(id)
+    void eventos.obter(id)
     void store.carregar(id)
   },
   { immediate: true },
@@ -210,18 +210,18 @@ function abrirRestricoes() {
 }
 
 function excluir(convite: ConviteDto) {
-  const casamentoId = props.id
+  const eventoId = props.id
   confirmarExclusao({
     nomeItem: convite.nome,
     mensagem: TEXTOS_CONVIDADOS.confirmarExclusaoTexto(convite.convidados.length),
     aoConfirmar: () => {
-      store.removerComDesfazer(casamentoId, convite.id, (falha) => {
+      store.removerComDesfazer(eventoId, convite.id, (falha) => {
         notificacao.erro(falha.tipo === 'semPermissao' ? TEXTOS_CONVIDADOS.semPermissao : TEXTOS_CONVIDADOS.erroExcluir(convite.nome))
       })
     },
     desfazer: () =>
-      desfazerExclusao(() => store.desfazerRemocao(casamentoId, convite.id), TEXTOS_CONVIDADOS.restaurado(convite.nome)),
-    aoFecharAviso: () => store.concluirRemocao(casamentoId, convite.id),
+      desfazerExclusao(() => store.desfazerRemocao(eventoId, convite.id), TEXTOS_CONVIDADOS.restaurado(convite.nome)),
+    aoFecharAviso: () => store.concluirRemocao(eventoId, convite.id),
   })
 }
 </script>
@@ -230,16 +230,16 @@ function excluir(convite: ConviteDto) {
   <LayoutPainelUsuario>
     <template v-if="falha?.tipo === 'naoEncontrado'">
       <EstadoErro
-        :titulo="TEXTOS_CONVIDADOS.casamentoNaoEncontradoTitulo"
-        :mensagem="TEXTOS_CONVIDADOS.casamentoNaoEncontradoTexto"
+        :titulo="TEXTOS_CONVIDADOS.eventoNaoEncontradoTitulo"
+        :mensagem="TEXTOS_CONVIDADOS.eventoNaoEncontradoTexto"
         :pode-tentar-novamente="false"
       />
       <RouterLink
         class="convidados__voltar"
-        :to="{ name: 'casamentos' }"
-        data-teste="voltar-casamentos"
+        :to="{ name: 'eventos' }"
+        data-teste="voltar-eventos"
       >
-        {{ TEXTOS_CONVIDADOS.voltarCasamentos }}
+        {{ TEXTOS_CONVIDADOS.voltarEventos }}
       </RouterLink>
     </template>
 
@@ -318,7 +318,7 @@ function excluir(convite: ConviteDto) {
               @click="abrirMesas"
             />
             <Button
-              v-if="!autenticacao.ehCasal"
+              v-if="!autenticacao.ehAnfitriao"
               :label="TEXTOS_DADOS_SENSIVEIS.acaoLista"
               icon="ie ie-checklist"
               severity="secondary"

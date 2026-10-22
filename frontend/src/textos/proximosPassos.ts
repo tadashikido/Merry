@@ -9,21 +9,21 @@ export interface PassoOnboarding {
 
 export const PASSOS_ONBOARDING: readonly PassoOnboarding[] = [
   {
-    chave: 'casalConvidado',
-    rotulo: 'Convidar o casal',
-    descricao: 'Dê ao casal acesso para acompanhar o casamento e cuidar dos convidados.',
-    acao: 'Convidar o casal',
+    chave: 'anfitriaoConvidado',
+    rotulo: 'Convidar os anfitriões',
+    descricao: 'Dê aos anfitriões acesso para acompanhar o evento e cuidar dos convidados.',
+    acao: 'Convidar os anfitriões',
   },
   {
     chave: 'checklistAplicado',
     rotulo: 'Aplicar o checklist',
-    descricao: 'Gere as tarefas do casamento a partir de um modelo de checklist.',
+    descricao: 'Gere as tarefas do evento a partir de um modelo de checklist.',
     acao: 'Aplicar checklist',
   },
   {
     chave: 'convidadosCadastrados',
     rotulo: 'Cadastrar convidados',
-    descricao: 'Adicione os convites um a um ou importe a lista do casal.',
+    descricao: 'Adicione os convites um a um ou importe a lista dos anfitriões.',
     acao: 'Cadastrar convidados',
   },
   {
@@ -34,10 +34,10 @@ export const PASSOS_ONBOARDING: readonly PassoOnboarding[] = [
   },
 ]
 
-export const PASSO_DADOS_CASAMENTO = 'Dados do casamento'
+export const PASSO_DADOS_EVENTO = 'Dados do evento'
 
 export const PASSOS_PRIMEIRO_ACESSO: readonly string[] = [
-  PASSO_DADOS_CASAMENTO,
+  PASSO_DADOS_EVENTO,
   ...PASSOS_ONBOARDING.map((passo) => passo.rotulo),
 ]
 
@@ -45,11 +45,11 @@ export const TEXTOS_PROXIMOS_PASSOS = {
   titulo: 'Próximos passos',
   progresso: (faltam: number, total: number) =>
     faltam === 1
-      ? 'Falta só 1 passo para deixar o casamento pronto.'
-      : `Faltam ${faltam} de ${total} para deixar o casamento pronto.`,
+      ? 'Falta só 1 passo para deixar o evento pronto.'
+      : `Faltam ${faltam} de ${total} para deixar o evento pronto.`,
   dispensar: 'Dispensar',
-  dispensarAcessivel: 'Dispensar próximos passos deste casamento',
-  dispensado: 'Próximos passos dispensados neste casamento.',
+  dispensarAcessivel: 'Dispensar próximos passos deste evento',
+  dispensado: 'Próximos passos dispensados neste evento.',
   concluido: '(concluído)',
   erro: 'Não foi possível carregar os próximos passos.',
 } as const

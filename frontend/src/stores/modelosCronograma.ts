@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { requisitar } from '@/servicos/clienteHttp'
-import { interpretarFalhaCasamento, ROTA_CASAMENTOS, type FalhaCasamento, type ResultadoCasamento } from '@/stores/casamentos'
+import { interpretarFalhaEvento, ROTA_EVENTOS, type FalhaEvento, type ResultadoEvento } from '@/stores/eventos'
 import type {
   ItemModeloCronogramaDto,
   ModeloCronogramaDto,
@@ -21,22 +21,22 @@ export function caminhoModeloCronograma(modeloId?: string, itemId?: string): str
   return itemId ? `${base}/itens/${encodeURIComponent(itemId)}` : `${base}/itens`
 }
 
-async function executar<T>(acao: () => Promise<T>): Promise<ResultadoCasamento<T>> {
+async function executar<T>(acao: () => Promise<T>): Promise<ResultadoEvento<T>> {
   try {
     return { ok: true, valor: await acao() }
   } catch (erro) {
-    return { ok: false, falha: interpretarFalhaCasamento(erro) }
+    return { ok: false, falha: interpretarFalhaEvento(erro) }
   }
 }
 
 export const useModelosCronogramaStore = defineStore('modelosCronograma', () => {
   const lista = ref<ModeloCronogramaResumoDto[] | null>(null)
   const carregandoLista = ref(false)
-  const falhaLista = ref<FalhaCasamento | null>(null)
+  const falhaLista = ref<FalhaEvento | null>(null)
 
   const atual = ref<ModeloCronogramaDto | null>(null)
   const carregandoAtual = ref(false)
-  const falhaAtual = ref<FalhaCasamento | null>(null)
+  const falhaAtual = ref<FalhaEvento | null>(null)
 
   async function listar(): Promise<void> {
     carregandoLista.value = true
@@ -45,7 +45,7 @@ export const useModelosCronogramaStore = defineStore('modelosCronograma', () => 
       lista.value = await requisitar<ModeloCronogramaResumoDto[]>(ROTA_MODELOS_CRONOGRAMA)
     } catch (erro) {
       lista.value = null
-      falhaLista.value = interpretarFalhaCasamento(erro)
+      falhaLista.value = interpretarFalhaEvento(erro)
     } finally {
       carregandoLista.value = false
     }
@@ -61,7 +61,7 @@ export const useModelosCronogramaStore = defineStore('modelosCronograma', () => 
       atual.value = await requisitar<ModeloCronogramaDto>(caminhoModeloCronograma(modeloId))
     } catch (erro) {
       atual.value = null
-      falhaAtual.value = interpretarFalhaCasamento(erro)
+      falhaAtual.value = interpretarFalhaEvento(erro)
     } finally {
       carregandoAtual.value = false
     }
@@ -78,11 +78,11 @@ export const useModelosCronogramaStore = defineStore('modelosCronograma', () => 
     }
   }
 
-  function obter(modeloId: string): Promise<ResultadoCasamento<ModeloCronogramaDto>> {
+  function obter(modeloId: string): Promise<ResultadoEvento<ModeloCronogramaDto>> {
     return executar(() => requisitar<ModeloCronogramaDto>(caminhoModeloCronograma(modeloId)))
   }
 
-  async function criar(dados: SalvarModeloCronogramaRequest): Promise<ResultadoCasamento<ModeloCronogramaDto>> {
+  async function criar(dados: SalvarModeloCronogramaRequest): Promise<ResultadoEvento<ModeloCronogramaDto>> {
     const resultado = await executar(() =>
       requisitar<ModeloCronogramaDto>(ROTA_MODELOS_CRONOGRAMA, { metodo: 'POST', corpo: dados }),
     )
@@ -93,7 +93,7 @@ export const useModelosCronogramaStore = defineStore('modelosCronograma', () => 
     return resultado
   }
 
-  async function atualizar(modeloId: string, dados: SalvarModeloCronogramaRequest): Promise<ResultadoCasamento<ModeloCronogramaDto>> {
+  async function atualizar(modeloId: string, dados: SalvarModeloCronogramaRequest): Promise<ResultadoEvento<ModeloCronogramaDto>> {
     const resultado = await executar(() =>
       requisitar<ModeloCronogramaDto>(caminhoModeloCronograma(modeloId), { metodo: 'PUT', corpo: dados }),
     )
@@ -104,12 +104,12 @@ export const useModelosCronogramaStore = defineStore('modelosCronograma', () => 
     return resultado
   }
 
-  async function salvarDoCasamento(
-    casamentoId: string,
+  async function salvarDoEvento(
+    eventoId: string,
     dados: SalvarModeloCronogramaRequest,
-  ): Promise<ResultadoCasamento<ModeloCronogramaDto>> {
+  ): Promise<ResultadoEvento<ModeloCronogramaDto>> {
     const resultado = await executar(() =>
-      requisitar<ModeloCronogramaDto>(`${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/cronograma/modelos`, {
+      requisitar<ModeloCronogramaDto>(`${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/cronograma/modelos`, {
         metodo: 'POST',
         corpo: dados,
       }),
@@ -121,7 +121,7 @@ export const useModelosCronogramaStore = defineStore('modelosCronograma', () => 
     return resultado
   }
 
-  async function remover(modeloId: string): Promise<ResultadoCasamento<null>> {
+  async function remover(modeloId: string): Promise<ResultadoEvento<null>> {
     const resultado = await executar(() => requisitar<void>(caminhoModeloCronograma(modeloId), { metodo: 'DELETE' }))
     if (!resultado.ok) {
       return resultado
@@ -138,7 +138,7 @@ export const useModelosCronogramaStore = defineStore('modelosCronograma', () => 
   async function criarItem(
     modeloId: string,
     dados: SalvarItemModeloCronogramaRequest,
-  ): Promise<ResultadoCasamento<ItemModeloCronogramaDto>> {
+  ): Promise<ResultadoEvento<ItemModeloCronogramaDto>> {
     const resultado = await executar(() =>
       requisitar<ItemModeloCronogramaDto>(caminhoModeloCronograma(modeloId, ''), { metodo: 'POST', corpo: dados }),
     )
@@ -153,7 +153,7 @@ export const useModelosCronogramaStore = defineStore('modelosCronograma', () => 
     modeloId: string,
     itemId: string,
     dados: SalvarItemModeloCronogramaRequest,
-  ): Promise<ResultadoCasamento<ItemModeloCronogramaDto>> {
+  ): Promise<ResultadoEvento<ItemModeloCronogramaDto>> {
     const resultado = await executar(() =>
       requisitar<ItemModeloCronogramaDto>(caminhoModeloCronograma(modeloId, itemId), { metodo: 'PUT', corpo: dados }),
     )
@@ -163,7 +163,7 @@ export const useModelosCronogramaStore = defineStore('modelosCronograma', () => 
     return resultado
   }
 
-  async function removerItem(modeloId: string, itemId: string): Promise<ResultadoCasamento<null>> {
+  async function removerItem(modeloId: string, itemId: string): Promise<ResultadoEvento<null>> {
     const resultado = await executar(() => requisitar<void>(caminhoModeloCronograma(modeloId, itemId), { metodo: 'DELETE' }))
     if (!resultado.ok) {
       return resultado
@@ -198,7 +198,7 @@ export const useModelosCronogramaStore = defineStore('modelosCronograma', () => 
     criar,
     atualizar,
     remover,
-    salvarDoCasamento,
+    salvarDoEvento,
     criarItem,
     atualizarItem,
     removerItem,

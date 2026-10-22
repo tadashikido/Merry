@@ -8,8 +8,8 @@ public interface IModeloCronogramaService
 
     Task<ModeloCronogramaDto> CriarAsync(SalvarModeloCronogramaRequest request, CancellationToken cancelamento);
 
-    Task<ModeloCronogramaDto> CriarDoCasamentoAsync(
-        Guid casamentoId,
+    Task<ModeloCronogramaDto> CriarDoEventoAsync(
+        Guid eventoId,
         SalvarModeloCronogramaRequest request,
         CancellationToken cancelamento);
 

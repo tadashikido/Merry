@@ -17,20 +17,20 @@ import ProgressoChecklist from '@/componentes/base/ProgressoChecklist.vue'
 import ReguaMarcos from '@/componentes/base/ReguaMarcos.vue'
 import type { ItemMenuAcoes, MarcoRegua } from '@/componentes/base/tipos'
 import { useNotificacao } from '@/composables/useNotificacao'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useChecklistStore } from '@/stores/checklist'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { COMPLEMENTO_MARCO_CHECKLIST, ROTULOS_MARCO_CHECKLIST, TEXTOS_CHECKLIST } from '@/textos/checklist'
 import { ROTULOS_STATUS_TAREFA, TEXTOS_TAREFAS } from '@/textos/tarefas'
 import type { AplicacaoModeloChecklistDto } from '@/tipos/checklist'
 import type { StatusTarefa, TarefaDto } from '@/tipos/tarefas'
-import { agruparPorMarco, diasAntesDoCasamento } from '@/utilitarios/checklist'
-import { formatarDataCalendarioComDiaSemana, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { agruparPorMarco, diasAntesDoEvento } from '@/utilitarios/checklist'
+import { formatarDataCalendarioComDiaSemana, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { badgeTarefa, metadadosTarefa, tarefaAberta } from '@/utilitarios/tarefas'
 
 const props = defineProps<{ id: string }>()
 
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const store = useChecklistStore()
 const modelos = useModelosChecklistStore()
 const roteador = useRouter()
@@ -47,17 +47,17 @@ const tarefaEmAndamento = ref<string | null>(null)
 const dialogoRecalculo = ref(false)
 const recalculando = ref(false)
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
-const dados = computed(() => (store.casamentoId === props.id ? store.dados : null))
-const falha = computed(() => (store.casamentoId === props.id ? store.falha : null))
-const arquivado = computed(() => dados.value?.casamentoArquivado ?? casamento.value?.arquivado ?? false)
+const dados = computed(() => (store.eventoId === props.id ? store.dados : null))
+const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
+const arquivado = computed(() => dados.value?.eventoArquivado ?? evento.value?.arquivado ?? false)
 const semChecklist = computed(() => dados.value !== null && dados.value.tarefas.length === 0)
 const mostrarPainel = computed(() => !arquivado.value && (semChecklist.value || painelAberto.value))
 const descricao = computed(() =>
-  casamento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(casamento.value.data)}` : undefined,
+  evento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(evento.value.data)}` : undefined,
 )
 
 const opcoesModelos = computed(() =>
@@ -69,7 +69,7 @@ const grupos = computed(() => {
   if (!atual) {
     return []
   }
-  return agruparPorMarco(atual.tarefas, (tarefa) => diasAntesDoCasamento(atual.dataCasamento, tarefa.prazo))
+  return agruparPorMarco(atual.tarefas, (tarefa) => diasAntesDoEvento(atual.dataEvento, tarefa.prazo))
 })
 
 const marcos = computed<MarcoRegua[]>(() =>
@@ -123,7 +123,7 @@ watch(
   (id) => {
     painelAberto.value = false
     previa.value = null
-    void casamentos.obter(id)
+    void eventos.obter(id)
     void store.carregar(id)
     void modelos.listar()
   },
@@ -298,10 +298,10 @@ async function recalcular() {
       />
       <RouterLink
         class="checklist__voltar"
-        :to="{ name: 'casamentos' }"
+        :to="{ name: 'eventos' }"
         data-teste="voltar"
       >
-        {{ TEXTOS_TAREFAS.voltarCasamentos }}
+        {{ TEXTOS_TAREFAS.voltarEventos }}
       </RouterLink>
     </div>
 
@@ -432,7 +432,7 @@ async function recalcular() {
               <RouterLink
                 v-if="!semChecklist"
                 class="checklist__ver-tarefas"
-                :to="{ name: 'casamento-tarefas', params: { id } }"
+                :to="{ name: 'evento-tarefas', params: { id } }"
                 data-teste="ver-tarefas"
               >
                 {{ TEXTOS_CHECKLIST.verTarefas }}
@@ -503,7 +503,7 @@ async function recalcular() {
                     </p>
                     <MensagemFormulario
                       v-else-if="previa?.excedeLimite"
-                      :mensagem="TEXTOS_CHECKLIST.previaLimite(previa.tarefasNoCasamento, previa.tarefasCriadas)"
+                      :mensagem="TEXTOS_CHECKLIST.previaLimite(previa.tarefasNoEvento, previa.tarefasCriadas)"
                       data-teste="previa-limite"
                     />
                     <template v-else>

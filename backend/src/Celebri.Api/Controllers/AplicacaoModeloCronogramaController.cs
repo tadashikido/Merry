@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}/cronograma")]
+[Route("api/eventos/{eventoId:guid}/cronograma")]
 [Produces("application/json")]
 [Authorize(Policy = PoliticasAutorizacao.GerenciarCronograma)]
 public class AplicacaoModeloCronogramaController : ControllerBase
@@ -30,11 +30,11 @@ public class AplicacaoModeloCronogramaController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<ModeloCronogramaDto>> SalvarComoModelo(
-        Guid casamentoId,
+        Guid eventoId,
         SalvarModeloCronogramaRequest request,
         CancellationToken cancelamento)
     {
-        var modelo = await _modeloService.CriarDoCasamentoAsync(casamentoId, request, cancelamento);
+        var modelo = await _modeloService.CriarDoEventoAsync(eventoId, request, cancelamento);
         return CreatedAtRoute(nameof(ModelosCronogramaController.ObterModeloCronograma), new { modeloId = modelo.Id }, modelo);
     }
 
@@ -45,11 +45,11 @@ public class AplicacaoModeloCronogramaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AplicacaoModeloCronogramaDto>> Previa(
-        Guid casamentoId,
+        Guid eventoId,
         [FromQuery] Guid modeloId,
         CancellationToken cancelamento)
     {
-        return Ok(await _aplicacaoService.PreverAsync(casamentoId, modeloId, cancelamento));
+        return Ok(await _aplicacaoService.PreverAsync(eventoId, modeloId, cancelamento));
     }
 
     [HttpPost("aplicacoes")]
@@ -61,11 +61,11 @@ public class AplicacaoModeloCronogramaController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<AplicacaoModeloCronogramaDto>> Aplicar(
-        Guid casamentoId,
+        Guid eventoId,
         AplicarModeloCronogramaRequest request,
         CancellationToken cancelamento)
     {
-        return Ok(await _aplicacaoService.AplicarAsync(casamentoId, request, cancelamento));
+        return Ok(await _aplicacaoService.AplicarAsync(eventoId, request, cancelamento));
     }
 
     [HttpGet("recalculo-horarios")]
@@ -73,9 +73,9 @@ public class AplicacaoModeloCronogramaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<RecalculoHorariosDto>> ConsultarRecalculo(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ActionResult<RecalculoHorariosDto>> ConsultarRecalculo(Guid eventoId, CancellationToken cancelamento)
     {
-        return Ok(await _aplicacaoService.ConsultarRecalculoAsync(casamentoId, cancelamento));
+        return Ok(await _aplicacaoService.ConsultarRecalculoAsync(eventoId, cancelamento));
     }
 
     [HttpPost("recalculo-horarios")]
@@ -85,8 +85,8 @@ public class AplicacaoModeloCronogramaController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<RecalculoHorariosDto>> Recalcular(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ActionResult<RecalculoHorariosDto>> Recalcular(Guid eventoId, CancellationToken cancelamento)
     {
-        return Ok(await _aplicacaoService.RecalcularAsync(casamentoId, cancelamento));
+        return Ok(await _aplicacaoService.RecalcularAsync(eventoId, cancelamento));
     }
 }

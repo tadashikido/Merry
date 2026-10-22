@@ -8,13 +8,13 @@ namespace Celebri.Aplicacao.Fornecedores;
 public class FornecedorService : IFornecedorService
 {
     private readonly IFornecedorRepository _fornecedorRepository;
-    private readonly IFornecedorCasamentoRepository _vinculoRepository;
+    private readonly IFornecedorEventoRepository _vinculoRepository;
     private readonly IUnidadeTrabalho _unidadeTrabalho;
     private readonly TimeProvider _relogio;
 
     public FornecedorService(
         IFornecedorRepository fornecedorRepository,
-        IFornecedorCasamentoRepository vinculoRepository,
+        IFornecedorEventoRepository vinculoRepository,
         IUnidadeTrabalho unidadeTrabalho,
         TimeProvider relogio)
     {
@@ -104,7 +104,7 @@ public class FornecedorService : IFornecedorService
 
         if (await _vinculoRepository.ExisteParaFornecedorAsync(fornecedor.Id, cancelamento))
         {
-            throw new RegraNegocioException(MensagensFornecedores.ParticipouDeCasamentos);
+            throw new RegraNegocioException(MensagensFornecedores.ParticipouDeEventos);
         }
 
         _fornecedorRepository.Remover(fornecedor);
@@ -119,14 +119,14 @@ public class FornecedorService : IFornecedorService
         var participacoes = await _vinculoRepository.ListarParticipacoesAsync(fornecedor.Id, cancelamento);
 
         return participacoes
-            .OrderByDescending(participacao => participacao.DataCasamento)
+            .OrderByDescending(participacao => participacao.DataEvento)
             .ThenBy(participacao => participacao.NomePrimeiraPessoa, StringComparer.CurrentCultureIgnoreCase)
             .Select(participacao => new ParticipacaoFornecedorDto(
-                participacao.CasamentoId,
+                participacao.EventoId,
                 participacao.NomePrimeiraPessoa,
                 participacao.NomeSegundaPessoa,
-                participacao.DataCasamento,
-                participacao.CasamentoArquivado,
+                participacao.DataEvento,
+                participacao.EventoArquivado,
                 participacao.Status.ToString()))
             .ToList();
     }

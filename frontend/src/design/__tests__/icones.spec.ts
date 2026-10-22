@@ -20,7 +20,7 @@ describe('iconografia', () => {
   it('[UNITÁRIO] a classe base pinta com a cor do texto por máscara, sem fonte de ícones', () => {
     expect(css).toContain('background-color: currentcolor;')
     expect(css).toContain('mask: var(--ie-forma) center / contain no-repeat;')
-    expect(classeIcone('casamento')).toBe('ie ie-casamento')
+    expect(classeIcone('evento')).toBe('ie ie-evento')
   })
 
   it('[SEGURANÇA] os SVGs são data URIs locais, sem script nem referência externa', () => {

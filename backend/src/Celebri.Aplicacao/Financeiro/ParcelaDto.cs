@@ -2,7 +2,7 @@ namespace Celebri.Aplicacao.Financeiro;
 
 public sealed record ParcelaDto(
     Guid Id,
-    Guid FornecedorCasamentoId,
+    Guid FornecedorEventoId,
     int Numero,
     int TotalParcelas,
     decimal Valor,

@@ -38,14 +38,14 @@ function lerDispensados(): string[] {
   }
 }
 
-export function estaDispensado(casamentoId: string): boolean {
-  return lerDispensados().includes(casamentoId)
+export function estaDispensado(eventoId: string): boolean {
+  return lerDispensados().includes(eventoId)
 }
 
-export function registrarDispensa(casamentoId: string): void {
+export function registrarDispensa(eventoId: string): void {
   try {
-    const atuais = lerDispensados().filter((id) => id !== casamentoId)
-    const proximos = [...atuais, casamentoId].slice(-LIMITE_DISPENSAS)
+    const atuais = lerDispensados().filter((id) => id !== eventoId)
+    const proximos = [...atuais, eventoId].slice(-LIMITE_DISPENSAS)
     window.localStorage.setItem(CHAVE_DISPENSA_PROXIMOS_PASSOS, JSON.stringify(proximos))
   } catch {
     return

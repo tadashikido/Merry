@@ -9,7 +9,7 @@ import { tarefaExemplo } from '@/__tests__/auxiliaresTarefas'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_TAREFAS } from '@/textos/tarefas'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, rotearFetch } from '../../casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -19,18 +19,18 @@ vi.mock('@/composables/useNotificacao', () => ({
   DURACAO_TOAST_ERRO: 6000,
 }))
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_TAREFAS = `${ROTA_CASAMENTO}/tarefas`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_TAREFAS = `${ROTA_EVENTO}/tarefas`
 const ID_TAREFA = '33333333-3333-4333-8333-333333333333'
 const ROTA_TAREFA = `${ROTA_TAREFAS}/${ID_TAREFA}`
-const CAMINHO_NOVA = `/casamentos/${ID_CASAMENTO}/tarefas/nova`
-const CAMINHO_EDITAR = `/casamentos/${ID_CASAMENTO}/tarefas/${ID_TAREFA}/editar`
+const CAMINHO_NOVA = `/eventos/${ID_EVENTO}/tarefas/nova`
+const CAMINHO_EDITAR = `/eventos/${ID_EVENTO}/tarefas/${ID_TAREFA}/editar`
 
 const TAREFA = tarefaExemplo({
   id: ID_TAREFA,
   titulo: 'Confirmar horário do DJ',
   descricao: 'Ligar na quarta',
-  responsavel: 'Casal',
+  responsavel: 'Anfitriao',
   categoria: 'Fornecedores',
   status: 'AFazer',
   prazo: '2027-03-10',
@@ -62,7 +62,7 @@ afterEach(() => {
 
 function rotasPadrao(arquivado = false) {
   return [
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ arquivado }))),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ arquivado }))),
     quando('GET', ROTA_TAREFA, () => respostaJson(TAREFA)),
     quando('POST', ROTA_TAREFAS, () => respostaJson(tarefaExemplo({ id: 't2', titulo: 'Nova' }))),
     quando('PUT', ROTA_TAREFA, () => respostaJson({ ...TAREFA, titulo: 'Confirmar horário do DJ e do bolo' })),
@@ -168,7 +168,7 @@ describe('TarefaFormularioView no design system Celebri', () => {
       prazo: null,
     })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_TAREFAS.toastCriada)
-    await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('casamento-tarefas'), { timeout: 4000 })
+    await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('evento-tarefas'), { timeout: 4000 })
   })
 
   it('[COMPONENTE] editar preenche os campos, mostra a situação e salva com mudança de situação', async () => {
@@ -195,7 +195,7 @@ describe('TarefaFormularioView no design system Celebri', () => {
     expect(corpoDaChamada(atualizacoes[0]!)).toEqual({
       titulo: 'Confirmar horário do DJ e do bolo',
       descricao: 'Ligar na quarta',
-      responsavel: 'Casal',
+      responsavel: 'Anfitriao',
       categoria: 'Fornecedores',
       prazo: '2027-03-10',
     })
@@ -203,7 +203,7 @@ describe('TarefaFormularioView no design system Celebri', () => {
     expect(mudancas).toHaveLength(1)
     expect(corpoDaChamada(mudancas[0]!)).toMatchObject({ status: 'EmAndamento' })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_TAREFAS.toastSalva)
-    await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('casamento-tarefas'), { timeout: 4000 })
+    await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('evento-tarefas'), { timeout: 4000 })
   })
 
   it('[COMPONENTE] falha de rede ao salvar mantém os dados e mostra a mensagem geral', async () => {
@@ -229,7 +229,7 @@ describe('TarefaFormularioView no design system Celebri', () => {
     expect(wrapper!.get('[data-teste="erro-formulario"]').text()).toContain(TEXTOS_TAREFAS.semPermissao)
   })
 
-  it('[COMPONENTE] casamento arquivado mostra o aviso e desabilita o salvar', async () => {
+  it('[COMPONENTE] evento arquivado mostra o aviso e desabilita o salvar', async () => {
     await abrir(CAMINHO_NOVA, true)
 
     expect(wrapper!.find('[data-teste="aviso-arquivado"]').exists()).toBe(true)

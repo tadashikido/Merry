@@ -62,6 +62,6 @@ describe('rail Modelos', () => {
     expect(itemRailAtivo(modelos, '/modelos-cronograma')).toBe(true)
     expect(itemRailAtivo(modelos, '/modelos-cronograma/33333333-3333-4333-8333-333333333333/editar')).toBe(true)
     expect(itemRailAtivo(modelos, '/modelos-cronogramax')).toBe(false)
-    expect(itemRailAtivo(modelos, '/casamentos')).toBe(false)
+    expect(itemRailAtivo(modelos, '/eventos')).toBe(false)
   })
 })

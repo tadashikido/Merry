@@ -2,7 +2,7 @@ using Celebri.Aplicacao.Calendario;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Rsvp;
@@ -12,7 +12,7 @@ namespace Celebri.Aplicacao.Confirmacoes;
 
 public partial class CobrancaRsvpService : ICobrancaRsvpService
 {
-    private readonly ICasamentoRepository _casamentoRepository;
+    private readonly IEventoRepository _eventoRepository;
     private readonly IConviteRepository _conviteRepository;
     private readonly IAcessoRsvpRepository _acessoRepository;
     private readonly IUnidadeTrabalho _unidadeTrabalho;
@@ -22,7 +22,7 @@ public partial class CobrancaRsvpService : ICobrancaRsvpService
     private readonly ILogger<CobrancaRsvpService> _logger;
 
     public CobrancaRsvpService(
-        ICasamentoRepository casamentoRepository,
+        IEventoRepository eventoRepository,
         IConviteRepository conviteRepository,
         IAcessoRsvpRepository acessoRepository,
         IUnidadeTrabalho unidadeTrabalho,
@@ -31,7 +31,7 @@ public partial class CobrancaRsvpService : ICobrancaRsvpService
         IUsuarioAtual usuarioAtual,
         ILogger<CobrancaRsvpService> logger)
     {
-        _casamentoRepository = casamentoRepository;
+        _eventoRepository = eventoRepository;
         _conviteRepository = conviteRepository;
         _acessoRepository = acessoRepository;
         _unidadeTrabalho = unidadeTrabalho;
@@ -41,20 +41,20 @@ public partial class CobrancaRsvpService : ICobrancaRsvpService
         _logger = logger;
     }
 
-    public async Task<CobrancaRsvpDto> RegistrarAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<CobrancaRsvpDto> RegistrarAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        var casamento = await _casamentoRepository.ObterPorIdAsync(casamentoId, cancelamento)
-            ?? throw new RecursoNaoEncontradoException(MensagensCasamento.NaoEncontrado);
+        var evento = await _eventoRepository.ObterPorIdAsync(eventoId, cancelamento)
+            ?? throw new RecursoNaoEncontradoException(MensagensEvento.NaoEncontrado);
 
-        var convite = await _conviteRepository.ObterPorIdAsync(casamento.Id, conviteId, cancelamento)
+        var convite = await _conviteRepository.ObterPorIdAsync(evento.Id, conviteId, cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensConvidados.ConviteNaoEncontrado);
 
-        if (casamento.Arquivado)
+        if (evento.Arquivado)
         {
-            throw new RegraNegocioException(MensagensRsvp.CasamentoArquivado);
+            throw new RegraNegocioException(MensagensRsvp.EventoArquivado);
         }
 
-        if (!casamento.AceitaRespostaRsvp(_calendario.Hoje()))
+        if (!evento.AceitaRespostaRsvp(_calendario.Hoje()))
         {
             throw new RegraNegocioException(MensagensConvidados.CobrancaPrazoEncerrado);
         }
@@ -68,7 +68,7 @@ public partial class CobrancaRsvpService : ICobrancaRsvpService
         convite.RegistrarCobranca(agora);
         await _unidadeTrabalho.SalvarAsync(cancelamento);
 
-        RegistrarLog(casamento.Id, convite.Id, _usuarioAtual.UsuarioId, convite.QuantidadeCobrancas);
+        RegistrarLog(evento.Id, convite.Id, _usuarioAtual.UsuarioId, convite.QuantidadeCobrancas);
 
         return new CobrancaRsvpDto(convite.Id, agora, convite.QuantidadeCobrancas);
     }
@@ -76,6 +76,6 @@ public partial class CobrancaRsvpService : ICobrancaRsvpService
     [LoggerMessage(
         EventId = 9103,
         Level = LogLevel.Information,
-        Message = "Cobrança de RSVP registrada: casamento {CasamentoId}, convite {ConviteId}, usuário {UsuarioId}, {Quantidade} cobranças.")]
-    private partial void RegistrarLog(Guid casamentoId, Guid conviteId, Guid? usuarioId, int quantidade);
+        Message = "Cobrança de RSVP registrada: evento {EventoId}, convite {ConviteId}, usuário {UsuarioId}, {Quantidade} cobranças.")]
+    private partial void RegistrarLog(Guid eventoId, Guid conviteId, Guid? usuarioId, int quantidade);
 }

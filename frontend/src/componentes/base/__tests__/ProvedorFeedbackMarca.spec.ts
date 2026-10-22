@@ -73,7 +73,7 @@ describe('ProvedorFeedback — classes do bloco toast-feedback', () => {
     const { wrapper, api } = montarHarness()
     montado = wrapper
 
-    api.sucesso('Casamento arquivado.', { desfazer: vi.fn() })
+    api.sucesso('Evento arquivado.', { desfazer: vi.fn() })
     await flushPromises()
 
     const desfazer = document.body.querySelector('[data-teste="toast-desfazer"]')
@@ -84,7 +84,7 @@ describe('ProvedorFeedback — classes do bloco toast-feedback', () => {
     const { wrapper, api } = montarHarness()
     montado = wrapper
 
-    api.sucesso('Casamento arquivado.', { desfazer: vi.fn() })
+    api.sucesso('Evento arquivado.', { desfazer: vi.fn() })
     api.erro()
     await flushPromises()
 

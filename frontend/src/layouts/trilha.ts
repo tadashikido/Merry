@@ -1,19 +1,19 @@
 import type { ComputedRef, InjectionKey } from 'vue'
 import type { RouteLocationRaw, RouteParamsGeneric, RouteRecordNormalized } from 'vue-router'
 
-import { MODULOS_CASAMENTO, moduloAtivo } from './modulosCasamento'
-import type { ModuloCasamento, NivelTrilha } from './tipos'
+import { MODULOS_EVENTO, moduloAtivo } from './modulosEvento'
+import type { ModuloEvento, NivelTrilha } from './tipos'
 import '@/router/metaRota'
 
 export const CHAVE_TRILHA: InjectionKey<ComputedRef<NivelTrilha[]>> = Symbol('trilha')
 
 export const LIMITE_NIVEIS_TRILHA = 6
 
-export const LIMITE_BUSCA_CASAMENTO = 8
+export const LIMITE_BUSCA_EVENTO = 8
 
 export interface OpcoesTrilha {
-  ehCasal: boolean
-  rotuloCasamento: string | null
+  ehAnfitriao: boolean
+  rotuloEvento: string | null
 }
 
 function nomesParametros(caminho: string): string[] {
@@ -49,10 +49,10 @@ export function montarTrilha(
       break
     }
     const ehAtual = niveis.length === 0
-    if (ehAtual || !(opcoes.ehCasal && registro.meta.somenteAssessoria === true)) {
+    if (ehAtual || !(opcoes.ehAnfitriao && registro.meta.somenteAssessoria === true)) {
       niveis.unshift({
         chave: nomeAtual,
-        rotulo: meta.casamento ? opcoes.rotuloCasamento : (meta.rotulo ?? null),
+        rotulo: meta.evento ? opcoes.rotuloEvento : (meta.rotulo ?? null),
         rota: { name: nomeAtual, params: parametrosDoNivel(registro, parametros) },
       })
     }
@@ -62,11 +62,11 @@ export function montarTrilha(
   return niveis
 }
 
-export function destinoTrocaCasamento(
+export function destinoTrocaEvento(
   nomeRota: string | null,
   novoId: string,
-  modulos: ModuloCasamento[] = MODULOS_CASAMENTO,
+  modulos: ModuloEvento[] = MODULOS_EVENTO,
 ): RouteLocationRaw {
   const modulo = modulos.find((candidato) => moduloAtivo(candidato, nomeRota))
-  return { name: modulo?.rota ?? 'casamento', params: { id: novoId } }
+  return { name: modulo?.rota ?? 'evento', params: { id: novoId } }
 }

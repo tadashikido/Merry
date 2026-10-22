@@ -54,7 +54,7 @@ describe('presetTema', () => {
     expect(cssGlobal).toContain(`--p-fonte-tamanho-display:${tipografia.tamanhos.display}`)
     expect(cssGlobal).toContain(`--p-fonte-peso-seminegrito:${tipografia.pesos.seminegrito}`)
     expect(cssGlobal).toContain('--p-dimensao-largura-rail:4.5rem')
-    expect(cssGlobal).toContain('--p-dimensao-largura-navegacao-casamento:14.5rem')
+    expect(cssGlobal).toContain('--p-dimensao-largura-navegacao-evento:14.5rem')
     expect(cssGlobal).toContain('--p-raio-painel:12px')
     expect(cssGlobal).toContain('--p-raio-controle:12px')
     expect(cssGlobal).toContain('--p-raio-campo:4px')

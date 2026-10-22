@@ -6,9 +6,9 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class FornecedorRepository : IFornecedorRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public FornecedorRepository(CasamentoDbContext contexto)
+    public FornecedorRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }

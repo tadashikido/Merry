@@ -21,9 +21,9 @@ public class FabricaApiIsolamento : FabricaApiAutenticacao
         _incluirEntidadeTeste = incluirEntidadeTeste;
     }
 
-    public DbContextOptions<CasamentoDbContext> CriarOpcoesDbContext()
+    public DbContextOptions<CelebriDbContext> CriarOpcoesDbContext()
     {
-        var opcoes = new DbContextOptionsBuilder<CasamentoDbContext>();
+        var opcoes = new DbContextOptionsBuilder<CelebriDbContext>();
         ConfigurarOpcoes(opcoes);
         return opcoes.Options;
     }
@@ -39,8 +39,8 @@ public class FabricaApiIsolamento : FabricaApiAutenticacao
 
         builder.ConfigureTestServices(servicos =>
         {
-            servicos.RemoveAll<DbContextOptions<CasamentoDbContext>>();
-            servicos.AddDbContext<CasamentoDbContext>(ConfigurarOpcoes);
+            servicos.RemoveAll<DbContextOptions<CelebriDbContext>>();
+            servicos.AddDbContext<CelebriDbContext>(ConfigurarOpcoes);
         });
     }
 

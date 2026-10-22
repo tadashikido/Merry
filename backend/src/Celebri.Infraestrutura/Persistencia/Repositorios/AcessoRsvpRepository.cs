@@ -6,9 +6,9 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class AcessoRsvpRepository : IAcessoRsvpRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public AcessoRsvpRepository(CasamentoDbContext contexto)
+    public AcessoRsvpRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }
@@ -23,11 +23,11 @@ public class AcessoRsvpRepository : IAcessoRsvpRepository
         return _contexto.AcessosRsvp.FirstOrDefaultAsync(acesso => acesso.ConviteId == conviteId, cancelamento);
     }
 
-    public async Task<IReadOnlySet<Guid>> ListarConvitesComLinkAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<IReadOnlySet<Guid>> ListarConvitesComLinkAsync(Guid eventoId, CancellationToken cancelamento)
     {
         var identificadores = await _contexto.AcessosRsvp
             .AsNoTracking()
-            .Where(acesso => acesso.CasamentoId == casamentoId)
+            .Where(acesso => acesso.EventoId == eventoId)
             .Select(acesso => acesso.ConviteId)
             .ToListAsync(cancelamento);
 

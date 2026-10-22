@@ -22,7 +22,7 @@ public class RequestsTarefasTestes
     [Fact]
     public void SalvarTarefa_Valido_NaoDeveTerErros()
     {
-        Assert.Empty(Validar(new SalvarTarefaRequest("Contratar fotógrafo", null, ResponsavelTarefa.Casal, CategoriaTarefa.Geral, new DateOnly(2027, 1, 10))));
+        Assert.Empty(Validar(new SalvarTarefaRequest("Contratar fotógrafo", null, ResponsavelTarefa.Anfitriao, CategoriaTarefa.Geral, new DateOnly(2027, 1, 10))));
     }
 
     [Theory]
@@ -64,12 +64,12 @@ public class RequestsTarefasTestes
     public void SalvarTarefa_Json_DeveAceitarEnumsComoTextoEPrazoComoData()
     {
         var request = JsonSerializer.Deserialize<SalvarTarefaRequest>(
-            """{"titulo":"Provar o vestido","responsavel":"Casal","categoria":"TrajesBeleza","prazo":"2027-01-10","organizacaoId":"00000000-0000-0000-0000-000000000001"}""",
+            """{"titulo":"Provar o vestido","responsavel":"Anfitriao","categoria":"TrajesBeleza","prazo":"2027-01-10","organizacaoId":"00000000-0000-0000-0000-000000000001"}""",
             OpcoesWeb)!;
 
         var dados = request.ParaDados();
 
-        Assert.Equal(ResponsavelTarefa.Casal, dados.Responsavel);
+        Assert.Equal(ResponsavelTarefa.Anfitriao, dados.Responsavel);
         Assert.Equal(CategoriaTarefa.TrajesBeleza, dados.Categoria);
         Assert.Equal(new DateOnly(2027, 1, 10), dados.Prazo);
         Assert.DoesNotContain(typeof(SalvarTarefaRequest).GetProperties(), propriedade => propriedade.Name.Contains("Organizacao", StringComparison.Ordinal));
@@ -132,18 +132,18 @@ public class RequestsTarefasTestes
 
     [Theory]
     [InlineData(PoliticasAutorizacao.ConsultarTarefas, "Dono", true)]
-    [InlineData(PoliticasAutorizacao.ConsultarTarefas, "Casal", true)]
+    [InlineData(PoliticasAutorizacao.ConsultarTarefas, "Anfitriao", true)]
     [InlineData(PoliticasAutorizacao.AlterarStatusTarefas, "Dono", true)]
-    [InlineData(PoliticasAutorizacao.AlterarStatusTarefas, "Casal", true)]
+    [InlineData(PoliticasAutorizacao.AlterarStatusTarefas, "Anfitriao", true)]
     [InlineData(PoliticasAutorizacao.GerenciarTarefas, "Dono", true)]
-    [InlineData(PoliticasAutorizacao.GerenciarTarefas, "Casal", false)]
+    [InlineData(PoliticasAutorizacao.GerenciarTarefas, "Anfitriao", false)]
     [InlineData(PoliticasAutorizacao.ConsultarPendenciasTarefas, "Dono", true)]
-    [InlineData(PoliticasAutorizacao.ConsultarPendenciasTarefas, "Casal", false)]
+    [InlineData(PoliticasAutorizacao.ConsultarPendenciasTarefas, "Anfitriao", false)]
     [InlineData(PoliticasAutorizacao.ConsultarTarefas, "Membro", false)]
     [InlineData(PoliticasAutorizacao.GerenciarModelosChecklist, "Dono", true)]
-    [InlineData(PoliticasAutorizacao.GerenciarModelosChecklist, "Casal", false)]
+    [InlineData(PoliticasAutorizacao.GerenciarModelosChecklist, "Anfitriao", false)]
     [InlineData(PoliticasAutorizacao.GerenciarChecklist, "Dono", true)]
-    [InlineData(PoliticasAutorizacao.GerenciarChecklist, "Casal", false)]
+    [InlineData(PoliticasAutorizacao.GerenciarChecklist, "Anfitriao", false)]
     public async Task Politicas_DevemSeguirAMatrizQuemVeOQue(string politica, string papel, bool autorizado)
     {
         var resultado = await Autorizacao().AuthorizeAsync(Usuario(papel), politica);

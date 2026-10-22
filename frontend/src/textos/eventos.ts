@@ -1,0 +1,152 @@
+import type { VarianteStatus } from '@/componentes/base/tipos'
+import type { FaseEvento, SituacaoListagemEventos } from '@/tipos/eventos'
+import { NOME_PRODUTO } from '@/textos/rotulos'
+
+export const TEXTOS_EVENTOS = {
+  menu: 'Eventos',
+  novoEvento: 'Novo evento',
+  verTodos: 'Ver todos os eventos',
+  proximosTitulo: 'Próximos eventos',
+  proximosLegenda: 'Os eventos mais próximos, em ordem de data.',
+  painelVazioTitulo: 'Nenhum evento pela frente',
+  painelVazioTexto: 'Cadastre um evento para acompanhar a data, os locais e, em breve, a lista de convidados.',
+  listaTitulo: 'Eventos',
+  listaDescricao: 'Os eventos que sua assessoria acompanha, dos mais próximos aos já realizados.',
+  listaRotulo: 'Lista de eventos',
+  placeholderBusca: 'Buscar pelo nome dos anfitriões',
+  filtroSituacao: 'Situação',
+  ativos: 'Ativos',
+  arquivados: 'Arquivados',
+  colunaAnfitriao: 'Anfitriões',
+  colunaData: 'Data',
+  colunaFase: 'Fase',
+  colunaContagem: 'Contagem',
+  colunaLocal: 'Local da cerimônia',
+  vazioAtivosTitulo: 'Nenhum evento por aqui ainda',
+  vazioAtivosTexto: 'Cadastre o primeiro evento para começar a organizar datas e convidados.',
+  vazioArquivadosTitulo: 'Nenhum evento arquivado',
+  vazioArquivadosTexto: 'Eventos arquivados aparecem aqui e podem ser restaurados quando precisar.',
+  editar: 'Editar',
+  editarEvento: 'Editar evento',
+  arquivar: 'Arquivar',
+  restaurar: 'Restaurar',
+  salvarNovo: 'Salvar evento',
+  salvarEdicao: 'Salvar alterações',
+  voltarLista: 'Voltar para eventos',
+  tituloNovo: 'Novo evento',
+  descricaoNovo: 'Preencha o essencial agora; você pode completar o resto depois.',
+  tituloEdicao: 'Editar evento',
+  grupoAnfitriao: 'Os anfitriões',
+  grupoQuando: 'Quando',
+  grupoOnde: 'Onde',
+  grupoPlanejamento: 'Planejamento',
+  nomePrimeiraPessoa: 'Nome de uma das pessoas',
+  nomeSegundaPessoa: 'Nome da outra pessoa',
+  data: 'Data do evento',
+  horario: 'Horário da cerimônia',
+  horarioDica: 'Deixe em branco se ainda não estiver definido.',
+  dataLimiteRsvp: 'Data limite para confirmação',
+  dataLimiteRsvpDica: (padrao: string | null) =>
+    padrao
+      ? `Se ficar em branco, usamos 10 dias antes do evento (${padrao}).`
+      : 'Se ficar em branco, usamos 10 dias antes do evento.',
+  localCerimonia: 'Local da cerimônia',
+  localRecepcao: 'Local da recepção',
+  localRecepcaoDica: 'Se for no mesmo lugar, repita o nome.',
+  convidados: 'Convidados estimados',
+  convidadosDica: 'Um número aproximado já ajuda.',
+  observacoes: 'Observações',
+  contadorObservacoes: (quantidade: number, limite: number) =>
+    `${quantidade.toLocaleString('pt-BR')} de ${limite.toLocaleString('pt-BR')} caracteres`,
+  detalhesTitulo: 'Detalhes',
+  faltaHorario: {
+    titulo: 'Falta o horário da cerimônia.',
+    texto: 'Sem ele, o convite digital não mostra a hora.',
+    acao: 'Adicionar horário',
+  },
+  faltaLocal: {
+    titulo: 'Falta o local da cerimônia.',
+    texto: 'O convite digital usa esse endereço.',
+    acao: 'Adicionar local',
+  },
+  avisoArquivado: 'Este evento está arquivado. Restaure para voltar a editar.',
+  statusArquivado: 'Arquivado',
+  naoEncontradoTitulo: 'Evento não encontrado',
+  naoEncontradoTexto: 'Ele pode ter sido removido ou o link está incorreto.',
+  erroCarregarTitulo: 'Não foi possível carregar os eventos',
+  erroCarregarTexto: 'Verifique a conexão e tente novamente.',
+  erroCarregarUmTitulo: 'Não foi possível carregar o evento',
+  semPermissao: 'Você não tem permissão para alterar eventos.',
+  semAcesso: 'Você não tem acesso aos eventos desta assessoria.',
+  criado: 'Evento cadastrado.',
+  arquivado: (nomes: string) => `“${nomes}” foi arquivado. Você encontra em Arquivados.`,
+  restaurado: (nomes: string) => `“${nomes}” foi restaurado.`,
+  acaoComNome: (acao: string, nomes: string) => `${acao} ${nomes}`,
+  tituloDocumento: (nomes: string) => `${nomes} · ${NOME_PRODUTO}`,
+  conectorNomes: 'e',
+} as const
+
+export const ROTULOS_FASE: Record<FaseEvento, string> = {
+  Planejamento: 'Planejamento',
+  RetaFinal: 'Reta final',
+  SemanaDoEvento: 'Semana do evento',
+  DiaDoEvento: 'Dia do evento',
+  Realizado: 'Realizado',
+}
+
+export const VARIANTE_FASE: Record<FaseEvento, VarianteStatus> = {
+  Planejamento: 'neutro',
+  RetaFinal: 'informacao',
+  SemanaDoEvento: 'alerta',
+  DiaDoEvento: 'sucesso',
+  Realizado: 'neutro',
+}
+
+export function descreverContagem(dias: number): string {
+  if (dias > 1) {
+    return `Faltam ${dias.toLocaleString('pt-BR')} dias`
+  }
+  if (dias === 1) {
+    return 'Falta 1 dia'
+  }
+  if (dias === 0) {
+    return 'É hoje'
+  }
+  if (dias === -1) {
+    return 'Foi ontem'
+  }
+  return `Foi há ${Math.abs(dias).toLocaleString('pt-BR')} dias`
+}
+
+const ADJETIVO_SITUACAO: Record<SituacaoListagemEventos, { singular: string; plural: string }> = {
+  Ativos: { singular: 'ativo', plural: 'ativos' },
+  Arquivados: { singular: 'arquivado', plural: 'arquivados' },
+}
+
+export function resumoListaEventos(exibidos: number, total: number, situacao: SituacaoListagemEventos): string {
+  const singular = total === 1
+  const substantivo = singular ? 'evento' : 'eventos'
+  const adjetivo = ADJETIVO_SITUACAO[situacao][singular ? 'singular' : 'plural']
+  const totalFormatado = total.toLocaleString('pt-BR')
+  const quantidade = exibidos === total ? totalFormatado : `${exibidos.toLocaleString('pt-BR')} de ${totalFormatado}`
+  return `${quantidade} ${substantivo} ${adjetivo}`
+}
+
+export function legendaContagemDestaque(dias: number): string {
+  return dias === 1 ? 'dia para o evento' : 'dias para o evento'
+}
+
+export function descreverContagemAcessivel(dias: number): string {
+  return dias > 0 ? `${descreverContagem(dias)} para o evento` : descreverContagem(dias)
+}
+
+export const MENSAGENS_VALIDACAO_EVENTO = {
+  nomeTamanho: 'Use entre 2 e 80 caracteres.',
+  dataInvalida: 'Informe uma data válida, como 15/05/2027.',
+  dataFaixa: 'Informe uma data entre 2000 e 2100.',
+  horarioInvalido: 'Informe o horário no formato 24 h, como 16:30.',
+  dataLimiteRsvpInvalida: 'A data limite precisa ser igual ou anterior à data do evento.',
+  localTamanho: 'Use até 200 caracteres.',
+  convidadosFaixa: 'Informe um número entre 1 e 5.000.',
+  observacoesTamanho: 'Use até 2.000 caracteres.',
+} as const

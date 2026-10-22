@@ -76,7 +76,7 @@ public class RetencaoDadosSensiveisTestes
         var sistema = new EscopoIsolamentoSistema();
         var rsvp = new EscopoIsolamentoRsvp();
         var usuario = Guid.NewGuid();
-        var contexto = new ContextoIsolamentoRequisicao(new ContextoIsolamentoUsuarioAtual(new UsuarioFixo(usuario)), rsvp, new EscopoIsolamentoAcessoCasal(), sistema, new EscopoIsolamentoCronogramaPublico());
+        var contexto = new ContextoIsolamentoRequisicao(new ContextoIsolamentoUsuarioAtual(new UsuarioFixo(usuario)), rsvp, new EscopoIsolamentoAcessoAnfitriao(), sistema, new EscopoIsolamentoCronogramaPublico());
 
         Assert.Equal(usuario, contexto.OrganizacaoId);
 
@@ -150,7 +150,7 @@ public class RetencaoDadosSensiveisTestes
 
         public Guid? OrganizacaoId { get; }
 
-        public Guid? CasamentoId => null;
+        public Guid? EventoId => null;
 
         public string? Papel => "Dono";
     }

@@ -11,7 +11,7 @@ function contar(quantidade: number, singular: string, plural: string): string {
 
 export const ROTULOS_DIA_CURTO: Record<DiaCronograma, string> = {
   Vespera: 'Véspera',
-  DiaDoCasamento: 'Dia',
+  DiaDoEvento: 'Dia',
   DiaSeguinte: 'Dia seguinte',
 }
 
@@ -40,7 +40,7 @@ export const TEXTOS_MODELOS_CRONOGRAMA = {
   listaRotulo: 'Modelos de cronograma da assessoria',
   resumo: (quantidade: number) => contar(quantidade, 'modelo', 'modelos'),
   vazioTitulo: 'Nenhum modelo de cronograma',
-  vazioTexto: 'Crie um modelo ou salve o cronograma de um casamento como modelo.',
+  vazioTexto: 'Crie um modelo ou salve o cronograma de um evento como modelo.',
   erroTitulo: 'Não foi possível carregar os modelos.',
   erroTexto: 'Verifique a conexão e tente de novo.',
   semAcesso: 'Só a assessoria gerencia modelos de cronograma.',
@@ -100,7 +100,7 @@ export const TEXTOS_ITEM_MODELO_CRONOGRAMA = {
   campoLocalOutro: 'Qual local',
   campoCategoria: 'Categoria de fornecedor',
   nenhumaCategoria: 'Nenhuma',
-  dicaCategoria: 'Ao aplicar, se o casamento tiver um único fornecedor desta categoria, ele é preenchido.',
+  dicaCategoria: 'Ao aplicar, se o evento tiver um único fornecedor desta categoria, ele é preenchido.',
   salvar: 'Salvar item',
   salvarOutro: 'Salvar e adicionar outro',
   cancelar: 'Cancelar',

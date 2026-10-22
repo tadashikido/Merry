@@ -6,7 +6,7 @@ import PrimeVue from 'primevue/config'
 
 import { alertasExemplo, HOJE_TESTE, resumoPagamentos } from '@/__tests__/auxiliaresFinanceiro'
 import BlocoAlertasPagamentos from '@/componentes/base/BlocoAlertasPagamentos.vue'
-import LinhaFornecedorCasamento from '@/componentes/base/LinhaFornecedorCasamento.vue'
+import LinhaFornecedorEvento from '@/componentes/base/LinhaFornecedorEvento.vue'
 import LinhaHoje from '@/componentes/base/LinhaHoje.vue'
 import LinhaParcela from '@/componentes/base/LinhaParcela.vue'
 import ResumoOrcamento from '@/componentes/base/ResumoOrcamento.vue'
@@ -28,7 +28,7 @@ async function criarRoteador() {
     history: createMemoryHistory(),
     routes: [
       { path: '/', component: Vazia },
-      { path: '/casamentos/:id/financeiro', name: 'casamento-financeiro', component: Vazia },
+      { path: '/eventos/:id/financeiro', name: 'evento-financeiro', component: Vazia },
     ],
   })
   await roteador.push('/')
@@ -83,14 +83,14 @@ describe('LinhaParcela', () => {
     }
   })
 
-  it('[COMPONENTE] com destino vira link inteiro e mostra o casal', async () => {
+  it('[COMPONENTE] com destino vira link inteiro e mostra os anfitriões', async () => {
     const roteador = await criarRoteador()
     montado = mount(LinhaParcela, {
-      props: { ...PROPS_PARCELA, nomesCasal: 'Ana & João', destino: { name: 'casamento-financeiro', params: { id: 'c1' } } },
+      props: { ...PROPS_PARCELA, nomesAnfitrioes: 'Ana & João', destino: { name: 'evento-financeiro', params: { id: 'c1' } } },
       global: { plugins: [roteador] },
     })
 
-    expect(montado.get('a').attributes('href')).toBe('/casamentos/c1/financeiro')
+    expect(montado.get('a').attributes('href')).toBe('/eventos/c1/financeiro')
     expect(montado.text()).toContain('Ana & João')
   })
 })
@@ -131,7 +131,7 @@ describe('ResumoOrcamento com pagamentos', () => {
 })
 
 describe('BlocoAlertasPagamentos', () => {
-  it('[COMPONENTE] no dashboard mostra totais, casamentos e linhas que levam ao financeiro de cada casamento', async () => {
+  it('[COMPONENTE] no dashboard mostra totais, eventos e linhas que levam ao financeiro de cada evento', async () => {
     const roteador = await criarRoteador()
     montado = mount(BlocoAlertasPagamentos, {
       props: { alertas: alertasExemplo({ totalProximas: 4 }), contexto: 'organizacao' },
@@ -139,28 +139,28 @@ describe('BlocoAlertasPagamentos', () => {
     })
 
     expect(texto(montado.get('[data-teste="valor-vencidas"]').text())).toBe('R$ 5.250,00')
-    expect(montado.text()).toContain('2 vencidas em 2 casamentos')
+    expect(montado.text()).toContain('2 vencidas em 2 eventos')
     expect(montado.text()).toContain('4 nos próximos 7 dias')
     expect(montado.findAll('[data-teste="grupo-alertas-vencidas"] [data-teste="linha-parcela"]')).toHaveLength(2)
-    expect(montado.get('[data-teste="grupo-alertas-vencidas"] a').attributes('href')).toBe('/casamentos/22222222-2222-4222-8222-222222222222/financeiro')
+    expect(montado.get('[data-teste="grupo-alertas-vencidas"] a').attributes('href')).toBe('/eventos/22222222-2222-4222-8222-222222222222/financeiro')
     expect(montado.text()).toContain('Ana & João')
     expect(montado.get('[data-teste="alertas-mais"]').text()).toBe(TEXTOS_ALERTAS_PAGAMENTOS.mais(3))
     expect(montado.find('[data-teste="ver-financeiro"]').exists()).toBe(false)
   })
 
-  it('[COMPONENTE] no casamento esconde o casal, mostra o link e o estado calmo quando está tudo em dia', async () => {
+  it('[COMPONENTE] no evento esconde os anfitriões, mostra o link e o estado calmo quando está tudo em dia', async () => {
     const roteador = await criarRoteador()
     montado = mount(BlocoAlertasPagamentos, {
       props: {
         alertas: alertasExemplo({ totalVencidas: 0, valorVencidas: 0, totalProximas: 0, valorProximas: 0, vencidas: [], proximas: [] }),
-        contexto: 'casamento',
-        destinoFinanceiro: { name: 'casamento-financeiro', params: { id: 'c1' } },
+        contexto: 'evento',
+        destinoFinanceiro: { name: 'evento-financeiro', params: { id: 'c1' } },
       },
       global: { plugins: [roteador, PrimeVue] },
     })
 
     expect(montado.get('[data-teste="alertas-vazio"]').text()).toBe(TEXTOS_ALERTAS_PAGAMENTOS.vazio)
-    expect(montado.get('[data-teste="ver-financeiro"]').attributes('href')).toBe('/casamentos/c1/financeiro')
+    expect(montado.get('[data-teste="ver-financeiro"]').attributes('href')).toBe('/eventos/c1/financeiro')
     expect(montado.text()).not.toContain('Ana & João')
   })
 
@@ -177,9 +177,9 @@ describe('BlocoAlertasPagamentos', () => {
   })
 })
 
-describe('LinhaFornecedorCasamento com parcelas', () => {
+describe('LinhaFornecedorEvento com parcelas', () => {
   it('[COMPONENTE] resume parcelas pagas, próxima e vencidas', () => {
-    montado = mount(LinhaFornecedorCasamento, {
+    montado = mount(LinhaFornecedorEvento, {
       props: {
         nomeEmpresa: 'Buffet São João',
         status: 'Contratado',

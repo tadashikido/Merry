@@ -13,7 +13,7 @@ import { cores } from '@/design/tokens'
 import { rotas } from '@/router'
 import { TEXTOS_CRONOGRAMA_PUBLICO } from '@/textos/cronogramaPublico'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
-import { RaizRotas, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { RaizRotas, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const ROTA_CONSULTA = '/api/cronograma-publico/consulta'
 
@@ -51,7 +51,7 @@ describe('CronogramaPublicoView', { timeout: 20_000 }, () => {
     expect(wrapper!.text()).toContain('Espaço Jardim')
     expect(wrapper!.findAll('[data-teste^="dia-roteiro-"]').map((secao) => secao.attributes('data-teste'))).toEqual([
       'dia-roteiro-Vespera',
-      'dia-roteiro-DiaDoCasamento',
+      'dia-roteiro-DiaDoEvento',
     ])
     const itens = wrapper!.findAll('[data-teste="item-roteiro"]')
     expect(itens.map((item) => item.get('time').text())).toEqual(['19:00', '14:00', '16:30', '21:30'])
@@ -167,7 +167,7 @@ describe('CronogramaPublicoView', { timeout: 20_000 }, () => {
 
 describe('CronogramaPublicoView — agora / próximo', { timeout: 20_000 }, () => {
   const NO_DIA = cronogramaPublico({
-    momento: { agora: '2027-05-15T14:20:00', fase: 'NoDia', diasParaOCasamento: 0 },
+    momento: { agora: '2027-05-15T14:20:00', fase: 'NoDia', diasParaOEvento: 0 },
     itens: [
       itemPublico({ situacao: 'Agora' }),
       itemPublico({ inicio: '19:00', termino: '21:00', atividade: 'Jantar', situacao: 'Proximo' }),
@@ -247,7 +247,7 @@ describe('CronogramaPublicoView — estrutura da fundação', { timeout: 20_000 
 
   it('[COMPONENTE] no dia marca o conteúdo como ao vivo com o painel antes do roteiro', async () => {
     const noDia = cronogramaPublico({
-      momento: { agora: '2027-05-15T14:20:00', fase: 'NoDia', diasParaOCasamento: 0 },
+      momento: { agora: '2027-05-15T14:20:00', fase: 'NoDia', diasParaOEvento: 0 },
       itens: [itemPublico({ situacao: 'Agora' })],
     })
     rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(noDia)))

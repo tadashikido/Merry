@@ -15,7 +15,7 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import type { TextosEnvioArquivo } from '@/componentes/base/tipos'
 import PreviaImportacao from '@/componentes/convidados/PreviaImportacao.vue'
 import { useNotificacao } from '@/composables/useNotificacao'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useImportacaoConvidadosStore } from '@/stores/importacaoConvidados'
 import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
 import { EXPLICACAO_COLUNAS, ROTULOS_COLUNA_IMPORTACAO, TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
@@ -23,7 +23,7 @@ import type { FalhaConvidados } from '@/stores/convidados'
 import type { EtapaImportacao } from '@/tipos/importacaoConvidados'
 import { ACEITE_PLANILHA, baixarTexto, verificarArquivoPlanilha, type ProblemaArquivo } from '@/utilitarios/arquivo'
 import { focarElemento } from '@/utilitarios/foco'
-import { formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import {
   csvLinhasComProblema,
   linhasBloqueantes,
@@ -36,7 +36,7 @@ const ID_ARQUIVO = 'importacao-arquivo'
 
 const props = defineProps<{ id: string }>()
 
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const store = useImportacaoConvidadosStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
@@ -62,14 +62,14 @@ const textosEnvio: TextosEnvioArquivo = {
   carregando: TEXTOS_IMPORTACAO.envioLendo,
 }
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
-const falhaCasamento = computed(() => casamentos.falhaAtual)
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
+const falhaEvento = computed(() => eventos.falhaAtual)
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
-const arquivado = computed(() => casamento.value?.arquivado === true)
-const previa = computed(() => (store.casamentoId === props.id ? store.previa : null))
-const resultado = computed(() => (store.casamentoId === props.id ? store.resultado : null))
+const arquivado = computed(() => evento.value?.arquivado === true)
+const previa = computed(() => (store.eventoId === props.id ? store.previa : null))
+const resultado = computed(() => (store.eventoId === props.id ? store.resultado : null))
 
 const etapa = computed<EtapaImportacao>(() => {
   if (resultado.value) {
@@ -112,11 +112,11 @@ function mensagemFalha(falha: FalhaConvidados): string {
 watch(
   () => props.id,
   (id) => {
-    if (store.casamentoId !== id || store.resultado) {
+    if (store.eventoId !== id || store.resultado) {
       store.limpar()
     }
     erroArquivo.value = null
-    void casamentos.obter(id)
+    void eventos.obter(id)
   },
   { immediate: true },
 )
@@ -208,7 +208,7 @@ async function conferirDeNovo() {
 }
 
 function verConvidados() {
-  void roteador.push({ name: 'casamento-convidados', params: { id: props.id } })
+  void roteador.push({ name: 'evento-convidados', params: { id: props.id } })
 }
 
 function importarOutra() {
@@ -219,20 +219,20 @@ function importarOutra() {
 <template>
   <LayoutPainelUsuario>
     <div
-      v-if="falhaCasamento?.tipo === 'naoEncontrado'"
+      v-if="falhaEvento?.tipo === 'naoEncontrado'"
       class="pilha pilha--grupo"
     >
       <EstadoErro
-        :titulo="TEXTOS_CONVIDADOS.casamentoNaoEncontradoTitulo"
-        :mensagem="TEXTOS_CONVIDADOS.casamentoNaoEncontradoTexto"
+        :titulo="TEXTOS_CONVIDADOS.eventoNaoEncontradoTitulo"
+        :mensagem="TEXTOS_CONVIDADOS.eventoNaoEncontradoTexto"
         :pode-tentar-novamente="false"
       />
       <RouterLink
         class="importacao__voltar"
-        :to="{ name: 'casamentos' }"
-        data-teste="voltar-casamentos"
+        :to="{ name: 'eventos' }"
+        data-teste="voltar-eventos"
       >
-        {{ TEXTOS_CONVIDADOS.voltarCasamentos }}
+        {{ TEXTOS_CONVIDADOS.voltarEventos }}
       </RouterLink>
     </div>
 
@@ -243,15 +243,15 @@ function importarOutra() {
       />
 
       <EstadoCarregando
-        v-if="casamentos.carregandoAtual && !casamento"
+        v-if="eventos.carregandoAtual && !evento"
         variante="cartao"
         :linhas="2"
       />
 
       <EstadoErro
-        v-else-if="falhaCasamento && !casamento"
-        :mensagem="falhaCasamento.tipo === 'semPermissao' ? TEXTOS_IMPORTACAO.semPermissao : TEXTOS_IMPORTACAO.erroInesperado"
-        @tentar-novamente="casamentos.obter(id)"
+        v-else-if="falhaEvento && !evento"
+        :mensagem="falhaEvento.tipo === 'semPermissao' ? TEXTOS_IMPORTACAO.semPermissao : TEXTOS_IMPORTACAO.erroInesperado"
+        @tentar-novamente="eventos.obter(id)"
       />
 
       <div
@@ -265,14 +265,14 @@ function importarOutra() {
         />
         <RouterLink
           class="importacao__voltar"
-          :to="{ name: 'casamento-convidados', params: { id } }"
+          :to="{ name: 'evento-convidados', params: { id } }"
         >
           {{ TEXTOS_IMPORTACAO.voltarConvidados }}
         </RouterLink>
       </div>
 
       <div
-        v-else-if="casamento"
+        v-else-if="evento"
         class="importacao pilha pilha--bloco"
         :data-etapa="etapa"
       >

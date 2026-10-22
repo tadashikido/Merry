@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Financeiro;
 using Celebri.Dominio.Fornecedores;
 using Celebri.Dominio.Organizacoes;
@@ -10,10 +10,10 @@ namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 public class ParcelaFornecedorConfiguration : IEntityTypeConfiguration<ParcelaFornecedor>
 {
     public const string Tabela = "parcelas_fornecedor";
-    public const string IndiceOrganizacaoCasamento = "ix_parcelas_fornecedor_organizacao_id_casamento_id";
-    public const string IndiceOrganizacaoVinculo = "ix_parcelas_fornecedor_organizacao_id_fornecedor_casamento_id";
+    public const string IndiceOrganizacaoEvento = "ix_parcelas_fornecedor_organizacao_id_evento_id";
+    public const string IndiceOrganizacaoVinculo = "ix_parcelas_fornecedor_organizacao_id_fornecedor_evento_id";
     public const string IndiceOrganizacaoStatusVencimento = "ix_parcelas_fornecedor_organizacao_id_status_vencimento";
-    public const string ChaveEstrangeiraVinculo = "fk_parcelas_fornecedor_fornecedores_casamento_fornecedor_casamento_id";
+    public const string ChaveEstrangeiraVinculo = "fk_parcelas_fornecedor_fornecedores_evento_fornecedor_evento_id";
     public const string RestricaoValor = "ck_parcelas_fornecedor_valor";
     public const string RestricaoStatus = "ck_parcelas_fornecedor_status";
     public const string RestricaoPagamento = "ck_parcelas_fornecedor_pagamento";
@@ -41,9 +41,9 @@ public class ParcelaFornecedorConfiguration : IEntityTypeConfiguration<ParcelaFo
 
         builder.HasKey(parcela => parcela.Id);
         builder.Property(parcela => parcela.Id).ValueGeneratedNever();
-        builder.Property(parcela => parcela.CasamentoId).IsRequired();
-        builder.Property(parcela => parcela.FornecedorCasamentoId).IsRequired();
-        builder.Property(parcela => parcela.Valor).HasColumnType(FornecedorCasamentoConfiguration.TipoValor).IsRequired();
+        builder.Property(parcela => parcela.EventoId).IsRequired();
+        builder.Property(parcela => parcela.FornecedorEventoId).IsRequired();
+        builder.Property(parcela => parcela.Valor).HasColumnType(FornecedorEventoConfiguration.TipoValor).IsRequired();
         builder.Property(parcela => parcela.Vencimento).IsRequired();
         builder.Property(parcela => parcela.Observacao).HasMaxLength(ParcelaFornecedor.TamanhoMaximoObservacao);
         builder.Property(parcela => parcela.Status)
@@ -63,20 +63,20 @@ public class ParcelaFornecedorConfiguration : IEntityTypeConfiguration<ParcelaFo
         builder.Ignore(parcela => parcela.Paga);
         builder.Ignore(parcela => parcela.PossuiComprovante);
 
-        builder.HasIndex(parcela => new { parcela.OrganizacaoId, parcela.CasamentoId }).HasDatabaseName(IndiceOrganizacaoCasamento);
-        builder.HasIndex(parcela => new { parcela.OrganizacaoId, parcela.FornecedorCasamentoId }).HasDatabaseName(IndiceOrganizacaoVinculo);
+        builder.HasIndex(parcela => new { parcela.OrganizacaoId, parcela.EventoId }).HasDatabaseName(IndiceOrganizacaoEvento);
+        builder.HasIndex(parcela => new { parcela.OrganizacaoId, parcela.FornecedorEventoId }).HasDatabaseName(IndiceOrganizacaoVinculo);
         builder.HasIndex(parcela => new { parcela.OrganizacaoId, parcela.Status, parcela.Vencimento })
             .HasDatabaseName(IndiceOrganizacaoStatusVencimento);
 
-        builder.HasOne<FornecedorCasamento>()
+        builder.HasOne<FornecedorEvento>()
             .WithMany()
-            .HasForeignKey(parcela => parcela.FornecedorCasamentoId)
+            .HasForeignKey(parcela => parcela.FornecedorEventoId)
             .HasConstraintName(ChaveEstrangeiraVinculo)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<CasamentoAssessorado>()
+        builder.HasOne<Evento>()
             .WithMany()
-            .HasForeignKey(parcela => parcela.CasamentoId)
+            .HasForeignKey(parcela => parcela.EventoId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Organizacao>()

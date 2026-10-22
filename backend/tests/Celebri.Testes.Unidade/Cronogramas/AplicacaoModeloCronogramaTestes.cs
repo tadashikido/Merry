@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Fornecedores;
 
@@ -8,10 +8,10 @@ public class AplicacaoModeloCronogramaTestes
 {
     private static readonly DateTimeOffset Agora = new(2027, 3, 10, 12, 0, 0, TimeSpan.Zero);
 
-    private static CasamentoAssessorado Casamento(TimeOnly? horario)
+    private static Evento NovoEvento(TimeOnly? horario)
     {
-        return CasamentoAssessorado.Criar(
-            new DadosCasamento("Ana", "João", new DateOnly(2027, 5, 15), horario, "Capela São José", "Espaço Jardim", null, null),
+        return Evento.Criar(
+            new DadosEvento("Ana", "João", new DateOnly(2027, 5, 15), horario, "Capela São José", "Espaço Jardim", null, null),
             Agora);
     }
 
@@ -25,11 +25,11 @@ public class AplicacaoModeloCronogramaTestes
         return modelo;
     }
 
-    private static ItemCronograma ItemAncorado(CasamentoAssessorado casamento, int hora, int minuto, TimeOnly cerimonia)
+    private static ItemCronograma ItemAncorado(Evento evento, int hora, int minuto, TimeOnly cerimonia)
     {
         return ItemCronograma.CriarDeModelo(
-            casamento.Id,
-            new DadosItemCronograma(DiaCronograma.DiaDoCasamento, new TimeOnly(hora, minuto), 30, "Fotos", null, "Fotografia", null, null, null),
+            evento.Id,
+            new DadosItemCronograma(DiaCronograma.DiaDoEvento, new TimeOnly(hora, minuto), 30, "Fotos", null, "Fotografia", null, null, null),
             Guid.NewGuid(),
             cerimonia,
             null,
@@ -39,19 +39,19 @@ public class AplicacaoModeloCronogramaTestes
     [Fact]
     public void Gerar_DeveCalcularHorariosPelaCerimoniaResolverLocaisEGuardarOrigemEAncora()
     {
-        var casamento = Casamento(new TimeOnly(17, 0));
+        var evento = NovoEvento(new TimeOnly(17, 0));
         var modelo = Modelo();
 
         var itens = GeradorItensCronograma.Gerar(
-            casamento,
-            casamento.Horario!.Value,
+            evento,
+            evento.Horario!.Value,
             modelo.ItensOrdenados(),
             new Dictionary<CategoriaFornecedor, Guid>(),
             null,
             Agora);
 
         Assert.Equal(["11:00", "17:00", "18:30", "22:30"], itens.Select(item => item.Inicio.ToString("HH:mm")));
-        Assert.All(itens, item => Assert.Equal(DiaCronograma.DiaDoCasamento, item.Dia));
+        Assert.All(itens, item => Assert.Equal(DiaCronograma.DiaDoEvento, item.Dia));
         Assert.Equal(["Hotel", "Capela São José", "Espaço Jardim", "Espaço Jardim"], itens.Select(item => item.Local));
         Assert.Equal(modelo.ItensOrdenados().Select(item => (Guid?)item.Id), itens.Select(item => item.OrigemModeloItemId));
         Assert.Equal([-360, 0, 90, 330], itens.Select(item => item.MinutosRelativosCerimonia!.Value));
@@ -62,11 +62,11 @@ public class AplicacaoModeloCronogramaTestes
     [Fact]
     public void Gerar_CerimoniaTardia_DeveLevarItensAoDiaSeguinteELimitarAJanela()
     {
-        var casamento = Casamento(new TimeOnly(23, 0));
+        var evento = NovoEvento(new TimeOnly(23, 0));
         var modelo = ModeloCronograma.Criar("Roteiro", null, new TimeOnly(10, 0), Agora);
         var item = modelo.AdicionarItem(new DadosItemModeloCronograma(1800, null, "Brunch", null, null, null, null, null), Agora);
 
-        var gerado = Assert.Single(GeradorItensCronograma.Gerar(casamento, new TimeOnly(23, 0), [item], new Dictionary<CategoriaFornecedor, Guid>(), null, Agora));
+        var gerado = Assert.Single(GeradorItensCronograma.Gerar(evento, new TimeOnly(23, 0), [item], new Dictionary<CategoriaFornecedor, Guid>(), null, Agora));
 
         Assert.True(item.ForaDaJanela(new TimeOnly(23, 0)));
         Assert.Equal(DiaCronograma.DiaSeguinte, gerado.Dia);
@@ -107,8 +107,8 @@ public class AplicacaoModeloCronogramaTestes
     [Fact]
     public void HorarioDesatualizado_DeveCompararPosicaoComAncora()
     {
-        var casamento = Casamento(new TimeOnly(16, 0));
-        var item = ItemAncorado(casamento, 18, 0, new TimeOnly(16, 0));
+        var evento = NovoEvento(new TimeOnly(16, 0));
+        var item = ItemAncorado(evento, 18, 0, new TimeOnly(16, 0));
 
         Assert.True(item.AncoradoEmModelo);
         Assert.Equal(120, item.MinutosRelativosCerimonia);
@@ -120,8 +120,8 @@ public class AplicacaoModeloCronogramaTestes
     [Fact]
     public void RecalcularPelaCerimonia_DeveMoverMantendoADistancia()
     {
-        var casamento = Casamento(new TimeOnly(16, 0));
-        var item = ItemAncorado(casamento, 18, 0, new TimeOnly(16, 0));
+        var evento = NovoEvento(new TimeOnly(16, 0));
+        var item = ItemAncorado(evento, 18, 0, new TimeOnly(16, 0));
 
         Assert.True(item.RecalcularPelaCerimonia(new TimeOnly(23, 0), Agora.AddMinutes(1)));
 
@@ -134,12 +134,12 @@ public class AplicacaoModeloCronogramaTestes
     [Fact]
     public void RecalcularPelaCerimonia_ItemConcluidoOuManual_NaoDeveMover()
     {
-        var casamento = Casamento(new TimeOnly(16, 0));
-        var concluido = ItemAncorado(casamento, 18, 0, new TimeOnly(16, 0));
+        var evento = NovoEvento(new TimeOnly(16, 0));
+        var concluido = ItemAncorado(evento, 18, 0, new TimeOnly(16, 0));
         concluido.MarcarConcluido(Agora);
         var manual = ItemCronograma.Criar(
-            casamento.Id,
-            new DadosItemCronograma(DiaCronograma.DiaDoCasamento, new TimeOnly(18, 0), 30, "Manual", null, null, null, null, null),
+            evento.Id,
+            new DadosItemCronograma(DiaCronograma.DiaDoEvento, new TimeOnly(18, 0), 30, "Manual", null, null, null, null, null),
             null,
             Agora);
 
@@ -153,17 +153,17 @@ public class AplicacaoModeloCronogramaTestes
     [Fact]
     public void Atualizar_MovendoItemAncorado_DeveReancorarESoQuandoAPosicaoMuda()
     {
-        var casamento = Casamento(new TimeOnly(16, 0));
-        var item = ItemAncorado(casamento, 18, 0, new TimeOnly(16, 0));
+        var evento = NovoEvento(new TimeOnly(16, 0));
+        var item = ItemAncorado(evento, 18, 0, new TimeOnly(16, 0));
 
         item.Atualizar(
-            new DadosItemCronograma(DiaCronograma.DiaDoCasamento, new TimeOnly(18, 15), 30, "Fotos", null, "Fotografia", null, null, null),
+            new DadosItemCronograma(DiaCronograma.DiaDoEvento, new TimeOnly(18, 15), 30, "Fotos", null, "Fotografia", null, null, null),
             new TimeOnly(16, 0),
             Agora);
         Assert.Equal(135, item.MinutosRelativosCerimonia);
 
         item.Atualizar(
-            new DadosItemCronograma(DiaCronograma.DiaDoCasamento, new TimeOnly(18, 15), 30, "Fotos com a família", "Jardim", "Fotografia", null, null, null),
+            new DadosItemCronograma(DiaCronograma.DiaDoEvento, new TimeOnly(18, 15), 30, "Fotos com a família", "Jardim", "Fotografia", null, null, null),
             new TimeOnly(17, 0),
             Agora);
         Assert.Equal(135, item.MinutosRelativosCerimonia);
@@ -176,15 +176,15 @@ public class AplicacaoModeloCronogramaTestes
     [Fact]
     public void Atualizar_ItemManual_NaoDeveCriarAncora()
     {
-        var casamento = Casamento(new TimeOnly(16, 0));
+        var evento = NovoEvento(new TimeOnly(16, 0));
         var item = ItemCronograma.Criar(
-            casamento.Id,
-            new DadosItemCronograma(DiaCronograma.DiaDoCasamento, new TimeOnly(18, 0), 30, "Manual", null, null, null, null, null),
+            evento.Id,
+            new DadosItemCronograma(DiaCronograma.DiaDoEvento, new TimeOnly(18, 0), 30, "Manual", null, null, null, null, null),
             null,
             Agora);
 
         item.Atualizar(
-            new DadosItemCronograma(DiaCronograma.DiaDoCasamento, new TimeOnly(19, 0), 30, "Manual", null, null, null, null, null),
+            new DadosItemCronograma(DiaCronograma.DiaDoEvento, new TimeOnly(19, 0), 30, "Manual", null, null, null, null, null),
             new TimeOnly(16, 0),
             Agora);
 
@@ -195,9 +195,9 @@ public class AplicacaoModeloCronogramaTestes
     [Fact]
     public void CopiarPara_DevePreservarOrigemEAncora()
     {
-        var casamento = Casamento(new TimeOnly(16, 0));
-        var item = ItemAncorado(casamento, 18, 0, new TimeOnly(16, 0));
-        var destino = Casamento(new TimeOnly(17, 0));
+        var evento = NovoEvento(new TimeOnly(16, 0));
+        var item = ItemAncorado(evento, 18, 0, new TimeOnly(16, 0));
+        var destino = NovoEvento(new TimeOnly(17, 0));
 
         var copia = item.CopiarPara(destino.Id, 60, null, null, null, Agora);
 
@@ -210,11 +210,11 @@ public class AplicacaoModeloCronogramaTestes
     [Fact]
     public void CriarDeModelo_SemOrigem_DeveLancar()
     {
-        var casamento = Casamento(new TimeOnly(16, 0));
+        var evento = NovoEvento(new TimeOnly(16, 0));
 
         Assert.Throws<ArgumentException>(() => ItemCronograma.CriarDeModelo(
-            casamento.Id,
-            new DadosItemCronograma(DiaCronograma.DiaDoCasamento, new TimeOnly(18, 0), null, "Fotos", null, null, null, null, null),
+            evento.Id,
+            new DadosItemCronograma(DiaCronograma.DiaDoEvento, new TimeOnly(18, 0), null, "Fotos", null, null, null, null, null),
             Guid.Empty,
             new TimeOnly(16, 0),
             null,

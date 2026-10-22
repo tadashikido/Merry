@@ -19,7 +19,7 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_LINKS_CRONOGRAMA } from '@/textos/cronogramaPublico'
 import type { SessaoDto } from '@/tipos/api'
 import type { LinksCronogramaDto } from '@/tipos/cronogramaPublico'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, type Rota } from '../../casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -29,21 +29,21 @@ vi.mock('@/composables/useNotificacao', () => ({
   DURACAO_TOAST_ERRO: 6000,
 }))
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_CRONOGRAMA = `${ROTA_CASAMENTO}/cronograma`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_CRONOGRAMA = `${ROTA_EVENTO}/cronograma`
 const ROTA_LINKS = `${ROTA_CRONOGRAMA}/links`
-const CAMINHO = `/casamentos/${ID_CASAMENTO}/cronograma`
+const CAMINHO = `/eventos/${ID_EVENTO}/cronograma`
 
-const SESSAO_CASAL: SessaoDto = {
-  tokenAcesso: 'token-casal',
+const SESSAO_ANFITRIAO: SessaoDto = {
+  tokenAcesso: 'token-anfitriao',
   expiraEm: '2026-09-28T12:15:00Z',
   usuario: {
-    id: 'u-casal',
+    id: 'u-anfitriao',
     nome: 'Lívia Moraes',
     email: 'livia@exemplo.com',
-    papel: 'Casal',
+    papel: 'Anfitriao',
     organizacao: { id: 'o1', nome: 'Albuquerque Assessoria' },
-    casamentoId: ID_CASAMENTO,
+    eventoId: ID_EVENTO,
   },
 }
 
@@ -102,7 +102,7 @@ async function abrir(sessao: SessaoDto, links: () => Response, ...extras: Rota[]
   rotear(
     fetchSimulado,
     sessao,
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bruno', data: '2027-05-15' }))),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bruno', data: '2027-05-15' }))),
     quando('GET', ROTA_CRONOGRAMA, () => respostaJson(cronogramaExemplo([itemCronograma()]))),
     quando('GET', ROTA_LINKS, links),
     ...extras,
@@ -157,11 +157,11 @@ describe('Links do cronograma — assessoria', { timeout: 20_000 }, () => {
     await clicarNaLinha('fornecedor:v-buffet', 'link-whatsapp')
 
     expect(window.open).toHaveBeenCalledWith('about:blank', '_blank')
-    expect(corpoDaChamada(chamadas(fetchSimulado, 'POST', ROTA_LINKS)[0]!)).toEqual({ tipo: 'Fornecedor', fornecedorCasamentoId: 'v-buffet' })
+    expect(corpoDaChamada(chamadas(fetchSimulado, 'POST', ROTA_LINKS)[0]!)).toEqual({ tipo: 'Fornecedor', fornecedorEventoId: 'v-buffet' })
     expect(janela.opener).toBeNull()
     expect(janela.location.href).toMatch(/^https:\/\/wa\.me\/5511987654321\?text=/)
     const mensagem = decodeURIComponent(janela.location.href.split('text=')[1]!)
-    expect(mensagem).toContain('seus horários no casamento de Ana & Bruno')
+    expect(mensagem).toContain('seus horários no evento de Ana & Bruno')
     expect(mensagem).toContain(`/cronograma/${TOKEN_CRONOGRAMA}`)
   })
 
@@ -220,13 +220,13 @@ describe('Links do cronograma — assessoria', { timeout: 20_000 }, () => {
     await abrir(
       SESSAO_EXEMPLO,
       () => respostaJson(linksExemplo()),
-      quando('POST', ROTA_LINKS, () => respostaProblema(422, { title: 'Regra', detail: 'Escolha um fornecedor deste casamento que não esteja cancelado.' })),
+      quando('POST', ROTA_LINKS, () => respostaProblema(422, { title: 'Regra', detail: 'Escolha um fornecedor deste evento que não esteja cancelado.' })),
     )
     await clicar('[data-teste="abrir-links-cronograma"]')
 
     await clicarNaLinha('fornecedor:v-buffet', 'link-gerar')
 
-    expect(notificacoes.erro).toHaveBeenCalledWith('Escolha um fornecedor deste casamento que não esteja cancelado.')
+    expect(notificacoes.erro).toHaveBeenCalledWith('Escolha um fornecedor deste evento que não esteja cancelado.')
   })
 
   it('[COMPONENTE] erro ao carregar oferece tentar novamente', async () => {
@@ -246,9 +246,9 @@ describe('Links do cronograma — assessoria', { timeout: 20_000 }, () => {
   })
 })
 
-describe('Links do cronograma — casal', () => {
-  it('[SEGURANÇA] casal não vê a ação nem consulta os links', async () => {
-    await abrir(SESSAO_CASAL, () => respostaJson(linksExemplo()))
+describe('Links do cronograma — anfitriões', () => {
+  it('[SEGURANÇA] anfitriões não veem a ação nem consulta os links', async () => {
+    await abrir(SESSAO_ANFITRIAO, () => respostaJson(linksExemplo()))
 
     expect(document.body.querySelector('[data-teste="abrir-links-cronograma"]')).toBeNull()
     expect(chamadas(fetchSimulado, 'GET', ROTA_LINKS)).toHaveLength(0)

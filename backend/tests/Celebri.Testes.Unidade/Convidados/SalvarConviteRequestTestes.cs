@@ -103,7 +103,7 @@ public class SalvarConviteRequestTestes
     public void Json_OrganizacaoIdNoCorpo_DeveSerIgnorado()
     {
         var request = JsonSerializer.Deserialize<SalvarConviteRequest>(
-            """{"organizacaoId":"7c9e6679-7425-40de-944b-e07fc1f90ae7","casamentoId":"7c9e6679-7425-40de-944b-e07fc1f90ae7","statusEnvio":"Enviado","convidados":[{"nome":"Pedro"}]}""",
+            """{"organizacaoId":"7c9e6679-7425-40de-944b-e07fc1f90ae7","eventoId":"7c9e6679-7425-40de-944b-e07fc1f90ae7","statusEnvio":"Enviado","convidados":[{"nome":"Pedro"}]}""",
             OpcoesWeb)!;
 
         Assert.DoesNotContain("organizacao", JsonSerializer.Serialize(request, OpcoesWeb), StringComparison.OrdinalIgnoreCase);

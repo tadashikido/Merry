@@ -4,21 +4,21 @@ import { defineStore } from 'pinia'
 import { requisitar } from '@/servicos/clienteHttp'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import {
-  interpretarFalhaCasamento,
-  ROTA_CASAMENTOS,
-  type FalhaCasamento,
-  type ResultadoCasamento,
-} from '@/stores/casamentos'
+  interpretarFalhaEvento,
+  ROTA_EVENTOS,
+  type FalhaEvento,
+  type ResultadoEvento,
+} from '@/stores/eventos'
 import { useExclusoesAdiadasStore } from '@/stores/exclusoesAdiadas'
 import type { MapaMesasDto, MesaDto, SalvarMesaRequest } from '@/tipos/mesas'
 
-export function caminhoMesas(casamentoId: string, ...segmentos: string[]): string {
-  const base = `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/mesas`
+export function caminhoMesas(eventoId: string, ...segmentos: string[]): string {
+  const base = `${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/mesas`
   return segmentos.length === 0 ? base : `${base}/${segmentos.map(encodeURIComponent).join('/')}`
 }
 
-export function escopoMesas(casamentoId: string): string {
-  return `mesas:${casamentoId}`
+export function escopoMesas(eventoId: string): string {
+  return `mesas:${eventoId}`
 }
 
 export function ocultarMesas(mapa: MapaMesasDto, ids: Set<string>): MapaMesasDto {
@@ -45,41 +45,41 @@ export function ocultarMesas(mapa: MapaMesasDto, ids: Set<string>): MapaMesasDto
   }
 }
 
-async function executar<T>(acao: () => Promise<T>): Promise<ResultadoCasamento<T>> {
+async function executar<T>(acao: () => Promise<T>): Promise<ResultadoEvento<T>> {
   try {
     return { ok: true, valor: await acao() }
   } catch (erro) {
-    return { ok: false, falha: interpretarFalhaCasamento(erro) }
+    return { ok: false, falha: interpretarFalhaEvento(erro) }
   }
 }
 
 export const useMesasStore = defineStore('mesas', () => {
   const exclusoes = useExclusoesAdiadasStore()
-  const casamentoId = ref<string | null>(null)
+  const eventoId = ref<string | null>(null)
   const mapa = ref<MapaMesasDto | null>(null)
   const carregando = ref(false)
-  const falha = ref<FalhaCasamento | null>(null)
+  const falha = ref<FalhaEvento | null>(null)
 
   async function carregar(id: string): Promise<void> {
-    if (casamentoId.value !== id) {
+    if (eventoId.value !== id) {
       mapa.value = null
     }
-    casamentoId.value = id
+    eventoId.value = id
     carregando.value = true
     falha.value = null
 
     try {
       const resposta = await requisitar<MapaMesasDto>(caminhoMesas(id))
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         mapa.value = ocultarPendentes(id, resposta)
       }
     } catch (erro) {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         mapa.value = null
-        falha.value = interpretarFalhaCasamento(erro)
+        falha.value = interpretarFalhaEvento(erro)
       }
     } finally {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         carregando.value = false
       }
     }
@@ -90,7 +90,7 @@ export const useMesasStore = defineStore('mesas', () => {
   }
 
   function aplicarMapa(id: string, novo: MapaMesasDto) {
-    if (casamentoId.value === id) {
+    if (eventoId.value === id) {
       mapa.value = ocultarPendentes(id, novo)
     }
   }
@@ -99,14 +99,14 @@ export const useMesasStore = defineStore('mesas', () => {
     return exclusoes.efetivarEscopo(escopoMesas(id))
   }
 
-  async function aposFalha<T>(id: string, resultado: ResultadoCasamento<T>): Promise<ResultadoCasamento<T>> {
+  async function aposFalha<T>(id: string, resultado: ResultadoEvento<T>): Promise<ResultadoEvento<T>> {
     if (!resultado.ok && (resultado.falha.tipo === 'conflito' || resultado.falha.tipo === 'regra')) {
       await carregar(id)
     }
     return resultado
   }
 
-  async function criarMesa(id: string, dados: SalvarMesaRequest): Promise<ResultadoCasamento<MesaDto>> {
+  async function criarMesa(id: string, dados: SalvarMesaRequest): Promise<ResultadoEvento<MesaDto>> {
     await efetivarPendentes(id)
     const resultado = await executar(() => requisitar<MesaDto>(caminhoMesas(id), { metodo: 'POST', corpo: dados }))
     if (resultado.ok) {
@@ -115,7 +115,7 @@ export const useMesasStore = defineStore('mesas', () => {
     return resultado
   }
 
-  async function atualizarMesa(id: string, mesaId: string, dados: SalvarMesaRequest): Promise<ResultadoCasamento<MesaDto>> {
+  async function atualizarMesa(id: string, mesaId: string, dados: SalvarMesaRequest): Promise<ResultadoEvento<MesaDto>> {
     await efetivarPendentes(id)
     const resultado = await executar(() =>
       requisitar<MesaDto>(caminhoMesas(id, mesaId), { metodo: 'PUT', corpo: dados }),
@@ -128,7 +128,7 @@ export const useMesasStore = defineStore('mesas', () => {
     return resultado
   }
 
-  async function removerMesa(id: string, mesaId: string): Promise<ResultadoCasamento<null>> {
+  async function removerMesa(id: string, mesaId: string): Promise<ResultadoEvento<null>> {
     const resultado = await executar(() => requisitar<void>(caminhoMesas(id, mesaId), { metodo: 'DELETE' }))
     if (resultado.ok) {
       await carregar(id)
@@ -138,13 +138,13 @@ export const useMesasStore = defineStore('mesas', () => {
   }
 
   async function recarregarSeAtual(id: string): Promise<void> {
-    if (casamentoId.value === id) {
+    if (eventoId.value === id) {
       await carregar(id)
     }
   }
 
-  function removerMesaComDesfazer(id: string, mesaId: string, aoFalhar?: (falha: FalhaCasamento) => void) {
-    let falhaEfetivacao: FalhaCasamento | null = null
+  function removerMesaComDesfazer(id: string, mesaId: string, aoFalhar?: (falha: FalhaEvento) => void) {
+    let falhaEfetivacao: FalhaEvento | null = null
     exclusoes.agendar({
       escopo: escopoMesas(id),
       chave: mesaId,
@@ -162,7 +162,7 @@ export const useMesasStore = defineStore('mesas', () => {
         }
       },
     })
-    if (casamentoId.value === id && mapa.value) {
+    if (eventoId.value === id && mapa.value) {
       mapa.value = ocultarPendentes(id, mapa.value)
     }
   }
@@ -179,7 +179,7 @@ export const useMesasStore = defineStore('mesas', () => {
     return exclusoes.efetivar(escopoMesas(id), mesaId)
   }
 
-  async function sentar(id: string, mesaId: string, convidadosIds: string[]): Promise<ResultadoCasamento<MapaMesasDto>> {
+  async function sentar(id: string, mesaId: string, convidadosIds: string[]): Promise<ResultadoEvento<MapaMesasDto>> {
     await efetivarPendentes(id)
     const resultado = await executar(() =>
       requisitar<MapaMesasDto>(caminhoMesas(id, mesaId, 'pessoas'), { metodo: 'POST', corpo: { convidadosIds } }),
@@ -191,7 +191,7 @@ export const useMesasStore = defineStore('mesas', () => {
     return aposFalha(id, resultado)
   }
 
-  async function retirar(id: string, convidadosIds: string[]): Promise<ResultadoCasamento<MapaMesasDto>> {
+  async function retirar(id: string, convidadosIds: string[]): Promise<ResultadoEvento<MapaMesasDto>> {
     await efetivarPendentes(id)
     const resultado = await executar(() =>
       requisitar<MapaMesasDto>(caminhoMesas(id, 'retirada'), { metodo: 'POST', corpo: { convidadosIds } }),
@@ -203,7 +203,7 @@ export const useMesasStore = defineStore('mesas', () => {
     return aposFalha(id, resultado)
   }
 
-  async function dispensarAvisos(id: string, convidadosIds: string[]): Promise<ResultadoCasamento<MapaMesasDto>> {
+  async function dispensarAvisos(id: string, convidadosIds: string[]): Promise<ResultadoEvento<MapaMesasDto>> {
     await efetivarPendentes(id)
     const resultado = await executar(() =>
       requisitar<MapaMesasDto>(caminhoMesas(id, 'avisos-saida', 'dispensa'), { metodo: 'POST', corpo: { convidadosIds } }),
@@ -216,7 +216,7 @@ export const useMesasStore = defineStore('mesas', () => {
   }
 
   function limpar() {
-    casamentoId.value = null
+    eventoId.value = null
     mapa.value = null
     carregando.value = false
     falha.value = null
@@ -233,7 +233,7 @@ export const useMesasStore = defineStore('mesas', () => {
   )
 
   return {
-    casamentoId,
+    eventoId,
     mapa,
     carregando,
     falha,

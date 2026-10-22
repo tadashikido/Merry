@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Celebri.Aplicacao.Calendario;
-using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.DadosSensiveis;
 using Celebri.Aplicacao.Rsvp;
@@ -20,7 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
-using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
 
 namespace Celebri.Testes.Integracao.DadosSensiveis;
@@ -48,33 +48,33 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
         return new { tipos = tipos ?? [], outraRestricao = outra, necessidadeEspecial = necessidade };
     }
 
-    private static string RotaRelatorio(Guid casamentoId)
+    private static string RotaRelatorio(Guid eventoId)
     {
-        return $"/api/casamentos/{casamentoId}/restricoes-alimentares";
+        return $"/api/eventos/{eventoId}/restricoes-alimentares";
     }
 
-    private static string RotaRestricao(Guid casamentoId, Guid conviteId, Guid convidadoId)
+    private static string RotaRestricao(Guid eventoId, Guid conviteId, Guid convidadoId)
     {
-        return $"{ClienteConvites.Rota(casamentoId, conviteId)}/convidados/{convidadoId}/restricao-alimentar";
+        return $"{ClienteConvites.Rota(eventoId, conviteId)}/convidados/{convidadoId}/restricao-alimentar";
     }
 
-    private async Task<(CasamentoDto Casamento, ConviteDto Convite, string Token)> CriarConviteComLinkAsync(
+    private async Task<(EventoDto Evento, ConviteDto Convite, string Token)> CriarConviteComLinkAsync(
         OrganizacaoTeste organizacao,
         string data = "2027-05-15",
         int limiteAcompanhantes = 1)
     {
-        var casamento = await ClienteCasamentos.CriarAsync(organizacao.Cliente, ClienteCasamentos.CorpoValido(data: data));
+        var evento = await ClienteEventos.CriarAsync(organizacao.Cliente, ClienteEventos.CorpoValido(data: data));
         var convite = await ClienteConvites.CriarAsync(
             organizacao.Cliente,
-            casamento.Id,
+            evento.Id,
             ClienteConvites.CorpoValido(
                 "Família Souza",
                 "Família da noiva",
                 limiteAcompanhantes,
                 ClienteConvites.Pessoa("Célia Souza"),
                 ClienteConvites.Pessoa("Lia Souza", telefone: null, email: null, faixaEtaria: "Crianca")));
-        var link = await GerarLinkAsync(organizacao.Cliente, casamento.Id, convite.Id);
-        return (casamento, convite, link.Token);
+        var link = await GerarLinkAsync(organizacao.Cliente, evento.Id, convite.Id);
+        return (evento, convite, link.Token);
     }
 
     private static Task<HttpResponseMessage> EnviarAsync(HttpClient cliente, string token, object[] pessoas, object[]? acompanhantes = null, object? consentimento = null)
@@ -100,9 +100,9 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
         return await contexto.DadosSensiveisConvidados.AsNoTracking().ToListAsync();
     }
 
-    private async Task<RelatorioRestricoesAlimentaresDto> ObterRelatorioAsync(HttpClient cliente, Guid casamentoId)
+    private async Task<RelatorioRestricoesAlimentaresDto> ObterRelatorioAsync(HttpClient cliente, Guid eventoId)
     {
-        var resposta = await cliente.GetAsync(RotaRelatorio(casamentoId));
+        var resposta = await cliente.GetAsync(RotaRelatorio(eventoId));
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<RelatorioRestricoesAlimentaresDto>(OpcoesJson))!;
     }
@@ -161,7 +161,7 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     [InlineData(false)]
     public async Task Responder_ComRestricaoSemConsentimento_Deve422SemGravarNada(bool? aceito)
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
 
         var resposta = await EnviarAsync(
             ClienteAnonimo,
@@ -176,7 +176,7 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.Equal(MensagensDadosSensiveis.ConsentimentoObrigatorio, await LerDetalheAsync(resposta));
         Assert.Empty(await ListarRegistrosAsync(OrganizacaoA));
 
-        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         var gravado = Assert.Single(lista.Convites);
         Assert.Null(gravado.RespondidoEm);
         Assert.All(gravado.Convidados, pessoa => Assert.Equal("Pendente", pessoa.Resposta));
@@ -289,7 +289,7 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Responder_AcompanhanteComRestricao_DeveGravarEApagarQuandoRemovido()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
         var pessoas = convite.Convidados.Select(pessoa => (object)new { id = pessoa.Id, resposta = "Confirmado" }).ToArray();
 
         var dto = await LerRsvpAsync(await EnviarAsync(
@@ -303,7 +303,7 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.True(pedro.PossuiRestricao);
         Assert.Equal(pedro.Id, Assert.Single(await ListarRegistrosAsync(OrganizacaoA)).ConvidadoId);
 
-        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.True(lista.Convites.Single().Convidados.Single(pessoa => pessoa.Acompanhante).PossuiRestricao);
         Assert.DoesNotContain("rodas", JsonSerializer.Serialize(lista), StringComparison.Ordinal);
 
@@ -315,7 +315,7 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Relatorio_DeveAgregarConfirmadosETrazerListaSemContato()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA, limiteAcompanhantes: 2);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA, limiteAcompanhantes: 2);
         var (celia, lia) = (convite.Convidados[0], convite.Convidados[1]);
         await LerRsvpAsync(await EnviarAsync(
             ClienteAnonimo,
@@ -328,14 +328,14 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
             Consentimento()));
         var outro = await ClienteConvites.CriarAsync(
             OrganizacaoA.Cliente,
-            casamento.Id,
+            evento.Id,
             ClienteConvites.CorpoValido("Família Lima", null, 0, ClienteConvites.Pessoa("Rui Lima", telefone: "(21) 99999-0000")));
         var registrar = await OrganizacaoA.Cliente.PutAsJsonAsync(
-            RotaRestricao(casamento.Id, outro.Id, outro.Convidados[0].Id),
+            RotaRestricao(evento.Id, outro.Id, outro.Convidados[0].Id),
             new { tipos = new[] { "Vegetariana" }, consentimentoObtido = true });
         Assert.Equal(HttpStatusCode.OK, registrar.StatusCode);
 
-        var resposta = await OrganizacaoA.Cliente.GetAsync(RotaRelatorio(casamento.Id));
+        var resposta = await OrganizacaoA.Cliente.GetAsync(RotaRelatorio(evento.Id));
         var corpo = await resposta.Content.ReadAsStringAsync();
         var relatorio = JsonSerializer.Deserialize<RelatorioRestricoesAlimentaresDto>(corpo, OpcoesJson)!;
 
@@ -372,13 +372,13 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Relatorio_PessoaQueRecusou_NaoAparece()
     {
-        var (casamento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA);
         await OrganizacaoA.Cliente.PutAsJsonAsync(
-            RotaRestricao(casamento.Id, convite.Id, convite.Convidados[0].Id),
+            RotaRestricao(evento.Id, convite.Id, convite.Convidados[0].Id),
             new { tipos = new[] { "Vegana" }, consentimentoObtido = true });
-        await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
+        await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, evento.Id);
         var atualizado = await OrganizacaoA.Cliente.PutAsJsonAsync(
-            ClienteConvites.Rota(casamento.Id, convite.Id),
+            ClienteConvites.Rota(evento.Id, convite.Id),
             ClienteConvites.CorpoValido(
                 "Família Souza",
                 null,
@@ -387,7 +387,7 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
                 ClienteConvites.Pessoa("Lia Souza", telefone: null, email: null, id: convite.Convidados[1].Id)));
         Assert.Equal(HttpStatusCode.OK, atualizado.StatusCode);
 
-        var relatorio = await ObterRelatorioAsync(OrganizacaoA.Cliente, casamento.Id);
+        var relatorio = await ObterRelatorioAsync(OrganizacaoA.Cliente, evento.Id);
 
         Assert.Empty(relatorio.Pessoas);
         Assert.Equal(0, relatorio.TotalPessoas);
@@ -396,8 +396,8 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Cerimonialista_SemDeclaracaoDeConsentimento_Deve422()
     {
-        var (casamento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA);
-        var rota = RotaRestricao(casamento.Id, convite.Id, convite.Convidados[0].Id);
+        var (evento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var rota = RotaRestricao(evento.Id, convite.Id, convite.Convidados[0].Id);
 
         var semDeclaracao = await OrganizacaoA.Cliente.PutAsJsonAsync(rota, new { tipos = new[] { "Vegana" }, consentimentoObtido = false });
         var semCampo = await OrganizacaoA.Cliente.PutAsJsonAsync(rota, new { tipos = new[] { "Vegana" } });
@@ -414,8 +414,8 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Cerimonialista_ComDeclaracao_DeveGravarOrigemEUsuarioERemover()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
-        var rota = RotaRestricao(casamento.Id, convite.Id, convite.Convidados[1].Id);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var rota = RotaRestricao(evento.Id, convite.Id, convite.Convidados[1].Id);
 
         var resposta = await OrganizacaoA.Cliente.PutAsJsonAsync(
             rota,
@@ -442,27 +442,27 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Cerimonialista_PessoaDeOutroConvite_Deve404()
     {
-        var (casamento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA);
-        var outro = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, casamento.Id, ClienteConvites.CorpoValido("Outro", null, 0, ClienteConvites.Pessoa("Rui")));
+        var (evento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var outro = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, evento.Id, ClienteConvites.CorpoValido("Outro", null, 0, ClienteConvites.Pessoa("Rui")));
 
         var resposta = await OrganizacaoA.Cliente.PutAsJsonAsync(
-            RotaRestricao(casamento.Id, convite.Id, outro.Convidados[0].Id),
+            RotaRestricao(evento.Id, convite.Id, outro.Convidados[0].Id),
             new { tipos = new[] { "Vegana" }, consentimentoObtido = true });
 
         Assert.Equal(HttpStatusCode.NotFound, resposta.StatusCode);
     }
 
     [Fact]
-    public async Task Cerimonialista_CasamentoComRetencaoEncerrada_Deve422()
+    public async Task Cerimonialista_EventoComRetencaoEncerrada_Deve422()
     {
-        var dataPassada = ClienteCasamentos.HojeEmSaoPaulo().AddDays(-40).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente, ClienteCasamentos.CorpoValido(data: dataPassada));
-        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var dataPassada = ClienteEventos.HojeEmSaoPaulo().AddDays(-40).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente, ClienteEventos.CorpoValido(data: dataPassada));
+        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, evento.Id);
 
         var resposta = await OrganizacaoA.Cliente.PutAsJsonAsync(
-            RotaRestricao(casamento.Id, convite.Id, convite.Convidados[0].Id),
+            RotaRestricao(evento.Id, convite.Id, convite.Convidados[0].Id),
             new { tipos = new[] { "Vegana" }, consentimentoObtido = true });
-        var relatorio = await ObterRelatorioAsync(OrganizacaoA.Cliente, casamento.Id);
+        var relatorio = await ObterRelatorioAsync(OrganizacaoA.Cliente, evento.Id);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         Assert.Equal(MensagensDadosSensiveis.RetencaoEncerrada, await LerDetalheAsync(resposta));
@@ -472,18 +472,18 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Isolamento_OutraOrganizacao_Deve404ESemAlterarDados()
     {
-        var (casamento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA);
-        var rota = RotaRestricao(casamento.Id, convite.Id, convite.Convidados[0].Id);
+        var (evento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var rota = RotaRestricao(evento.Id, convite.Id, convite.Convidados[0].Id);
         await OrganizacaoA.Cliente.PutAsJsonAsync(rota, new { tipos = new[] { "Vegana" }, consentimentoObtido = true });
 
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaRelatorio(casamento.Id)));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaRelatorio(evento.Id)));
         await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PutAsJsonAsync(rota, new { tipos = new[] { "SemGluten" }, consentimentoObtido = true }));
         await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.DeleteAsync(rota));
 
-        Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.GetAsync(RotaRelatorio(casamento.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.GetAsync(RotaRelatorio(evento.Id))).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.DeleteAsync(rota)).StatusCode);
 
-        var relatorio = await ObterRelatorioAsync(OrganizacaoA.Cliente, casamento.Id);
+        var relatorio = await ObterRelatorioAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.Equal(["Vegana"], Assert.Single(relatorio.Pessoas).Tipos);
         Assert.Empty(await ListarRegistrosAsync(OrganizacaoB));
     }
@@ -491,8 +491,8 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Retencao_DeveAnonimizarSoVencidosSerIdempotenteELogarSoContagem()
     {
-        var (casamentoVencido, conviteVencido, tokenVencido) = await CriarConviteComLinkAsync(OrganizacaoA, "2027-05-15");
-        var (casamentoVigente, conviteVigente, _) = await CriarConviteComLinkAsync(OrganizacaoB, "2027-06-10");
+        var (eventoVencido, conviteVencido, tokenVencido) = await CriarConviteComLinkAsync(OrganizacaoA, "2027-05-15");
+        var (eventoVigente, conviteVigente, _) = await CriarConviteComLinkAsync(OrganizacaoB, "2027-06-10");
         await LerRsvpAsync(await EnviarAsync(
             ClienteAnonimo,
             tokenVencido,
@@ -502,7 +502,7 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
             ],
             consentimento: Consentimento()));
         await OrganizacaoB.Cliente.PutAsJsonAsync(
-            RotaRestricao(casamentoVigente.Id, conviteVigente.Id, conviteVigente.Convidados[0].Id),
+            RotaRestricao(eventoVigente.Id, conviteVigente.Id, conviteVigente.Convidados[0].Id),
             new { tipos = new[] { "Vegana" }, consentimentoObtido = true });
         var logs = new RegistroLogsIntegracao<ExecutorRetencaoDadosSensiveis>();
         var executor = CriarExecutor(new DateOnly(2027, 6, 20), logs);
@@ -532,7 +532,7 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
             Assert.DoesNotContain("rodas", mensagem, StringComparison.Ordinal);
         });
 
-        var relatorio = await ObterRelatorioAsync(OrganizacaoA.Cliente, casamentoVencido.Id);
+        var relatorio = await ObterRelatorioAsync(OrganizacaoA.Cliente, eventoVencido.Id);
         Assert.Empty(relatorio.Pessoas);
         Assert.NotNull(relatorio.DadosExcluidosEm);
         var consulta = await ConsultarComSucessoAsync(ClienteAnonimo, tokenVencido);
@@ -542,9 +542,9 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Retencao_NoLimiteDoPrazo_NaoDeveAnonimizar()
     {
-        var (casamento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA, "2027-05-15");
+        var (evento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA, "2027-05-15");
         await OrganizacaoA.Cliente.PutAsJsonAsync(
-            RotaRestricao(casamento.Id, convite.Id, convite.Convidados[0].Id),
+            RotaRestricao(evento.Id, convite.Id, convite.Convidados[0].Id),
             new { tipos = new[] { "Vegana" }, consentimentoObtido = true });
 
         var anonimizados = await CriarExecutor(new DateOnly(2027, 6, 14), new RegistroLogsIntegracao<ExecutorRetencaoDadosSensiveis>())
@@ -567,7 +567,7 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
         using var autenticado = fabricaComLogs.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") });
         autenticado.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", OrganizacaoA.TokenAcesso);
         autenticado.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
 
         await LerRsvpAsync(await EnviarAsync(
             anonimo,
@@ -581,7 +581,7 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
             anonimo,
             token,
             [new { id = convite.Convidados[0].Id, resposta = "Confirmado", restricao = Restricao(["SemGluten"], TextoOutra) }, new { id = convite.Convidados[1].Id, resposta = "Confirmado" }]);
-        await ObterRelatorioAsync(autenticado, casamento.Id);
+        await ObterRelatorioAsync(autenticado, evento.Id);
 
         Assert.Contains(provedor.Mensagens, mensagem => mensagem.Contains("Relatório de restrições alimentares consultado", StringComparison.Ordinal));
         Assert.DoesNotContain(provedor.Mensagens, mensagem => mensagem.Contains("porco", StringComparison.OrdinalIgnoreCase)
@@ -609,11 +609,11 @@ public sealed class DadosSensiveisApiTestes : IsolamentoOrganizacaoTestesBase
     {
         using var fabrica = new FabricaApi(
             FabricaApi.StringConexaoInalcancavel,
-            configuracoesAdicionais: new Dictionary<string, string?> { ["RetencaoDadosSensiveis:DiasAposCasamento"] = "0" });
+            configuracoesAdicionais: new Dictionary<string, string?> { ["RetencaoDadosSensiveis:DiasAposEvento"] = "0" });
 
         var excecao = Assert.ThrowsAny<Exception>(() => fabrica.CreateClient());
 
-        Assert.Contains("RetencaoDadosSensiveis__DiasAposCasamento", excecao.ToString(), StringComparison.Ordinal);
+        Assert.Contains("RetencaoDadosSensiveis__DiasAposEvento", excecao.ToString(), StringComparison.Ordinal);
     }
 
     private sealed class CalendarioFixo : ICalendarioLocal

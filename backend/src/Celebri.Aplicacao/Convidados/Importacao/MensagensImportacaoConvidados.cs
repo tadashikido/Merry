@@ -11,7 +11,7 @@ public static class MensagensImportacaoConvidados
     public const string ImportacaoComProblemas = "Há linhas com problema. Corrija a planilha ou confirme a importação só dos convites válidos.";
     public const string NenhumConviteValido = "Nenhum convite válido para importar.";
     public const string PlanilhaAlterada = "A planilha mudou desde a pré-visualização. Confira de novo antes de importar.";
-    public const string JaCadastrada = "Esta pessoa já está na lista deste casamento.";
+    public const string JaCadastrada = "Esta pessoa já está na lista deste evento.";
     public const string PossivelDuplicado = "Possível duplicado: há outra pessoa com este nome sem telefone para comparar.";
     public const string LinhaExemplo = "Linha de exemplo do modelo. Apague antes de importar.";
 

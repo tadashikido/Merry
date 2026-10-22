@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Mesas;
 using Celebri.Dominio.Organizacoes;
 using Microsoft.EntityFrameworkCore;
@@ -9,9 +9,9 @@ namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 public class MesaConfiguration : IEntityTypeConfiguration<Mesa>
 {
     public const string Tabela = "mesas";
-    public const string IndiceOrganizacaoCasamento = "ix_mesas_organizacao_id_casamento_id";
-    public const string IndiceNumeroUnico = "ux_mesas_casamento_id_numero";
-    public const string IndiceEspecialUnica = "ux_mesas_casamento_id_especial";
+    public const string IndiceOrganizacaoEvento = "ix_mesas_organizacao_id_evento_id";
+    public const string IndiceNumeroUnico = "ux_mesas_evento_id_numero";
+    public const string IndiceEspecialUnica = "ux_mesas_evento_id_especial";
     public const string RestricaoNumero = "ck_mesas_numero";
     public const string RestricaoCapacidade = "ck_mesas_capacidade";
 
@@ -25,7 +25,7 @@ public class MesaConfiguration : IEntityTypeConfiguration<Mesa>
 
         builder.HasKey(mesa => mesa.Id);
         builder.Property(mesa => mesa.Id).ValueGeneratedNever();
-        builder.Property(mesa => mesa.CasamentoId).IsRequired();
+        builder.Property(mesa => mesa.EventoId).IsRequired();
         builder.Property(mesa => mesa.Numero).IsRequired();
         builder.Property(mesa => mesa.Nome).HasMaxLength(Mesa.TamanhoMaximoNome);
         builder.Property(mesa => mesa.Capacidade).IsRequired();
@@ -35,13 +35,13 @@ public class MesaConfiguration : IEntityTypeConfiguration<Mesa>
         builder.Property<uint>("Versao").IsRowVersion().HasColumnName("xmin").HasColumnType("xid");
         builder.Ignore(mesa => mesa.Rotulo);
 
-        builder.HasIndex(mesa => new { mesa.OrganizacaoId, mesa.CasamentoId }).HasDatabaseName(IndiceOrganizacaoCasamento);
-        builder.HasIndex(mesa => new { mesa.CasamentoId, mesa.Numero }).IsUnique().HasDatabaseName(IndiceNumeroUnico);
-        builder.HasIndex(mesa => mesa.CasamentoId).IsUnique().HasFilter("especial").HasDatabaseName(IndiceEspecialUnica);
+        builder.HasIndex(mesa => new { mesa.OrganizacaoId, mesa.EventoId }).HasDatabaseName(IndiceOrganizacaoEvento);
+        builder.HasIndex(mesa => new { mesa.EventoId, mesa.Numero }).IsUnique().HasDatabaseName(IndiceNumeroUnico);
+        builder.HasIndex(mesa => mesa.EventoId).IsUnique().HasFilter("especial").HasDatabaseName(IndiceEspecialUnica);
 
-        builder.HasOne<CasamentoAssessorado>()
+        builder.HasOne<Evento>()
             .WithMany()
-            .HasForeignKey(mesa => mesa.CasamentoId)
+            .HasForeignKey(mesa => mesa.EventoId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Organizacao>()

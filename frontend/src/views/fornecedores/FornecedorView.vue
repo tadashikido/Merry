@@ -18,11 +18,11 @@ import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useFornecedoresStore } from '@/stores/fornecedores'
 import { ROTULOS_CATEGORIA_FORNECEDOR, TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
-import { ROTULOS_STATUS_FORNECEDOR_CASAMENTO, TEXTOS_HISTORICO_FORNECEDOR } from '@/textos/fornecedoresCasamento'
+import { ROTULOS_STATUS_FORNECEDOR_EVENTO, TEXTOS_HISTORICO_FORNECEDOR } from '@/textos/fornecedoresEvento'
 import type { FornecedorDto } from '@/tipos/fornecedores'
-import { formatarData, formatarDataCalendarioCurta, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarData, formatarDataCalendarioCurta, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { possuiContato } from '@/utilitarios/fornecedores'
-import { VARIANTES_STATUS_FORNECEDOR_CASAMENTO } from '@/utilitarios/fornecedoresCasamento'
+import { VARIANTES_STATUS_FORNECEDOR_EVENTO } from '@/utilitarios/fornecedoresEvento'
 
 const props = defineProps<{ fornecedorId: string }>()
 
@@ -304,7 +304,7 @@ function arquivarEmVezDeExcluir() {
             <section
               class="fornecedor__historico-secao pilha pilha--campo"
               aria-labelledby="fornecedor-historico"
-              data-teste="historico-casamentos"
+              data-teste="historico-eventos"
             >
               <h2
                 id="fornecedor-historico"
@@ -342,24 +342,24 @@ function arquivarEmVezDeExcluir() {
               >
                 <li
                   v-for="participacao in participacoes"
-                  :key="participacao.casamentoId"
+                  :key="participacao.eventoId"
                   class="fornecedor__participacao"
                 >
                   <RouterLink
-                    :to="{ name: 'casamento-fornecedores', params: { id: participacao.casamentoId } }"
+                    :to="{ name: 'evento-fornecedores', params: { id: participacao.eventoId } }"
                     class="fornecedor__participacao-nomes"
                   >
-                    {{ formatarNomesCasal(participacao.nomePrimeiraPessoa, participacao.nomeSegundaPessoa) }}
+                    {{ formatarNomesAnfitrioes(participacao.nomePrimeiraPessoa, participacao.nomeSegundaPessoa) }}
                   </RouterLink>
-                  <span class="fornecedor__participacao-data numeros-tabulares">{{ formatarDataCalendarioCurta(participacao.dataCasamento) }}</span>
+                  <span class="fornecedor__participacao-data numeros-tabulares">{{ formatarDataCalendarioCurta(participacao.dataEvento) }}</span>
                   <span class="fornecedor__participacao-selos">
                     <BadgeStatus
-                      :texto="ROTULOS_STATUS_FORNECEDOR_CASAMENTO[participacao.status]"
-                      :variante="VARIANTES_STATUS_FORNECEDOR_CASAMENTO[participacao.status]"
+                      :texto="ROTULOS_STATUS_FORNECEDOR_EVENTO[participacao.status]"
+                      :variante="VARIANTES_STATUS_FORNECEDOR_EVENTO[participacao.status]"
                     />
                     <BadgeStatus
-                      v-if="participacao.casamentoArquivado"
-                      :texto="TEXTOS_HISTORICO_FORNECEDOR.casamentoArquivado"
+                      v-if="participacao.eventoArquivado"
+                      :texto="TEXTOS_HISTORICO_FORNECEDOR.eventoArquivado"
                       variante="neutro"
                       icone="arquivar"
                     />
@@ -371,7 +371,7 @@ function arquivarEmVezDeExcluir() {
                 class="fornecedor__cartao cartao"
               >
                 <EstadoVazio
-                  icone="casamento"
+                  icone="evento"
                   :titulo="TEXTOS_FORNECEDORES.historicoVazioTitulo"
                   :descricao="TEXTOS_FORNECEDORES.historicoVazioTexto"
                 />

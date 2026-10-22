@@ -26,7 +26,7 @@ export interface ResumoImportacaoDto {
   linhasDuplicadas: number
   linhasComAviso: number
   convidadosExistentes: number
-  limitePorCasamento: number
+  limitePorEvento: number
 }
 
 export interface PessoaPreVisualizadaDto {

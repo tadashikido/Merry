@@ -10,13 +10,13 @@ import type { SalvarItemCronogramaRequest } from '@/tipos/cronograma'
 const ID = '11111111-1111-4111-8111-111111111111'
 
 const DADOS: SalvarItemCronogramaRequest = {
-  dia: 'DiaDoCasamento',
+  dia: 'DiaDoEvento',
   inicio: '16:30',
   duracaoMinutos: 45,
   atividade: 'Cerimônia',
   local: 'Capela São José',
   responsavel: 'Fernanda',
-  fornecedorCasamentoId: null,
+  fornecedorEventoId: null,
   instrucoes: null,
   notasInternas: null,
 }
@@ -34,11 +34,11 @@ afterEach(() => {
 
 describe('useCronogramaStore', () => {
   it('[UNITÁRIO] monta o caminho codificando os identificadores', () => {
-    expect(caminhoCronograma(ID)).toBe(`/api/casamentos/${ID}/cronograma`)
-    expect(caminhoCronograma(ID, 'a/b')).toBe(`/api/casamentos/${ID}/cronograma/a%2Fb`)
+    expect(caminhoCronograma(ID)).toBe(`/api/eventos/${ID}/cronograma`)
+    expect(caminhoCronograma(ID, 'a/b')).toBe(`/api/eventos/${ID}/cronograma/a%2Fb`)
   })
 
-  it('[UNITÁRIO] carrega o cronograma do casamento', async () => {
+  it('[UNITÁRIO] carrega o cronograma do evento', async () => {
     fetchSimulado.mockResolvedValueOnce(respostaJson(cronogramaExemplo([itemCronograma()])))
     const store = useCronogramaStore()
 
@@ -88,7 +88,7 @@ describe('useCronogramaStore', () => {
 
   it('[UNITÁRIO] erro 422 com campo vira erro de campo', async () => {
     fetchSimulado.mockResolvedValueOnce(
-      respostaProblema(422, { title: 'Regra', detail: 'Escolha um fornecedor deste casamento.', campo: 'fornecedorCasamentoId' }),
+      respostaProblema(422, { title: 'Regra', detail: 'Escolha um fornecedor deste evento.', campo: 'fornecedorEventoId' }),
     )
     const store = useCronogramaStore()
 
@@ -98,7 +98,7 @@ describe('useCronogramaStore', () => {
       ok: false,
       falha: expect.objectContaining({
         tipo: 'regra',
-        errosCampos: { fornecedorCasamentoId: 'Escolha um fornecedor deste casamento.' },
+        errosCampos: { fornecedorEventoId: 'Escolha um fornecedor deste evento.' },
       }),
     })
   })
@@ -130,7 +130,7 @@ describe('useCronogramaStore', () => {
   })
 
   it('[UNITÁRIO] remover com falha devolve o tipo da falha', async () => {
-    fetchSimulado.mockResolvedValueOnce(respostaProblema(422, { title: 'Regra', detail: 'Este casamento está arquivado.' }))
+    fetchSimulado.mockResolvedValueOnce(respostaProblema(422, { title: 'Regra', detail: 'Este evento está arquivado.' }))
     const store = useCronogramaStore()
 
     const resultado = await store.remover(ID, 'a')

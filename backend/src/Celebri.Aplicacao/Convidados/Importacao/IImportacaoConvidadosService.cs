@@ -2,10 +2,10 @@ namespace Celebri.Aplicacao.Convidados.Importacao;
 
 public interface IImportacaoConvidadosService
 {
-    Task<PreVisualizacaoImportacaoDto> PreVisualizarAsync(Guid casamentoId, Stream conteudo, CancellationToken cancelamento);
+    Task<PreVisualizacaoImportacaoDto> PreVisualizarAsync(Guid eventoId, Stream conteudo, CancellationToken cancelamento);
 
     Task<ResultadoImportacaoDto> ImportarAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Stream conteudo,
         ConfirmarImportacaoRequest request,
         CancellationToken cancelamento);

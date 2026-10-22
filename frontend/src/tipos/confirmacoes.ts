@@ -1,4 +1,4 @@
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 import type { FaixaEtaria, StatusEnvioConvite, TotaisConvidadosDto } from '@/tipos/convidados'
 import type { TipoRestricaoAlimentar } from '@/tipos/dadosSensiveis'
 
@@ -43,12 +43,12 @@ export interface PainelConfirmacoesDto {
   pessoas: TotaisConvidadosDto
   convidadosEstimados: number | null
   prazo: PrazoRsvpDto
-  casamentoArquivado: boolean
+  eventoArquivado: boolean
   pendentes: ConvitePendenteDto[]
   pessoasComRestricaoAlimentar?: number
 }
 
-export interface CasamentoExportacaoDto {
+export interface EventoExportacaoDto {
   nomePrimeiraPessoa: string
   nomeSegundaPessoa: string
   data: DataCalendario
@@ -99,7 +99,7 @@ export interface RestricoesBuffetDto {
 }
 
 export interface ExportacaoBuffetDto {
-  casamento: CasamentoExportacaoDto
+  evento: EventoExportacaoDto
   geradoEm: string
   confirmados: ContagemBuffetDto
   pendentes: number

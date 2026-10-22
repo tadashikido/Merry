@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { requisitar } from '@/servicos/clienteHttp'
-import { interpretarFalhaCasamento, ROTA_CASAMENTOS, type FalhaCasamento, type ResultadoCasamento } from '@/stores/casamentos'
+import { interpretarFalhaEvento, ROTA_EVENTOS, type FalhaEvento, type ResultadoEvento } from '@/stores/eventos'
 import type {
   ListaTarefasDto,
   PendenciasTarefasDto,
@@ -13,54 +13,54 @@ import type {
 
 export const ROTA_PENDENCIAS_TAREFAS = '/api/tarefas/pendencias'
 
-export function caminhoTarefas(casamentoId: string, tarefaId?: string, acao?: string): string {
-  const base = `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/tarefas`
+export function caminhoTarefas(eventoId: string, tarefaId?: string, acao?: string): string {
+  const base = `${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/tarefas`
   const comTarefa = tarefaId ? `${base}/${encodeURIComponent(tarefaId)}` : base
   return acao ? `${comTarefa}/${acao}` : comTarefa
 }
 
 export const useTarefasStore = defineStore('tarefas', () => {
-  const casamentoId = ref<string | null>(null)
+  const eventoId = ref<string | null>(null)
   const lista = ref<ListaTarefasDto | null>(null)
   const carregando = ref(false)
-  const falha = ref<FalhaCasamento | null>(null)
+  const falha = ref<FalhaEvento | null>(null)
 
   const pendencias = ref<PendenciasTarefasDto | null>(null)
   const carregandoPendencias = ref(false)
-  const falhaPendencias = ref<FalhaCasamento | null>(null)
+  const falhaPendencias = ref<FalhaEvento | null>(null)
 
   async function carregar(id: string): Promise<void> {
-    if (casamentoId.value !== id) {
+    if (eventoId.value !== id) {
       lista.value = null
     }
-    casamentoId.value = id
+    eventoId.value = id
     carregando.value = true
     falha.value = null
 
     try {
       const resposta = await requisitar<ListaTarefasDto>(caminhoTarefas(id))
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         lista.value = resposta
       }
     } catch (erro) {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         lista.value = null
-        falha.value = interpretarFalhaCasamento(erro)
+        falha.value = interpretarFalhaEvento(erro)
       }
     } finally {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         carregando.value = false
       }
     }
   }
 
   async function recarregarSilenciosamente(id: string): Promise<void> {
-    if (casamentoId.value !== id) {
+    if (eventoId.value !== id) {
       return
     }
     try {
       const resposta = await requisitar<ListaTarefasDto>(caminhoTarefas(id))
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         lista.value = resposta
       }
     } catch {
@@ -69,7 +69,7 @@ export const useTarefasStore = defineStore('tarefas', () => {
   }
 
   function substituir(id: string, tarefa: TarefaDto) {
-    if (casamentoId.value !== id || !lista.value) {
+    if (eventoId.value !== id || !lista.value) {
       return
     }
     const indice = lista.value.tarefas.findIndex((item) => item.id === tarefa.id)
@@ -78,36 +78,36 @@ export const useTarefasStore = defineStore('tarefas', () => {
     }
   }
 
-  async function obter(id: string, tarefaId: string): Promise<ResultadoCasamento<TarefaDto>> {
+  async function obter(id: string, tarefaId: string): Promise<ResultadoEvento<TarefaDto>> {
     try {
       return { ok: true, valor: await requisitar<TarefaDto>(caminhoTarefas(id, tarefaId)) }
     } catch (erro) {
-      return { ok: false, falha: interpretarFalhaCasamento(erro) }
+      return { ok: false, falha: interpretarFalhaEvento(erro) }
     }
   }
 
-  async function criar(id: string, dados: SalvarTarefaRequest): Promise<ResultadoCasamento<TarefaDto>> {
+  async function criar(id: string, dados: SalvarTarefaRequest): Promise<ResultadoEvento<TarefaDto>> {
     try {
       const tarefa = await requisitar<TarefaDto>(caminhoTarefas(id), { metodo: 'POST', corpo: dados })
       void recarregarSilenciosamente(id)
       return { ok: true, valor: tarefa }
     } catch (erro) {
-      return { ok: false, falha: interpretarFalhaCasamento(erro) }
+      return { ok: false, falha: interpretarFalhaEvento(erro) }
     }
   }
 
-  async function atualizar(id: string, tarefaId: string, dados: SalvarTarefaRequest): Promise<ResultadoCasamento<TarefaDto>> {
+  async function atualizar(id: string, tarefaId: string, dados: SalvarTarefaRequest): Promise<ResultadoEvento<TarefaDto>> {
     try {
       const tarefa = await requisitar<TarefaDto>(caminhoTarefas(id, tarefaId), { metodo: 'PUT', corpo: dados })
       substituir(id, tarefa)
       void recarregarSilenciosamente(id)
       return { ok: true, valor: tarefa }
     } catch (erro) {
-      return { ok: false, falha: interpretarFalhaCasamento(erro) }
+      return { ok: false, falha: interpretarFalhaEvento(erro) }
     }
   }
 
-  async function alterarStatus(id: string, tarefaId: string, status: StatusTarefa): Promise<ResultadoCasamento<TarefaDto>> {
+  async function alterarStatus(id: string, tarefaId: string, status: StatusTarefa): Promise<ResultadoEvento<TarefaDto>> {
     try {
       const tarefa = await requisitar<TarefaDto>(caminhoTarefas(id, tarefaId, 'status'), {
         metodo: 'PATCH',
@@ -117,20 +117,20 @@ export const useTarefasStore = defineStore('tarefas', () => {
       void recarregarSilenciosamente(id)
       return { ok: true, valor: tarefa }
     } catch (erro) {
-      return { ok: false, falha: interpretarFalhaCasamento(erro) }
+      return { ok: false, falha: interpretarFalhaEvento(erro) }
     }
   }
 
-  async function remover(id: string, tarefaId: string): Promise<ResultadoCasamento<null>> {
+  async function remover(id: string, tarefaId: string): Promise<ResultadoEvento<null>> {
     try {
       await requisitar<void>(caminhoTarefas(id, tarefaId), { metodo: 'DELETE' })
-      if (casamentoId.value === id && lista.value) {
+      if (eventoId.value === id && lista.value) {
         lista.value.tarefas = lista.value.tarefas.filter((tarefa) => tarefa.id !== tarefaId)
       }
       void recarregarSilenciosamente(id)
       return { ok: true, valor: null }
     } catch (erro) {
-      return { ok: false, falha: interpretarFalhaCasamento(erro) }
+      return { ok: false, falha: interpretarFalhaEvento(erro) }
     }
   }
 
@@ -141,14 +141,14 @@ export const useTarefasStore = defineStore('tarefas', () => {
       pendencias.value = await requisitar<PendenciasTarefasDto>(ROTA_PENDENCIAS_TAREFAS)
     } catch (erro) {
       pendencias.value = null
-      falhaPendencias.value = interpretarFalhaCasamento(erro)
+      falhaPendencias.value = interpretarFalhaEvento(erro)
     } finally {
       carregandoPendencias.value = false
     }
   }
 
   return {
-    casamentoId,
+    eventoId,
     lista,
     carregando,
     falha,

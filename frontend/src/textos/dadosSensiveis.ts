@@ -44,7 +44,7 @@ export const TEXTOS_DADOS_SENSIVEIS = {
   seraApagadaRecusa: (nome: string) => `A restrição de ${nome} será apagada ao enviar.`,
   avisoTitulo: 'Sobre estas informações',
   avisoTexto: (dias: number) =>
-    `Usamos restrições e necessidades só para o buffet e a organização do casamento. Quem vê: a assessoria do casamento e, sem seus contatos, o buffet. Tudo é apagado ${formatarNumero(dias)} ${dias === 1 ? 'dia' : 'dias'} depois do casamento.`,
+    `Usamos restrições e necessidades só para o buffet e a organização do evento. Quem vê: a assessoria do evento e, sem seus contatos, o buffet. Tudo é apagado ${formatarNumero(dias)} ${dias === 1 ? 'dia' : 'dias'} depois do evento.`,
   consentimento: 'Autorizo o uso destas informações, inclusive das pessoas deste convite, para essa finalidade.',
   erroConsentimento: 'Marque a autorização para enviarmos as restrições, ou apague o que foi preenchido.',
   erroOutraLonga: `Use até ${TAMANHO_MAXIMO_OUTRA_RESTRICAO} caracteres em outra restrição.`,
@@ -58,9 +58,9 @@ export const TEXTOS_DADOS_SENSIVEIS = {
     `${pessoas(total)} com restrição, ${formatarNumero(confirmados)} ${confirmados === 1 ? 'confirmada' : 'confirmadas'}`,
   semConfirmados: 'Ninguém com restrição confirmou presença ainda.',
   exclusaoPrevista: (data: string, dias: number) =>
-    `Estas informações serão apagadas em ${data} (${formatarNumero(dias)} ${dias === 1 ? 'dia' : 'dias'} após o casamento).`,
+    `Estas informações serão apagadas em ${data} (${formatarNumero(dias)} ${dias === 1 ? 'dia' : 'dias'} após o evento).`,
   dadosExcluidosTitulo: 'Dados excluídos pela política de privacidade',
-  dadosExcluidosTexto: (data: string) => `As restrições deste casamento foram apagadas em ${data}.`,
+  dadosExcluidosTexto: (data: string) => `As restrições deste evento foram apagadas em ${data}.`,
   vazioTitulo: 'Ninguém informou restrição ainda',
   vazioTexto: 'As respostas do link aparecem aqui. Você também pode registrar uma restrição recebida por outro canal.',
   erroCarregar: 'Não foi possível carregar as restrições.',

@@ -4,7 +4,7 @@ namespace Celebri.Aplicacao.Tarefas;
 
 public static class OrdenacaoTarefas
 {
-    public static IReadOnlyList<TarefaCasamento> Ordenar(IEnumerable<TarefaCasamento> tarefas)
+    public static IReadOnlyList<TarefaEvento> Ordenar(IEnumerable<TarefaEvento> tarefas)
     {
         ArgumentNullException.ThrowIfNull(tarefas);
 
@@ -25,7 +25,7 @@ public static class OrdenacaoTarefas
         return abertas.Concat(encerradas).ToList();
     }
 
-    public static ResumoTarefasDto Resumir(IReadOnlyCollection<TarefaCasamento> tarefas, DateOnly hoje)
+    public static ResumoTarefasDto Resumir(IReadOnlyCollection<TarefaEvento> tarefas, DateOnly hoje)
     {
         ArgumentNullException.ThrowIfNull(tarefas);
 

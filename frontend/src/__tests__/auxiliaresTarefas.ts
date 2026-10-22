@@ -33,8 +33,8 @@ export function listaTarefas(tarefas: TarefaDto[], dados: Partial<ListaTarefasDt
       canceladas: tarefas.filter((tarefa) => tarefa.status === 'Cancelada').length,
       total: tarefas.length,
     },
-    casamentoArquivado: false,
-    somenteDoCasal: false,
+    eventoArquivado: false,
+    somenteDoAnfitriao: false,
     ...dados,
   }
 }
@@ -42,7 +42,7 @@ export function listaTarefas(tarefas: TarefaDto[], dados: Partial<ListaTarefasDt
 export function pendenteExemplo(dados: Partial<TarefaPendenteDto> = {}): TarefaPendenteDto {
   return {
     id: 'p1',
-    casamentoId: '11111111-1111-4111-8111-111111111111',
+    eventoId: '11111111-1111-4111-8111-111111111111',
     nomePrimeiraPessoa: 'Luísa',
     nomeSegundaPessoa: 'Pedro',
     titulo: 'Confirmar horário do DJ',
@@ -59,7 +59,7 @@ export function pendenciasExemplo(dados: Partial<PendenciasTarefasDto> = {}): Pe
   return {
     totalAtrasadas: 1,
     totalEstaSemana: 1,
-    casamentosComAtraso: 1,
+    eventosComAtraso: 1,
     atrasadas: [pendenteExemplo()],
     estaSemana: [pendenteExemplo({ id: 'p2', titulo: 'Pagar parcela da fotografia', diasParaPrazo: 0, prazo: '2026-09-30' })],
     ...dados,

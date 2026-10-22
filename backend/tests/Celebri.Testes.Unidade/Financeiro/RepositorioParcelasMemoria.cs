@@ -1,5 +1,5 @@
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Financeiro;
 using Celebri.Dominio.Fornecedores;
 using Celebri.Testes.Unidade.Fornecedores;
@@ -17,60 +17,60 @@ public sealed class RepositorioParcelasMemoria : IParcelaFornecedorRepository
 
     public List<ParcelaFornecedor> Itens { get; } = [];
 
-    public Dictionary<Guid, CasamentoAssessorado> Casamentos { get; } = [];
+    public Dictionary<Guid, Evento> Eventos { get; } = [];
 
-    public Task<IReadOnlyList<ParcelaFornecedor>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<IReadOnlyList<ParcelaFornecedor>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        IReadOnlyList<ParcelaFornecedor> resultado = Itens.Where(parcela => parcela.CasamentoId == casamentoId).ToList();
+        IReadOnlyList<ParcelaFornecedor> resultado = Itens.Where(parcela => parcela.EventoId == eventoId).ToList();
         return Task.FromResult(resultado);
     }
 
-    public Task<IReadOnlyList<ParcelaFornecedor>> ListarPorVinculoAsync(Guid casamentoId, Guid vinculoId, CancellationToken cancelamento)
+    public Task<IReadOnlyList<ParcelaFornecedor>> ListarPorVinculoAsync(Guid eventoId, Guid vinculoId, CancellationToken cancelamento)
     {
         IReadOnlyList<ParcelaFornecedor> resultado = Itens
-            .Where(parcela => parcela.CasamentoId == casamentoId && parcela.FornecedorCasamentoId == vinculoId)
+            .Where(parcela => parcela.EventoId == eventoId && parcela.FornecedorEventoId == vinculoId)
             .ToList();
         return Task.FromResult(resultado);
     }
 
     public Task<IReadOnlyList<ParcelaFornecedor>> ListarPorVinculosAsync(IReadOnlyCollection<Guid> vinculoIds, CancellationToken cancelamento)
     {
-        IReadOnlyList<ParcelaFornecedor> resultado = Itens.Where(parcela => vinculoIds.Contains(parcela.FornecedorCasamentoId)).ToList();
+        IReadOnlyList<ParcelaFornecedor> resultado = Itens.Where(parcela => vinculoIds.Contains(parcela.FornecedorEventoId)).ToList();
         return Task.FromResult(resultado);
     }
 
-    public Task<ParcelaFornecedor?> ObterAsync(Guid casamentoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento)
+    public Task<ParcelaFornecedor?> ObterAsync(Guid eventoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento)
     {
         return Task.FromResult(Itens.FirstOrDefault(parcela =>
-            parcela.CasamentoId == casamentoId && parcela.FornecedorCasamentoId == vinculoId && parcela.Id == parcelaId));
+            parcela.EventoId == eventoId && parcela.FornecedorEventoId == vinculoId && parcela.Id == parcelaId));
     }
 
-    public Task<TotaisParcelasVinculo> ObterTotaisPorVinculoAsync(Guid casamentoId, Guid vinculoId, CancellationToken cancelamento)
+    public Task<TotaisParcelasVinculo> ObterTotaisPorVinculoAsync(Guid eventoId, Guid vinculoId, CancellationToken cancelamento)
     {
-        var doVinculo = Itens.Where(parcela => parcela.CasamentoId == casamentoId && parcela.FornecedorCasamentoId == vinculoId).ToList();
+        var doVinculo = Itens.Where(parcela => parcela.EventoId == eventoId && parcela.FornecedorEventoId == vinculoId).ToList();
         return Task.FromResult(new TotaisParcelasVinculo(doVinculo.Count, doVinculo.Sum(parcela => parcela.Valor)));
     }
 
-    public Task<AlertasParcelas> ListarAlertasAsync(Guid? casamentoId, DateOnly hoje, int limitePorGrupo, CancellationToken cancelamento)
+    public Task<AlertasParcelas> ListarAlertasAsync(Guid? eventoId, DateOnly hoje, int limitePorGrupo, CancellationToken cancelamento)
     {
         var limite = hoje.AddDays(ParcelaFornecedor.JanelaAlertaDias);
         var pendentes = Itens
             .Where(parcela => parcela.Status == StatusParcela.Pendente && parcela.Vencimento <= limite)
-            .Where(parcela => casamentoId is null || parcela.CasamentoId == casamentoId)
+            .Where(parcela => eventoId is null || parcela.EventoId == eventoId)
             .Select(parcela => new
             {
                 Parcela = parcela,
-                Vinculo = _vinculos.Itens.First(vinculo => vinculo.Id == parcela.FornecedorCasamentoId),
-                Casamento = Casamentos[parcela.CasamentoId],
+                Vinculo = _vinculos.Itens.First(vinculo => vinculo.Id == parcela.FornecedorEventoId),
+                Evento = Eventos[parcela.EventoId],
             })
-            .Where(item => item.Vinculo.Status == StatusFornecedorCasamento.Contratado && !item.Casamento.Arquivado)
+            .Where(item => item.Vinculo.Status == StatusFornecedorEvento.Contratado && !item.Evento.Arquivado)
             .OrderBy(item => item.Parcela.Vencimento)
             .ThenBy(item => item.Parcela.CriadoEm)
             .ThenBy(item => item.Parcela.Id)
             .Select(item => new ParcelaAlerta(
                 item.Parcela,
-                item.Casamento.NomePrimeiraPessoa,
-                item.Casamento.NomeSegundaPessoa,
+                item.Evento.NomePrimeiraPessoa,
+                item.Evento.NomeSegundaPessoa,
                 _vinculos.Fornecedores[item.Vinculo.FornecedorId].NomeEmpresa))
             .ToList();
 
@@ -82,7 +82,7 @@ public sealed class RepositorioParcelasMemoria : IParcelaFornecedorRepository
             vencidas.Sum(item => item.Parcela.Valor),
             proximas.Count,
             proximas.Sum(item => item.Parcela.Valor),
-            vencidas.Select(item => item.Parcela.CasamentoId).Distinct().Count(),
+            vencidas.Select(item => item.Parcela.EventoId).Distinct().Count(),
             vencidas.Take(limitePorGrupo).ToList(),
             proximas.Take(limitePorGrupo).ToList()));
     }

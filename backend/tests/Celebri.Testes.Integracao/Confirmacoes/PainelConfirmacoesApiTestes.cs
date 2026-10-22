@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Confirmacoes;
 using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.DadosSensiveis;
@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
 using static Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
-using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
 
 namespace Celebri.Testes.Integracao.Confirmacoes;
@@ -28,61 +28,61 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
     {
     }
 
-    private static string RotaPainel(Guid casamentoId)
+    private static string RotaPainel(Guid eventoId)
     {
-        return $"/api/casamentos/{casamentoId}/painel-confirmacoes";
+        return $"/api/eventos/{eventoId}/painel-confirmacoes";
     }
 
-    private static string RotaExportacao(Guid casamentoId, string? formato = "csv")
+    private static string RotaExportacao(Guid eventoId, string? formato = "csv")
     {
-        var rota = $"/api/casamentos/{casamentoId}/exportacao-buffet";
+        var rota = $"/api/eventos/{eventoId}/exportacao-buffet";
         return formato is null ? rota : $"{rota}?formato={formato}";
     }
 
-    private static async Task<PainelConfirmacoesDto> ObterPainelAsync(HttpClient cliente, Guid casamentoId)
+    private static async Task<PainelConfirmacoesDto> ObterPainelAsync(HttpClient cliente, Guid eventoId)
     {
-        var resposta = await cliente.GetAsync(RotaPainel(casamentoId));
+        var resposta = await cliente.GetAsync(RotaPainel(eventoId));
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         Assert.True(resposta.Headers.CacheControl?.NoStore);
         return (await resposta.Content.ReadFromJsonAsync<PainelConfirmacoesDto>(OpcoesJson))!;
     }
 
-    private static async Task<(ExportacaoBuffetDto Exportacao, string Json)> ExportarAsync(HttpClient cliente, Guid casamentoId, string formato = "csv")
+    private static async Task<(ExportacaoBuffetDto Exportacao, string Json)> ExportarAsync(HttpClient cliente, Guid eventoId, string formato = "csv")
     {
-        var resposta = await cliente.GetAsync(RotaExportacao(casamentoId, formato));
+        var resposta = await cliente.GetAsync(RotaExportacao(eventoId, formato));
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         Assert.True(resposta.Headers.CacheControl?.NoStore);
         var json = await resposta.Content.ReadAsStringAsync();
         return (JsonSerializer.Deserialize<ExportacaoBuffetDto>(json, OpcoesJson)!, json);
     }
 
-    private sealed record Cenario(CasamentoDto Casamento, ConviteDto Souza, ConviteDto Lima, ConviteDto Rocha, string TokenSouza);
+    private sealed record Cenario(EventoDto Evento, ConviteDto Souza, ConviteDto Lima, ConviteDto Rocha, string TokenSouza);
 
     private async Task<Cenario> CriarCenarioAsync(OrganizacaoTeste organizacao)
     {
         var cliente = organizacao.Cliente;
-        var casamento = await ClienteCasamentos.CriarAsync(cliente, ClienteCasamentos.CorpoValido(data: "2027-05-22", convidadosEstimados: 150));
+        var evento = await ClienteEventos.CriarAsync(cliente, ClienteEventos.CorpoValido(data: "2027-05-22", convidadosEstimados: 150));
 
-        var souza = await ClienteConvites.CriarAsync(cliente, casamento.Id, ClienteConvites.CorpoValido(
+        var souza = await ClienteConvites.CriarAsync(cliente, evento.Id, ClienteConvites.CorpoValido(
             "Família Souza",
             "Família da noiva",
             1,
             ClienteConvites.Pessoa("Célia Souza", "(11) 98765-4321", "celia@exemplo.com"),
             ClienteConvites.Pessoa("Lia Souza", null, null, "Crianca")));
-        var lima = await ClienteConvites.CriarAsync(cliente, casamento.Id, ClienteConvites.CorpoValido(
+        var lima = await ClienteConvites.CriarAsync(cliente, evento.Id, ClienteConvites.CorpoValido(
             "Família Lima",
             "Amigos",
             0,
             ClienteConvites.Pessoa("Rafael Lima", "(21) 91234-5678", null, "Adulto", "Confirmado"),
             ClienteConvites.Pessoa("Bia Lima", null, null)));
-        var rocha = await ClienteConvites.CriarAsync(cliente, casamento.Id, ClienteConvites.CorpoValido(
+        var rocha = await ClienteConvites.CriarAsync(cliente, evento.Id, ClienteConvites.CorpoValido(
             "Caio Rocha",
             null,
             0,
             ClienteConvites.Pessoa("Caio Rocha", null, null, "Adulto", "Recusado")));
 
-        var link = await GerarLinkAsync(cliente, casamento.Id, souza.Id);
-        var resposta = await cliente.PostAsync(RotaEnvio(casamento.Id, lima.Id), null);
+        var link = await GerarLinkAsync(cliente, evento.Id, souza.Id);
+        var resposta = await cliente.PostAsync(RotaEnvio(evento.Id, lima.Id), null);
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
 
         var resposta2 = await ResponderAsync(
@@ -92,7 +92,7 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
             Acompanhante("Pedro Lima"));
         Assert.Equal(HttpStatusCode.OK, resposta2.StatusCode);
 
-        return new Cenario(casamento, souza, lima, rocha, link.Token);
+        return new Cenario(evento, souza, lima, rocha, link.Token);
     }
 
     [Fact]
@@ -100,9 +100,9 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
     {
         var cenario = await CriarCenarioAsync(OrganizacaoA);
 
-        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Casamento.Id);
-        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, cenario.Casamento.Id);
-        var totais = await OrganizacaoA.Cliente.GetFromJsonAsync<TotaisConvidadosDto>($"{ClienteConvites.Rota(cenario.Casamento.Id)}/totais", OpcoesJson);
+        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Evento.Id);
+        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, cenario.Evento.Id);
+        var totais = await OrganizacaoA.Cliente.GetFromJsonAsync<TotaisConvidadosDto>($"{ClienteConvites.Rota(cenario.Evento.Id)}/totais", OpcoesJson);
 
         Assert.Equal(lista.Totais, painel.Pessoas);
         Assert.Equal(totais, painel.Pessoas);
@@ -121,7 +121,7 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
         Assert.Equal(new TotaisPorFaixaDto(1, 0, 1), painel.Pessoas.Recusados);
         Assert.Equal(150, painel.ConvidadosEstimados);
         Assert.Equal(new DateOnly(2027, 5, 12), painel.Prazo.DataLimite);
-        Assert.Equal(new DateOnly(2027, 5, 12).DayNumber - ClienteCasamentos.HojeEmSaoPaulo().DayNumber, painel.Prazo.DiasRestantes);
+        Assert.Equal(new DateOnly(2027, 5, 12).DayNumber - ClienteEventos.HojeEmSaoPaulo().DayNumber, painel.Prazo.DiasRestantes);
 
         var pendente = Assert.Single(painel.Pendentes);
         Assert.Equal("Família Lima", pendente.Nome);
@@ -134,9 +134,9 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
     [Fact]
     public async Task Painel_SemConvites_DeveZerar()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente, ClienteCasamentos.CorpoValido(convidadosEstimados: null));
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente, ClienteEventos.CorpoValido(convidadosEstimados: null));
 
-        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, casamento.Id);
+        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, evento.Id);
 
         Assert.Equal(new SituacaoConvitesDto(0, 0, 0, 0, 0, 0), painel.Convites);
         Assert.Null(painel.ConvidadosEstimados);
@@ -146,10 +146,10 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
     [Fact]
     public async Task PainelEExportacao_SemAutenticacao_DevemResponder401()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.GetAsync(RotaPainel(casamento.Id))).StatusCode);
-        Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.GetAsync(RotaExportacao(casamento.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.GetAsync(RotaPainel(evento.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.GetAsync(RotaExportacao(evento.Id))).StatusCode);
     }
 
     [Fact]
@@ -157,9 +157,9 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
     {
         var cenario = await CriarCenarioAsync(OrganizacaoA);
 
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaPainel(cenario.Casamento.Id)));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaExportacao(cenario.Casamento.Id)));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaExportacao(cenario.Casamento.Id, "impressao")));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaPainel(cenario.Evento.Id)));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaExportacao(cenario.Evento.Id)));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaExportacao(cenario.Evento.Id, "impressao")));
     }
 
     [Theory]
@@ -168,9 +168,9 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
     [InlineData("0")]
     public async Task Exportacao_FormatoInvalido_DeveResponder400(string? formato)
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
 
-        var resposta = await OrganizacaoA.Cliente.GetAsync(RotaExportacao(casamento.Id, formato));
+        var resposta = await OrganizacaoA.Cliente.GetAsync(RotaExportacao(evento.Id, formato));
 
         Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
     }
@@ -195,7 +195,7 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
 
         foreach (var formato in new[] { "csv", "impressao" })
         {
-            var (exportacao, json) = await ExportarAsync(OrganizacaoA.Cliente, cenario.Casamento.Id, formato);
+            var (exportacao, json) = await ExportarAsync(OrganizacaoA.Cliente, cenario.Evento.Id, formato);
 
             Assert.Equal(new ContagemBuffetDto(3, 1, 4), exportacao.Confirmados);
             Assert.Equal(1, exportacao.Pendentes);
@@ -211,7 +211,7 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
             Assert.Equal("Família Souza", pessoaRestricao.Convite);
             Assert.Equal("sem porco", pessoaRestricao.OutraRestricao);
             Assert.Equal([new ContagemRestricaoBuffetDto("SemGluten", 1)], exportacao.Restricoes.PorTipo);
-            Assert.Equal("Espaço Jardim", exportacao.Casamento.LocalRecepcao);
+            Assert.Equal("Espaço Jardim", exportacao.Evento.LocalRecepcao);
 
             Assert.DoesNotContain("98765", json, StringComparison.Ordinal);
             Assert.DoesNotContain("91234", json, StringComparison.Ordinal);
@@ -237,11 +237,11 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
         cliente.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         var cenario = await CriarCenarioAsync(OrganizacaoA);
 
-        await ExportarAsync(cliente, cenario.Casamento.Id, "impressao");
-        await OrganizacaoB.Cliente.GetAsync(RotaExportacao(cenario.Casamento.Id));
+        await ExportarAsync(cliente, cenario.Evento.Id, "impressao");
+        await OrganizacaoB.Cliente.GetAsync(RotaExportacao(cenario.Evento.Id));
 
         var trilha = Assert.Single(provedor.Mensagens, mensagem => mensagem.Contains("Exportação para o buffet gerada", StringComparison.Ordinal));
-        Assert.Contains(cenario.Casamento.Id.ToString(), trilha, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(cenario.Evento.Id.ToString(), trilha, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(OrganizacaoA.UsuarioId.ToString(), trilha, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Impressao", trilha, StringComparison.Ordinal);
         Assert.Contains("4 pessoas confirmadas", trilha, StringComparison.Ordinal);
@@ -251,16 +251,16 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
     }
 
     [Fact]
-    public async Task CasamentoArquivado_DevePermitirConsultarEExportar()
+    public async Task EventoArquivado_DevePermitirConsultarEExportar()
     {
         var cenario = await CriarCenarioAsync(OrganizacaoA);
-        var arquivar = await OrganizacaoA.Cliente.PostAsync($"/api/casamentos/{cenario.Casamento.Id}/arquivar", null);
+        var arquivar = await OrganizacaoA.Cliente.PostAsync($"/api/eventos/{cenario.Evento.Id}/arquivar", null);
         Assert.Equal(HttpStatusCode.OK, arquivar.StatusCode);
 
-        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Casamento.Id);
-        var (exportacao, _) = await ExportarAsync(OrganizacaoA.Cliente, cenario.Casamento.Id);
+        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Evento.Id);
+        var (exportacao, _) = await ExportarAsync(OrganizacaoA.Cliente, cenario.Evento.Id);
 
-        Assert.True(painel.CasamentoArquivado);
+        Assert.True(painel.EventoArquivado);
         Assert.False(painel.Prazo.AceitaRespostas);
         Assert.Equal(4, exportacao.Confirmados.Total);
     }
@@ -268,14 +268,14 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
     [Fact]
     public async Task ConsultaRsvp_PelaEquipeDaMesmaOrganizacao_NaoDeveMarcarVisualizado()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
-        var link = await GerarLinkAsync(OrganizacaoA.Cliente, casamento.Id, convite.Id);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, evento.Id);
+        var link = await GerarLinkAsync(OrganizacaoA.Cliente, evento.Id, convite.Id);
 
         var previa = await ConsultarComSucessoAsync(OrganizacaoA.Cliente, link.Token);
 
         Assert.True(previa.PreVisualizacao);
-        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, casamento.Id);
+        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.Equal(1, painel.Convites.NaoEnviados);
         Assert.Equal(0, painel.Convites.Visualizados);
     }
@@ -283,45 +283,45 @@ public sealed class PainelConfirmacoesApiTestes : IsolamentoOrganizacaoTestesBas
     [Fact]
     public async Task ConsultaRsvp_PorAnonimo_DeveMarcarVisualizado()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
-        var link = await GerarLinkAsync(OrganizacaoA.Cliente, casamento.Id, convite.Id);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, evento.Id);
+        var link = await GerarLinkAsync(OrganizacaoA.Cliente, evento.Id, convite.Id);
 
         var consulta = await ConsultarComSucessoAsync(ClienteAnonimo, link.Token);
 
         Assert.False(consulta.PreVisualizacao);
-        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, casamento.Id);
+        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.Equal(1, painel.Convites.Visualizados);
     }
 
     [Fact]
     public async Task ConsultaRsvp_PorUsuarioDeOutraOrganizacao_DeveMarcarVisualizado()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
-        var link = await GerarLinkAsync(OrganizacaoA.Cliente, casamento.Id, convite.Id);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, evento.Id);
+        var link = await GerarLinkAsync(OrganizacaoA.Cliente, evento.Id, convite.Id);
 
         var consulta = await ConsultarComSucessoAsync(OrganizacaoB.Cliente, link.Token);
 
         Assert.False(consulta.PreVisualizacao);
         Assert.Equal("Família Souza", consulta.NomeConvite);
-        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, casamento.Id);
+        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.Equal(1, painel.Convites.Visualizados);
     }
 
     [Fact]
     public async Task ConsultaRsvp_ComTokenDeAcessoInvalido_DeveSerTratadaComoAnonima()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
-        var link = await GerarLinkAsync(OrganizacaoA.Cliente, casamento.Id, convite.Id);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, evento.Id);
+        var link = await GerarLinkAsync(OrganizacaoA.Cliente, evento.Id, convite.Id);
         using var cliente = Fabrica.CriarClienteHttps();
         cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "token.invalido.qualquer");
 
         var consulta = await ConsultarComSucessoAsync(cliente, link.Token);
 
         Assert.False(consulta.PreVisualizacao);
-        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, casamento.Id);
+        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.Equal(1, painel.Convites.Visualizados);
     }
 

@@ -1,5 +1,5 @@
 import { FUSO_HORARIO } from './formatacao'
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 
 const PADRAO_DATA_CALENDARIO = /^(\d{4})-(\d{2})-(\d{2})$/
 const MILISSEGUNDOS_DIA = 86_400_000

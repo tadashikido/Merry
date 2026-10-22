@@ -3,7 +3,7 @@ using Celebri.Aplicacao.Calendario;
 using Celebri.Aplicacao.CronogramaPublico.Portas;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Excecoes;
 
@@ -11,9 +11,9 @@ namespace Celebri.Aplicacao.CronogramaPublico;
 
 public class LinkCronogramaService : ILinkCronogramaService
 {
-    private readonly ICasamentoRepository _casamentoRepository;
+    private readonly IEventoRepository _eventoRepository;
     private readonly IItemCronogramaRepository _itemRepository;
-    private readonly IFornecedorCasamentoRepository _vinculoRepository;
+    private readonly IFornecedorEventoRepository _vinculoRepository;
     private readonly IAcessoCronogramaRepository _acessoRepository;
     private readonly IGeradorTokenOpaco _geradorToken;
     private readonly ICifradorTokenCronograma _cifrador;
@@ -22,9 +22,9 @@ public class LinkCronogramaService : ILinkCronogramaService
     private readonly TimeProvider _relogio;
 
     public LinkCronogramaService(
-        ICasamentoRepository casamentoRepository,
+        IEventoRepository eventoRepository,
         IItemCronogramaRepository itemRepository,
-        IFornecedorCasamentoRepository vinculoRepository,
+        IFornecedorEventoRepository vinculoRepository,
         IAcessoCronogramaRepository acessoRepository,
         IGeradorTokenOpaco geradorToken,
         ICifradorTokenCronograma cifrador,
@@ -32,7 +32,7 @@ public class LinkCronogramaService : ILinkCronogramaService
         ICalendarioLocal calendario,
         TimeProvider relogio)
     {
-        _casamentoRepository = casamentoRepository;
+        _eventoRepository = eventoRepository;
         _itemRepository = itemRepository;
         _vinculoRepository = vinculoRepository;
         _acessoRepository = acessoRepository;
@@ -43,12 +43,12 @@ public class LinkCronogramaService : ILinkCronogramaService
         _relogio = relogio;
     }
 
-    public async Task<LinksCronogramaDto> ListarAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<LinksCronogramaDto> ListarAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
-        var itens = OrdenacaoCronograma.Ordenar(await _itemRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento));
-        var vinculos = await _vinculoRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento);
-        var acessos = await _acessoRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento);
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
+        var itens = OrdenacaoCronograma.Ordenar(await _itemRepository.ListarPorEventoAsync(evento.Id, cancelamento));
+        var vinculos = await _vinculoRepository.ListarPorEventoAsync(evento.Id, cancelamento);
+        var acessos = await _acessoRepository.ListarPorEventoAsync(evento.Id, cancelamento);
 
         var destinos = new List<DestinoLinkCronogramaDto>
         {
@@ -65,7 +65,7 @@ public class LinkCronogramaService : ILinkCronogramaService
         };
 
         destinos.AddRange(vinculos
-            .Select(vinculo => (Vinculo: vinculo, Acesso: acessos.FirstOrDefault(acesso => acesso.FornecedorCasamentoId == vinculo.Vinculo.Id)))
+            .Select(vinculo => (Vinculo: vinculo, Acesso: acessos.FirstOrDefault(acesso => acesso.FornecedorEventoId == vinculo.Vinculo.Id)))
             .Where(par => !par.Vinculo.Vinculo.Cancelado || par.Acesso is not null)
             .OrderBy(par => par.Vinculo.Fornecedor.NomeEmpresa, StringComparer.CurrentCultureIgnoreCase)
             .Select(par => new DestinoLinkCronogramaDto(
@@ -76,7 +76,7 @@ public class LinkCronogramaService : ILinkCronogramaService
                 par.Vinculo.Fornecedor.Categoria.ToString(),
                 par.Vinculo.Fornecedor.Telefone,
                 par.Vinculo.Vinculo.Cancelado,
-                itens.Count(item => item.FornecedorCasamentoId == par.Vinculo.Vinculo.Id),
+                itens.Count(item => item.FornecedorEventoId == par.Vinculo.Vinculo.Id),
                 ParaLinkDto(par.Acesso))));
 
         var responsaveis = itens
@@ -105,26 +105,26 @@ public class LinkCronogramaService : ILinkCronogramaService
                     && string.Equals(acesso.ResponsavelChave, par.Key, StringComparison.Ordinal))))));
 
         return new LinksCronogramaDto(
-            ValidadeAcessoCronograma.ValidoAte(casamento.Data),
-            ValidadeAcessoCronograma.Expirado(casamento.Data, _calendario.Hoje()),
-            casamento.Arquivado,
+            ValidadeAcessoCronograma.ValidoAte(evento.Data),
+            ValidadeAcessoCronograma.Expirado(evento.Data, _calendario.Hoje()),
+            evento.Arquivado,
             destinos);
     }
 
-    public async Task<LinkCronogramaDto> GerarAsync(Guid casamentoId, GerarLinkCronogramaRequest request, CancellationToken cancelamento)
+    public async Task<LinkCronogramaDto> GerarAsync(Guid eventoId, GerarLinkCronogramaRequest request, CancellationToken cancelamento)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var casamento = await ObterCasamentoAtivoAsync(casamentoId, cancelamento);
+        var evento = await ObterEventoAtivoAsync(eventoId, cancelamento);
         var destino = request.ParaDestino();
-        await ValidarDestinoAsync(casamento.Id, destino, cancelamento);
+        await ValidarDestinoAsync(evento.Id, destino, cancelamento);
 
-        var existente = (await _acessoRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento))
+        var existente = (await _acessoRepository.ListarPorEventoAsync(evento.Id, cancelamento))
             .FirstOrDefault(acesso => acesso.MesmoDestino(destino));
 
         if (existente is not null)
         {
-            var tokenExistente = _cifrador.Decifrar(existente.TokenCifrado, existente.CasamentoId)
+            var tokenExistente = _cifrador.Decifrar(existente.TokenCifrado, existente.EventoId)
                 ?? throw new ConflitoException(MensagensAcessoCronograma.LinkIrrecuperavel);
 
             return new LinkCronogramaDto(existente.Id, tokenExistente, existente.GeradoEm);
@@ -132,10 +132,10 @@ public class LinkCronogramaService : ILinkCronogramaService
 
         var token = _geradorToken.Gerar();
         var acesso = AcessoCronograma.Gerar(
-            casamento,
+            evento,
             destino,
             _geradorToken.CalcularHash(token),
-            _cifrador.Cifrar(token, casamento.Id),
+            _cifrador.Cifrar(token, evento.Id),
             _relogio.GetUtcNow());
         _acessoRepository.Adicionar(acesso);
         await _unidadeTrabalho.SalvarAsync(cancelamento);
@@ -143,34 +143,34 @@ public class LinkCronogramaService : ILinkCronogramaService
         return new LinkCronogramaDto(acesso.Id, token, acesso.GeradoEm);
     }
 
-    public async Task<LinkCronogramaDto> RegenerarAsync(Guid casamentoId, Guid linkId, CancellationToken cancelamento)
+    public async Task<LinkCronogramaDto> RegenerarAsync(Guid eventoId, Guid linkId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAtivoAsync(casamentoId, cancelamento);
-        var acesso = await ObterAcessoAsync(casamento.Id, linkId, cancelamento);
+        var evento = await ObterEventoAtivoAsync(eventoId, cancelamento);
+        var acesso = await ObterAcessoAsync(evento.Id, linkId, cancelamento);
         var token = _geradorToken.Gerar();
 
-        acesso.Renovar(_geradorToken.CalcularHash(token), _cifrador.Cifrar(token, casamento.Id), _relogio.GetUtcNow());
+        acesso.Renovar(_geradorToken.CalcularHash(token), _cifrador.Cifrar(token, evento.Id), _relogio.GetUtcNow());
         await _unidadeTrabalho.SalvarAsync(cancelamento);
 
         return new LinkCronogramaDto(acesso.Id, token, acesso.GeradoEm);
     }
 
-    public async Task RevogarAsync(Guid casamentoId, Guid linkId, CancellationToken cancelamento)
+    public async Task RevogarAsync(Guid eventoId, Guid linkId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
-        var acesso = await ObterAcessoAsync(casamento.Id, linkId, cancelamento);
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
+        var acesso = await ObterAcessoAsync(evento.Id, linkId, cancelamento);
 
         _acessoRepository.Remover(acesso);
         await _unidadeTrabalho.SalvarAsync(cancelamento);
     }
 
-    private async Task ValidarDestinoAsync(Guid casamentoId, DestinoAcessoCronograma destino, CancellationToken cancelamento)
+    private async Task ValidarDestinoAsync(Guid eventoId, DestinoAcessoCronograma destino, CancellationToken cancelamento)
     {
         if (destino.Tipo == TipoAcessoCronograma.Fornecedor)
         {
-            var vinculo = await _vinculoRepository.ObterAsync(casamentoId, destino.FornecedorCasamentoId!.Value, cancelamento);
+            var vinculo = await _vinculoRepository.ObterAsync(eventoId, destino.FornecedorEventoId!.Value, cancelamento);
 
-            if (vinculo is null || vinculo.Vinculo.CasamentoId != casamentoId || vinculo.Vinculo.Cancelado)
+            if (vinculo is null || vinculo.Vinculo.EventoId != eventoId || vinculo.Vinculo.Cancelado)
             {
                 throw new RegraNegocioException(MensagensAcessoCronograma.FornecedorInvalido, DestinoAcessoCronograma.CampoFornecedor);
             }
@@ -178,7 +178,7 @@ public class LinkCronogramaService : ILinkCronogramaService
 
         if (destino.Tipo == TipoAcessoCronograma.Responsavel)
         {
-            var itens = await _itemRepository.ListarPorCasamentoAsync(casamentoId, cancelamento);
+            var itens = await _itemRepository.ListarPorEventoAsync(eventoId, cancelamento);
 
             if (!itens.Any(destino.AtendeItem))
             {
@@ -191,35 +191,35 @@ public class LinkCronogramaService : ILinkCronogramaService
     {
         return acesso is null
             ? null
-            : new LinkCronogramaDto(acesso.Id, _cifrador.Decifrar(acesso.TokenCifrado, acesso.CasamentoId), acesso.GeradoEm);
+            : new LinkCronogramaDto(acesso.Id, _cifrador.Decifrar(acesso.TokenCifrado, acesso.EventoId), acesso.GeradoEm);
     }
 
-    private async Task<CasamentoAssessorado> ObterCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    private async Task<Evento> ObterEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        return await _casamentoRepository.ObterPorIdAsync(casamentoId, cancelamento)
-            ?? throw new RecursoNaoEncontradoException(MensagensCasamento.NaoEncontrado);
+        return await _eventoRepository.ObterPorIdAsync(eventoId, cancelamento)
+            ?? throw new RecursoNaoEncontradoException(MensagensEvento.NaoEncontrado);
     }
 
-    private async Task<CasamentoAssessorado> ObterCasamentoAtivoAsync(Guid casamentoId, CancellationToken cancelamento)
+    private async Task<Evento> ObterEventoAtivoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
 
-        if (casamento.Arquivado)
+        if (evento.Arquivado)
         {
-            throw new RegraNegocioException(MensagensAcessoCronograma.CasamentoArquivado);
+            throw new RegraNegocioException(MensagensAcessoCronograma.EventoArquivado);
         }
 
-        if (ValidadeAcessoCronograma.Expirado(casamento.Data, _calendario.Hoje()))
+        if (ValidadeAcessoCronograma.Expirado(evento.Data, _calendario.Hoje()))
         {
             throw new RegraNegocioException(MensagensAcessoCronograma.LinksExpirados);
         }
 
-        return casamento;
+        return evento;
     }
 
-    private async Task<AcessoCronograma> ObterAcessoAsync(Guid casamentoId, Guid linkId, CancellationToken cancelamento)
+    private async Task<AcessoCronograma> ObterAcessoAsync(Guid eventoId, Guid linkId, CancellationToken cancelamento)
     {
-        return await _acessoRepository.ObterAsync(casamentoId, linkId, cancelamento)
+        return await _acessoRepository.ObterAsync(eventoId, linkId, cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensAcessoCronograma.LinkNaoEncontrado);
     }
 }

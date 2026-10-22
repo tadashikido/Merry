@@ -4,19 +4,19 @@ namespace Celebri.Testes.Unidade.Cronogramas;
 
 public class MomentoGrandeDiaTestes
 {
-    private static readonly DateOnly DataCasamento = new(2027, 5, 15);
+    private static readonly DateOnly DataEvento = new(2027, 5, 15);
     private static readonly DateTimeOffset Criacao = new(2027, 3, 1, 12, 0, 0, TimeSpan.Zero);
-    private static readonly Guid CasamentoId = Guid.NewGuid();
+    private static readonly Guid EventoId = Guid.NewGuid();
 
     private static ItemCronograma Item(
         int hora,
         int minuto,
         int? duracao,
         string atividade,
-        DiaCronograma dia = DiaCronograma.DiaDoCasamento)
+        DiaCronograma dia = DiaCronograma.DiaDoEvento)
     {
         return ItemCronograma.Criar(
-            CasamentoId,
+            EventoId,
             new DadosItemCronograma(dia, new TimeOnly(hora, minuto), duracao, atividade, null, null, null, null, null),
             null,
             Criacao);
@@ -24,12 +24,12 @@ public class MomentoGrandeDiaTestes
 
     private static DateTime Em(int hora, int minuto, int deslocamentoDias = 0)
     {
-        return DataCasamento.AddDays(deslocamentoDias).ToDateTime(new TimeOnly(hora, minuto));
+        return DataEvento.AddDays(deslocamentoDias).ToDateTime(new TimeOnly(hora, minuto));
     }
 
     private static RetratoGrandeDia Calcular(DateTime agora, params ItemCronograma[] itens)
     {
-        return MomentoGrandeDia.Calcular(OrdenacaoCronograma.Ordenar(itens), DataCasamento, agora);
+        return MomentoGrandeDia.Calcular(OrdenacaoCronograma.Ordenar(itens), DataEvento, agora);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class MomentoGrandeDiaTestes
 
         Assert.Equal(FaseGrandeDia.NoDia, retrato.Fase);
         Assert.Equal((16 * 60) + 34, retrato.MinutoAtual);
-        Assert.Equal(0, retrato.DiasParaOCasamento);
+        Assert.Equal(0, retrato.DiasParaOEvento);
         Assert.Equal(SituacaoItemGrandeDia.SemMarcar, retrato.SituacaoDe(montagem));
         Assert.Equal(SituacaoItemGrandeDia.Agora, retrato.SituacaoDe(cerimonia));
         Assert.Equal(SituacaoItemGrandeDia.Proximo, retrato.SituacaoDe(fotos));
@@ -120,7 +120,7 @@ public class MomentoGrandeDiaTestes
         Assert.Equal(FaseGrandeDia.NoDia, manha.Fase);
         Assert.Equal(SituacaoItemGrandeDia.SemMarcar, manha.SituacaoDe(pista));
         Assert.Equal(FaseGrandeDia.DepoisDoDia, diaDepois.Fase);
-        Assert.Equal(-2, diaDepois.DiasParaOCasamento);
+        Assert.Equal(-2, diaDepois.DiasParaOEvento);
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class MomentoGrandeDiaTestes
         Assert.Equal(SituacaoItemGrandeDia.Proximo, vesperaManha.SituacaoDe(ensaio));
         Assert.Equal(SituacaoItemGrandeDia.Depois, vesperaManha.SituacaoDe(cerimonia));
         Assert.Equal(FaseGrandeDia.AntesDoDia, semVespera.Fase);
-        Assert.Equal(1, semVespera.DiasParaOCasamento);
+        Assert.Equal(1, semVespera.DiasParaOEvento);
     }
 
     [Fact]
@@ -149,7 +149,7 @@ public class MomentoGrandeDiaTestes
         var retrato = Calcular(Em(10, 0, -12), cerimonia, feito);
 
         Assert.Equal(FaseGrandeDia.AntesDoDia, retrato.Fase);
-        Assert.Equal(12, retrato.DiasParaOCasamento);
+        Assert.Equal(12, retrato.DiasParaOEvento);
         Assert.Equal(SituacaoItemGrandeDia.Depois, retrato.SituacaoDe(cerimonia));
         Assert.Equal(SituacaoItemGrandeDia.Feito, retrato.SituacaoDe(feito));
     }
@@ -164,13 +164,13 @@ public class MomentoGrandeDiaTestes
         var retrato = Calcular(Em(12, 0, 3), cerimonia, jantar);
 
         Assert.Equal(FaseGrandeDia.DepoisDoDia, retrato.Fase);
-        Assert.Equal(-3, retrato.DiasParaOCasamento);
+        Assert.Equal(-3, retrato.DiasParaOEvento);
         Assert.Equal(SituacaoItemGrandeDia.Feito, retrato.SituacaoDe(cerimonia));
         Assert.Equal(SituacaoItemGrandeDia.SemMarcar, retrato.SituacaoDe(jantar));
     }
 
     [Fact]
-    public void SemItens_JanelaDeveSerODiaDoCasamento()
+    public void SemItens_JanelaDeveSerODiaDoEvento()
     {
         Assert.Equal(FaseGrandeDia.AntesDoDia, Calcular(Em(23, 59, -1)).Fase);
         Assert.Equal(FaseGrandeDia.NoDia, Calcular(Em(0, 0)).Fase);
@@ -209,6 +209,6 @@ public class MomentoGrandeDiaTestes
 
         Assert.Equal(SituacaoItemGrandeDia.Depois, retrato.SituacaoDe(Item(10, 0, 30, "Outro")));
         Assert.Throws<ArgumentNullException>(() => retrato.SituacaoDe(null!));
-        Assert.Throws<ArgumentNullException>(() => MomentoGrandeDia.Calcular(null!, DataCasamento, Em(10, 0)));
+        Assert.Throws<ArgumentNullException>(() => MomentoGrandeDia.Calcular(null!, DataEvento, Em(10, 0)));
     }
 }

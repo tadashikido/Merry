@@ -4,11 +4,11 @@ import { computed, useId } from 'vue'
 import BadgeStatus from './BadgeStatus.vue'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
 import { TEXTOS_REGUA_PAGAMENTOS } from '@/textos/financeiro'
-import { TEXTOS_RESUMO_ORCAMENTO } from '@/textos/fornecedoresCasamento'
-import type { ResumoOrcamentoDto } from '@/tipos/fornecedoresCasamento'
+import { TEXTOS_RESUMO_ORCAMENTO } from '@/textos/fornecedoresEvento'
+import type { ResumoOrcamentoDto } from '@/tipos/fornecedoresEvento'
 import { paraCentavos } from '@/utilitarios/centavos'
 import { formatarMoeda } from '@/utilitarios/formatacao'
-import { excedenteOrcamento, proporcaoContratada, proporcoesPagamento } from '@/utilitarios/fornecedoresCasamento'
+import { excedenteOrcamento, proporcaoContratada, proporcoesPagamento } from '@/utilitarios/fornecedoresEvento'
 
 const props = withDefaults(defineProps<{ resumo: ResumoOrcamentoDto; exibirPagamentos?: boolean }>(), {
   exibirPagamentos: false,

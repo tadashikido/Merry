@@ -6,15 +6,15 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class AplicacaoModeloCronogramaRepository : IAplicacaoModeloCronogramaRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public AplicacaoModeloCronogramaRepository(CasamentoDbContext contexto)
+    public AplicacaoModeloCronogramaRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }
 
     public async Task<IReadOnlyList<Guid>> ListarOrigensAplicadasAsync(
-        Guid casamentoId,
+        Guid eventoId,
         IReadOnlyCollection<Guid> itensModelo,
         CancellationToken cancelamento)
     {
@@ -25,7 +25,7 @@ public class AplicacaoModeloCronogramaRepository : IAplicacaoModeloCronogramaRep
 
         return await _contexto.ItensCronograma
             .AsNoTracking()
-            .Where(item => item.CasamentoId == casamentoId
+            .Where(item => item.EventoId == eventoId
                 && item.OrigemModeloItemId != null
                 && itensModelo.Contains(item.OrigemModeloItemId.Value))
             .Select(item => item.OrigemModeloItemId!.Value)
@@ -33,12 +33,12 @@ public class AplicacaoModeloCronogramaRepository : IAplicacaoModeloCronogramaRep
     }
 
     public async Task<IReadOnlyList<ItemCronograma>> ListarAncoradosAsync(
-        Guid casamentoId,
+        Guid eventoId,
         bool rastrear,
         CancellationToken cancelamento)
     {
         var consulta = _contexto.ItensCronograma
-            .Where(item => item.CasamentoId == casamentoId && item.MinutosRelativosCerimonia != null);
+            .Where(item => item.EventoId == eventoId && item.MinutosRelativosCerimonia != null);
 
         if (!rastrear)
         {

@@ -47,7 +47,7 @@ describe('contraste', () => {
       fundo: coresMarca.branco,
       superficie: coresMarca.superficie,
       borda: coresMarca.linha,
-      fundoCasal: coresMarca.superficieAzulada,
+      fundoAnfitriao: coresMarca.superficieAzulada,
       navegacao: coresMarca.branco,
       navegacaoAtivo: coresMarca.marinho,
     })

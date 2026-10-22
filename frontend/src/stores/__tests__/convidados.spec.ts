@@ -15,8 +15,8 @@ vi.mock('@/servicos/clienteHttp', async (importarOriginal) => {
 
 const requisitarSimulado = vi.mocked(requisitar)
 
-const CASAMENTO = '11111111-1111-4111-8111-111111111111'
-const OUTRO_CASAMENTO = '22222222-2222-4222-8222-222222222222'
+const EVENTO = '11111111-1111-4111-8111-111111111111'
+const OUTRO_EVENTO = '22222222-2222-4222-8222-222222222222'
 
 const TOTAIS: TotaisConvidadosDto = {
   convites: 1,
@@ -41,7 +41,7 @@ const CONVITE: ConviteDto = {
   respondidoEm: null,
 }
 
-const LISTA: ListaConvitesDto = { convites: [CONVITE], totais: TOTAIS, convidadosEstimados: 150, casamentoArquivado: false }
+const LISTA: ListaConvitesDto = { convites: [CONVITE], totais: TOTAIS, convidadosEstimados: 150, eventoArquivado: false }
 
 const REQUEST: SalvarConviteRequest = {
   nome: 'Família Souza',
@@ -56,35 +56,35 @@ describe('useConvidadosStore', () => {
     requisitarSimulado.mockReset()
   })
 
-  it('[UNITÁRIO] monta rotas aninhadas no casamento com ids codificados', () => {
-    expect(rotaConvites(CASAMENTO)).toBe(`/api/casamentos/${CASAMENTO}/convites`)
-    expect(rotaConvites(CASAMENTO, 'a/b')).toBe(`/api/casamentos/${CASAMENTO}/convites/a%2Fb`)
+  it('[UNITÁRIO] monta rotas aninhadas no evento com ids codificados', () => {
+    expect(rotaConvites(EVENTO)).toBe(`/api/eventos/${EVENTO}/convites`)
+    expect(rotaConvites(EVENTO, 'a/b')).toBe(`/api/eventos/${EVENTO}/convites/a%2Fb`)
   })
 
-  it('[UNITÁRIO] carrega a lista do casamento', async () => {
+  it('[UNITÁRIO] carrega a lista do evento', async () => {
     requisitarSimulado.mockResolvedValue(LISTA)
     const store = useConvidadosStore()
 
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
-    expect(requisitarSimulado).toHaveBeenCalledWith(`/api/casamentos/${CASAMENTO}/convites`)
+    expect(requisitarSimulado).toHaveBeenCalledWith(`/api/eventos/${EVENTO}/convites`)
     expect(store.lista).toEqual(LISTA)
-    expect(store.casamentoId).toBe(CASAMENTO)
+    expect(store.eventoId).toBe(EVENTO)
     expect(store.carregando).toBe(false)
   })
 
-  it('[UNITÁRIO] descarta resposta atrasada de outro casamento', async () => {
+  it('[UNITÁRIO] descarta resposta atrasada de outro evento', async () => {
     let resolverPrimeira: (valor: ListaConvitesDto) => void = () => {}
     requisitarSimulado.mockImplementationOnce(() => new Promise((resolver) => (resolverPrimeira = resolver as typeof resolverPrimeira)))
     requisitarSimulado.mockResolvedValueOnce({ ...LISTA, convites: [] })
     const store = useConvidadosStore()
 
-    const primeira = store.carregar(CASAMENTO)
-    await store.carregar(OUTRO_CASAMENTO)
+    const primeira = store.carregar(EVENTO)
+    await store.carregar(OUTRO_EVENTO)
     resolverPrimeira(LISTA)
     await primeira
 
-    expect(store.casamentoId).toBe(OUTRO_CASAMENTO)
+    expect(store.eventoId).toBe(OUTRO_EVENTO)
     expect(store.lista?.convites).toEqual([])
   })
 
@@ -92,17 +92,17 @@ describe('useConvidadosStore', () => {
     requisitarSimulado.mockRejectedValue(new ErroApi('Não foi possível conectar à API.', 0, null))
     const store = useConvidadosStore()
 
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
     expect(store.lista).toBeNull()
     expect(store.falha?.tipo).toBe('conexao')
   })
 
-  it('[SEGURANÇA] 404 do casamento de outra organização vira naoEncontrado', async () => {
+  it('[SEGURANÇA] 404 do evento de outra organização vira naoEncontrado', async () => {
     requisitarSimulado.mockRejectedValue(new ErroApi('Recurso não encontrado.', 404, null))
     const store = useConvidadosStore()
 
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
     expect(store.falha?.tipo).toBe('naoEncontrado')
   })
@@ -111,23 +111,23 @@ describe('useConvidadosStore', () => {
     requisitarSimulado.mockResolvedValue(TOTAIS)
     const store = useConvidadosStore()
 
-    await store.carregarTotais(CASAMENTO)
+    await store.carregarTotais(EVENTO)
 
-    expect(requisitarSimulado).toHaveBeenCalledWith(`/api/casamentos/${CASAMENTO}/convites/totais`)
+    expect(requisitarSimulado).toHaveBeenCalledWith(`/api/eventos/${EVENTO}/convites/totais`)
     expect(store.totais).toEqual(TOTAIS)
-    expect(store.casamentoIdTotais).toBe(CASAMENTO)
+    expect(store.eventoIdTotais).toBe(EVENTO)
   })
 
   it('[UNITÁRIO] criar envia POST, invalida os totais e não refaz a busca da lista', async () => {
     requisitarSimulado.mockResolvedValueOnce(LISTA).mockResolvedValueOnce(TOTAIS).mockResolvedValueOnce(CONVITE)
     const store = useConvidadosStore()
-    await store.carregar(CASAMENTO)
-    await store.carregarTotais(CASAMENTO)
+    await store.carregar(EVENTO)
+    await store.carregarTotais(EVENTO)
 
-    const resultado = await store.criar(CASAMENTO, REQUEST)
+    const resultado = await store.criar(EVENTO, REQUEST)
 
     expect(resultado).toEqual({ ok: true, valor: CONVITE })
-    expect(requisitarSimulado).toHaveBeenCalledWith(`/api/casamentos/${CASAMENTO}/convites`, { metodo: 'POST', corpo: REQUEST })
+    expect(requisitarSimulado).toHaveBeenCalledWith(`/api/eventos/${EVENTO}/convites`, { metodo: 'POST', corpo: REQUEST })
     expect(requisitarSimulado).toHaveBeenCalledTimes(3)
     expect(store.totais).toBeNull()
   })
@@ -136,12 +136,12 @@ describe('useConvidadosStore', () => {
     requisitarSimulado.mockResolvedValue(CONVITE)
     const store = useConvidadosStore()
 
-    await store.atualizar(CASAMENTO, 'c1', REQUEST)
+    await store.atualizar(EVENTO, 'c1', REQUEST)
     requisitarSimulado.mockResolvedValue(undefined)
-    const remocao = await store.remover(CASAMENTO, 'c1')
+    const remocao = await store.remover(EVENTO, 'c1')
 
-    expect(requisitarSimulado).toHaveBeenCalledWith(`/api/casamentos/${CASAMENTO}/convites/c1`, { metodo: 'PUT', corpo: REQUEST })
-    expect(requisitarSimulado).toHaveBeenCalledWith(`/api/casamentos/${CASAMENTO}/convites/c1`, { metodo: 'DELETE' })
+    expect(requisitarSimulado).toHaveBeenCalledWith(`/api/eventos/${EVENTO}/convites/c1`, { metodo: 'PUT', corpo: REQUEST })
+    expect(requisitarSimulado).toHaveBeenCalledWith(`/api/eventos/${EVENTO}/convites/c1`, { metodo: 'DELETE' })
     expect(remocao.ok).toBe(true)
   })
 
@@ -151,7 +151,7 @@ describe('useConvidadosStore', () => {
     )
     const store = useConvidadosStore()
 
-    const resultado = await store.criar(CASAMENTO, REQUEST)
+    const resultado = await store.criar(EVENTO, REQUEST)
 
     expect(resultado).toEqual({
       ok: false,
@@ -167,14 +167,14 @@ describe('useConvidadosStore', () => {
   })
 
   it('[UNITÁRIO] 422 traz a mensagem de regra; 403 vira semPermissao', async () => {
-    requisitarSimulado.mockRejectedValueOnce(new ErroApi('Regra', 422, { detail: 'Este casamento está arquivado.' }))
+    requisitarSimulado.mockRejectedValueOnce(new ErroApi('Regra', 422, { detail: 'Este evento está arquivado.' }))
     requisitarSimulado.mockRejectedValueOnce(new ErroApi('Proibido', 403, null))
     const store = useConvidadosStore()
 
-    const regra = await store.criar(CASAMENTO, REQUEST)
-    const permissao = await store.remover(CASAMENTO, 'c1')
+    const regra = await store.criar(EVENTO, REQUEST)
+    const permissao = await store.remover(EVENTO, 'c1')
 
-    expect(regra).toEqual({ ok: false, falha: { tipo: 'regra', mensagem: 'Este casamento está arquivado.', errosCampos: {} } })
+    expect(regra).toEqual({ ok: false, falha: { tipo: 'regra', mensagem: 'Este evento está arquivado.', errosCampos: {} } })
     expect(permissao.ok ? null : permissao.falha.tipo).toBe('semPermissao')
   })
 
@@ -182,8 +182,8 @@ describe('useConvidadosStore', () => {
     requisitarSimulado.mockResolvedValueOnce(CONVITE).mockRejectedValueOnce(new ErroApi('Não encontrado', 404, null))
     const store = useConvidadosStore()
 
-    expect(await store.obter(CASAMENTO, 'c1')).toEqual({ ok: true, valor: CONVITE })
-    const falha = await store.obter(CASAMENTO, 'c2')
+    expect(await store.obter(EVENTO, 'c1')).toEqual({ ok: true, valor: CONVITE })
+    const falha = await store.obter(EVENTO, 'c2')
     expect(falha.ok ? null : falha.falha.tipo).toBe('naoEncontrado')
     expect(store.lista).toBeNull()
   })
@@ -193,13 +193,13 @@ describe('useConvidadosStore', () => {
     const autenticacao = useAutenticacaoStore()
     autenticacao.usuario = SESSAO_EXEMPLO.usuario
     const store = useConvidadosStore()
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
     autenticacao.usuario = null
     await nextTick()
 
     expect(store.lista).toBeNull()
-    expect(store.casamentoId).toBeNull()
+    expect(store.eventoId).toBeNull()
   })
 
   it('[UNITÁRIO] normaliza chaves de erro do ASP.NET', () => {

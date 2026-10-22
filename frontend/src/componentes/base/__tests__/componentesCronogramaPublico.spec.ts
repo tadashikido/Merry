@@ -63,7 +63,7 @@ describe('CabecalhoOperacao', () => {
       },
     })
 
-    expect(wrapper.get('h1').text()).toContain('Cronograma do casamento de Ana & Bruno')
+    expect(wrapper.get('h1').text()).toContain('Cronograma do evento de Ana & Bruno')
     expect(wrapper.get('[data-teste="cabecalho-operacao-data"]').text()).toBe('Sábado, 15 de maio de 2027')
     expect(wrapper.get('[data-teste="cabecalho-operacao-filtro"]').text()).toBe('Seus horários · Buffet Sabor')
     expect(wrapper.get('dt').text()).toBe('Cerimônia')

@@ -2,10 +2,10 @@ namespace Celebri.Aplicacao.Financeiro;
 
 public sealed record ParcelaAlertaDto(
     Guid ParcelaId,
-    Guid CasamentoId,
+    Guid EventoId,
     string NomePrimeiraPessoa,
     string NomeSegundaPessoa,
-    Guid FornecedorCasamentoId,
+    Guid FornecedorEventoId,
     string NomeEmpresa,
     int Numero,
     int TotalParcelas,

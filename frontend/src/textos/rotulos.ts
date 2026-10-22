@@ -18,14 +18,14 @@ export const ROTULOS_ACOES = {
 export const ROTULOS_NAVEGACAO = {
   pularConteudo: 'Pular para o conteúdo',
   navegacaoGlobal: 'Navegação global',
-  modulosCasamento: 'Módulos do casamento',
-  rotuloCasamento: 'Casamento',
-  quandoCasamento: (data: string, contagem: string) => `${data} · ${contagem.charAt(0).toLowerCase()}${contagem.slice(1)}`,
+  modulosEvento: 'Módulos do evento',
+  rotuloEvento: 'Evento',
+  quandoEvento: (data: string, contagem: string) => `${data} · ${contagem.charAt(0).toLowerCase()}${contagem.slice(1)}`,
   trilha: 'Você está em',
-  trocarCasamento: 'Trocar de casamento',
-  buscarCasamento: 'Buscar casal',
-  nenhumCasamento: 'Nenhum casal encontrado',
-  casamentoGenerico: 'Casamento',
+  trocarEvento: 'Trocar de evento',
+  buscarEvento: 'Buscar anfitriões',
+  nenhumEvento: 'Nenhum anfitrião encontrado',
+  eventoGenerico: 'Evento',
 } as const
 
 export const ROTULOS_LISTAGEM = {
@@ -39,14 +39,14 @@ export const ROTULOS_CAMPOS = {
 
 export const VALOR_AUSENTE = '—'
 
-export const ROTULOS_GRUPOS_CASAMENTO = {
+export const ROTULOS_GRUPOS_EVENTO = {
   planejar: 'Planejar',
   pessoas: 'Pessoas',
   dinheiroDocumentos: 'Dinheiro & documentos',
   execucao: 'Execução',
 } as const
 
-export const ROTULOS_MODULOS_CASAMENTO = {
+export const ROTULOS_MODULOS_EVENTO = {
   visaoGeral: 'Visão geral',
   tarefas: 'Tarefas',
   checklist: 'Checklist',

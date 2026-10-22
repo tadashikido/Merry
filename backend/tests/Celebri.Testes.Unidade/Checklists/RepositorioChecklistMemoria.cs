@@ -7,27 +7,27 @@ namespace Celebri.Testes.Unidade.Checklists;
 
 public sealed class RepositorioChecklistMemoria : IChecklistRepository
 {
-    public List<TarefaCasamento> Tarefas { get; } = [];
+    public List<TarefaEvento> Tarefas { get; } = [];
 
     public List<ItemModeloChecklist> Itens { get; } = [];
 
-    public Task<ProgressoChecklist> ObterProgressoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<ProgressoChecklist> ObterProgressoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        return Task.FromResult(ChecklistCasamentoService.Calcular(DoChecklist(casamentoId).ToList()));
+        return Task.FromResult(ChecklistEventoService.Calcular(DoChecklist(eventoId).ToList()));
     }
 
-    public Task<IReadOnlyList<TarefaCasamento>> ListarTarefasAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<IReadOnlyList<TarefaEvento>> ListarTarefasAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        IReadOnlyList<TarefaCasamento> resultado = DoChecklist(casamentoId).ToList();
+        IReadOnlyList<TarefaEvento> resultado = DoChecklist(eventoId).ToList();
         return Task.FromResult(resultado);
     }
 
     public Task<IReadOnlyList<Guid>> ListarOrigensAplicadasAsync(
-        Guid casamentoId,
+        Guid eventoId,
         IReadOnlyCollection<Guid> itensModelo,
         CancellationToken cancelamento)
     {
-        IReadOnlyList<Guid> resultado = DoChecklist(casamentoId)
+        IReadOnlyList<Guid> resultado = DoChecklist(eventoId)
             .Select(tarefa => tarefa.OrigemModeloItemId!.Value)
             .Where(itensModelo.Contains)
             .ToList();
@@ -35,19 +35,19 @@ public sealed class RepositorioChecklistMemoria : IChecklistRepository
     }
 
     public Task<IReadOnlyList<TarefaComPrazoRelativo>> ListarAbertasComPrazoRelativoAsync(
-        Guid casamentoId,
+        Guid eventoId,
         bool rastrear,
         CancellationToken cancelamento)
     {
-        IReadOnlyList<TarefaComPrazoRelativo> resultado = DoChecklist(casamentoId)
+        IReadOnlyList<TarefaComPrazoRelativo> resultado = DoChecklist(eventoId)
             .Where(tarefa => tarefa.EstaAberta)
-            .Join(Itens, tarefa => tarefa.OrigemModeloItemId, item => item.Id, (tarefa, item) => new TarefaComPrazoRelativo(tarefa, item.DiasAntesDoCasamento))
+            .Join(Itens, tarefa => tarefa.OrigemModeloItemId, item => item.Id, (tarefa, item) => new TarefaComPrazoRelativo(tarefa, item.DiasAntesDoEvento))
             .ToList();
         return Task.FromResult(resultado);
     }
 
-    private IEnumerable<TarefaCasamento> DoChecklist(Guid casamentoId)
+    private IEnumerable<TarefaEvento> DoChecklist(Guid eventoId)
     {
-        return Tarefas.Where(tarefa => tarefa.CasamentoId == casamentoId && tarefa.OrigemModeloItemId is not null);
+        return Tarefas.Where(tarefa => tarefa.EventoId == eventoId && tarefa.OrigemModeloItemId is not null);
     }
 }

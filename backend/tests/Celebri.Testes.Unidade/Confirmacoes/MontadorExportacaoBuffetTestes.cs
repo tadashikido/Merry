@@ -44,10 +44,10 @@ public class MontadorExportacaoBuffetTestes
     [Fact]
     public void Montar_DeveIncluirSoConfirmadosAgrupadosPorConviteOrdenados()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
-        var convites = CalculadoraPainelConfirmacoesTestes.CenarioDoCriterio(casamento.Id);
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
+        var convites = CalculadoraPainelConfirmacoesTestes.CenarioDoCriterio(evento.Id);
 
-        var exportacao = MontadorExportacaoBuffet.Montar(casamento, convites, Relatorio(), Agora);
+        var exportacao = MontadorExportacaoBuffet.Montar(evento, convites, Relatorio(), Agora);
 
         Assert.Equal(["Álvaro", "Zélia"], exportacao.Convites.Select(convite => convite.Nome));
         Assert.Equal(["Álvaro"], exportacao.Convites[0].Pessoas.Select(pessoa => pessoa.Nome));
@@ -60,26 +60,26 @@ public class MontadorExportacaoBuffetTestes
     }
 
     [Fact]
-    public void Montar_DeveCopiarDadosDoCasamentoSemContato()
+    public void Montar_DeveCopiarDadosDoEventoSemContato()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
 
-        var exportacao = MontadorExportacaoBuffet.Montar(casamento, [], Relatorio(), Agora);
+        var exportacao = MontadorExportacaoBuffet.Montar(evento, [], Relatorio(), Agora);
 
-        Assert.Equal(new CasamentoExportacaoDto("Ana", "Bruno", new DateOnly(2027, 5, 22), "16:30", "Espaço Jardim"), exportacao.Casamento);
+        Assert.Equal(new EventoExportacaoDto("Ana", "Bruno", new DateOnly(2027, 5, 22), "16:30", "Espaço Jardim"), exportacao.Evento);
         Assert.Empty(exportacao.Convites);
     }
 
     [Fact]
     public void Montar_RestricoesNominais_DeveTrazerSoConfirmadosComNomeDoConvite()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
-        var convites = CalculadoraPainelConfirmacoesTestes.CenarioDoCriterio(casamento.Id);
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
+        var convites = CalculadoraPainelConfirmacoesTestes.CenarioDoCriterio(evento.Id);
         var teo = convites[0].Convidados.Single(convidado => convidado.Nome == "Téo");
         var bia = convites[1].Convidados.Single(convidado => convidado.Nome == "Bia");
 
         var exportacao = MontadorExportacaoBuffet.Montar(
-            casamento,
+            evento,
             convites,
             Relatorio(Restricao(teo, "Confirmado", "sem porco"), Restricao(bia, "Pendente")),
             Agora);
@@ -102,11 +102,11 @@ public class MontadorExportacaoBuffetTestes
     [Fact]
     public void Montar_JsonSerializado_NaoDeveConterContatoNemIds()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
-        var convites = CalculadoraPainelConfirmacoesTestes.CenarioDoCriterio(casamento.Id);
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
+        var convites = CalculadoraPainelConfirmacoesTestes.CenarioDoCriterio(evento.Id);
         var teo = convites[0].Convidados.Single(convidado => convidado.Nome == "Téo");
 
-        var exportacao = MontadorExportacaoBuffet.Montar(casamento, convites, Relatorio(Restricao(teo, "Confirmado")), Agora);
+        var exportacao = MontadorExportacaoBuffet.Montar(evento, convites, Relatorio(Restricao(teo, "Confirmado")), Agora);
         var json = JsonSerializer.Serialize(exportacao);
 
         Assert.DoesNotContain("987654321", json, StringComparison.Ordinal);

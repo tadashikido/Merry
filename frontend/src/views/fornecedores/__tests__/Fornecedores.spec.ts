@@ -10,7 +10,7 @@ import router from '@/router'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
-import { RaizRotas, chamadas, quando, rotearFetch } from '../../casamentos/__tests__/auxiliaresCasamentos'
+import { RaizRotas, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -180,11 +180,11 @@ describe('FornecedoresView', () => {
 })
 
 describe('FornecedorView', () => {
-  it('[COMPONENTE] mostra contato, observações e a seção de casamentos em estado vazio', async () => {
+  it('[COMPONENTE] mostra contato, observações e a seção de eventos em estado vazio', async () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
-      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson([])),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaJson([])),
     )
 
     const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
@@ -199,7 +199,7 @@ describe('FornecedorView', () => {
       'site',
       'instagram',
     ])
-    const historico = wrapper.get('[data-teste="historico-casamentos"]')
+    const historico = wrapper.get('[data-teste="historico-eventos"]')
     expect(historico.text()).toContain(TEXTOS_FORNECEDORES.historicoTitulo)
     expect(historico.text()).toContain(TEXTOS_FORNECEDORES.historicoVazioTitulo)
     expect(wrapper.find('[data-teste="editar-fornecedor"]').exists()).toBe(true)
@@ -242,31 +242,31 @@ describe('FornecedorView', () => {
   })
 })
 
-describe('FornecedorView — casamentos em que participou', () => {
+describe('FornecedorView — eventos em que participou', () => {
   const PARTICIPACOES = [
     {
-      casamentoId: '55555555-5555-4555-8555-555555555555',
+      eventoId: '55555555-5555-4555-8555-555555555555',
       nomePrimeiraPessoa: 'Ana',
       nomeSegundaPessoa: 'João',
-      dataCasamento: '2026-12-12',
-      casamentoArquivado: false,
+      dataEvento: '2026-12-12',
+      eventoArquivado: false,
       status: 'Contratado',
     },
     {
-      casamentoId: '66666666-6666-4666-8666-666666666666',
+      eventoId: '66666666-6666-4666-8666-666666666666',
       nomePrimeiraPessoa: 'Beatriz',
       nomeSegundaPessoa: 'Rafael',
-      dataCasamento: '2025-09-12',
-      casamentoArquivado: true,
+      dataEvento: '2025-09-12',
+      eventoArquivado: true,
       status: 'Cancelado',
     },
   ]
 
-  it('[COMPONENTE] lista os casamentos com data, status e selo de arquivado, com link para o módulo do casamento', async () => {
+  it('[COMPONENTE] lista os eventos com data, status e selo de arquivado, com link para o módulo do evento', async () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
-      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson(PARTICIPACOES)),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaJson(PARTICIPACOES)),
     )
 
     const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
@@ -276,7 +276,7 @@ describe('FornecedorView — casamentos em que participou', () => {
     expect(itens[0]!.text()).toContain('Ana & João')
     expect(itens[0]!.text()).toContain('12 dez 2026')
     expect(itens[0]!.text()).toContain('Contratado')
-    expect(itens[0]!.get('a').attributes('href')).toBe('/casamentos/55555555-5555-4555-8555-555555555555/fornecedores')
+    expect(itens[0]!.get('a').attributes('href')).toBe('/eventos/55555555-5555-4555-8555-555555555555/fornecedores')
     expect(itens[1]!.text()).toContain('Cancelado')
     expect(itens[1]!.text()).toContain('Arquivado')
     expect(wrapper.text()).not.toContain(TEXTOS_FORNECEDORES.historicoVazioTitulo)
@@ -287,7 +287,7 @@ describe('FornecedorView — casamentos em que participou', () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
-      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => {
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => {
         tentativas += 1
         return tentativas === 1 ? respostaProblema(500, { title: 'Erro' }) : respostaJson(PARTICIPACOES)
       }),
@@ -296,17 +296,17 @@ describe('FornecedorView — casamentos em que participou', () => {
     const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
 
     const erro = wrapper.get('[data-teste="erro-historico"]')
-    expect(erro.text()).toContain('Não foi possível carregar os casamentos deste fornecedor.')
+    expect(erro.text()).toContain('Não foi possível carregar os eventos deste fornecedor.')
     await erro.get('button').trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-teste="lista-historico"]').exists()).toBe(true)
   })
 
-  it('[SEGURANÇA] excluir fornecedor que participou de casamento oferece arquivar e não chama o DELETE', async () => {
+  it('[SEGURANÇA] excluir fornecedor que participou de evento oferece arquivar e não chama o DELETE', async () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
-      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson(PARTICIPACOES)),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaJson(PARTICIPACOES)),
       quando('POST', `${ROTA_FORNECEDOR}/arquivar`, () => respostaJson(fornecedorCompleto({ arquivado: true, arquivadoEm: '2026-09-30T13:00:00Z' }))),
     )
     const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
@@ -315,7 +315,7 @@ describe('FornecedorView — casamentos em que participou', () => {
     await flushPromises()
 
     const dialogo = document.body.querySelector('[data-teste="dialogo-confirmacao"]')
-    expect(dialogo?.textContent).toContain('participou de 2 casamentos e não pode ser excluído')
+    expect(dialogo?.textContent).toContain('participou de 2 eventos e não pode ser excluído')
     const confirmar = Array.from(document.body.querySelectorAll('[data-teste="dialogo-confirmacao"] button')).find(
       (botao) => botao.textContent?.trim() === TEXTOS_FORNECEDORES.arquivar,
     ) as HTMLButtonElement
@@ -330,9 +330,9 @@ describe('FornecedorView — casamentos em que participou', () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
-      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson([])),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaJson([])),
       quando('DELETE', ROTA_FORNECEDOR, () =>
-        respostaProblema(422, { title: 'Regra', detail: 'Este fornecedor já participou de casamentos. Arquive-o em vez de excluir.' }),
+        respostaProblema(422, { title: 'Regra', detail: 'Este fornecedor já participou de eventos. Arquive-o em vez de excluir.' }),
       ),
     )
     const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
@@ -342,7 +342,7 @@ describe('FornecedorView — casamentos em que participou', () => {
     await useConfirmacaoExclusaoStore().confirmar()
     await flushPromises()
 
-    expect(notificacoes.erro).toHaveBeenCalledWith('Este fornecedor já participou de casamentos. Arquive-o em vez de excluir.')
+    expect(notificacoes.erro).toHaveBeenCalledWith('Este fornecedor já participou de eventos. Arquive-o em vez de excluir.')
   })
 })
 
@@ -460,7 +460,7 @@ describe('FornecedoresView — reestruturação da fundação', () => {
   })
 
   it('[COMPONENTE] nome longo sem espaços é renderizado inteiro na linha', async () => {
-    const nomeLongo = 'AtelierFloralJardimSecretoDecoracoesParaCasamentosEEventosEspeciaisLtda'
+    const nomeLongo = 'AtelierFloralJardimSecretoDecoracoesParaEventosEEventosEspeciaisLtda'
     rotearFetch(fetchSimulado, quando('GET', ROTA, () => respostaJson([resumoFornecedor({ nomeEmpresa: nomeLongo })])))
     const { wrapper } = await abrir('/fornecedores')
 
@@ -506,11 +506,11 @@ describe('FornecedoresView — reestruturação da fundação', () => {
 
 describe('FornecedorView — reestruturação da fundação', () => {
   const PARTICIPACAO_LONGA = {
-    casamentoId: '77777777-7777-4777-8777-777777777777',
+    eventoId: '77777777-7777-4777-8777-777777777777',
     nomePrimeiraPessoa: 'MariaEduardaFigueiredoDeAlbuquerqueCavalcanti',
     nomeSegundaPessoa: 'Rafael',
-    dataCasamento: '2026-11-07',
-    casamentoArquivado: false,
+    dataEvento: '2026-11-07',
+    eventoArquivado: false,
     status: 'EmNegociacao',
   }
 
@@ -518,7 +518,7 @@ describe('FornecedorView — reestruturação da fundação', () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
-      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson([PARTICIPACAO_LONGA])),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaJson([PARTICIPACAO_LONGA])),
     )
     const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
 
@@ -526,7 +526,7 @@ describe('FornecedorView — reestruturação da fundação', () => {
     expect(raiz.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
     const corpo = raiz.get('.fornecedor__corpo')
     const ficha = corpo.get('[data-teste="ficha-fornecedor"]')
-    const historico = corpo.get('[data-teste="historico-casamentos"]')
+    const historico = corpo.get('[data-teste="historico-eventos"]')
     expect(ficha.element.tagName).toBe('ASIDE')
     expect(ficha.element.compareDocumentPosition(historico.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(ficha.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
@@ -549,7 +549,7 @@ describe('FornecedorView — reestruturação da fundação', () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
-      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaProblema(500, { title: 'Erro' })),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaProblema(500, { title: 'Erro' })),
     )
     const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
 
@@ -562,10 +562,10 @@ describe('FornecedorView — reestruturação da fundação', () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
-      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson([])),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaJson([])),
     )
     const segunda = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
-    const vazio = segunda.wrapper.get('[data-teste="historico-casamentos"]').get('.cartao')
+    const vazio = segunda.wrapper.get('[data-teste="historico-eventos"]').get('.cartao')
     expect(vazio.text()).toContain(TEXTOS_FORNECEDORES.historicoVazioTitulo)
   })
 
@@ -573,7 +573,7 @@ describe('FornecedorView — reestruturação da fundação', () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto({ arquivado: true, arquivadoEm: '2026-09-30T13:00:00Z' }))),
-      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson([])),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaJson([])),
     )
     const primeira = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
     const faixa = primeira.wrapper.get('[data-teste="faixa-arquivado"]')
@@ -589,11 +589,11 @@ describe('FornecedorView — reestruturação da fundação', () => {
   })
 
   it('[COMPONENTE] nome de empresa longo sem espaços aparece inteiro no título', async () => {
-    const nomeLongo = 'AtelierFloralJardimSecretoDecoracoesParaCasamentosEEventosEspeciaisLtda'
+    const nomeLongo = 'AtelierFloralJardimSecretoDecoracoesParaEventosEEventosEspeciaisLtda'
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto({ nomeEmpresa: nomeLongo }))),
-      quando('GET', `${ROTA_FORNECEDOR}/casamentos`, () => respostaJson([])),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaJson([])),
     )
     const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`, true)
 

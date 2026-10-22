@@ -134,25 +134,25 @@ export function descreverPrazo(tarefa: Pick<TarefaDto, 'prazo' | 'diasParaPrazo'
   return TEXTOS_TAREFAS.prazoFuturo(dias, data)
 }
 
-export function descreverConclusao(tarefa: TarefaDto, visaoDoCasal: boolean): string | null {
+export function descreverConclusao(tarefa: TarefaDto, visaoDoAnfitriao: boolean): string | null {
   if (tarefa.status !== 'Concluida' || !tarefa.concluidaEm) {
     return null
   }
   const data = formatarData(tarefa.concluidaEm)
-  if (tarefa.concluidaPor === 'Casal') {
-    return visaoDoCasal ? TEXTOS_TAREFAS.concluidaPorVoces(data) : TEXTOS_TAREFAS.concluidaPeloCasal(data)
+  if (tarefa.concluidaPor === 'Anfitriao') {
+    return visaoDoAnfitriao ? TEXTOS_TAREFAS.concluidaPorVoces(data) : TEXTOS_TAREFAS.concluidaPeloAnfitriao(data)
   }
   return TEXTOS_TAREFAS.concluidaPorAssessoria(data)
 }
 
-export function metadadosTarefa(tarefa: TarefaDto, visaoDoCasal: boolean): string[] {
-  const conclusao = descreverConclusao(tarefa, visaoDoCasal)
+export function metadadosTarefa(tarefa: TarefaDto, visaoDoAnfitriao: boolean): string[] {
+  const conclusao = descreverConclusao(tarefa, visaoDoAnfitriao)
   const itens: string[] = []
-  if (!visaoDoCasal) {
+  if (!visaoDoAnfitriao) {
     itens.push(ROTULOS_RESPONSAVEL_TAREFA[tarefa.responsavel])
   }
   itens.push(conclusao ?? descreverPrazo(tarefa))
-  if (!visaoDoCasal && tarefa.categoria !== 'Geral') {
+  if (!visaoDoAnfitriao && tarefa.categoria !== 'Geral') {
     itens.push(ROTULOS_CATEGORIA_TAREFA[tarefa.categoria])
   }
   return itens

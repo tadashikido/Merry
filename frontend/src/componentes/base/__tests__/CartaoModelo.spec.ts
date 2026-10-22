@@ -24,7 +24,7 @@ const propsPadrao: {
   rotuloAcoes: string
   rotuloAcessivelAcoes: string
 } = {
-  nome: 'Casamento no campo',
+  nome: 'Evento no campo',
   descricao: 'Cerimônia ao ar livre com tenda.',
   rota: { name: 'detalhe', params: { modeloId: 'm1' } },
   contagem: '18 itens',
@@ -32,7 +32,7 @@ const propsPadrao: {
   rotuloSugerido: 'Sugerido',
   acoes,
   rotuloAcoes: 'Mais ações',
-  rotuloAcessivelAcoes: 'Mais ações para Casamento no campo',
+  rotuloAcessivelAcoes: 'Mais ações para Evento no campo',
 }
 
 let wrapper: VueWrapper | undefined
@@ -68,12 +68,12 @@ describe('CartaoModelo', () => {
     const { wrapper } = await montar()
 
     const titulo = wrapper.get('h2')
-    expect(titulo.text()).toBe('Casamento no campo')
+    expect(titulo.text()).toBe('Evento no campo')
     expect(titulo.get('[data-teste="link-modelo"]').attributes('href')).toBe('/modelos/m1')
     expect(wrapper.get('[data-teste="descricao-modelo"]').text()).toBe('Cerimônia ao ar livre com tenda.')
     expect(wrapper.text()).toContain('Sugerido')
     expect(wrapper.get('[data-teste="contagem-modelo"]').text()).toBe('18 itens')
-    expect(wrapper.get('[data-teste="menu-acoes"]').attributes('aria-label')).toBe('Mais ações para Casamento no campo')
+    expect(wrapper.get('[data-teste="menu-acoes"]').attributes('aria-label')).toBe('Mais ações para Evento no campo')
   })
 
   it('[COMPONENTE] sem descrição e não sugerido omite os dois blocos', async () => {

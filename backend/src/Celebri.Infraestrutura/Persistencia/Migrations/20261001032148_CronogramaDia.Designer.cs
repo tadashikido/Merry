@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Celebri.Infraestrutura.Persistencia.Migrations
 {
-    [DbContext(typeof(CasamentoDbContext))]
+    [DbContext(typeof(CelebriDbContext))]
     [Migration("20261001032148_CronogramaDia")]
     partial class CronogramaDia
     {

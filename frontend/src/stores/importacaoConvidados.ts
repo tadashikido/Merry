@@ -25,13 +25,13 @@ export function interpretarFalhaImportacao(erro: unknown): FalhaConvidados {
   return interpretarFalhaConvidados(erro)
 }
 
-export function rotaImportacao(casamentoId: string, previa = false): string {
-  const base = `${rotaConvites(casamentoId)}/importacao`
+export function rotaImportacao(eventoId: string, previa = false): string {
+  const base = `${rotaConvites(eventoId)}/importacao`
   return previa ? `${base}/pre-visualizacao` : base
 }
 
 export const useImportacaoConvidadosStore = defineStore('importacaoConvidados', () => {
-  const casamentoId = ref<string | null>(null)
+  const eventoId = ref<string | null>(null)
   const arquivo = ref<File | null>(null)
   const previa = ref<PreVisualizacaoImportacaoDto | null>(null)
   const resultado = ref<ResultadoImportacaoDto | null>(null)
@@ -46,7 +46,7 @@ export const useImportacaoConvidadosStore = defineStore('importacaoConvidados', 
   }
 
   async function preVisualizar(id: string, conteudo: File): Promise<ResultadoConvidados<PreVisualizacaoImportacaoDto>> {
-    casamentoId.value = id
+    eventoId.value = id
     arquivo.value = conteudo
     previa.value = null
     resultado.value = null
@@ -59,26 +59,26 @@ export const useImportacaoConvidadosStore = defineStore('importacaoConvidados', 
         corpo: montarFormulario(conteudo),
         tempoLimiteMs: TEMPO_LIMITE_IMPORTACAO_MS,
       })
-      if (casamentoId.value === id && arquivo.value === conteudo) {
+      if (eventoId.value === id && arquivo.value === conteudo) {
         previa.value = resposta
       }
       return { ok: true, valor: resposta }
     } catch (erro) {
       const interpretada = interpretarFalhaImportacao(erro)
-      if (casamentoId.value === id && arquivo.value === conteudo) {
+      if (eventoId.value === id && arquivo.value === conteudo) {
         falha.value = interpretada
         arquivo.value = null
       }
       return { ok: false, falha: interpretada }
     } finally {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         enviando.value = false
       }
     }
   }
 
   async function importar(somenteValidos: boolean): Promise<ResultadoConvidados<ResultadoImportacaoDto>> {
-    const id = casamentoId.value
+    const id = eventoId.value
     const conteudo = arquivo.value
     const atual = previa.value
     if (!id || !conteudo || !atual) {
@@ -113,7 +113,7 @@ export const useImportacaoConvidadosStore = defineStore('importacaoConvidados', 
   }
 
   function limpar() {
-    casamentoId.value = null
+    eventoId.value = null
     arquivo.value = null
     previa.value = null
     resultado.value = null
@@ -133,7 +133,7 @@ export const useImportacaoConvidadosStore = defineStore('importacaoConvidados', 
   )
 
   return {
-    casamentoId,
+    eventoId,
     arquivo,
     previa,
     resultado,

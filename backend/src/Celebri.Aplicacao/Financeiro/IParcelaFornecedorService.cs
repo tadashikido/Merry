@@ -2,40 +2,40 @@ namespace Celebri.Aplicacao.Financeiro;
 
 public interface IParcelaFornecedorService
 {
-    Task<FinanceiroCasamentoDto> ObterFinanceiroAsync(Guid casamentoId, CancellationToken cancelamento);
+    Task<FinanceiroEventoDto> ObterFinanceiroAsync(Guid eventoId, CancellationToken cancelamento);
 
-    Task<AlertasPagamentosDto> ObterAlertasCasamentoAsync(Guid casamentoId, CancellationToken cancelamento);
+    Task<AlertasPagamentosDto> ObterAlertasEventoAsync(Guid eventoId, CancellationToken cancelamento);
 
     Task<AlertasPagamentosDto> ObterAlertasOrganizacaoAsync(CancellationToken cancelamento);
 
-    Task<CronogramaParcelasDto> ListarAsync(Guid casamentoId, Guid vinculoId, CancellationToken cancelamento);
+    Task<CronogramaParcelasDto> ListarAsync(Guid eventoId, Guid vinculoId, CancellationToken cancelamento);
 
-    Task<ParcelaDto> CriarAsync(Guid casamentoId, Guid vinculoId, SalvarParcelaRequest request, CancellationToken cancelamento);
+    Task<ParcelaDto> CriarAsync(Guid eventoId, Guid vinculoId, SalvarParcelaRequest request, CancellationToken cancelamento);
 
-    Task<CronogramaParcelasDto> GerarAsync(Guid casamentoId, Guid vinculoId, GerarParcelasRequest request, CancellationToken cancelamento);
+    Task<CronogramaParcelasDto> GerarAsync(Guid eventoId, Guid vinculoId, GerarParcelasRequest request, CancellationToken cancelamento);
 
-    Task<ParcelaDto> AtualizarAsync(Guid casamentoId, Guid vinculoId, Guid parcelaId, SalvarParcelaRequest request, CancellationToken cancelamento);
+    Task<ParcelaDto> AtualizarAsync(Guid eventoId, Guid vinculoId, Guid parcelaId, SalvarParcelaRequest request, CancellationToken cancelamento);
 
-    Task RemoverAsync(Guid casamentoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento);
+    Task RemoverAsync(Guid eventoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento);
 
     Task<ParcelaDto> RegistrarPagamentoAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         RegistrarPagamentoRequest request,
         CancellationToken cancelamento);
 
-    Task<ParcelaDto> DesfazerPagamentoAsync(Guid casamentoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento);
+    Task<ParcelaDto> DesfazerPagamentoAsync(Guid eventoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento);
 
     Task<ParcelaDto> AnexarComprovanteAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         string? nomeArquivo,
         Stream conteudo,
         CancellationToken cancelamento);
 
-    Task<ArquivoComprovanteParcela> ObterComprovanteAsync(Guid casamentoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento);
+    Task<ArquivoComprovanteParcela> ObterComprovanteAsync(Guid eventoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento);
 
-    Task<ParcelaDto> RemoverComprovanteAsync(Guid casamentoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento);
+    Task<ParcelaDto> RemoverComprovanteAsync(Guid eventoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento);
 }

@@ -6,9 +6,9 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class TokenRedefinicaoSenhaRepository : ITokenRedefinicaoSenhaRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public TokenRedefinicaoSenhaRepository(CasamentoDbContext contexto)
+    public TokenRedefinicaoSenhaRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }

@@ -17,7 +17,7 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
-import type { FalhaCasamento } from '@/stores/casamentos'
+import type { FalhaEvento } from '@/stores/eventos'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { ROTULOS_SENTIDO_PRAZO, TEXTOS_ITEM_MODELO, TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
 import { ROTULOS_CATEGORIA_TAREFA, ROTULOS_RESPONSAVEL_TAREFA, TEXTOS_TAREFAS } from '@/textos/tarefas'
@@ -33,7 +33,7 @@ type Campo = (typeof CAMPOS)[number]
 
 const CAMPOS_SERVIDOR: Record<string, Campo> = {
   titulo: 'titulo',
-  diasAntesDoCasamento: 'dias',
+  diasAntesDoEvento: 'dias',
   responsavel: 'responsavel',
   categoria: 'categoria',
   descricao: 'descricao',
@@ -47,7 +47,7 @@ const notificacao = useNotificacao()
 
 const edicao = computed(() => Boolean(props.itemId))
 const carregando = ref(false)
-const falhaCarga = ref<FalhaCasamento | null>(null)
+const falhaCarga = ref<FalhaEvento | null>(null)
 const itemInexistente = ref(false)
 const nomeModelo = ref('')
 const enviando = ref(false)
@@ -98,10 +98,10 @@ async function carregar() {
     itemInexistente.value = true
     return
   }
-  sentido.value = sentidoDosDias(item.diasAntesDoCasamento)
+  sentido.value = sentidoDosDias(item.diasAntesDoEvento)
   Object.assign(formulario.valores, {
     titulo: item.titulo,
-    dias: Math.abs(item.diasAntesDoCasamento),
+    dias: Math.abs(item.diasAntesDoEvento),
     responsavel: item.responsavel,
     categoria: item.categoria,
     descricao: item.descricao ?? '',
@@ -125,11 +125,11 @@ function montarRequest(): SalvarItemModeloChecklistRequest {
     descricao: descricao === '' ? null : descricao,
     responsavel: valores.responsavel,
     categoria: valores.categoria,
-    diasAntesDoCasamento: diasComSentido(valores.dias ?? 0, sentido.value),
+    diasAntesDoEvento: diasComSentido(valores.dias ?? 0, sentido.value),
   }
 }
 
-function tratarFalha(falha: FalhaCasamento) {
+function tratarFalha(falha: FalhaEvento) {
   const camposComErro: Campo[] = []
   for (const [chave, mensagem] of Object.entries(falha.errosCampos)) {
     const campo = CAMPOS_SERVIDOR[chave]

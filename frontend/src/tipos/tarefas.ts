@@ -1,9 +1,9 @@
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 
 export const STATUS_TAREFA = ['AFazer', 'EmAndamento', 'Concluida', 'Cancelada'] as const
 export type StatusTarefa = (typeof STATUS_TAREFA)[number]
 
-export const RESPONSAVEIS_TAREFA = ['Assessoria', 'Casal'] as const
+export const RESPONSAVEIS_TAREFA = ['Assessoria', 'Anfitriao'] as const
 export type ResponsavelTarefa = (typeof RESPONSAVEIS_TAREFA)[number]
 
 export const CATEGORIAS_TAREFA = [
@@ -48,8 +48,8 @@ export interface ResumoTarefasDto {
 export interface ListaTarefasDto {
   tarefas: TarefaDto[]
   resumo: ResumoTarefasDto
-  casamentoArquivado: boolean
-  somenteDoCasal: boolean
+  eventoArquivado: boolean
+  somenteDoAnfitriao: boolean
 }
 
 export interface SalvarTarefaRequest {
@@ -62,7 +62,7 @@ export interface SalvarTarefaRequest {
 
 export interface TarefaPendenteDto {
   id: string
-  casamentoId: string
+  eventoId: string
   nomePrimeiraPessoa: string
   nomeSegundaPessoa: string
   titulo: string
@@ -76,7 +76,7 @@ export interface TarefaPendenteDto {
 export interface PendenciasTarefasDto {
   totalAtrasadas: number
   totalEstaSemana: number
-  casamentosComAtraso: number
+  eventosComAtraso: number
   atrasadas: TarefaPendenteDto[]
   estaSemana: TarefaPendenteDto[]
 }

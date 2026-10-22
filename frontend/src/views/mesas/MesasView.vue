@@ -26,14 +26,14 @@ import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useTelaPequena } from '@/composables/useTelaPequena'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useMesasStore } from '@/stores/mesas'
 import { TEXTOS_MESAS } from '@/textos/mesas'
-import type { FalhaCasamento } from '@/stores/casamentos'
+import type { FalhaEvento } from '@/stores/eventos'
 import type { MesaDto, PessoaMesaDto } from '@/tipos/mesas'
 import { baixarTexto } from '@/utilitarios/arquivo'
 import { gerarCsvMesas, nomeArquivoMesas } from '@/utilitarios/exportacaoMesas'
-import { formatarDataCalendarioComDiaSemana, formatarDataCalendarioCurta, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarDataCalendarioComDiaSemana, formatarDataCalendarioCurta, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import {
   agruparPorConvite,
   conviteDeUmaPessoa,
@@ -56,7 +56,7 @@ type Painel = 'semMesa' | 'mesas'
 const props = defineProps<{ id: string }>()
 
 const autenticacao = useAutenticacaoStore()
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const store = useMesasStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
@@ -80,17 +80,17 @@ const mensagemSentar = ref<string | null>(null)
 const retirando = ref(false)
 const dispensando = ref(false)
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
-const mapa = computed(() => (store.casamentoId === props.id ? store.mapa : null))
-const falha = computed(() => (store.casamentoId === props.id ? store.falha : null))
-const arquivado = computed(() => mapa.value?.casamentoArquivado ?? casamento.value?.arquivado ?? false)
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
+const mapa = computed(() => (store.eventoId === props.id ? store.mapa : null))
+const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
+const arquivado = computed(() => mapa.value?.eventoArquivado ?? evento.value?.arquivado ?? false)
 const podeEditar = computed(() => mapa.value !== null && !arquivado.value)
 
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
 const descricao = computed(() =>
-  casamento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(casamento.value.data)}` : undefined,
+  evento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(evento.value.data)}` : undefined,
 )
 
 const filtros = computed(() => ({ busca: busca.value, grupo: grupo.value, convite: convite.value }))
@@ -164,7 +164,7 @@ watch(
     grupo.value = FILTRO_TODOS
     convite.value = FILTRO_TODOS
     selecionados.value = []
-    void casamentos.obter(id)
+    void eventos.obter(id)
     void store.carregar(id)
   },
   { immediate: true },
@@ -240,7 +240,7 @@ function limparFiltros() {
   convite.value = FILTRO_TODOS
 }
 
-function notificarFalha(falhaAcao: FalhaCasamento) {
+function notificarFalha(falhaAcao: FalhaEvento) {
   if (falhaAcao.tipo === 'conflito') {
     notificacao.erro(TEXTOS_MESAS.erroConflito)
   } else if (falhaAcao.tipo === 'semPermissao') {
@@ -269,18 +269,18 @@ function acaoMesa(chave: string, mesa: MesaDto) {
     return
   }
   const rotulo = rotuloMesa(mesa)
-  const casamentoId = props.id
+  const eventoId = props.id
   confirmarExclusao({
     nomeItem: rotulo,
     mensagem: TEXTOS_MESAS.excluirConsequencia(mesa.ocupacao),
     mensagemSucesso: TEXTOS_MESAS.mesaExcluida(rotulo),
     aoConfirmar: () => {
-      store.removerMesaComDesfazer(casamentoId, mesa.id, (falha) => {
+      store.removerMesaComDesfazer(eventoId, mesa.id, (falha) => {
         notificacao.erro(falha.tipo === 'semPermissao' ? TEXTOS_MESAS.erroSemPermissaoAcao : TEXTOS_MESAS.erroExcluirMesa(rotulo))
       })
     },
-    desfazer: () => desfazerExclusao(() => store.desfazerRemocaoMesa(casamentoId, mesa.id), TEXTOS_MESAS.mesaRestaurada(rotulo)),
-    aoFecharAviso: () => store.concluirRemocaoMesa(casamentoId, mesa.id),
+    desfazer: () => desfazerExclusao(() => store.desfazerRemocaoMesa(eventoId, mesa.id), TEXTOS_MESAS.mesaRestaurada(rotulo)),
+    aoFecharAviso: () => store.concluirRemocaoMesa(eventoId, mesa.id),
   })
 }
 
@@ -357,10 +357,10 @@ function abrirImpressao() {
 }
 
 function baixarPlanilha() {
-  if (!mapa.value || !casamento.value) {
+  if (!mapa.value || !evento.value) {
     return
   }
-  baixarTexto(nomeArquivoMesas(casamento.value), gerarCsvMesas(mapa.value))
+  baixarTexto(nomeArquivoMesas(evento.value), gerarCsvMesas(mapa.value))
   notificacao.sucesso(TEXTOS_MESAS.csvBaixado)
 }
 
@@ -383,10 +383,10 @@ function acaoCabecalho(chave: string) {
       />
       <RouterLink
         class="mesas__voltar"
-        :to="autenticacao.ehCasal && autenticacao.casamentoDoCasal ? { name: 'casamento', params: { id: autenticacao.casamentoDoCasal } } : { name: 'casamentos' }"
-        data-teste="voltar-casamentos"
+        :to="autenticacao.ehAnfitriao && autenticacao.eventoDoAnfitriao ? { name: 'evento', params: { id: autenticacao.eventoDoAnfitriao } } : { name: 'eventos' }"
+        data-teste="voltar-eventos"
       >
-        {{ TEXTOS_MESAS.voltarCasamentos }}
+        {{ TEXTOS_MESAS.voltarEventos }}
       </RouterLink>
     </template>
 
@@ -897,7 +897,7 @@ function acaoCabecalho(chave: string) {
       <DialogoMesa
         v-if="mapa"
         v-model:visivel="dialogoMesaVisivel"
-        :casamento-id="id"
+        :evento-id="id"
         :mesa="mesaEmEdicao"
         :numero-sugerido="proximoNumeroMesa(mesas)"
         @salvo="aoSalvarMesa"

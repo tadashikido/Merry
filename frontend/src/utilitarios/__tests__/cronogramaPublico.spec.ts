@@ -16,7 +16,7 @@ import {
   tokenCronogramaValido,
 } from '@/utilitarios/cronogramaPublico'
 
-const CASAMENTO = { nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bruno', data: '2027-05-15' }
+const EVENTO = { nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bruno', data: '2027-05-15' }
 
 describe('utilitários do cronograma público', () => {
   it('[UNITÁRIO] aceita só tokens de 43 caracteres base64url', () => {
@@ -34,39 +34,39 @@ describe('utilitários do cronograma público', () => {
 
   it('[UNITÁRIO] mensagem geral fala do cronograma e filtrada fala dos seus horários', () => {
     const url = 'https://app/cronograma/x'
-    const geral = montarMensagemCronograma(CASAMENTO, { tipo: 'Geral' }, url)
-    const filtrada = montarMensagemCronograma(CASAMENTO, { tipo: 'Fornecedor' }, url)
+    const geral = montarMensagemCronograma(EVENTO, { tipo: 'Geral' }, url)
+    const filtrada = montarMensagemCronograma(EVENTO, { tipo: 'Fornecedor' }, url)
 
-    expect(geral).toContain('cronograma do casamento de Ana & Bruno (15 de maio de 2027)')
+    expect(geral).toContain('cronograma do evento de Ana & Bruno (15 de maio de 2027)')
     expect(geral).toContain(url)
-    expect(filtrada).toContain('seus horários no casamento de Ana & Bruno')
+    expect(filtrada).toContain('seus horários no evento de Ana & Bruno')
   })
 
   it('[SEGURANÇA] WhatsApp usa o telefone só no destino de fornecedor', () => {
     const url = 'https://app/cronograma/x'
 
-    expect(montarWhatsAppCronograma(CASAMENTO, { tipo: 'Fornecedor', telefone: '11987654321' }, url)).toMatch(
+    expect(montarWhatsAppCronograma(EVENTO, { tipo: 'Fornecedor', telefone: '11987654321' }, url)).toMatch(
       /^https:\/\/wa\.me\/5511987654321\?text=/,
     )
-    expect(montarWhatsAppCronograma(CASAMENTO, { tipo: 'Responsavel', telefone: '11987654321' }, url)).toMatch(/^https:\/\/wa\.me\/\?text=/)
-    expect(montarWhatsAppCronograma(CASAMENTO, { tipo: 'Fornecedor', telefone: null }, url)).toMatch(/^https:\/\/wa\.me\/\?text=/)
-    expect(decodeURIComponent(montarWhatsAppCronograma(CASAMENTO, { tipo: 'Geral', telefone: null }, url))).toContain(url)
+    expect(montarWhatsAppCronograma(EVENTO, { tipo: 'Responsavel', telefone: '11987654321' }, url)).toMatch(/^https:\/\/wa\.me\/\?text=/)
+    expect(montarWhatsAppCronograma(EVENTO, { tipo: 'Fornecedor', telefone: null }, url)).toMatch(/^https:\/\/wa\.me\/\?text=/)
+    expect(decodeURIComponent(montarWhatsAppCronograma(EVENTO, { tipo: 'Geral', telefone: null }, url))).toContain(url)
   })
 
   it('[UNITÁRIO] agrupa por dia na ordem véspera, dia, dia seguinte e titula com a data', () => {
     const grupos = agruparRoteiro(cronogramaPublico().itens)
 
-    expect(grupos.map((grupo) => grupo.dia)).toEqual(['Vespera', 'DiaDoCasamento'])
+    expect(grupos.map((grupo) => grupo.dia)).toEqual(['Vespera', 'DiaDoEvento'])
     expect(grupos[0]!.titulo).toBe('Véspera · sexta-feira, 14 de maio de 2027')
-    expect(grupos[1]!.titulo).toBe('Dia do casamento')
+    expect(grupos[1]!.titulo).toBe('Dia do evento')
     expect(agruparRoteiro([itemPublico({ dia: 'DiaSeguinte', data: '2027-05-16' })])[0]!.titulo).toContain('Dia seguinte · domingo')
     expect(agruparRoteiro([])).toEqual([])
   })
 
-  it('[UNITÁRIO] identifica o item no horário da cerimônia só no dia do casamento', () => {
-    expect(ehHorarioDaCerimonia({ dia: 'DiaDoCasamento', inicio: '16:30' }, '16:30')).toBe(true)
+  it('[UNITÁRIO] identifica o item no horário da cerimônia só no dia do evento', () => {
+    expect(ehHorarioDaCerimonia({ dia: 'DiaDoEvento', inicio: '16:30' }, '16:30')).toBe(true)
     expect(ehHorarioDaCerimonia({ dia: 'Vespera', inicio: '16:30' }, '16:30')).toBe(false)
-    expect(ehHorarioDaCerimonia({ dia: 'DiaDoCasamento', inicio: '16:30' }, null)).toBe(false)
+    expect(ehHorarioDaCerimonia({ dia: 'DiaDoEvento', inicio: '16:30' }, null)).toBe(false)
   })
 
   it('[UNITÁRIO] rótulos de filtro, destino, categoria e situação', () => {
@@ -84,12 +84,12 @@ describe('utilitários do cronograma público', () => {
 
   it('[UNITÁRIO] request e chave do destino nunca misturam fornecedor e responsável', () => {
     expect(requestDoDestino(destino())).toEqual({ tipo: 'Geral' })
-    expect(requestDoDestino(destino({ tipo: 'Fornecedor', fornecedorCasamentoId: 'v1', responsavel: 'x' }))).toEqual({
+    expect(requestDoDestino(destino({ tipo: 'Fornecedor', fornecedorEventoId: 'v1', responsavel: 'x' }))).toEqual({
       tipo: 'Fornecedor',
-      fornecedorCasamentoId: 'v1',
+      fornecedorEventoId: 'v1',
     })
     expect(requestDoDestino(destino({ tipo: 'Responsavel', responsavel: 'Fernanda' }))).toEqual({ tipo: 'Responsavel', responsavel: 'Fernanda' })
-    expect(chaveDestino(destino({ tipo: 'Fornecedor', fornecedorCasamentoId: 'v1' }))).toBe('fornecedor:v1')
+    expect(chaveDestino(destino({ tipo: 'Fornecedor', fornecedorEventoId: 'v1' }))).toBe('fornecedor:v1')
     expect(chaveDestino(destino({ tipo: 'Responsavel', responsavel: 'Fernanda' }))).toBe('responsavel:Fernanda')
     expect(chaveDestino(destino())).toBe('geral')
   })

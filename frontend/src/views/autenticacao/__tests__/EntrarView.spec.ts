@@ -198,7 +198,7 @@ describe('EntrarView', () => {
     expect(cabecalho.get('label').find('a').exists()).toBe(false)
   })
 
-  it('[COMPONENTE] descreve a tela para assessoria e casal', async () => {
+  it('[COMPONENTE] descreve a tela para assessoria e anfitriões', async () => {
     await abrir()
 
     expect(wrapper!.text()).toContain('Use o e-mail e a senha da sua conta.')

@@ -1,8 +1,8 @@
 namespace Celebri.Aplicacao.Cronogramas;
 
 public sealed record CronogramaDto(
-    Guid CasamentoId,
-    DateOnly DataCasamento,
+    Guid EventoId,
+    DateOnly DataEvento,
     string? HorarioCerimonia,
     string? LocalCerimonia,
     string? LocalRecepcao,

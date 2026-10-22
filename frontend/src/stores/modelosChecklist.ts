@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { requisitar } from '@/servicos/clienteHttp'
-import { interpretarFalhaCasamento, type FalhaCasamento, type ResultadoCasamento } from '@/stores/casamentos'
+import { interpretarFalhaEvento, type FalhaEvento, type ResultadoEvento } from '@/stores/eventos'
 import type {
   ItemModeloChecklistDto,
   ModeloChecklistDto,
@@ -21,22 +21,22 @@ export function caminhoModelo(modeloId?: string, itemId?: string): string {
   return itemId ? `${base}/itens/${encodeURIComponent(itemId)}` : `${base}/itens`
 }
 
-async function executar<T>(acao: () => Promise<T>): Promise<ResultadoCasamento<T>> {
+async function executar<T>(acao: () => Promise<T>): Promise<ResultadoEvento<T>> {
   try {
     return { ok: true, valor: await acao() }
   } catch (erro) {
-    return { ok: false, falha: interpretarFalhaCasamento(erro) }
+    return { ok: false, falha: interpretarFalhaEvento(erro) }
   }
 }
 
 export const useModelosChecklistStore = defineStore('modelosChecklist', () => {
   const lista = ref<ModeloChecklistResumoDto[] | null>(null)
   const carregandoLista = ref(false)
-  const falhaLista = ref<FalhaCasamento | null>(null)
+  const falhaLista = ref<FalhaEvento | null>(null)
 
   const atual = ref<ModeloChecklistDto | null>(null)
   const carregandoAtual = ref(false)
-  const falhaAtual = ref<FalhaCasamento | null>(null)
+  const falhaAtual = ref<FalhaEvento | null>(null)
 
   async function listar(): Promise<void> {
     carregandoLista.value = true
@@ -45,7 +45,7 @@ export const useModelosChecklistStore = defineStore('modelosChecklist', () => {
       lista.value = await requisitar<ModeloChecklistResumoDto[]>(ROTA_MODELOS_CHECKLIST)
     } catch (erro) {
       lista.value = null
-      falhaLista.value = interpretarFalhaCasamento(erro)
+      falhaLista.value = interpretarFalhaEvento(erro)
     } finally {
       carregandoLista.value = false
     }
@@ -61,7 +61,7 @@ export const useModelosChecklistStore = defineStore('modelosChecklist', () => {
       atual.value = await requisitar<ModeloChecklistDto>(caminhoModelo(modeloId))
     } catch (erro) {
       atual.value = null
-      falhaAtual.value = interpretarFalhaCasamento(erro)
+      falhaAtual.value = interpretarFalhaEvento(erro)
     } finally {
       carregandoAtual.value = false
     }
@@ -78,11 +78,11 @@ export const useModelosChecklistStore = defineStore('modelosChecklist', () => {
     }
   }
 
-  function obter(modeloId: string): Promise<ResultadoCasamento<ModeloChecklistDto>> {
+  function obter(modeloId: string): Promise<ResultadoEvento<ModeloChecklistDto>> {
     return executar(() => requisitar<ModeloChecklistDto>(caminhoModelo(modeloId)))
   }
 
-  async function criar(dados: SalvarModeloChecklistRequest): Promise<ResultadoCasamento<ModeloChecklistDto>> {
+  async function criar(dados: SalvarModeloChecklistRequest): Promise<ResultadoEvento<ModeloChecklistDto>> {
     const resultado = await executar(() =>
       requisitar<ModeloChecklistDto>(ROTA_MODELOS_CHECKLIST, { metodo: 'POST', corpo: dados }),
     )
@@ -93,7 +93,7 @@ export const useModelosChecklistStore = defineStore('modelosChecklist', () => {
     return resultado
   }
 
-  async function atualizar(modeloId: string, dados: SalvarModeloChecklistRequest): Promise<ResultadoCasamento<ModeloChecklistDto>> {
+  async function atualizar(modeloId: string, dados: SalvarModeloChecklistRequest): Promise<ResultadoEvento<ModeloChecklistDto>> {
     const resultado = await executar(() =>
       requisitar<ModeloChecklistDto>(caminhoModelo(modeloId), { metodo: 'PUT', corpo: dados }),
     )
@@ -104,7 +104,7 @@ export const useModelosChecklistStore = defineStore('modelosChecklist', () => {
     return resultado
   }
 
-  async function remover(modeloId: string): Promise<ResultadoCasamento<null>> {
+  async function remover(modeloId: string): Promise<ResultadoEvento<null>> {
     const resultado = await executar(() => requisitar<void>(caminhoModelo(modeloId), { metodo: 'DELETE' }))
     if (!resultado.ok) {
       return resultado
@@ -121,7 +121,7 @@ export const useModelosChecklistStore = defineStore('modelosChecklist', () => {
   async function criarItem(
     modeloId: string,
     dados: SalvarItemModeloChecklistRequest,
-  ): Promise<ResultadoCasamento<ItemModeloChecklistDto>> {
+  ): Promise<ResultadoEvento<ItemModeloChecklistDto>> {
     const resultado = await executar(() =>
       requisitar<ItemModeloChecklistDto>(caminhoModelo(modeloId, ''), { metodo: 'POST', corpo: dados }),
     )
@@ -136,7 +136,7 @@ export const useModelosChecklistStore = defineStore('modelosChecklist', () => {
     modeloId: string,
     itemId: string,
     dados: SalvarItemModeloChecklistRequest,
-  ): Promise<ResultadoCasamento<ItemModeloChecklistDto>> {
+  ): Promise<ResultadoEvento<ItemModeloChecklistDto>> {
     const resultado = await executar(() =>
       requisitar<ItemModeloChecklistDto>(caminhoModelo(modeloId, itemId), { metodo: 'PUT', corpo: dados }),
     )
@@ -146,7 +146,7 @@ export const useModelosChecklistStore = defineStore('modelosChecklist', () => {
     return resultado
   }
 
-  async function removerItem(modeloId: string, itemId: string): Promise<ResultadoCasamento<null>> {
+  async function removerItem(modeloId: string, itemId: string): Promise<ResultadoEvento<null>> {
     const resultado = await executar(() => requisitar<void>(caminhoModelo(modeloId, itemId), { metodo: 'DELETE' }))
     if (!resultado.ok) {
       return resultado

@@ -17,6 +17,6 @@ public static class MensagensChecklist
 
     public static string LimiteTarefas(int existentes, int novas)
     {
-        return $"Este casamento passaria de 500 tarefas (hoje tem {existentes}, o modelo cria {novas}). Exclua tarefas ou use um modelo menor.";
+        return $"Este evento passaria de 500 tarefas (hoje tem {existentes}, o modelo cria {novas}). Exclua tarefas ou use um modelo menor.";
     }
 }

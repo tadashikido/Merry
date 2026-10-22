@@ -6,19 +6,19 @@ namespace Celebri.Dominio.Cronogramas;
 public sealed record DestinoAcessoCronograma
 {
     public const string CampoTipo = "tipo";
-    public const string CampoFornecedor = "fornecedorCasamentoId";
+    public const string CampoFornecedor = "fornecedorEventoId";
     public const string CampoResponsavel = "responsavel";
 
-    private DestinoAcessoCronograma(TipoAcessoCronograma tipo, Guid? fornecedorCasamentoId, string? responsavelChave)
+    private DestinoAcessoCronograma(TipoAcessoCronograma tipo, Guid? fornecedorEventoId, string? responsavelChave)
     {
         Tipo = tipo;
-        FornecedorCasamentoId = fornecedorCasamentoId;
+        FornecedorEventoId = fornecedorEventoId;
         ResponsavelChave = responsavelChave;
     }
 
     public TipoAcessoCronograma Tipo { get; }
 
-    public Guid? FornecedorCasamentoId { get; }
+    public Guid? FornecedorEventoId { get; }
 
     public string? ResponsavelChave { get; }
 
@@ -27,9 +27,9 @@ public sealed record DestinoAcessoCronograma
         return new DestinoAcessoCronograma(TipoAcessoCronograma.Geral, null, null);
     }
 
-    public static DestinoAcessoCronograma DoFornecedor(Guid? fornecedorCasamentoId)
+    public static DestinoAcessoCronograma DoFornecedor(Guid? fornecedorEventoId)
     {
-        if (fornecedorCasamentoId is not { } id || id == Guid.Empty)
+        if (fornecedorEventoId is not { } id || id == Guid.Empty)
         {
             throw new RegraNegocioException(MensagensAcessoCronograma.FornecedorInvalido, CampoFornecedor);
         }
@@ -61,7 +61,7 @@ public sealed record DestinoAcessoCronograma
         return Tipo switch
         {
             TipoAcessoCronograma.Geral => true,
-            TipoAcessoCronograma.Fornecedor => item.FornecedorCasamentoId is { } vinculo && vinculo == FornecedorCasamentoId,
+            TipoAcessoCronograma.Fornecedor => item.FornecedorEventoId is { } vinculo && vinculo == FornecedorEventoId,
             TipoAcessoCronograma.Responsavel => item.ResponsavelChave is { } chave && string.Equals(chave, ResponsavelChave, StringComparison.Ordinal),
             _ => false,
         };

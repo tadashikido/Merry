@@ -6,9 +6,9 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class OrganizacaoRepository : IOrganizacaoRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public OrganizacaoRepository(CasamentoDbContext contexto)
+    public OrganizacaoRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }

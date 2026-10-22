@@ -2,29 +2,29 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { requisitar } from '@/servicos/clienteHttp'
-import { interpretarFalhaCasamento, ROTA_CASAMENTOS, type FalhaCasamento, type ResultadoCasamento } from '@/stores/casamentos'
+import { interpretarFalhaEvento, ROTA_EVENTOS, type FalhaEvento, type ResultadoEvento } from '@/stores/eventos'
 import type { GrandeDiaDto } from '@/tipos/grandeDia'
 
-export function caminhoGrandeDia(casamentoId: string): string {
-  return `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/grande-dia`
+export function caminhoGrandeDia(eventoId: string): string {
+  return `${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/grande-dia`
 }
 
-export function caminhoConclusao(casamentoId: string, itemId: string): string {
-  return `${caminhoGrandeDia(casamentoId)}/itens/${encodeURIComponent(itemId)}/conclusao`
+export function caminhoConclusao(eventoId: string, itemId: string): string {
+  return `${caminhoGrandeDia(eventoId)}/itens/${encodeURIComponent(itemId)}/conclusao`
 }
 
 export const useGrandeDiaStore = defineStore('grandeDia', () => {
-  const casamentoId = ref<string | null>(null)
+  const eventoId = ref<string | null>(null)
   const dados = ref<GrandeDiaDto | null>(null)
   const carregando = ref(false)
   const atualizando = ref(false)
-  const falha = ref<FalhaCasamento | null>(null)
+  const falha = ref<FalhaEvento | null>(null)
   const semConexao = ref(false)
   const carregadoEm = ref<Date | null>(null)
   const itemEmAcao = ref<string | null>(null)
 
   function aplicar(id: string, resposta: GrandeDiaDto) {
-    if (casamentoId.value === id) {
+    if (eventoId.value === id) {
       dados.value = resposta
       carregadoEm.value = new Date()
       semConexao.value = false
@@ -32,11 +32,11 @@ export const useGrandeDiaStore = defineStore('grandeDia', () => {
   }
 
   async function carregar(id: string): Promise<void> {
-    if (casamentoId.value !== id) {
+    if (eventoId.value !== id) {
       dados.value = null
       carregadoEm.value = null
     }
-    casamentoId.value = id
+    eventoId.value = id
     carregando.value = true
     falha.value = null
     semConexao.value = false
@@ -44,30 +44,30 @@ export const useGrandeDiaStore = defineStore('grandeDia', () => {
     try {
       aplicar(id, await requisitar<GrandeDiaDto>(caminhoGrandeDia(id)))
     } catch (erro) {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         dados.value = null
-        falha.value = interpretarFalhaCasamento(erro)
+        falha.value = interpretarFalhaEvento(erro)
       }
     } finally {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         carregando.value = false
       }
     }
   }
 
   async function atualizar(id: string): Promise<void> {
-    if (casamentoId.value !== id || dados.value === null || atualizando.value) {
+    if (eventoId.value !== id || dados.value === null || atualizando.value) {
       return
     }
     atualizando.value = true
     try {
       aplicar(id, await requisitar<GrandeDiaDto>(caminhoGrandeDia(id)))
     } catch (erro) {
-      if (casamentoId.value === id) {
-        const tipo = interpretarFalhaCasamento(erro).tipo
+      if (eventoId.value === id) {
+        const tipo = interpretarFalhaEvento(erro).tipo
         if (tipo === 'naoEncontrado' || tipo === 'semPermissao') {
           dados.value = null
-          falha.value = interpretarFalhaCasamento(erro)
+          falha.value = interpretarFalhaEvento(erro)
         } else {
           semConexao.value = true
         }
@@ -77,14 +77,14 @@ export const useGrandeDiaStore = defineStore('grandeDia', () => {
     }
   }
 
-  async function alterar(id: string, itemId: string, metodo: 'PUT' | 'DELETE'): Promise<ResultadoCasamento<GrandeDiaDto>> {
+  async function alterar(id: string, itemId: string, metodo: 'PUT' | 'DELETE'): Promise<ResultadoEvento<GrandeDiaDto>> {
     itemEmAcao.value = itemId
     try {
       const resposta = await requisitar<GrandeDiaDto>(caminhoConclusao(id, itemId), { metodo })
       aplicar(id, resposta)
       return { ok: true, valor: resposta }
     } catch (erro) {
-      const falhaAcao = interpretarFalhaCasamento(erro)
+      const falhaAcao = interpretarFalhaEvento(erro)
       if (falhaAcao.tipo === 'conflito') {
         await atualizar(id)
       }
@@ -94,16 +94,16 @@ export const useGrandeDiaStore = defineStore('grandeDia', () => {
     }
   }
 
-  function concluir(id: string, itemId: string): Promise<ResultadoCasamento<GrandeDiaDto>> {
+  function concluir(id: string, itemId: string): Promise<ResultadoEvento<GrandeDiaDto>> {
     return alterar(id, itemId, 'PUT')
   }
 
-  function reabrir(id: string, itemId: string): Promise<ResultadoCasamento<GrandeDiaDto>> {
+  function reabrir(id: string, itemId: string): Promise<ResultadoEvento<GrandeDiaDto>> {
     return alterar(id, itemId, 'DELETE')
   }
 
   function limpar() {
-    casamentoId.value = null
+    eventoId.value = null
     dados.value = null
     carregando.value = false
     atualizando.value = false
@@ -114,7 +114,7 @@ export const useGrandeDiaStore = defineStore('grandeDia', () => {
   }
 
   return {
-    casamentoId,
+    eventoId,
     dados,
     carregando,
     atualizando,

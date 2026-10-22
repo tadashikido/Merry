@@ -22,44 +22,44 @@ public sealed class RepositorioMesasMemoria : IMesaRepository
 
     public List<Mesa> Removidas { get; } = [];
 
-    public Task<IReadOnlyList<Mesa>> ListarAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<IReadOnlyList<Mesa>> ListarAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        IReadOnlyList<Mesa> resultado = Itens.Where(mesa => mesa.CasamentoId == casamentoId).ToList();
+        IReadOnlyList<Mesa> resultado = Itens.Where(mesa => mesa.EventoId == eventoId).ToList();
         return Task.FromResult(resultado);
     }
 
-    public Task<Mesa?> ObterAsync(Guid casamentoId, Guid mesaId, CancellationToken cancelamento)
+    public Task<Mesa?> ObterAsync(Guid eventoId, Guid mesaId, CancellationToken cancelamento)
     {
-        return Task.FromResult(Itens.FirstOrDefault(mesa => mesa.CasamentoId == casamentoId && mesa.Id == mesaId));
+        return Task.FromResult(Itens.FirstOrDefault(mesa => mesa.EventoId == eventoId && mesa.Id == mesaId));
     }
 
-    public Task<int> ContarAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<int> ContarAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        return Task.FromResult(Itens.Count(mesa => mesa.CasamentoId == casamentoId));
+        return Task.FromResult(Itens.Count(mesa => mesa.EventoId == eventoId));
     }
 
-    public Task<bool> ExisteNumeroAsync(Guid casamentoId, int numero, Guid? excetoMesaId, CancellationToken cancelamento)
+    public Task<bool> ExisteNumeroAsync(Guid eventoId, int numero, Guid? excetoMesaId, CancellationToken cancelamento)
     {
-        return Task.FromResult(Itens.Exists(mesa => mesa.CasamentoId == casamentoId && mesa.Numero == numero && mesa.Id != excetoMesaId));
+        return Task.FromResult(Itens.Exists(mesa => mesa.EventoId == eventoId && mesa.Numero == numero && mesa.Id != excetoMesaId));
     }
 
-    public Task<bool> ExisteEspecialAsync(Guid casamentoId, Guid? excetoMesaId, CancellationToken cancelamento)
+    public Task<bool> ExisteEspecialAsync(Guid eventoId, Guid? excetoMesaId, CancellationToken cancelamento)
     {
-        return Task.FromResult(Itens.Exists(mesa => mesa.CasamentoId == casamentoId && mesa.Especial && mesa.Id != excetoMesaId));
+        return Task.FromResult(Itens.Exists(mesa => mesa.EventoId == eventoId && mesa.Especial && mesa.Id != excetoMesaId));
     }
 
-    public Task<int> ContarOcupacaoAsync(Guid casamentoId, Guid mesaId, CancellationToken cancelamento)
+    public Task<int> ContarOcupacaoAsync(Guid eventoId, Guid mesaId, CancellationToken cancelamento)
     {
-        return Task.FromResult(_convidados().Count(convidado => convidado.CasamentoId == casamentoId && convidado.MesaId == mesaId));
+        return Task.FromResult(_convidados().Count(convidado => convidado.EventoId == eventoId && convidado.MesaId == mesaId));
     }
 
     public Task<IReadOnlyList<Convidado>> ObterConvidadosAsync(
-        Guid casamentoId,
+        Guid eventoId,
         IReadOnlyCollection<Guid> convidadosIds,
         CancellationToken cancelamento)
     {
         IReadOnlyList<Convidado> resultado = _convidados()
-            .Where(convidado => convidado.CasamentoId == casamentoId && convidadosIds.Contains(convidado.Id))
+            .Where(convidado => convidado.EventoId == eventoId && convidadosIds.Contains(convidado.Id))
             .ToList();
         return Task.FromResult(resultado);
     }

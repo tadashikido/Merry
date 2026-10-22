@@ -13,8 +13,8 @@ public static class MensagensConvidados
     public const string QuantidadeConvidados = "Um convite precisa ter de 1 a 30 pessoas.";
     public const string ConvidadoDeOutroConvite = "Um dos convidados informados não pertence a este convite.";
     public const string ConvidadoRepetido = "O mesmo convidado foi informado mais de uma vez.";
-    public const string LimitePorCasamento = "Este casamento atingiu o limite de 5.000 convidados.";
-    public const string CasamentoArquivado = "Este casamento está arquivado. Restaure para voltar a editar os convidados.";
+    public const string LimitePorEvento = "Este evento atingiu o limite de 5.000 convidados.";
+    public const string EventoArquivado = "Este evento está arquivado. Restaure para voltar a editar os convidados.";
     public const string ConviteNaoEncontrado = "Convite não encontrado.";
     public const string RespostaIncompleta = "Responda por todas as pessoas do convite.";
     public const string RespostaPresencaInvalida = "Escolha vou ou não vou para cada pessoa.";

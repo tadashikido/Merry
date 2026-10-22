@@ -13,7 +13,7 @@ public class ContextoIsolamentoUsuarioAtual : IContextoIsolamento
 
     public Guid? OrganizacaoId => _usuarioAtual.Autenticado ? _usuarioAtual.OrganizacaoId : null;
 
-    public IReadOnlyCollection<Guid>? CasamentosPermitidos
+    public IReadOnlyCollection<Guid>? EventosPermitidos
     {
         get
         {
@@ -22,8 +22,8 @@ public class ContextoIsolamentoUsuarioAtual : IContextoIsolamento
                 return null;
             }
 
-            return _usuarioAtual.EhCasal() && _usuarioAtual.CasamentoId is { } casamentoId && casamentoId != Guid.Empty
-                ? [casamentoId]
+            return _usuarioAtual.EhAnfitriao() && _usuarioAtual.EventoId is { } eventoId && eventoId != Guid.Empty
+                ? [eventoId]
                 : [];
         }
     }

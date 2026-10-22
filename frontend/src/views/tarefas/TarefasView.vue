@@ -17,7 +17,7 @@ import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useTarefasStore } from '@/stores/tarefas'
 import {
   ROTULOS_CATEGORIA_TAREFA,
@@ -36,7 +36,7 @@ import {
   type StatusTarefa,
   type TarefaDto,
 } from '@/tipos/tarefas'
-import { formatarDataCalendarioComDiaSemana, formatarNomesCasal, formatarNumero } from '@/utilitarios/formatacao'
+import { formatarDataCalendarioComDiaSemana, formatarNomesAnfitrioes, formatarNumero } from '@/utilitarios/formatacao'
 import {
   agruparPorHorizonte,
   badgeTarefa,
@@ -49,12 +49,12 @@ import {
 
 type AcaoTarefa = 'editar' | 'iniciar' | 'reabrir' | 'cancelar' | 'excluir'
 
-const SITUACOES_CASAL: SituacaoFiltroTarefa[] = ['abertas', 'concluidas', 'todas']
+const SITUACOES_ANFITRIAO: SituacaoFiltroTarefa[] = ['abertas', 'concluidas', 'todas']
 
 const props = defineProps<{ id: string }>()
 
 const autenticacao = useAutenticacaoStore()
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const store = useTarefasStore()
 const rota = useRoute()
 const roteador = useRouter()
@@ -66,28 +66,28 @@ const responsavel = ref<FiltroResponsavelTarefa>('Todos')
 const categoria = ref<FiltroCategoriaTarefa>('Todas')
 const tarefaEmAndamento = ref<string | null>(null)
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
-const lista = computed(() => (store.casamentoId === props.id ? store.lista : null))
-const falha = computed(() => (store.casamentoId === props.id ? store.falha : null))
-const visaoDoCasal = computed(() => autenticacao.ehCasal || lista.value?.somenteDoCasal === true)
-const arquivado = computed(() => lista.value?.casamentoArquivado ?? casamento.value?.arquivado ?? false)
-const podeGerenciar = computed(() => !visaoDoCasal.value && !arquivado.value)
+const lista = computed(() => (store.eventoId === props.id ? store.lista : null))
+const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
+const visaoDoAnfitriao = computed(() => autenticacao.ehAnfitriao || lista.value?.somenteDoAnfitriao === true)
+const arquivado = computed(() => lista.value?.eventoArquivado ?? evento.value?.arquivado ?? false)
+const podeGerenciar = computed(() => !visaoDoAnfitriao.value && !arquivado.value)
 const resumo = computed(() => lista.value?.resumo ?? null)
 
-const titulo = computed(() => (visaoDoCasal.value ? TEXTOS_TAREFAS.tituloCasal : TEXTOS_TAREFAS.titulo))
+const titulo = computed(() => (visaoDoAnfitriao.value ? TEXTOS_TAREFAS.tituloAnfitriao : TEXTOS_TAREFAS.titulo))
 const detalhes = computed(() => {
   if (!resumo.value) {
     return null
   }
-  return visaoDoCasal.value
-    ? TEXTOS_TAREFAS.resumoCasal(resumo.value.abertas)
+  return visaoDoAnfitriao.value
+    ? TEXTOS_TAREFAS.resumoAnfitriao(resumo.value.abertas)
     : TEXTOS_TAREFAS.resumo(resumo.value.abertas, resumo.value.concluidas)
 })
 const descricao = computed(() =>
-  casamento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(casamento.value.data)}` : undefined,
+  evento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(evento.value.data)}` : undefined,
 )
 
 const progresso = computed(() => {
@@ -109,13 +109,13 @@ const indicadores = computed(() => {
     { chave: 'atrasadas', rotulo: TEXTOS_TAREFAS.indicadorAtrasadas, valor: resumo.value.atrasadas, atraso: resumo.value.atrasadas > 0 },
     { chave: 'semana', rotulo: TEXTOS_TAREFAS.indicadorSemana, valor: resumo.value.estaSemana, atraso: false },
   ]
-  if (!visaoDoCasal.value) {
+  if (!visaoDoAnfitriao.value) {
     itens.push({ chave: 'canceladas', rotulo: TEXTOS_TAREFAS.indicadorCanceladas, valor: resumo.value.canceladas, atraso: false })
   }
   return itens
 })
 
-const situacoesDisponiveis = computed(() => (visaoDoCasal.value ? SITUACOES_CASAL : [...SITUACOES_FILTRO_TAREFA]))
+const situacoesDisponiveis = computed(() => (visaoDoAnfitriao.value ? SITUACOES_ANFITRIAO : [...SITUACOES_FILTRO_TAREFA]))
 const opcoesSituacao = computed(() =>
   situacoesDisponiveis.value.map((valor) => ({
     valor,
@@ -134,8 +134,8 @@ const opcoesCategoria: { valor: FiltroCategoriaTarefa; rotulo: string }[] = [
 const tarefasFiltradas = computed(() =>
   filtrarTarefas(lista.value?.tarefas ?? [], {
     situacao: situacao.value,
-    responsavel: visaoDoCasal.value ? 'Todos' : responsavel.value,
-    categoria: visaoDoCasal.value ? 'Todas' : categoria.value,
+    responsavel: visaoDoAnfitriao.value ? 'Todos' : responsavel.value,
+    categoria: visaoDoAnfitriao.value ? 'Todas' : categoria.value,
   }),
 )
 
@@ -159,7 +159,7 @@ watch(
     situacao.value = situacaoDaRota()
     responsavel.value = 'Todos'
     categoria.value = 'Todas'
-    void casamentos.obter(id)
+    void eventos.obter(id)
     void store.carregar(id)
   },
   { immediate: true },
@@ -211,7 +211,7 @@ function rotuloAlternar(tarefa: TarefaDto): string {
 
 function mensagemSucesso(status: StatusTarefa): string {
   if (status === 'Concluida') {
-    return visaoDoCasal.value ? TEXTOS_TAREFAS.toastConcluidaCasal : TEXTOS_TAREFAS.toastConcluida
+    return visaoDoAnfitriao.value ? TEXTOS_TAREFAS.toastConcluidaAnfitriao : TEXTOS_TAREFAS.toastConcluida
   }
   if (status === 'Cancelada') {
     return TEXTOS_TAREFAS.toastCancelada
@@ -326,16 +326,16 @@ function novaTarefa() {
       class="pilha pilha--grupo"
     >
       <EstadoErro
-        :titulo="visaoDoCasal ? TEXTOS_TAREFAS.naoEncontradoCasalTitulo : TEXTOS_TAREFAS.naoEncontradoTitulo"
+        :titulo="visaoDoAnfitriao ? TEXTOS_TAREFAS.naoEncontradoAnfitriaoTitulo : TEXTOS_TAREFAS.naoEncontradoTitulo"
         :mensagem="TEXTOS_TAREFAS.naoEncontradoTexto"
         :pode-tentar-novamente="false"
       />
       <RouterLink
         class="tarefas__voltar"
-        :to="autenticacao.casamentoDoCasal ? { name: 'casamento', params: { id: autenticacao.casamentoDoCasal } } : { name: 'casamentos' }"
+        :to="autenticacao.eventoDoAnfitriao ? { name: 'evento', params: { id: autenticacao.eventoDoAnfitriao } } : { name: 'eventos' }"
         data-teste="voltar"
       >
-        {{ autenticacao.casamentoDoCasal ? TEXTOS_TAREFAS.voltarNossoCasamento : TEXTOS_TAREFAS.voltarCasamentos }}
+        {{ autenticacao.eventoDoAnfitriao ? TEXTOS_TAREFAS.voltarNossoEvento : TEXTOS_TAREFAS.voltarEventos }}
       </RouterLink>
     </div>
 
@@ -419,8 +419,8 @@ function novaTarefa() {
         <EstadoVazio
           v-else-if="semTarefas"
           icone="checklist"
-          :titulo="visaoDoCasal ? TEXTOS_TAREFAS.vazioCasalTitulo : TEXTOS_TAREFAS.vazioTitulo"
-          :descricao="visaoDoCasal ? TEXTOS_TAREFAS.vazioCasalTexto : TEXTOS_TAREFAS.vazioTexto"
+          :titulo="visaoDoAnfitriao ? TEXTOS_TAREFAS.vazioAnfitriaoTitulo : TEXTOS_TAREFAS.vazioTitulo"
+          :descricao="visaoDoAnfitriao ? TEXTOS_TAREFAS.vazioAnfitriaoTexto : TEXTOS_TAREFAS.vazioTexto"
         >
           <template
             v-if="podeGerenciar"
@@ -458,7 +458,7 @@ function novaTarefa() {
                 />
               </div>
               <div
-                v-if="!visaoDoCasal"
+                v-if="!visaoDoAnfitriao"
                 class="tarefas__filtros-secundarios"
               >
                 <SelectButton
@@ -523,7 +523,7 @@ function novaTarefa() {
                     v-for="tarefa in grupo.tarefas"
                     :key="tarefa.id"
                     :titulo="tarefa.titulo"
-                    :metadados="metadadosTarefa(tarefa, visaoDoCasal)"
+                    :metadados="metadadosTarefa(tarefa, visaoDoAnfitriao)"
                     :descricao="tarefa.descricao"
                     :badge="badgeTarefa(tarefa)"
                     :concluida="tarefa.status === 'Concluida'"
@@ -560,7 +560,7 @@ function novaTarefa() {
                 v-for="tarefa in tarefasFiltradas"
                 :key="tarefa.id"
                 :titulo="tarefa.titulo"
-                :metadados="metadadosTarefa(tarefa, visaoDoCasal)"
+                :metadados="metadadosTarefa(tarefa, visaoDoAnfitriao)"
                 :descricao="tarefa.descricao"
                 :badge="badgeTarefa(tarefa)"
                 :concluida="tarefa.status === 'Concluida'"
@@ -601,7 +601,7 @@ function novaTarefa() {
                 id="titulo-progresso-tarefas"
                 class="texto-rotulo"
               >
-                {{ visaoDoCasal ? TEXTOS_TAREFAS.progressoTituloCasal : TEXTOS_TAREFAS.progressoTitulo }}
+                {{ visaoDoAnfitriao ? TEXTOS_TAREFAS.progressoTituloAnfitriao : TEXTOS_TAREFAS.progressoTitulo }}
               </h2>
               <div class="pilha pilha--campo">
                 <p
@@ -630,8 +630,8 @@ function novaTarefa() {
                   data-teste="legenda-progresso-tarefas"
                 >
                   {{
-                    visaoDoCasal
-                      ? TEXTOS_TAREFAS.progressoLegendaCasal(progresso.concluidas, progresso.ativas)
+                    visaoDoAnfitriao
+                      ? TEXTOS_TAREFAS.progressoLegendaAnfitriao(progresso.concluidas, progresso.ativas)
                       : TEXTOS_TAREFAS.progressoLegenda(progresso.concluidas, progresso.ativas)
                   }}
                 </p>
@@ -653,10 +653,10 @@ function novaTarefa() {
             </div>
 
             <p
-              v-if="visaoDoCasal"
+              v-if="visaoDoAnfitriao"
               class="tarefas__rodape texto-legenda"
             >
-              {{ TEXTOS_TAREFAS.rodapeCasal }}
+              {{ TEXTOS_TAREFAS.rodapeAnfitriao }}
             </p>
           </aside>
         </div>

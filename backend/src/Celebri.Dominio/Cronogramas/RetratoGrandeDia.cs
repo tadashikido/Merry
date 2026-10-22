@@ -3,7 +3,7 @@ namespace Celebri.Dominio.Cronogramas;
 public sealed record RetratoGrandeDia(
     FaseGrandeDia Fase,
     int MinutoAtual,
-    int DiasParaOCasamento,
+    int DiasParaOEvento,
     IReadOnlyDictionary<Guid, SituacaoItemGrandeDia> Situacoes)
 {
     public SituacaoItemGrandeDia SituacaoDe(ItemCronograma item)

@@ -1,4 +1,4 @@
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 import type { DiaCronograma, StatusItemCronograma } from '@/tipos/cronograma'
 
 export const FASES_GRANDE_DIA = ['AntesDoDia', 'NoDia', 'DepoisDoDia'] as const
@@ -12,7 +12,7 @@ export type SituacaoItemGrandeDia = (typeof SITUACOES_ITEM_GRANDE_DIA)[number]
 export interface MomentoGrandeDiaDto {
   agora: string
   fase: FaseGrandeDia
-  diasParaOCasamento: number
+  diasParaOEvento: number
 }
 
 export interface FornecedorGrandeDiaDto {
@@ -42,7 +42,7 @@ export interface ItemGrandeDiaDto {
 }
 
 export interface GrandeDiaDto {
-  casamentoId: string
+  eventoId: string
   nomePrimeiraPessoa: string
   nomeSegundaPessoa: string
   data: DataCalendario

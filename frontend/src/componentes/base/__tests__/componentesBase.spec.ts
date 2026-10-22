@@ -176,11 +176,11 @@ describe('Estados', () => {
     const wrapper = mount(EstadoPrimeiroAcesso, {
       props: {
         titulo: 'Boas-vindas ao Celebri.',
-        descricao: 'Vamos configurar seu primeiro casamento.',
+        descricao: 'Vamos configurar seu primeiro evento.',
         rotuloAcao: 'Continuar',
         passos: [
-          { chave: 'a', rotulo: 'Dados do casamento', concluido: true },
-          { chave: 'b', rotulo: 'Convidar o casal', concluido: false },
+          { chave: 'a', rotulo: 'Dados do evento', concluido: true },
+          { chave: 'b', rotulo: 'Convidar os anfitriões', concluido: false },
           { chave: 'c', rotulo: 'Convidados', concluido: false },
         ],
       },

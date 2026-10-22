@@ -8,10 +8,10 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_DADOS_SENSIVEIS } from '@/textos/dadosSensiveis'
 import type { RelatorioRestricoesAlimentaresDto } from '@/tipos/dadosSensiveis'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_RELATORIO = `${ROTA_CASAMENTO}/restricoes-alimentares`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_RELATORIO = `${ROTA_EVENTO}/restricoes-alimentares`
 
 const ESTILO_VIEW = (() => {
   const fonte = readFileSync(resolve(__dirname, '../RestricoesAlimentaresView.vue'), 'utf-8')
@@ -80,8 +80,8 @@ afterEach(() => {
 })
 
 async function abrir(corpo: () => Response) {
-  rotearFetch(fetchSimulado, quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())), quando('GET', ROTA_RELATORIO, corpo))
-  const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/restricoes-alimentares`)
+  rotearFetch(fetchSimulado, quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())), quando('GET', ROTA_RELATORIO, corpo))
+  const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/restricoes-alimentares`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
 }
@@ -117,7 +117,7 @@ describe('RestricoesAlimentaresView — reestruturação da fundação', { timeo
     expect(wrapper!.find('[data-teste="restricoes-vazio"]').exists()).toBe(true)
     expect(wrapper!.find('[data-teste="restricoes-corpo"]').exists()).toBe(false)
     expect(wrapper!.findAll('[data-teste="restricoes-exclusao-prevista"]')).toHaveLength(1)
-    expect(wrapper!.get('[data-teste="restricoes-exclusao-prevista"]').text()).toContain('30 dias após o casamento')
+    expect(wrapper!.get('[data-teste="restricoes-exclusao-prevista"]').text()).toContain('30 dias após o evento')
   })
 
   it('[COMPONENTE] com pessoas o aviso de exclusão aparece uma única vez', async () => {

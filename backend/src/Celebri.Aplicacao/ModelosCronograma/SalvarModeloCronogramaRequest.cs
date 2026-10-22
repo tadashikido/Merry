@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Excecoes;
@@ -13,7 +13,7 @@ public sealed record SalvarModeloCronogramaRequest(
     string? Nome,
     [StringLength(ModeloCronograma.TamanhoMaximoDescricao, ErrorMessage = MensagensModeloCronograma.TamanhoDescricao)]
     string? Descricao,
-    [RegularExpression(SalvarCasamentoRequest.PadraoHorario, ErrorMessage = MensagensModeloCronograma.HorarioReferenciaInvalido)]
+    [RegularExpression(SalvarEventoRequest.PadraoHorario, ErrorMessage = MensagensModeloCronograma.HorarioReferenciaInvalido)]
     string? HorarioReferencia = null) : IValidatableObject
 {
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -35,7 +35,7 @@ public sealed record SalvarModeloCronogramaRequest(
 
         if (!TimeOnly.TryParseExact(
                 HorarioReferencia.Trim(),
-                SalvarCasamentoRequest.FormatoHorario,
+                SalvarEventoRequest.FormatoHorario,
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.None,
                 out var resultado))

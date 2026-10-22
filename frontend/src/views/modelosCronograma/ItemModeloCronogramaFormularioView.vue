@@ -17,7 +17,7 @@ import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
-import type { FalhaCasamento } from '@/stores/casamentos'
+import type { FalhaEvento } from '@/stores/eventos'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
 import { ROTULOS_DIA_CRONOGRAMA, TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
@@ -68,7 +68,7 @@ const { confirmarExclusao } = useConfirmarExclusao()
 
 const edicao = computed(() => Boolean(props.itemId))
 const carregando = ref(false)
-const falhaCarga = ref<FalhaCasamento | null>(null)
+const falhaCarga = ref<FalhaEvento | null>(null)
 const itemInexistente = ref(false)
 const nomeModelo = ref('')
 const referencia = ref(HORARIO_REFERENCIA_PADRAO)
@@ -80,7 +80,7 @@ let lerInicio: () => string = () => ''
 
 const formulario = useFormulario(
   {
-    dia: 'DiaDoCasamento' as DiaCronograma,
+    dia: 'DiaDoEvento' as DiaCronograma,
     inicio: '',
     termino: '',
     atividade: '',
@@ -186,7 +186,7 @@ function montarRequest(): SalvarItemModeloCronogramaRequest {
   }
 }
 
-function tratarFalha(falha: FalhaCasamento) {
+function tratarFalha(falha: FalhaEvento) {
   const camposComErro: Campo[] = []
   for (const [chave, mensagem] of Object.entries(falha.errosCampos)) {
     const campo = CAMPOS_SERVIDOR[chave]

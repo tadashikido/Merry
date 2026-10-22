@@ -6,5 +6,5 @@ public sealed record ListaConvitesDto(
     IReadOnlyList<ConviteDto> Convites,
     TotaisConvidadosDto Totais,
     int? ConvidadosEstimados,
-    bool CasamentoArquivado,
+    bool EventoArquivado,
     IReadOnlyList<MesaResumoDto> Mesas);

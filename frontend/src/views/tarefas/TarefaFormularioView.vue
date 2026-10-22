@@ -16,7 +16,7 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
-import { useCasamentosStore, type FalhaCasamento } from '@/stores/casamentos'
+import { useEventosStore, type FalhaEvento } from '@/stores/eventos'
 import { useTarefasStore } from '@/stores/tarefas'
 import {
   ROTULOS_CATEGORIA_TAREFA,
@@ -35,7 +35,7 @@ import {
   type TarefaDto,
 } from '@/tipos/tarefas'
 import { focarElemento } from '@/utilitarios/foco'
-import { formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { LIMITES_TAREFA, descricaoTarefa, prazoTarefa, tituloTarefa } from '@/utilitarios/tarefas'
 import { obrigatorio } from '@/utilitarios/validacao'
 
@@ -44,14 +44,14 @@ type Campo = (typeof CAMPOS)[number]
 
 const props = defineProps<{ id: string; tarefaId?: string }>()
 
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const store = useTarefasStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
 
 const edicao = computed(() => Boolean(props.tarefaId))
 const carregandoTarefa = ref(false)
-const falhaTarefa = ref<FalhaCasamento | null>(null)
+const falhaTarefa = ref<FalhaEvento | null>(null)
 const original = ref<TarefaDto | null>(null)
 const enviando = ref(false)
 const mensagemErro = ref<string | null>(null)
@@ -76,11 +76,11 @@ const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 const idCampo = (campo: Campo | 'status') => `tarefa-${campo}`
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
-const arquivado = computed(() => casamento.value?.arquivado === true)
+const arquivado = computed(() => evento.value?.arquivado === true)
 const titulo = computed(() => (edicao.value ? TEXTOS_TAREFAS.formEditar : TEXTOS_TAREFAS.formNova))
 const rotuloSalvar = computed(() => (edicao.value ? TEXTOS_TAREFAS.salvar : TEXTOS_TAREFAS.criar))
 
@@ -117,7 +117,7 @@ async function carregarTarefa() {
 }
 
 onMounted(async () => {
-  void casamentos.obter(props.id)
+  void eventos.obter(props.id)
   await carregarTarefa()
   if (!falhaTarefa.value) {
     await focarElemento(idCampo('titulo'))
@@ -140,7 +140,7 @@ function montarRequest(): SalvarTarefaRequest {
   }
 }
 
-function tratarFalha(falha: FalhaCasamento): boolean {
+function tratarFalha(falha: FalhaEvento): boolean {
   const camposComErro = CAMPOS.filter((campo) => falha.errosCampos[campo])
   for (const campo of camposComErro) {
     formulario.erros[campo] = falha.errosCampos[campo]
@@ -200,12 +200,12 @@ async function enviar() {
   enviando.value = false
   liberarSaida()
   notificacao.sucesso(edicao.value ? TEXTOS_TAREFAS.toastSalva : TEXTOS_TAREFAS.toastCriada)
-  await roteador.replace({ name: 'casamento-tarefas', params: { id: props.id } })
+  await roteador.replace({ name: 'evento-tarefas', params: { id: props.id } })
 }
 
 function cancelar() {
   liberarSaida()
-  void roteador.push({ name: 'casamento-tarefas', params: { id: props.id } })
+  void roteador.push({ name: 'evento-tarefas', params: { id: props.id } })
 }
 </script>
 

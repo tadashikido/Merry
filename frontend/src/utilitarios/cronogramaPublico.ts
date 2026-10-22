@@ -1,7 +1,7 @@
 import { CATEGORIAS_FORNECEDOR, type CategoriaFornecedor } from '@/tipos/fornecedores'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
 import { TEXTOS_CRONOGRAMA_PUBLICO, TEXTOS_LINKS_CRONOGRAMA } from '@/textos/cronogramaPublico'
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 import type { DiaCronograma } from '@/tipos/cronograma'
 import type {
   CronogramaPublicoDto,
@@ -58,7 +58,7 @@ export function tituloDia(dia: DiaCronograma, data: DataCalendario): string {
   if (dia === 'DiaSeguinte') {
     return TEXTOS_CRONOGRAMA_PUBLICO.diaSeguinte(extenso)
   }
-  return TEXTOS_CRONOGRAMA_PUBLICO.diaDoCasamento
+  return TEXTOS_CRONOGRAMA_PUBLICO.diaDoEvento
 }
 
 export function agruparRoteiro<T extends Pick<ItemCronogramaPublicoDto, 'dia' | 'data'> = ItemCronogramaPublicoDto>(
@@ -74,7 +74,7 @@ export function ehHorarioDaCerimonia(
   item: Pick<ItemCronogramaPublicoDto, 'dia' | 'inicio'>,
   horarioCerimonia: string | null,
 ): boolean {
-  return horarioCerimonia !== null && item.dia === 'DiaDoCasamento' && item.inicio === horarioCerimonia
+  return horarioCerimonia !== null && item.dia === 'DiaDoEvento' && item.inicio === horarioCerimonia
 }
 
 export function situacaoDestino(destino: Pick<DestinoLinkCronogramaDto, 'link'>): SituacaoLinkCronograma {
@@ -88,9 +88,9 @@ export function rotuloDestino(destino: Pick<DestinoLinkCronogramaDto, 'tipo' | '
   return destino.tipo === 'Geral' ? TEXTOS_LINKS_CRONOGRAMA.equipeCompleta : (destino.rotulo ?? TEXTOS_LINKS_CRONOGRAMA.equipeCompleta)
 }
 
-export function chaveDestino(destino: Pick<DestinoLinkCronogramaDto, 'tipo' | 'fornecedorCasamentoId' | 'responsavel'>): string {
+export function chaveDestino(destino: Pick<DestinoLinkCronogramaDto, 'tipo' | 'fornecedorEventoId' | 'responsavel'>): string {
   if (destino.tipo === 'Fornecedor') {
-    return `fornecedor:${destino.fornecedorCasamentoId ?? ''}`
+    return `fornecedor:${destino.fornecedorEventoId ?? ''}`
   }
   if (destino.tipo === 'Responsavel') {
     return `responsavel:${destino.responsavel ?? ''}`
@@ -99,10 +99,10 @@ export function chaveDestino(destino: Pick<DestinoLinkCronogramaDto, 'tipo' | 'f
 }
 
 export function requestDoDestino(
-  destino: Pick<DestinoLinkCronogramaDto, 'tipo' | 'fornecedorCasamentoId' | 'responsavel'>,
+  destino: Pick<DestinoLinkCronogramaDto, 'tipo' | 'fornecedorEventoId' | 'responsavel'>,
 ): GerarLinkCronogramaRequest {
   if (destino.tipo === 'Fornecedor') {
-    return { tipo: 'Fornecedor', fornecedorCasamentoId: destino.fornecedorCasamentoId }
+    return { tipo: 'Fornecedor', fornecedorEventoId: destino.fornecedorEventoId }
   }
   if (destino.tipo === 'Responsavel') {
     return { tipo: 'Responsavel', responsavel: destino.responsavel }
@@ -111,24 +111,24 @@ export function requestDoDestino(
 }
 
 export function montarMensagemCronograma(
-  casamento: DadosMensagemCronograma,
+  evento: DadosMensagemCronograma,
   destino: Pick<DestinoLinkCronogramaDto, 'tipo'>,
   url: string,
 ): string {
   const dados = {
-    primeiro: casamento.nomePrimeiraPessoa,
-    segundo: casamento.nomeSegundaPessoa,
-    data: formatarDataCalendarioExtenso(casamento.data),
+    primeiro: evento.nomePrimeiraPessoa,
+    segundo: evento.nomeSegundaPessoa,
+    data: formatarDataCalendarioExtenso(evento.data),
     url,
   }
   return destino.tipo === 'Geral' ? TEXTOS_LINKS_CRONOGRAMA.mensagemGeral(dados) : TEXTOS_LINKS_CRONOGRAMA.mensagemFiltrada(dados)
 }
 
 export function montarWhatsAppCronograma(
-  casamento: DadosMensagemCronograma,
+  evento: DadosMensagemCronograma,
   destino: Pick<DestinoLinkCronogramaDto, 'tipo' | 'telefone'>,
   url: string,
 ): string {
   const telefone = destino.tipo === 'Fornecedor' ? destino.telefone : null
-  return montarLinkWhatsApp(telefone, montarMensagemCronograma(casamento, destino, url))
+  return montarLinkWhatsApp(telefone, montarMensagemCronograma(evento, destino, url))
 }

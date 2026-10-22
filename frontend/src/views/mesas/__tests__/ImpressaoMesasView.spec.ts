@@ -5,16 +5,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
-import { mapaExemplo, mesaExemplo, MESA_NOIVOS } from '@/__tests__/auxiliaresMesas'
+import { mapaExemplo, mesaExemplo, MESA_ANFITRIOES } from '@/__tests__/auxiliaresMesas'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_IMPRESSAO_MESAS, TEXTOS_MESAS } from '@/textos/mesas'
-import type { CasamentoDto } from '@/tipos/casamentos'
+import type { EventoDto } from '@/tipos/eventos'
 import type { MapaMesasDto } from '@/tipos/mesas'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_MESAS = `${ROTA_CASAMENTO}/mesas`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_MESAS = `${ROTA_EVENTO}/mesas`
 
 let fetchSimulado: ReturnType<typeof simularFetch>
 let wrapper: VueWrapper | undefined
@@ -32,19 +32,19 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-async function abrir(casamento: Partial<CasamentoDto> = {}, mapa: MapaMesasDto = mapaExemplo()) {
+async function abrir(evento: Partial<EventoDto> = {}, mapa: MapaMesasDto = mapaExemplo()) {
   rotearFetch(
     fetchSimulado,
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto(casamento))),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto(evento))),
     quando('GET', ROTA_MESAS, () => respostaJson(mapa)),
   )
-  const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/mesas/impressao`)
+  const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/mesas/impressao`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
 }
 
 describe('ImpressaoMesasView reestruturada', { timeout: 30_000 }, () => {
-  it('[COMPONENTE] cabeçalho timbrado identifica documento, geração, casal, data e local', async () => {
+  it('[COMPONENTE] cabeçalho timbrado identifica documento, geração, anfitriões, data e local', async () => {
     await abrir({ localRecepcao: 'Villa Giardino' })
 
     const cabecalho = wrapper!.get('[data-teste="mapa-mesas-impressao"] header')
@@ -70,20 +70,20 @@ describe('ImpressaoMesasView reestruturada', { timeout: 30_000 }, () => {
     const mesas = wrapper!.findAll('[data-teste="mesa-impressao"]')
     expect(mesas).toHaveLength(3)
     expect(mesas[0]!.classes()).toContain('mapa__mesa--especial')
-    expect(mesas[0]!.get('h2').text()).toBe(TEXTOS_MESAS.rotuloMesaNoivos)
-    expect(mesas[0]!.find('[data-teste="selo-noivos"]').exists()).toBe(false)
+    expect(mesas[0]!.get('h2').text()).toBe(TEXTOS_MESAS.rotuloMesaAnfitrioes)
+    expect(mesas[0]!.find('[data-teste="selo-anfitrioes"]').exists()).toBe(false)
     expect(mesas[0]!.find('[data-teste="ocupacao-mesa"]').exists()).toBe(true)
     expect(mesas[0]!.findAll('ol li').map((item) => item.text())).toEqual(['Ana Souza'])
     expect(mesas[2]!.text()).toContain(TEXTOS_MESAS.mesaVazia)
   })
 
-  it('[COMPONENTE] mesa dos noivos com nome próprio ganha selo textual', async () => {
+  it('[COMPONENTE] mesa dos anfitriões com nome próprio ganha selo textual', async () => {
     const base = mapaExemplo()
-    const mesas = base.mesas.map((mesa) => (mesa.id === MESA_NOIVOS ? mesaExemplo({ ...mesa, nome: 'Ana & Bruno' }) : mesa))
+    const mesas = base.mesas.map((mesa) => (mesa.id === MESA_ANFITRIOES ? mesaExemplo({ ...mesa, nome: 'Ana & Bruno' }) : mesa))
     await abrir({}, { ...base, mesas })
 
     const primeira = wrapper!.findAll('[data-teste="mesa-impressao"]')[0]!
-    expect(primeira.get('[data-teste="selo-noivos"]').text()).toBe(TEXTOS_MESAS.rotuloMesaNoivos)
+    expect(primeira.get('[data-teste="selo-anfitrioes"]').text()).toBe(TEXTOS_MESAS.rotuloMesaAnfitrioes)
     expect(primeira.get('h2').text()).toContain('Ana & Bruno')
   })
 
@@ -97,10 +97,10 @@ describe('ImpressaoMesasView reestruturada', { timeout: 30_000 }, () => {
   it('[COMPONENTE] erro de servidor permite tentar de novo e desabilita imprimir', async () => {
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_MESAS, () => respostaProblema(500)),
     )
-    const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/mesas/impressao`)
+    const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/mesas/impressao`)
     wrapper = await montarView(RaizRotas, montagem)
     await flushPromises()
 
@@ -112,10 +112,10 @@ describe('ImpressaoMesasView reestruturada', { timeout: 30_000 }, () => {
   it('[SEGURANÇA] outra organização mostra não encontrado sem dados do mapa', async () => {
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_CASAMENTO, () => respostaProblema(404)),
+      quando('GET', ROTA_EVENTO, () => respostaProblema(404)),
       quando('GET', ROTA_MESAS, () => respostaProblema(404)),
     )
-    const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/mesas/impressao`)
+    const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/mesas/impressao`)
     wrapper = await montarView(RaizRotas, montagem)
     await flushPromises()
 

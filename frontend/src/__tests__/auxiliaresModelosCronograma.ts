@@ -25,7 +25,7 @@ export function itemModeloCronograma(dados: Partial<ItemModeloCronogramaDto> = {
   return {
     id: ID_ITEM_MODELO_CRONOGRAMA,
     minutosDesdeCerimonia: -360,
-    dia: 'DiaDoCasamento',
+    dia: 'DiaDoEvento',
     inicio: '10:00',
     duracaoMinutos: 240,
     termino: '14:00',

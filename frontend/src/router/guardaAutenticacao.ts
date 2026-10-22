@@ -17,11 +17,11 @@ export function somenteAssessoria(rota: Pick<RouteLocationNormalized, 'matched'>
   return rota.matched.some((registro) => registro.meta.somenteAssessoria === true)
 }
 
-export function destinoDoCasal(rota: RouteLocationNormalized, casamentoId: string | null): RouteLocationRaw | null {
+export function destinoDoAnfitriao(rota: RouteLocationNormalized, eventoId: string | null): RouteLocationRaw | null {
   if (rota.name !== 'inicio' && !somenteAssessoria(rota)) {
     return null
   }
-  return casamentoId ? { name: 'casamento', params: { id: casamentoId } } : null
+  return eventoId ? { name: 'evento', params: { id: eventoId } } : null
 }
 
 export function rotaDeEntrada(destino?: string): RouteLocationRaw {
@@ -44,8 +44,8 @@ export function instalarGuardaAutenticacao(roteador: Router, store: StoreAutenti
       return { name: 'inicio' }
     }
 
-    if (store.ehCasal) {
-      return destinoDoCasal(destino, store.casamentoDoCasal) ?? true
+    if (store.ehAnfitriao) {
+      return destinoDoAnfitriao(destino, store.eventoDoAnfitriao) ?? true
     }
 
     return true

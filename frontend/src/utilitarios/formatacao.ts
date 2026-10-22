@@ -141,6 +141,6 @@ export function formatarNumero(valor: number | null | undefined): string {
   return formatoNumero.format(valor)
 }
 
-export function formatarNomesCasal(primeiro: string, segundo: string): string {
+export function formatarNomesAnfitrioes(primeiro: string, segundo: string): string {
   return `${primeiro.trim()} & ${segundo.trim()}`
 }

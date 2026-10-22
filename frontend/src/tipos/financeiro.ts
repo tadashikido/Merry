@@ -1,5 +1,5 @@
 import type { CategoriaFornecedor } from '@/tipos/fornecedores'
-import type { ResumoOrcamentoDto, StatusFornecedorCasamento } from '@/tipos/fornecedoresCasamento'
+import type { ResumoOrcamentoDto, StatusFornecedorEvento } from '@/tipos/fornecedoresEvento'
 
 export const SITUACOES_PARCELA = ['Pendente', 'Vencida', 'Paga'] as const
 export type SituacaoParcela = (typeof SITUACOES_PARCELA)[number]
@@ -13,7 +13,7 @@ export interface ComprovanteParcelaDto {
 
 export interface ParcelaDto {
   id: string
-  fornecedorCasamentoId: string
+  fornecedorEventoId: string
   numero: number
   totalParcelas: number
   valor: number
@@ -28,7 +28,7 @@ export interface ParcelaDto {
 }
 
 export interface CronogramaParcelasDto {
-  fornecedorCasamentoId: string
+  fornecedorEventoId: string
   valorContratado: number
   parcelado: number
   pago: number
@@ -37,12 +37,12 @@ export interface CronogramaParcelasDto {
 }
 
 export interface FornecedorFinanceiroDto {
-  fornecedorCasamentoId: string
+  fornecedorEventoId: string
   fornecedorId: string
   nomeEmpresa: string
   categoria: CategoriaFornecedor
   servico: string | null
-  status: StatusFornecedorCasamento
+  status: StatusFornecedorEvento
   valorContratado: number
   parcelado: number
   pago: number
@@ -59,21 +59,21 @@ export interface TotaisAlertasDto {
   valorProximas: number
 }
 
-export interface FinanceiroCasamentoDto {
+export interface FinanceiroEventoDto {
   resumo: ResumoOrcamentoDto
   alertas: TotaisAlertasDto
   fornecedores: FornecedorFinanceiroDto[]
   hoje: string
-  casamentoArquivado: boolean
+  eventoArquivado: boolean
   somenteLeitura: boolean
 }
 
 export interface ParcelaAlertaDto {
   parcelaId: string
-  casamentoId: string
+  eventoId: string
   nomePrimeiraPessoa: string
   nomeSegundaPessoa: string
-  fornecedorCasamentoId: string
+  fornecedorEventoId: string
   nomeEmpresa: string
   numero: number
   totalParcelas: number
@@ -87,7 +87,7 @@ export interface AlertasPagamentosDto {
   valorVencidas: number
   totalProximas: number
   valorProximas: number
-  casamentosComVencidas: number
+  eventosComVencidas: number
   hoje: string
   vencidas: ParcelaAlertaDto[]
   proximas: ParcelaAlertaDto[]

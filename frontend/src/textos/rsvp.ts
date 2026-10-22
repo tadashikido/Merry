@@ -7,7 +7,7 @@ function pessoas(quantidade: number): string {
 }
 
 export const TEXTOS_RSVP = {
-  fraseConvite: 'Com alegria, convidamos você para celebrar o nosso casamento',
+  fraseConvite: 'Com alegria, convidamos você para celebrar o nosso evento',
   tituloDocumento: 'Confirmação de presença',
   conviteDe: 'Convite para',
   prazo: (data: string) => `Responda até ${data}`,

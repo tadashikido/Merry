@@ -2,7 +2,7 @@ using Celebri.Dominio.Isolamento;
 
 namespace Celebri.Dominio.Convidados;
 
-public class RegistroAlteracaoConvite : IPertenceCasamento
+public class RegistroAlteracaoConvite : IPertenceEvento
 {
     public const int TamanhoMaximoPapel = 20;
 
@@ -14,7 +14,7 @@ public class RegistroAlteracaoConvite : IPertenceCasamento
 
     public Guid OrganizacaoId { get; private set; }
 
-    public Guid CasamentoId { get; private set; }
+    public Guid EventoId { get; private set; }
 
     public Guid ConviteId { get; private set; }
 
@@ -28,16 +28,16 @@ public class RegistroAlteracaoConvite : IPertenceCasamento
 
     public static RegistroAlteracaoConvite Registrar(
         Guid organizacaoId,
-        Guid casamentoId,
+        Guid eventoId,
         Guid conviteId,
         AcaoAlteracaoConvite acao,
         Guid? usuarioId,
         string? papelUsuario,
         DateTimeOffset agora)
     {
-        if (casamentoId == Guid.Empty || conviteId == Guid.Empty)
+        if (eventoId == Guid.Empty || conviteId == Guid.Empty)
         {
-            throw new ArgumentException("Casamento e convite são obrigatórios na trilha de alterações.");
+            throw new ArgumentException("Evento e convite são obrigatórios na trilha de alterações.");
         }
 
         var papel = usuarioId is null || string.IsNullOrWhiteSpace(papelUsuario) ? null : papelUsuario.Trim();
@@ -50,7 +50,7 @@ public class RegistroAlteracaoConvite : IPertenceCasamento
         {
             Id = Guid.NewGuid(),
             OrganizacaoId = organizacaoId,
-            CasamentoId = casamentoId,
+            EventoId = eventoId,
             ConviteId = conviteId,
             Acao = acao,
             UsuarioId = usuarioId,

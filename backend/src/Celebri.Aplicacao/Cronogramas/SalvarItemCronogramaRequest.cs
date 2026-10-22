@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text.Json.Serialization;
-using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Excecoes;
@@ -12,7 +12,7 @@ public sealed record SalvarItemCronogramaRequest(
     [property: JsonConverter(typeof(JsonStringEnumConverter<DiaCronograma>))]
     DiaCronograma? Dia,
     [Required(ErrorMessage = MensagensCronograma.InicioObrigatorio)]
-    [RegularExpression(SalvarCasamentoRequest.PadraoHorario, ErrorMessage = MensagensCronograma.HorarioInvalido)]
+    [RegularExpression(SalvarEventoRequest.PadraoHorario, ErrorMessage = MensagensCronograma.HorarioInvalido)]
     string? Inicio,
     [Range(ItemCronograma.DuracaoMinima, ItemCronograma.DuracaoMaxima, ErrorMessage = MensagensCronograma.DuracaoInvalida)]
     int? DuracaoMinutos,
@@ -23,7 +23,7 @@ public sealed record SalvarItemCronogramaRequest(
     string? Local,
     [StringLength(ItemCronograma.TamanhoMaximoResponsavel, ErrorMessage = MensagensCronograma.TamanhoResponsavel)]
     string? Responsavel,
-    Guid? FornecedorCasamentoId,
+    Guid? FornecedorEventoId,
     [StringLength(ItemCronograma.TamanhoMaximoTexto, ErrorMessage = MensagensCronograma.TamanhoTexto)]
     string? Instrucoes,
     [StringLength(ItemCronograma.TamanhoMaximoTexto, ErrorMessage = MensagensCronograma.TamanhoTexto)]
@@ -47,13 +47,13 @@ public sealed record SalvarItemCronogramaRequest(
     public DadosItemCronograma ParaDados()
     {
         return new DadosItemCronograma(
-            Dia ?? DiaCronograma.DiaDoCasamento,
+            Dia ?? DiaCronograma.DiaDoEvento,
             InterpretarInicio(Inicio),
             DuracaoMinutos,
             Atividade,
             Local,
             Responsavel,
-            FornecedorCasamentoId,
+            FornecedorEventoId,
             Instrucoes,
             NotasInternas);
     }
@@ -67,7 +67,7 @@ public sealed record SalvarItemCronogramaRequest(
 
         if (!TimeOnly.TryParseExact(
                 inicio.Trim(),
-                SalvarCasamentoRequest.FormatoHorario,
+                SalvarEventoRequest.FormatoHorario,
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.None,
                 out var resultado))

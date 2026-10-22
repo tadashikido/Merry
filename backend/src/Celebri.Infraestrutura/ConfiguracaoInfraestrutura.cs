@@ -45,10 +45,10 @@ public static class ConfiguracaoInfraestrutura
 
         servicos.TryAddScoped<IContextoIsolamento, ContextoIsolamentoSemOrganizacao>();
         servicos.TryAddScoped<IAutorAlteracao, AutorAlteracaoAnonimo>();
-        servicos.AddDbContext<CasamentoDbContext>(opcoes => opcoes.ConfigurarPostgreSql(stringConexao));
+        servicos.AddDbContext<CelebriDbContext>(opcoes => opcoes.ConfigurarPostgreSql(stringConexao));
 
         servicos.AddHealthChecks()
-            .AddDbContextCheck<CasamentoDbContext>(NomeHealthCheckBanco);
+            .AddDbContextCheck<CelebriDbContext>(NomeHealthCheckBanco);
 
         servicos.AddOptions<OpcoesJwt>()
             .Bind(configuracao.GetSection(OpcoesJwt.Secao))
@@ -60,8 +60,10 @@ public static class ConfiguracaoInfraestrutura
             .Validate(opcoes => OpcoesDadosSensiveis.ChaveValida(opcoes.ChaveCifragem), OpcoesDadosSensiveis.MensagemChaveInvalida)
             .ValidateOnStart();
 
+        var secaoRetencao = configuracao.GetSection(OpcoesRetencaoDadosSensiveis.Secao);
         servicos.AddOptions<OpcoesRetencaoDadosSensiveis>()
-            .Bind(configuracao.GetSection(OpcoesRetencaoDadosSensiveis.Secao))
+            .Bind(secaoRetencao)
+            .Configure(opcoes => AplicarChaveLegadaRetencao(opcoes, secaoRetencao))
             .Validate(opcoes => opcoes.Valida(), OpcoesRetencaoDadosSensiveis.MensagemConfiguracaoInvalida)
             .ValidateOnStart();
 
@@ -87,18 +89,18 @@ public static class ConfiguracaoInfraestrutura
         servicos.AddScoped<IOrganizacaoRepository, OrganizacaoRepository>();
         servicos.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         servicos.AddScoped<ITokenRedefinicaoSenhaRepository, TokenRedefinicaoSenhaRepository>();
-        servicos.AddScoped<ICasamentoRepository, CasamentoRepository>();
-        servicos.AddScoped<IDuplicacaoCasamentoRepository, DuplicacaoCasamentoRepository>();
+        servicos.AddScoped<IEventoRepository, EventoRepository>();
+        servicos.AddScoped<IDuplicacaoEventoRepository, DuplicacaoEventoRepository>();
         servicos.AddScoped<IConviteRepository, ConviteRepository>();
         servicos.AddScoped<IAcessoRsvpRepository, AcessoRsvpRepository>();
         servicos.AddScoped<IDadosSensiveisRepository, DadosSensiveisRepository>();
-        servicos.AddScoped<IAcessoCasalRepository, AcessoCasalRepository>();
-        servicos.AddScoped<ITokenAcessoCasalRepository, TokenAcessoCasalRepository>();
-        servicos.AddScoped<ITarefaCasamentoRepository, TarefaCasamentoRepository>();
+        servicos.AddScoped<IAcessoAnfitriaoRepository, AcessoAnfitriaoRepository>();
+        servicos.AddScoped<ITokenAcessoAnfitriaoRepository, TokenAcessoAnfitriaoRepository>();
+        servicos.AddScoped<ITarefaEventoRepository, TarefaEventoRepository>();
         servicos.AddScoped<IModeloChecklistRepository, ModeloChecklistRepository>();
         servicos.AddScoped<IChecklistRepository, ChecklistRepository>();
         servicos.AddScoped<IFornecedorRepository, FornecedorRepository>();
-        servicos.AddScoped<IFornecedorCasamentoRepository, FornecedorCasamentoRepository>();
+        servicos.AddScoped<IFornecedorEventoRepository, FornecedorEventoRepository>();
         servicos.AddScoped<IMesaRepository, MesaRepository>();
         servicos.AddScoped<IParcelaFornecedorRepository, ParcelaFornecedorRepository>();
         servicos.AddScoped<IItemCronogramaRepository, ItemCronogramaRepository>();
@@ -125,5 +127,18 @@ public static class ConfiguracaoInfraestrutura
             && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp)
             && string.IsNullOrEmpty(uri.Query)
             && string.IsNullOrEmpty(uri.Fragment);
+    }
+
+    public static void AplicarChaveLegadaRetencao(OpcoesRetencaoDadosSensiveis opcoes, IConfigurationSection secao)
+    {
+        if (secao[nameof(OpcoesRetencaoDadosSensiveis.DiasAposEvento)] is not null)
+        {
+            return;
+        }
+
+        if (int.TryParse(secao[OpcoesRetencaoDadosSensiveis.ChaveLegadaDiasAposEvento], out var dias))
+        {
+            opcoes.DiasAposEvento = dias;
+        }
     }
 }

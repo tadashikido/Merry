@@ -3,8 +3,8 @@ import { dialogo } from './suporte/interacoes'
 
 test.describe('Cronograma do dia', () => {
   test('adiciona e edita um item do cronograma', async ({ paginaAssessoria: page, api }) => {
-    const casamento = await api.criarCasamento()
-    await page.goto(`/casamentos/${casamento.id}/cronograma`)
+    const evento = await api.criarEvento()
+    await page.goto(`/eventos/${evento.id}/cronograma`)
     await expect(page.getByRole('heading', { name: 'Monte o roteiro do dia' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Adicionar item' }).click()
@@ -25,8 +25,8 @@ test.describe('Cronograma do dia', () => {
   })
 
   test('aplica o roteiro sugerido ao cronograma', async ({ paginaAssessoria: page, api }) => {
-    const casamento = await api.criarCasamento()
-    await page.goto(`/casamentos/${casamento.id}/cronograma`)
+    const evento = await api.criarEvento()
+    await page.goto(`/eventos/${evento.id}/cronograma`)
 
     await page.getByRole('button', { name: 'Aplicar modelo' }).first().click()
     await page.getByRole('button', { name: 'Aplicar modelo' }).last().click()

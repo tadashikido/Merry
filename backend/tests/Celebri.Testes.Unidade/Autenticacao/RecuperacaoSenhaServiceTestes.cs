@@ -20,7 +20,7 @@ public class RecuperacaoSenhaServiceTestes
         Assert.Equal(MensagensAutenticacao.RecuperacaoSolicitada, resposta.Mensagem);
         var email = Assert.Single(_cenario.Email.Enviadas);
         Assert.Equal("ana@exemplo.com", email.Destinatario);
-        Assert.Contains("https://app.casamento.teste/redefinir-senha#token=", email.CorpoTexto);
+        Assert.Contains("https://app.evento.teste/redefinir-senha#token=", email.CorpoTexto);
         var token = Assert.Single(_cenario.Banco.TokensRedefinicao);
         Assert.Equal(_cenario.Relogio.Agora.AddMinutes(60), token.ExpiraEm);
         Assert.DoesNotContain(token.TokenHash, email.CorpoTexto);

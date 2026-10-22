@@ -5,7 +5,7 @@ import { corpoDaChamada, respostaJson, respostaProblema, respostaVazia, simularF
 import { rotaRelatorioRestricoes, rotaRestricaoConvidado, useRestricoesAlimentaresStore } from '@/stores/restricoesAlimentares'
 import type { RelatorioRestricoesAlimentaresDto } from '@/tipos/dadosSensiveis'
 
-const CASAMENTO = '11111111-1111-4111-8111-111111111111'
+const EVENTO = '11111111-1111-4111-8111-111111111111'
 const CONVITE = '33333333-3333-4333-8333-333333333333'
 const CONVIDADO = '44444444-4444-4444-8444-444444444444'
 
@@ -49,17 +49,17 @@ afterEach(() => {
 
 describe('useRestricoesAlimentaresStore', () => {
   it('[UNITÁRIO] monta rotas com ids codificados', () => {
-    expect(rotaRelatorioRestricoes(CASAMENTO)).toBe(`/api/casamentos/${CASAMENTO}/restricoes-alimentares`)
-    expect(rotaRestricaoConvidado(CASAMENTO, CONVITE, CONVIDADO)).toBe(
-      `/api/casamentos/${CASAMENTO}/convites/${CONVITE}/convidados/${CONVIDADO}/restricao-alimentar`,
+    expect(rotaRelatorioRestricoes(EVENTO)).toBe(`/api/eventos/${EVENTO}/restricoes-alimentares`)
+    expect(rotaRestricaoConvidado(EVENTO, CONVITE, CONVIDADO)).toBe(
+      `/api/eventos/${EVENTO}/convites/${CONVITE}/convidados/${CONVIDADO}/restricao-alimentar`,
     )
   })
 
-  it('[INTEGRAÇÃO] carrega o relatório do casamento', async () => {
+  it('[INTEGRAÇÃO] carrega o relatório do evento', async () => {
     fetchSimulado.mockResolvedValue(respostaJson(RELATORIO))
     const store = useRestricoesAlimentaresStore()
 
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
     expect(store.relatorio).toEqual(RELATORIO)
     expect(store.falha).toBeNull()
@@ -70,7 +70,7 @@ describe('useRestricoesAlimentaresStore', () => {
     fetchSimulado.mockResolvedValue(respostaProblema(403, { title: 'Proibido' }))
     const store = useRestricoesAlimentaresStore()
 
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
     expect(store.relatorio).toBeNull()
     expect(store.falha?.tipo).toBe('semPermissao')
@@ -80,7 +80,7 @@ describe('useRestricoesAlimentaresStore', () => {
     fetchSimulado.mockRejectedValue(new TypeError('Failed to fetch'))
     const store = useRestricoesAlimentaresStore()
 
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
     expect(store.falha?.tipo).toBe('conexao')
   })
@@ -91,7 +91,7 @@ describe('useRestricoesAlimentaresStore', () => {
     )
     const store = useRestricoesAlimentaresStore()
 
-    const resultado = await store.salvar(CASAMENTO, CONVITE, CONVIDADO, {
+    const resultado = await store.salvar(EVENTO, CONVITE, CONVIDADO, {
       tipos: ['Vegana'],
       outraRestricao: null,
       necessidadeEspecial: null,
@@ -100,7 +100,7 @@ describe('useRestricoesAlimentaresStore', () => {
 
     expect(resultado.ok).toBe(true)
     const chamada = fetchSimulado.mock.calls[0]!
-    expect(String(chamada[0])).toBe(rotaRestricaoConvidado(CASAMENTO, CONVITE, CONVIDADO))
+    expect(String(chamada[0])).toBe(rotaRestricaoConvidado(EVENTO, CONVITE, CONVIDADO))
     expect(chamada[1]?.method).toBe('PUT')
     expect(corpoDaChamada(chamada)).toEqual({ tipos: ['Vegana'], outraRestricao: null, necessidadeEspecial: null, consentimentoObtido: true })
   })
@@ -109,7 +109,7 @@ describe('useRestricoesAlimentaresStore', () => {
     fetchSimulado.mockResolvedValue(respostaProblema(422, { title: 'Regra', detail: 'Confirme que a pessoa autorizou antes de salvar.' }))
     const store = useRestricoesAlimentaresStore()
 
-    const resultado = await store.salvar(CASAMENTO, CONVITE, CONVIDADO, {
+    const resultado = await store.salvar(EVENTO, CONVITE, CONVIDADO, {
       tipos: ['Vegana'],
       outraRestricao: null,
       necessidadeEspecial: null,
@@ -123,8 +123,8 @@ describe('useRestricoesAlimentaresStore', () => {
     fetchSimulado.mockResolvedValueOnce(respostaVazia()).mockResolvedValueOnce(respostaProblema(404, { title: 'Não encontrado' }))
     const store = useRestricoesAlimentaresStore()
 
-    const primeira = await store.remover(CASAMENTO, CONVITE, CONVIDADO)
-    const segunda = await store.remover(CASAMENTO, CONVITE, CONVIDADO)
+    const primeira = await store.remover(EVENTO, CONVITE, CONVIDADO)
+    const segunda = await store.remover(EVENTO, CONVITE, CONVIDADO)
 
     expect(primeira.ok).toBe(true)
     expect(fetchSimulado.mock.calls[0]![1]?.method).toBe('DELETE')

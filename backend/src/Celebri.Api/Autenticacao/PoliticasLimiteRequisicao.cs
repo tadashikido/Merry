@@ -8,7 +8,7 @@ public static class PoliticasLimiteRequisicao
     public const string Renovar = "renovar";
     public const string Importacao = "importacao";
     public const string Rsvp = "rsvp";
-    public const string AcessoCasal = "acesso-casal";
+    public const string AcessoAnfitriao = "acesso-anfitriao";
     public const string Contrato = "contrato";
     public const string Comprovante = "comprovante";
     public const string CronogramaPublico = "cronograma-publico";
@@ -24,7 +24,7 @@ public static class PoliticasLimiteRequisicao
             [Renovar] = (30, 60),
             [Importacao] = (30, 60),
             [Rsvp] = (30, 60),
-            [AcessoCasal] = (10, 900),
+            [AcessoAnfitriao] = (10, 900),
             [Contrato] = (20, 60),
             [Comprovante] = (20, 60),
             [CronogramaPublico] = (60, 60),

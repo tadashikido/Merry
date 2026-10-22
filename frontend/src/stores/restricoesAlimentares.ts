@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 import { requisitar } from '@/servicos/clienteHttp'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
-import { ROTA_CASAMENTOS } from '@/stores/casamentos'
+import { ROTA_EVENTOS } from '@/stores/eventos'
 import { interpretarFalhaConvidados, rotaConvites, type FalhaConvidados, type ResultadoConvidados } from '@/stores/convidados'
 import type {
   RelatorioRestricoesAlimentaresDto,
@@ -11,40 +11,40 @@ import type {
   SalvarRestricaoAlimentarRequest,
 } from '@/tipos/dadosSensiveis'
 
-export function rotaRelatorioRestricoes(casamentoId: string): string {
-  return `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/restricoes-alimentares`
+export function rotaRelatorioRestricoes(eventoId: string): string {
+  return `${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/restricoes-alimentares`
 }
 
-export function rotaRestricaoConvidado(casamentoId: string, conviteId: string, convidadoId: string): string {
-  return `${rotaConvites(casamentoId, conviteId)}/convidados/${encodeURIComponent(convidadoId)}/restricao-alimentar`
+export function rotaRestricaoConvidado(eventoId: string, conviteId: string, convidadoId: string): string {
+  return `${rotaConvites(eventoId, conviteId)}/convidados/${encodeURIComponent(convidadoId)}/restricao-alimentar`
 }
 
 export const useRestricoesAlimentaresStore = defineStore('restricoesAlimentares', () => {
-  const casamentoId = ref<string | null>(null)
+  const eventoId = ref<string | null>(null)
   const relatorio = ref<RelatorioRestricoesAlimentaresDto | null>(null)
   const carregando = ref(false)
   const falha = ref<FalhaConvidados | null>(null)
 
   async function carregar(id: string): Promise<void> {
-    if (casamentoId.value !== id) {
+    if (eventoId.value !== id) {
       relatorio.value = null
     }
-    casamentoId.value = id
+    eventoId.value = id
     carregando.value = true
     falha.value = null
 
     try {
       const resposta = await requisitar<RelatorioRestricoesAlimentaresDto>(rotaRelatorioRestricoes(id))
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         relatorio.value = resposta
       }
     } catch (erro) {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         relatorio.value = null
         falha.value = interpretarFalhaConvidados(erro)
       }
     } finally {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         carregando.value = false
       }
     }
@@ -77,7 +77,7 @@ export const useRestricoesAlimentaresStore = defineStore('restricoesAlimentares'
   }
 
   function limpar() {
-    casamentoId.value = null
+    eventoId.value = null
     relatorio.value = null
     carregando.value = false
     falha.value = null
@@ -93,5 +93,5 @@ export const useRestricoesAlimentaresStore = defineStore('restricoesAlimentares'
     },
   )
 
-  return { casamentoId, relatorio, carregando, falha, carregar, salvar, remover, limpar }
+  return { eventoId, relatorio, carregando, falha, carregar, salvar, remover, limpar }
 })

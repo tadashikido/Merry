@@ -20,13 +20,13 @@ function diaAbsoluto(data: string): number | null {
   return Date.UTC(Number(partes[1]), Number(partes[2]) - 1, Number(partes[3])) / MILISSEGUNDOS_DIA
 }
 
-export function diasAntesDoCasamento(dataCasamento: string, prazo: string | null): number | null {
+export function diasAntesDoEvento(dataEvento: string, prazo: string | null): number | null {
   if (!prazo) {
     return null
   }
-  const casamento = diaAbsoluto(dataCasamento)
+  const evento = diaAbsoluto(dataEvento)
   const dia = diaAbsoluto(prazo)
-  return casamento === null || dia === null ? null : casamento - dia
+  return evento === null || dia === null ? null : evento - dia
 }
 
 export function marcoPorDias(dias: number | null): MarcoChecklist {

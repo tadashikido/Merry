@@ -10,14 +10,14 @@ public static class ExtensoesUsuarioAtual
         return usuarioAtual.Autenticado && usuarioAtual.Papel == nameof(PapelUsuario.Dono);
     }
 
-    public static bool EhCasal(this IUsuarioAtual usuarioAtual)
+    public static bool EhAnfitriao(this IUsuarioAtual usuarioAtual)
     {
         ArgumentNullException.ThrowIfNull(usuarioAtual);
-        return usuarioAtual.Autenticado && usuarioAtual.Papel == nameof(PapelUsuario.Casal);
+        return usuarioAtual.Autenticado && usuarioAtual.Papel == nameof(PapelUsuario.Anfitriao);
     }
 
-    public static bool EhCasalDoCasamento(this IUsuarioAtual usuarioAtual, Guid casamentoId)
+    public static bool EhAnfitriaoDoEvento(this IUsuarioAtual usuarioAtual, Guid eventoId)
     {
-        return usuarioAtual.EhCasal() && usuarioAtual.CasamentoId == casamentoId;
+        return usuarioAtual.EhAnfitriao() && usuarioAtual.EventoId == eventoId;
     }
 }

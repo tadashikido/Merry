@@ -31,26 +31,26 @@ export const TEXTOS_FINANCEIRO = {
   vazioSemContratadoTitulo: 'Nenhum fornecedor contratado ainda',
   vazioSemContratadoTexto: 'Marque um fornecedor como contratado para registrar as parcelas.',
   irFornecedores: 'Ir para Fornecedores',
-  vazioCasalTitulo: 'A assessoria ainda não registrou pagamentos.',
-  vazioCasalTexto: 'Quando houver parcelas, vocês acompanham tudo por aqui.',
-  primeiroAcessoTitulo: 'Organize os pagamentos do casamento',
+  vazioAnfitriaoTitulo: 'A assessoria ainda não registrou pagamentos.',
+  vazioAnfitriaoTexto: 'Quando houver parcelas, vocês acompanham tudo por aqui.',
+  primeiroAcessoTitulo: 'Organize os pagamentos do evento',
   primeiroAcessoTexto: 'O Financeiro reúne as parcelas de todos os fornecedores contratados.',
   primeiroAcessoPassos: [
     { chave: 'contratar', rotulo: 'Marque o fornecedor como contratado e informe o valor.', concluido: false },
     { chave: 'gerar', rotulo: 'Gere as parcelas do contrato.', concluido: false },
     { chave: 'pagar', rotulo: 'Registre cada pagamento com o comprovante.', concluido: false },
   ],
-  rodapeCasal: 'A assessoria registra os pagamentos. Falem com ela se algo estiver diferente.',
-  arquivado: 'Este casamento está arquivado. Restaure para registrar pagamentos.',
+  rodapeAnfitriao: 'A assessoria registra os pagamentos. Falem com ela se algo estiver diferente.',
+  arquivado: 'Este evento está arquivado. Restaure para registrar pagamentos.',
   cancelado: 'Parcelas mantidas como histórico. Não entram nos totais nem nos alertas.',
   rotuloCancelado: 'Cancelado',
   erroTitulo: 'Não foi possível carregar o financeiro.',
   erroTexto: 'Verifique a conexão e tente de novo.',
   semAcesso: 'Você não tem acesso a este financeiro.',
-  naoEncontradoTitulo: 'Casamento não encontrado',
+  naoEncontradoTitulo: 'Evento não encontrado',
   naoEncontradoTexto: 'Ele pode ter sido removido ou você não tem acesso a ele.',
-  voltarNossoCasamento: 'Voltar para o nosso casamento',
-  voltarCasamentos: 'Voltar para Casamentos',
+  voltarNossoEvento: 'Voltar para o nosso evento',
+  voltarEventos: 'Voltar para Eventos',
   faixaAlertas: (vencidas: number, valorVencidas: string, proximas: number) => {
     const partes: string[] = []
     if (vencidas > 0) {
@@ -201,7 +201,7 @@ export const TEXTOS_ALERTAS_PAGAMENTOS = {
   titulo: 'Pagamentos',
   vencidas: (quantidade: number) => `${quantidade} ${plural(quantidade, 'vencida', 'vencidas')}`,
   proximas: (quantidade: number) => `${quantidade} nos próximos 7 dias`,
-  casamentos: (quantidade: number) => `em ${quantidade} ${plural(quantidade, 'casamento', 'casamentos')}`,
+  eventos: (quantidade: number) => `em ${quantidade} ${plural(quantidade, 'evento', 'eventos')}`,
   grupoVencidas: 'Vencidas',
   grupoProximas: 'Próximos 7 dias',
   vazio: 'Nenhum pagamento vencido nem vencendo nos próximos 7 dias.',
@@ -209,8 +209,8 @@ export const TEXTOS_ALERTAS_PAGAMENTOS = {
   verFinanceiro: 'Ver financeiro',
   erro: 'Não foi possível carregar os pagamentos.',
   tentarNovamente: 'Tentar novamente',
-  itemAria: (empresa: string, numero: number, total: number, casal: string, valor: string, situacao: string) =>
-    `${empresa}, parcela ${numero}/${total}${casal ? `, ${casal}` : ''}, ${valor}, ${situacao}`,
+  itemAria: (empresa: string, numero: number, total: number, anfitriao: string, valor: string, situacao: string) =>
+    `${empresa}, parcela ${numero}/${total}${anfitriao ? `, ${anfitriao}` : ''}, ${valor}, ${situacao}`,
 } as const
 
 export const TEXTOS_REGUA_PAGAMENTOS = {
@@ -236,6 +236,6 @@ export const TEXTOS_PARCELAS_FORNECEDOR = {
   verParcelas: 'Ver parcelas',
   removerComParcelasTitulo: (empresa: string) => `“${empresa}” tem parcelas registradas`,
   removerComParcelasTexto: (quantidade: number) =>
-    `Este fornecedor tem ${quantidade} ${plural(quantidade, 'parcela', 'parcelas')}. Remova as parcelas no Financeiro antes de tirá-lo do casamento.`,
+    `Este fornecedor tem ${quantidade} ${plural(quantidade, 'parcela', 'parcelas')}. Remova as parcelas no Financeiro antes de tirá-lo do evento.`,
   irFinanceiro: 'Ir para o Financeiro',
 } as const

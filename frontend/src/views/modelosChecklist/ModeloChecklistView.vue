@@ -36,7 +36,7 @@ const { confirmarExclusao } = useConfirmarExclusao()
 
 const modelo = computed(() => (store.atual?.id === props.modeloId ? store.atual : null))
 const falha = computed(() => (modelo.value ? null : store.falhaAtual))
-const grupos = computed(() => agruparPorMarco(modelo.value?.itens ?? [], (item) => item.diasAntesDoCasamento))
+const grupos = computed(() => agruparPorMarco(modelo.value?.itens ?? [], (item) => item.diasAntesDoEvento))
 const marcos = computed<MarcoRegua[]>(() =>
   grupos.value.map((grupo) => ({
     chave: grupo.marco,
@@ -328,7 +328,7 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
                     v-for="item in itensDoMarco(marco.chave)"
                     :key="item.id"
                     :titulo="item.titulo"
-                    :prazo-relativo="descreverPrazoRelativo(item.diasAntesDoCasamento)"
+                    :prazo-relativo="descreverPrazoRelativo(item.diasAntesDoEvento)"
                     :metadados="metadados(item)"
                     :descricao="item.descricao"
                   >

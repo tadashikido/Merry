@@ -42,34 +42,34 @@ const momento = computed(() => {
   }
   return interpolarMomento(dados.value.momento.agora, store.carregadoEm.getTime(), agoraDispositivo.value)
 })
-const minutoAtual = computed(() => (momento.value && dados.value ? minutoAtualNoRoteiro(momento.value, dados.value.casamento.data) : 0))
-const itensPainel = computed(() => (dados.value ? itensPainelPublicos(dados.value.itens, dados.value.casamento.horarioCerimonia) : []))
+const minutoAtual = computed(() => (momento.value && dados.value ? minutoAtualNoRoteiro(momento.value, dados.value.evento.data) : 0))
+const itensPainel = computed(() => (dados.value ? itensPainelPublicos(dados.value.itens, dados.value.evento.horarioCerimonia) : []))
 const seloFase = computed(() => {
   const atual = dados.value?.momento
   if (!atual || atual.fase === 'NoDia') {
     return TEXTOS_GRANDE_DIA.aoVivo
   }
-  return atual.fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.faltamDias(atual.diasParaOCasamento) : TEXTOS_GRANDE_DIA.diaPassou
+  return atual.fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.faltamDias(atual.diasParaOEvento) : TEXTOS_GRANDE_DIA.diaPassou
 })
 const aoVivo = computed(() => grupos.value.length > 0 && fase.value === 'NoDia')
 const semConexaoComDados = computed(() => dados.value !== null && store.falha !== null && store.falha !== 'linkInativo')
 
 const locais = computed<LocalOperacao[]>(() => {
-  const casamento = dados.value?.casamento
-  if (!casamento) {
+  const evento = dados.value?.evento
+  if (!evento) {
     return []
   }
   const lista: LocalOperacao[] = []
-  if (casamento.horarioCerimonia || casamento.localCerimonia) {
+  if (evento.horarioCerimonia || evento.localCerimonia) {
     lista.push({
       rotulo: TEXTOS_CRONOGRAMA_PUBLICO.cerimonia,
-      valor: casamento.horarioCerimonia
-        ? TEXTOS_CRONOGRAMA_PUBLICO.cerimoniaComHorario(casamento.horarioCerimonia, casamento.localCerimonia)
-        : (casamento.localCerimonia ?? ''),
+      valor: evento.horarioCerimonia
+        ? TEXTOS_CRONOGRAMA_PUBLICO.cerimoniaComHorario(evento.horarioCerimonia, evento.localCerimonia)
+        : (evento.localCerimonia ?? ''),
     })
   }
-  if (casamento.localRecepcao) {
-    lista.push({ rotulo: TEXTOS_CRONOGRAMA_PUBLICO.recepcao, valor: casamento.localRecepcao })
+  if (evento.localRecepcao) {
+    lista.push({ rotulo: TEXTOS_CRONOGRAMA_PUBLICO.recepcao, valor: evento.localRecepcao })
   }
   return lista
 })
@@ -142,9 +142,9 @@ onBeforeUnmount(() => store.limpar())
         <div class="cronograma-publico__topo">
           <div class="cronograma-publico__identificacao">
             <CabecalhoOperacao
-              :primeiro="dados.casamento.nomePrimeiraPessoa"
-              :segundo="dados.casamento.nomeSegundaPessoa"
-              :data="dados.casamento.data"
+              :primeiro="dados.evento.nomePrimeiraPessoa"
+              :segundo="dados.evento.nomeSegundaPessoa"
+              :data="dados.evento.data"
               :filtro="rotuloFiltro(dados)"
               :locais="locais"
             />
@@ -222,7 +222,7 @@ onBeforeUnmount(() => store.limpar())
                   :fornecedor="item.fornecedor?.nomeEmpresa ?? null"
                   :instrucoes="item.instrucoes"
                   :concluido="item.status === 'Concluido'"
-                  :cerimonia="ehHorarioDaCerimonia(item, dados.casamento.horarioCerimonia)"
+                  :cerimonia="ehHorarioDaCerimonia(item, dados.evento.horarioCerimonia)"
                 />
               </ol>
             </section>

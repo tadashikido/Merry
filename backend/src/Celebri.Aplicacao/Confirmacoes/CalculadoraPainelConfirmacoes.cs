@@ -1,36 +1,36 @@
 using Celebri.Aplicacao.Convidados;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 
 namespace Celebri.Aplicacao.Confirmacoes;
 
 public static class CalculadoraPainelConfirmacoes
 {
-    public static PainelConfirmacoesDto Calcular(CasamentoAssessorado casamento, IReadOnlyList<Convite> convites, DateOnly hoje)
+    public static PainelConfirmacoesDto Calcular(Evento evento, IReadOnlyList<Convite> convites, DateOnly hoje)
     {
-        return Calcular(casamento, convites, hoje, new HashSet<Guid>());
+        return Calcular(evento, convites, hoje, new HashSet<Guid>());
     }
 
     public static PainelConfirmacoesDto Calcular(
-        CasamentoAssessorado casamento,
+        Evento evento,
         IReadOnlyList<Convite> convites,
         DateOnly hoje,
         IReadOnlySet<Guid> convitesComLink)
     {
-        ArgumentNullException.ThrowIfNull(casamento);
+        ArgumentNullException.ThrowIfNull(evento);
         ArgumentNullException.ThrowIfNull(convites);
         ArgumentNullException.ThrowIfNull(convitesComLink);
 
         var pessoas = CalculadoraTotaisConvidados.Calcular(CalculadoraTotaisConvidados.Resumir(convites));
-        var dataLimite = casamento.DataLimiteRsvpEfetiva();
-        var aceitaRespostas = casamento.AceitaRespostaRsvp(hoje);
+        var dataLimite = evento.DataLimiteRsvpEfetiva();
+        var aceitaRespostas = evento.AceitaRespostaRsvp(hoje);
 
         return new PainelConfirmacoesDto(
             CalcularSituacao(convites),
             pessoas,
-            casamento.ConvidadosEstimados,
+            evento.ConvidadosEstimados,
             new PrazoRsvpDto(dataLimite, dataLimite.DayNumber - hoje.DayNumber, aceitaRespostas),
-            casamento.Arquivado,
+            evento.Arquivado,
             ListarPendentes(convites, convite => aceitaRespostas && Cobravel(convite, convitesComLink)));
     }
 

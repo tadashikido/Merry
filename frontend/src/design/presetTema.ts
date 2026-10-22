@@ -319,7 +319,7 @@ export const presetTema = definePreset(Aura, {
       toastErro: cores.toastErro,
       toastInformacao: cores.toastInformacao,
       toastAlerta: cores.toastAlerta,
-      fundoCasal: cores.fundoCasal,
+      fundoAnfitriao: cores.fundoAnfitriao,
       fundoConvite: cores.fundoConvite,
       cartaoConvite: cores.cartaoConvite,
       bordaConvite: cores.bordaConvite,

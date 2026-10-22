@@ -9,7 +9,7 @@ function contarItens(quantidade: number): string {
 
 export const TEXTOS_CRONOGRAMA_PUBLICO = {
   tituloDocumento: 'Cronograma do dia',
-  tituloOculto: (nomes: string) => `Cronograma do casamento de ${nomes}`,
+  tituloOculto: (nomes: string) => `Cronograma do evento de ${nomes}`,
   filtroGeral: 'Equipe completa',
   filtroSeus: (rotulo: string) => `Seus horários · ${rotulo}`,
   locais: 'Locais',
@@ -17,7 +17,7 @@ export const TEXTOS_CRONOGRAMA_PUBLICO = {
   recepcao: 'Recepção',
   cerimoniaComHorario: (horario: string, local: string | null) => (local ? `${horario} · ${local}` : horario),
   vespera: (data: string) => `Véspera · ${data}`,
-  diaDoCasamento: 'Dia do casamento',
+  diaDoEvento: 'Dia do evento',
   diaSeguinte: (data: string) => `Dia seguinte · ${data}`,
   ate: (horario: string) => `até ${horario}`,
   maisUm: '+1',
@@ -33,7 +33,7 @@ export const TEXTOS_CRONOGRAMA_PUBLICO = {
   vazioTitulo: 'Ainda não há horários para você.',
   vazioTexto: 'Quando a assessoria incluir seus horários, eles aparecem aqui. Toque em Atualizar para conferir.',
   inativoTitulo: 'Este link não está mais ativo',
-  inativoTexto: 'Peça um novo link para a assessoria do casamento.',
+  inativoTexto: 'Peça um novo link para a assessoria do evento.',
   limiteTitulo: 'Muitas tentativas seguidas',
   limiteTexto: 'Aguarde um minuto e tente de novo.',
   erroTitulo: 'Não foi possível abrir o cronograma.',
@@ -47,8 +47,8 @@ export const TEXTOS_LINKS_CRONOGRAMA = {
   titulo: 'Links para a equipe e fornecedores',
   subtitulo: 'Cada link mostra só os horários de quem recebe. Ninguém precisa criar conta.',
   validade: (data: string) => `Os links valem até ${data}.`,
-  expirado: (data: string) => `Os links expiraram em ${data}. Eles valem até 7 dias depois do casamento.`,
-  arquivado: 'Casamento arquivado: os links estão desativados.',
+  expirado: (data: string) => `Os links expiraram em ${data}. Eles valem até 7 dias depois do evento.`,
+  arquivado: 'Evento arquivado: os links estão desativados.',
   grupoEquipe: 'Equipe',
   grupoFornecedores: 'Fornecedores',
   grupoResponsaveis: 'Responsáveis',
@@ -89,7 +89,7 @@ export const TEXTOS_LINKS_CRONOGRAMA = {
   confirmarDesativarTexto: 'Quem tiver o link verá que ele não está mais ativo. Você pode gerar outro depois.',
   cancelar: 'Cancelar',
   mensagemGeral: (dados: { primeiro: string; segundo: string; data: string; url: string }) =>
-    `Olá! Este é o cronograma do casamento de ${dados.primeiro} & ${dados.segundo} (${dados.data}): ${dados.url} — ele mostra sempre a versão mais atual, é só abrir de novo quando precisar.`,
+    `Olá! Este é o cronograma do evento de ${dados.primeiro} & ${dados.segundo} (${dados.data}): ${dados.url} — ele mostra sempre a versão mais atual, é só abrir de novo quando precisar.`,
   mensagemFiltrada: (dados: { primeiro: string; segundo: string; data: string; url: string }) =>
-    `Olá! Estes são os seus horários no casamento de ${dados.primeiro} & ${dados.segundo} (${dados.data}): ${dados.url} — o link mostra sempre a versão mais atual, é só abrir de novo quando precisar.`,
+    `Olá! Estes são os seus horários no evento de ${dados.primeiro} & ${dados.segundo} (${dados.data}): ${dados.url} — o link mostra sempre a versão mais atual, é só abrir de novo quando precisar.`,
 } as const

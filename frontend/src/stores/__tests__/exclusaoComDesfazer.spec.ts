@@ -3,19 +3,19 @@ import { createPinia, setActivePinia } from 'pinia'
 
 import { respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { cronogramaExemplo, itemCronograma } from '@/__tests__/auxiliaresCronograma'
-import { mapaExemplo, MESA_NOIVOS, MESA_PADRINHOS } from '@/__tests__/auxiliaresMesas'
+import { mapaExemplo, MESA_ANFITRIOES, MESA_PADRINHOS } from '@/__tests__/auxiliaresMesas'
 import { descontarConvite, useConvidadosStore } from '@/stores/convidados'
 import { useCronogramaStore } from '@/stores/cronograma'
 import { ocultarMesas, useMesasStore } from '@/stores/mesas'
 import type { ConviteDto, ListaConvitesDto, TotaisConvidadosDto } from '@/tipos/convidados'
 import type { MapaMesasDto, MesaDto } from '@/tipos/mesas'
-import { chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
-const CASAMENTO = '11111111-1111-4111-8111-111111111111'
-const OUTRO_CASAMENTO = '22222222-2222-4222-8222-222222222222'
-const ROTA_CONVITES = `/api/casamentos/${CASAMENTO}/convites`
-const ROTA_MESAS = `/api/casamentos/${CASAMENTO}/mesas`
-const ROTA_CRONOGRAMA = `/api/casamentos/${CASAMENTO}/cronograma`
+const EVENTO = '11111111-1111-4111-8111-111111111111'
+const OUTRO_EVENTO = '22222222-2222-4222-8222-222222222222'
+const ROTA_CONVITES = `/api/eventos/${EVENTO}/convites`
+const ROTA_MESAS = `/api/eventos/${EVENTO}/mesas`
+const ROTA_CRONOGRAMA = `/api/eventos/${EVENTO}/cronograma`
 const ID_SOUZA = 'c-souza'
 const ID_LIMA = 'c-lima'
 
@@ -61,7 +61,7 @@ function conviteLima(): ConviteDto {
 }
 
 function listaConvites(): ListaConvitesDto {
-  return { convites: [conviteSouza(), conviteLima()], totais: TOTAIS, convidadosEstimados: null, casamentoArquivado: false }
+  return { convites: [conviteSouza(), conviteLima()], totais: TOTAIS, convidadosEstimados: null, eventoArquivado: false }
 }
 
 let fetchSimulado: ReturnType<typeof simularFetch>
@@ -94,24 +94,24 @@ describe('exclusão com desfazer — convites', () => {
   it('[INTEGRAÇÃO] oculta o convite na hora sem DELETE e desfazer recarrega com respostas e acompanhantes', async () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_CONVITES, () => respostaJson(listaConvites())))
     const store = useConvidadosStore()
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
-    store.removerComDesfazer(CASAMENTO, ID_SOUZA)
+    store.removerComDesfazer(EVENTO, ID_SOUZA)
 
     expect(store.lista?.convites.map((convite) => convite.id)).toEqual([ID_LIMA])
     expect(store.lista?.totais.convites).toBe(1)
     expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_SOUZA}`)).toHaveLength(0)
 
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
     expect(store.lista?.convites.map((convite) => convite.id)).toEqual([ID_LIMA])
 
-    expect(await store.desfazerRemocao(CASAMENTO, ID_SOUZA)).toBe(true)
+    expect(await store.desfazerRemocao(EVENTO, ID_SOUZA)).toBe(true)
 
     const restaurado = store.lista?.convites.find((convite) => convite.id === ID_SOUZA)
     expect(restaurado?.convidados).toEqual(conviteSouza().convidados)
     expect(store.lista?.totais).toEqual(TOTAIS)
     expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_SOUZA}`)).toHaveLength(0)
-    expect(await store.desfazerRemocao(CASAMENTO, ID_SOUZA)).toBe(false)
+    expect(await store.desfazerRemocao(EVENTO, ID_SOUZA)).toBe(false)
   })
 
   it('[INTEGRAÇÃO] concluir envia um único DELETE e desfazer depois informa que já foi concluída', async () => {
@@ -125,14 +125,14 @@ describe('exclusão com desfazer — convites', () => {
       }),
     )
     const store = useConvidadosStore()
-    await store.carregar(CASAMENTO)
-    store.removerComDesfazer(CASAMENTO, ID_SOUZA)
+    await store.carregar(EVENTO)
+    store.removerComDesfazer(EVENTO, ID_SOUZA)
 
-    await Promise.all([store.concluirRemocao(CASAMENTO, ID_SOUZA), store.concluirRemocao(CASAMENTO, ID_SOUZA)])
+    await Promise.all([store.concluirRemocao(EVENTO, ID_SOUZA), store.concluirRemocao(EVENTO, ID_SOUZA)])
 
     expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_SOUZA}`)).toHaveLength(1)
     expect(store.lista?.convites.map((convite) => convite.id)).toEqual([ID_LIMA])
-    expect(await store.desfazerRemocao(CASAMENTO, ID_SOUZA)).toBe(false)
+    expect(await store.desfazerRemocao(EVENTO, ID_SOUZA)).toBe(false)
   })
 
   it('[INTEGRAÇÃO] totais do painel descontam o convite pendente e voltam ao desfazer', async () => {
@@ -142,14 +142,14 @@ describe('exclusão com desfazer — convites', () => {
       quando('GET', `${ROTA_CONVITES}/totais`, () => respostaJson(TOTAIS)),
     )
     const store = useConvidadosStore()
-    await Promise.all([store.carregar(CASAMENTO), store.carregarTotais(CASAMENTO)])
+    await Promise.all([store.carregar(EVENTO), store.carregarTotais(EVENTO)])
 
-    store.removerComDesfazer(CASAMENTO, ID_SOUZA)
+    store.removerComDesfazer(EVENTO, ID_SOUZA)
     expect(store.totais?.convites).toBe(1)
-    await store.carregarTotais(CASAMENTO)
+    await store.carregarTotais(EVENTO)
     expect(store.totais).toEqual(descontarConvite(TOTAIS, conviteSouza()))
 
-    await store.desfazerRemocao(CASAMENTO, ID_SOUZA)
+    await store.desfazerRemocao(EVENTO, ID_SOUZA)
     expect(store.totais).toEqual(TOTAIS)
   })
 
@@ -160,10 +160,10 @@ describe('exclusão com desfazer — convites', () => {
       quando('DELETE', `${ROTA_CONVITES}/${ID_SOUZA}`, () => respostaVazia()),
     )
     const store = useConvidadosStore()
-    await store.carregar(CASAMENTO)
-    store.removerComDesfazer(CASAMENTO, ID_SOUZA)
+    await store.carregar(EVENTO)
+    store.removerComDesfazer(EVENTO, ID_SOUZA)
 
-    await store.concluirRemocao(CASAMENTO, ID_SOUZA)
+    await store.concluirRemocao(EVENTO, ID_SOUZA)
 
     expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_SOUZA}`)[0]![1]).toMatchObject({ keepalive: true })
   })
@@ -175,11 +175,11 @@ describe('exclusão com desfazer — convites', () => {
       quando('DELETE', `${ROTA_CONVITES}/${ID_SOUZA}`, () => respostaProblema(403)),
     )
     const store = useConvidadosStore()
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
     const aoFalhar = vi.fn()
-    store.removerComDesfazer(CASAMENTO, ID_SOUZA, aoFalhar)
+    store.removerComDesfazer(EVENTO, ID_SOUZA, aoFalhar)
 
-    await store.concluirRemocao(CASAMENTO, ID_SOUZA)
+    await store.concluirRemocao(EVENTO, ID_SOUZA)
 
     expect(aoFalhar).toHaveBeenCalledWith(expect.objectContaining({ tipo: 'semPermissao' }))
     expect(store.lista?.convites.map((convite) => convite.id)).toContain(ID_SOUZA)
@@ -193,11 +193,11 @@ describe('exclusão com desfazer — convites', () => {
       return respostaJson(listaConvites())
     })
     const store = useConvidadosStore()
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
     const aoFalhar = vi.fn()
-    store.removerComDesfazer(CASAMENTO, ID_SOUZA, aoFalhar)
+    store.removerComDesfazer(EVENTO, ID_SOUZA, aoFalhar)
 
-    await store.concluirRemocao(CASAMENTO, ID_SOUZA)
+    await store.concluirRemocao(EVENTO, ID_SOUZA)
 
     expect(aoFalhar).toHaveBeenCalledWith(expect.objectContaining({ tipo: 'conexao' }))
     expect(store.lista?.convites).toHaveLength(2)
@@ -211,10 +211,10 @@ describe('exclusão com desfazer — convites', () => {
       quando('POST', ROTA_CONVITES, () => respostaJson(conviteLima(), 201)),
     )
     const store = useConvidadosStore()
-    await store.carregar(CASAMENTO)
-    store.removerComDesfazer(CASAMENTO, ID_SOUZA)
+    await store.carregar(EVENTO)
+    store.removerComDesfazer(EVENTO, ID_SOUZA)
 
-    await store.criar(CASAMENTO, { nome: 'Novo', grupo: null, limiteAcompanhantes: 0, convidados: [] })
+    await store.criar(EVENTO, { nome: 'Novo', grupo: null, limiteAcompanhantes: 0, convidados: [] })
 
     const metodos = fetchSimulado.mock.calls.map(([, init]) => init?.method ?? 'GET')
     expect(metodos.indexOf('DELETE')).toBeGreaterThan(-1)
@@ -241,12 +241,12 @@ describe('exclusão com desfazer — mesas', () => {
   it('[INTEGRAÇÃO] desfazer devolve a mesa com as pessoas sentadas sem enviar DELETE', async () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_MESAS, () => respostaJson(mapaExemplo())))
     const store = useMesasStore()
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
-    store.removerMesaComDesfazer(CASAMENTO, MESA_PADRINHOS)
+    store.removerMesaComDesfazer(EVENTO, MESA_PADRINHOS)
     expect(store.mapa?.mesas.map((mesa) => mesa.id)).not.toContain(MESA_PADRINHOS)
 
-    expect(await store.desfazerRemocaoMesa(CASAMENTO, MESA_PADRINHOS)).toBe(true)
+    expect(await store.desfazerRemocaoMesa(EVENTO, MESA_PADRINHOS)).toBe(true)
 
     expect(store.mapa?.mesas.map((mesa) => mesa.id)).toContain(MESA_PADRINHOS)
     expect(store.mapa?.pessoas.find((pessoa) => pessoa.id === 'p-rui')?.mesaId).toBe(MESA_PADRINHOS)
@@ -261,39 +261,39 @@ describe('exclusão com desfazer — mesas', () => {
       quando('POST', ROTA_MESAS, () => respostaJson(mapaExemplo().mesas[1], 201)),
     )
     const store = useMesasStore()
-    await store.carregar(CASAMENTO)
-    store.removerMesaComDesfazer(CASAMENTO, MESA_PADRINHOS)
+    await store.carregar(EVENTO)
+    store.removerMesaComDesfazer(EVENTO, MESA_PADRINHOS)
 
-    await store.criarMesa(CASAMENTO, { numero: 2, nome: null, capacidade: 8, especial: false })
+    await store.criarMesa(EVENTO, { numero: 2, nome: null, capacidade: 8, especial: false })
 
     const metodos = fetchSimulado.mock.calls.map(([, init]) => init?.method ?? 'GET')
     expect(metodos.indexOf('DELETE')).toBeLessThan(metodos.indexOf('POST'))
-    expect(await store.desfazerRemocaoMesa(CASAMENTO, MESA_PADRINHOS)).toBe(false)
+    expect(await store.desfazerRemocaoMesa(EVENTO, MESA_PADRINHOS)).toBe(false)
   })
 
-  it('[INTEGRAÇÃO] efetivar depois de abrir outro casamento não troca o mapa exibido', async () => {
+  it('[INTEGRAÇÃO] efetivar depois de abrir outro evento não troca o mapa exibido', async () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_MESAS, () => respostaJson(mapaExemplo())),
-      quando('GET', `/api/casamentos/${OUTRO_CASAMENTO}/mesas`, () => respostaJson(mapaExemplo({ mesas: [] }))),
-      quando('DELETE', `${ROTA_MESAS}/${MESA_NOIVOS}`, () => respostaVazia()),
+      quando('GET', `/api/eventos/${OUTRO_EVENTO}/mesas`, () => respostaJson(mapaExemplo({ mesas: [] }))),
+      quando('DELETE', `${ROTA_MESAS}/${MESA_ANFITRIOES}`, () => respostaVazia()),
     )
     const store = useMesasStore()
-    await store.carregar(CASAMENTO)
-    store.removerMesaComDesfazer(CASAMENTO, MESA_NOIVOS)
-    await store.carregar(OUTRO_CASAMENTO)
+    await store.carregar(EVENTO)
+    store.removerMesaComDesfazer(EVENTO, MESA_ANFITRIOES)
+    await store.carregar(OUTRO_EVENTO)
 
-    await store.concluirRemocaoMesa(CASAMENTO, MESA_NOIVOS)
+    await store.concluirRemocaoMesa(EVENTO, MESA_ANFITRIOES)
 
-    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_MESAS}/${MESA_NOIVOS}`)).toHaveLength(1)
-    expect(store.casamentoId).toBe(OUTRO_CASAMENTO)
+    expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_MESAS}/${MESA_ANFITRIOES}`)).toHaveLength(1)
+    expect(store.eventoId).toBe(OUTRO_EVENTO)
     expect(store.mapa?.mesas).toEqual([])
   })
 })
 
 describe('exclusão com desfazer — cronograma', () => {
   it('[INTEGRAÇÃO] oculta o item, desfazer devolve com fornecedor e concluir envia DELETE', async () => {
-    const comFornecedor = itemCronograma({ id: 'i1', fornecedor: { fornecedorCasamentoId: 'v1', nomeEmpresa: 'Coral Harmonia', categoria: 'Musica' } })
+    const comFornecedor = itemCronograma({ id: 'i1', fornecedor: { fornecedorEventoId: 'v1', nomeEmpresa: 'Coral Harmonia', categoria: 'Musica' } })
     const outro = itemCronograma({ id: 'i2', atividade: 'Recepção', inicio: '18:00' })
     let itens = [comFornecedor, outro]
     rotearFetch(
@@ -305,33 +305,33 @@ describe('exclusão com desfazer — cronograma', () => {
       }),
     )
     const store = useCronogramaStore()
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
-    store.removerComDesfazer(CASAMENTO, 'i1')
+    store.removerComDesfazer(EVENTO, 'i1')
     expect(store.cronograma?.itens.map((item) => item.id)).toEqual(['i2'])
 
-    expect(await store.desfazerRemocao(CASAMENTO, 'i1')).toBe(true)
+    expect(await store.desfazerRemocao(EVENTO, 'i1')).toBe(true)
     expect(store.cronograma?.itens.find((item) => item.id === 'i1')?.fornecedor?.nomeEmpresa).toBe('Coral Harmonia')
 
-    store.removerComDesfazer(CASAMENTO, 'i1')
-    await store.concluirRemocao(CASAMENTO, 'i1')
+    store.removerComDesfazer(EVENTO, 'i1')
+    await store.concluirRemocao(EVENTO, 'i1')
 
     expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CRONOGRAMA}/i1`)).toHaveLength(1)
     expect(store.cronograma?.itens.map((item) => item.id)).toEqual(['i2'])
   })
 
-  it('[INTEGRAÇÃO] casamento arquivado recusa a efetivação e o item volta', async () => {
+  it('[INTEGRAÇÃO] evento arquivado recusa a efetivação e o item volta', async () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_CRONOGRAMA, () => respostaJson(cronogramaExemplo([itemCronograma()]))),
-      quando('DELETE', `${ROTA_CRONOGRAMA}/i1`, () => respostaProblema(422, { title: 'Casamento arquivado.' })),
+      quando('DELETE', `${ROTA_CRONOGRAMA}/i1`, () => respostaProblema(422, { title: 'Evento arquivado.' })),
     )
     const store = useCronogramaStore()
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
     const aoFalhar = vi.fn()
-    store.removerComDesfazer(CASAMENTO, 'i1', aoFalhar)
+    store.removerComDesfazer(EVENTO, 'i1', aoFalhar)
 
-    await store.concluirRemocao(CASAMENTO, 'i1')
+    await store.concluirRemocao(EVENTO, 'i1')
 
     expect(aoFalhar).toHaveBeenCalledTimes(1)
     expect(store.cronograma?.itens.map((item) => item.id)).toEqual(['i1'])

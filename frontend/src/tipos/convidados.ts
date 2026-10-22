@@ -50,7 +50,7 @@ export interface ListaConvitesDto {
   convites: ConviteDto[]
   totais: TotaisConvidadosDto
   convidadosEstimados: number | null
-  casamentoArquivado: boolean
+  eventoArquivado: boolean
   mesas?: MesaResumoDto[]
 }
 

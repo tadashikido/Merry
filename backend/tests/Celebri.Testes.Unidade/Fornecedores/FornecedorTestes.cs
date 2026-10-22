@@ -440,19 +440,19 @@ public class FornecedorServiceTestes
     }
 
     [Fact]
-    public async Task Remover_ComParticipacaoEmCasamento_DeveLancarSugerindoArquivar()
+    public async Task Remover_ComParticipacaoEmEvento_DeveLancarSugerindoArquivar()
     {
         var criado = await _service.CriarAsync(Request(), CancellationToken.None);
-        _vinculos.Itens.Add(FornecedorCasamento.Criar(
+        _vinculos.Itens.Add(FornecedorEvento.Criar(
             Guid.NewGuid(),
             criado.Id,
-            new DadosFornecedorCasamento(null, null, null, StatusFornecedorCasamento.Cancelado, null),
+            new DadosFornecedorEvento(null, null, null, StatusFornecedorEvento.Cancelado, null),
             null,
             Agora));
 
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(() => _service.RemoverAsync(criado.Id, CancellationToken.None));
 
-        Assert.Equal(MensagensFornecedores.ParticipouDeCasamentos, excecao.Message);
+        Assert.Equal(MensagensFornecedores.ParticipouDeEventos, excecao.Message);
         Assert.Single(_repositorio.Itens);
         Assert.Equal(1, _unidade.Salvamentos);
     }

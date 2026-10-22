@@ -63,12 +63,12 @@ describe('OpcaoCopia', () => {
 describe('ListaNaoCopiado', () => {
   it('[COMPONENTE] nomeia a origem e lista o que não é copiado com ícone decorativo', () => {
     const wrapper = mount(ListaNaoCopiado, {
-      props: { titulo: 'Fica com Ana & João', itens: ['Convidados', 'Acesso do casal'], idTitulo: 'fica' },
+      props: { titulo: 'Fica com Ana & João', itens: ['Convidados', 'Acesso dos anfitriões'], idTitulo: 'fica' },
     })
 
     expect(wrapper.get('section').attributes('aria-labelledby')).toBe('fica')
     expect(wrapper.get('h2#fica').text()).toBe('Fica com Ana & João')
-    expect(wrapper.findAll('li').map((item) => item.text())).toEqual(['Convidados', 'Acesso do casal'])
+    expect(wrapper.findAll('li').map((item) => item.text())).toEqual(['Convidados', 'Acesso dos anfitriões'])
     expect(wrapper.findAll('.ie-permissao').every((icone) => icone.attributes('aria-hidden') === 'true')).toBe(true)
   })
 

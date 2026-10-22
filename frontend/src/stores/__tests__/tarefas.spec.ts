@@ -22,21 +22,21 @@ afterEach(() => {
 
 describe('useTarefasStore', () => {
   it('[UNITÁRIO] monta as rotas codificando os identificadores', () => {
-    expect(caminhoTarefas(ID)).toBe(`/api/casamentos/${ID}/tarefas`)
-    expect(caminhoTarefas(ID, 't/1', 'status')).toBe(`/api/casamentos/${ID}/tarefas/t%2F1/status`)
+    expect(caminhoTarefas(ID)).toBe(`/api/eventos/${ID}/tarefas`)
+    expect(caminhoTarefas(ID, 't/1', 'status')).toBe(`/api/eventos/${ID}/tarefas/t%2F1/status`)
     expect(ROTA_PENDENCIAS_TAREFAS).toBe('/api/tarefas/pendencias')
   })
 
-  it('[UNITÁRIO] carrega a lista e descarta respostas de outro casamento', async () => {
+  it('[UNITÁRIO] carrega a lista e descarta respostas de outro evento', async () => {
     const store = useTarefasStore()
     fetchSimulado.mockResolvedValueOnce(respostaJson(listaTarefas([tarefaExemplo()])))
 
     await store.carregar(ID)
 
-    expect(store.casamentoId).toBe(ID)
+    expect(store.eventoId).toBe(ID)
     expect(store.lista?.tarefas).toHaveLength(1)
     expect(store.carregando).toBe(false)
-    expect(String(fetchSimulado.mock.calls[0]![0])).toBe(`/api/casamentos/${ID}/tarefas`)
+    expect(String(fetchSimulado.mock.calls[0]![0])).toBe(`/api/eventos/${ID}/tarefas`)
 
     let liberar: (valor: Response) => void = () => {}
     fetchSimulado.mockReturnValueOnce(new Promise<Response>((resolver) => (liberar = resolver)))
@@ -46,7 +46,7 @@ describe('useTarefasStore', () => {
     liberar(respostaJson(listaTarefas([tarefaExemplo({ id: 'x' })])))
     await primeira
 
-    expect(store.casamentoId).toBe(ID)
+    expect(store.eventoId).toBe(ID)
     expect(store.lista?.tarefas).toEqual([])
   })
 
@@ -63,17 +63,17 @@ describe('useTarefasStore', () => {
       .mockResolvedValueOnce(respostaJson(listaTarefas([tarefaExemplo({ status: 'Concluida' })])))
 
     await store.carregar(ID)
-    const criada = await store.criar(ID, { titulo: 'Nova', descricao: null, responsavel: 'Casal', categoria: 'Geral', prazo: null })
+    const criada = await store.criar(ID, { titulo: 'Nova', descricao: null, responsavel: 'Anfitriao', categoria: 'Geral', prazo: null })
     expect(criada.ok).toBe(true)
     expect(fetchSimulado.mock.calls[1]![1]?.method).toBe('POST')
-    expect(corpoDaChamada(fetchSimulado.mock.calls[1]!)).toEqual({ titulo: 'Nova', descricao: null, responsavel: 'Casal', categoria: 'Geral', prazo: null })
+    expect(corpoDaChamada(fetchSimulado.mock.calls[1]!)).toEqual({ titulo: 'Nova', descricao: null, responsavel: 'Anfitriao', categoria: 'Geral', prazo: null })
     await Promise.resolve()
     await new Promise((resolver) => setTimeout(resolver, 0))
 
     const status = await store.alterarStatus(ID, 't1', 'Concluida')
     expect(status.ok).toBe(true)
     expect(fetchSimulado.mock.calls[3]![1]?.method).toBe('PATCH')
-    expect(String(fetchSimulado.mock.calls[3]![0])).toBe(`/api/casamentos/${ID}/tarefas/t1/status`)
+    expect(String(fetchSimulado.mock.calls[3]![0])).toBe(`/api/eventos/${ID}/tarefas/t1/status`)
     expect(corpoDaChamada(fetchSimulado.mock.calls[3]!)).toEqual({ status: 'Concluida' })
     expect(store.lista?.tarefas.find((tarefa) => tarefa.id === 't1')?.status).toBe('Concluida')
     await new Promise((resolver) => setTimeout(resolver, 0))
@@ -100,7 +100,7 @@ describe('useTarefasStore', () => {
     fetchSimulado
       .mockResolvedValueOnce(respostaProblema(403))
       .mockResolvedValueOnce(respostaProblema(404, { title: 'Recurso não encontrado.' }))
-      .mockResolvedValueOnce(respostaProblema(422, { detail: 'Este casamento está arquivado. Restaure para voltar a editar.' }))
+      .mockResolvedValueOnce(respostaProblema(422, { detail: 'Este evento está arquivado. Restaure para voltar a editar.' }))
       .mockResolvedValueOnce(respostaProblema(400, { errors: { Titulo: ['Use entre 2 e 160 caracteres.'] } }))
       .mockRejectedValueOnce(new TypeError('Failed to fetch'))
 
@@ -112,7 +112,7 @@ describe('useTarefasStore', () => {
 
     expect(proibido.ok ? null : proibido.falha.tipo).toBe('semPermissao')
     expect(naoEncontrado.ok ? null : naoEncontrado.falha.tipo).toBe('naoEncontrado')
-    expect(regra.ok ? null : regra.falha.mensagem).toBe('Este casamento está arquivado. Restaure para voltar a editar.')
+    expect(regra.ok ? null : regra.falha.mensagem).toBe('Este evento está arquivado. Restaure para voltar a editar.')
     expect(validacao.ok ? null : validacao.falha.errosCampos.titulo).toBe('Use entre 2 e 160 caracteres.')
     expect(store.falha?.tipo).toBe('conexao')
     expect(store.lista).toBeNull()

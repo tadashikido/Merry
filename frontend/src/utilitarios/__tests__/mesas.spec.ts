@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { avisoExemplo, CONVITE_LIMA, CONVITE_RUI, CONVITE_SOUZA, mapaExemplo, MESA_NOIVOS, MESA_PADRINHOS, MESA_TIOS, pessoaMesa } from '@/__tests__/auxiliaresMesas'
+import { avisoExemplo, CONVITE_LIMA, CONVITE_RUI, CONVITE_SOUZA, mapaExemplo, MESA_ANFITRIOES, MESA_PADRINHOS, MESA_TIOS, pessoaMesa } from '@/__tests__/auxiliaresMesas'
 import { MARCA_BOM } from '@/utilitarios/csv'
 import { gerarCsvMesas, linhasCsvMesas, nomeArquivoMesas } from '@/utilitarios/exportacaoMesas'
 import {
@@ -28,10 +28,10 @@ import { regraCapacidadeMesa, regraNomeMesa, regraNumeroMesa } from '@/utilitari
 const TODOS = { busca: '', grupo: FILTRO_TODOS, convite: FILTRO_TODOS }
 
 describe('utilitários de mesas', () => {
-  it('[UNITÁRIO] rotula mesa com número, nome e mesa dos noivos', () => {
+  it('[UNITÁRIO] rotula mesa com número, nome e mesa dos anfitriões', () => {
     expect(rotuloMesa({ numero: 3, nome: null, especial: false })).toBe('Mesa 3')
     expect(rotuloMesa({ numero: 2, nome: 'Padrinhos', especial: false })).toBe('Mesa 2 · Padrinhos')
-    expect(rotuloMesa({ numero: 1, nome: null, especial: true })).toBe('Mesa dos noivos')
+    expect(rotuloMesa({ numero: 1, nome: null, especial: true })).toBe('Mesa dos anfitriões')
     expect(rotuloMesaPorId([{ id: 'm', numero: 4, nome: 'Tios', especial: false }], 'm')).toBe('Mesa 4 · Tios')
     expect(rotuloMesaPorId([], 'm')).toBeNull()
     expect(rotuloMesaPorId(undefined, null)).toBeNull()
@@ -73,7 +73,7 @@ describe('utilitários de mesas', () => {
     const { pessoas, mesas } = mapaExemplo()
 
     expect([...convitesDivididos(pessoas)]).toEqual([CONVITE_SOUZA])
-    expect(descreverDivisao(pessoas, mesas, CONVITE_SOUZA)).toBe('Família Souza: 1 na Mesa dos noivos, 2 sem mesa.')
+    expect(descreverDivisao(pessoas, mesas, CONVITE_SOUZA)).toBe('Família Souza: 1 na Mesa dos anfitriões, 2 sem mesa.')
     expect(descreverDivisao(pessoas, mesas, 'inexistente')).toBe('')
     const todosSemMesa = [pessoaMesa({ id: 'a', nome: 'A' }), pessoaMesa({ id: 'b', nome: 'B' })]
     expect(convitesDivididos(todosSemMesa).size).toBe(0)
@@ -99,7 +99,7 @@ describe('utilitários de mesas', () => {
     const opcoes = opcoesSentar(mesas, selecionadas)
 
     expect(opcoes.map((opcao) => [opcao.mesa.id, opcao.livres, opcao.cabe, opcao.atual])).toEqual([
-      [MESA_NOIVOS, 1, false, false],
+      [MESA_ANFITRIOES, 1, false, false],
       [MESA_PADRINHOS, 2, true, false],
       [MESA_TIOS, 2, false, false],
     ])
@@ -114,7 +114,7 @@ describe('utilitários de mesas', () => {
       'voltou para sem resposta, saiu de uma mesa que foi excluída',
     )
     expect(descreverAviso(avisoExemplo({ resposta: 'Confirmado', mesaEspecial: true, mesaNome: null, mesaNumero: 1 }))).toBe(
-      'confirmou de novo, saiu da Mesa dos noivos',
+      'confirmou de novo, saiu da Mesa dos anfitriões',
     )
   })
 
@@ -140,7 +140,7 @@ describe('utilitários de mesas', () => {
 describe('exportação do mapa de mesas', () => {
   it('[UNITÁRIO] gera linhas por mesa (vazia inclusive) e depois as pessoas sem mesa', () => {
     expect(linhasCsvMesas(mapaExemplo())).toEqual([
-      ['Mesa dos noivos', 2, 'Ana Souza', 'Família Souza', 'Adulto', 'Não'],
+      ['Mesa dos anfitriões', 2, 'Ana Souza', 'Família Souza', 'Adulto', 'Não'],
       ['Mesa 2 · Padrinhos', 3, 'Rui Fontes', 'Rui Fontes', 'Adulto', 'Não'],
       ['Mesa 3 · Tios', 2, '', '', '', ''],
       ['Sem mesa', '', 'Carla Souza', 'Família Souza', 'Adulto', 'Não'],
@@ -158,7 +158,7 @@ describe('exportação do mapa de mesas', () => {
     expect(csv).not.toContain(';=Primo')
   })
 
-  it('[UNITÁRIO] nome do arquivo usa o casal e a data', () => {
+  it('[UNITÁRIO] nome do arquivo usa os anfitriões e a data', () => {
     expect(nomeArquivoMesas({ nomePrimeiraPessoa: 'Ana Beatriz', nomeSegundaPessoa: 'Bruno', data: '2027-05-15' })).toBe(
       'mesas-ana-beatriz-e-bruno-2027-05-15.csv',
     )

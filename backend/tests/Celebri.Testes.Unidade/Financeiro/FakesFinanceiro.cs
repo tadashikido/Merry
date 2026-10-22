@@ -1,28 +1,28 @@
 using Celebri.Aplicacao.Arquivos;
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Excecoes;
 
 namespace Celebri.Testes.Unidade.Financeiro;
 
-public sealed class RepositorioCasamentosFinanceiro : ICasamentoRepository
+public sealed class RepositorioEventosFinanceiro : IEventoRepository
 {
-    public List<CasamentoAssessorado> Itens { get; } = [];
+    public List<Evento> Itens { get; } = [];
 
-    public Task<IReadOnlyList<CasamentoAssessorado>> ListarAsync(bool arquivados, CancellationToken cancelamento)
+    public Task<IReadOnlyList<Evento>> ListarAsync(bool arquivados, CancellationToken cancelamento)
     {
-        IReadOnlyList<CasamentoAssessorado> resultado = Itens.Where(casamento => casamento.Arquivado == arquivados).ToList();
+        IReadOnlyList<Evento> resultado = Itens.Where(evento => evento.Arquivado == arquivados).ToList();
         return Task.FromResult(resultado);
     }
 
-    public Task<CasamentoAssessorado?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
+    public Task<Evento?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
     {
-        return Task.FromResult(Itens.FirstOrDefault(casamento => casamento.Id == id));
+        return Task.FromResult(Itens.FirstOrDefault(evento => evento.Id == id));
     }
 
-    public void Adicionar(CasamentoAssessorado casamento)
+    public void Adicionar(Evento evento)
     {
-        Itens.Add(casamento);
+        Itens.Add(evento);
     }
 }
 

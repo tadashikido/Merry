@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.Rsvp;
 using Celebri.Dominio.Convidados;
@@ -12,7 +12,7 @@ using Celebri.Testes.Integracao.Infraestrutura;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
 using static Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
-using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
 
 namespace Celebri.Testes.Integracao.Rsvp;
@@ -30,18 +30,18 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
         _banco = banco;
     }
 
-    private async Task<(CasamentoDto Casamento, ConviteDto Convite, string Token)> CriarConviteComLinkAsync(
+    private async Task<(EventoDto Evento, ConviteDto Convite, string Token)> CriarConviteComLinkAsync(
         OrganizacaoTeste organizacao,
         int limiteAcompanhantes = 1,
-        object? corpoCasamento = null)
+        object? corpoEvento = null)
     {
-        var casamento = await ClienteCasamentos.CriarAsync(organizacao.Cliente, corpoCasamento);
+        var evento = await ClienteEventos.CriarAsync(organizacao.Cliente, corpoEvento);
         var convite = await ClienteConvites.CriarAsync(
             organizacao.Cliente,
-            casamento.Id,
+            evento.Id,
             ClienteConvites.CorpoValido("Família Souza", "Família da noiva", limiteAcompanhantes));
-        var link = await GerarLinkAsync(organizacao.Cliente, casamento.Id, convite.Id);
-        return (casamento, convite, link.Token);
+        var link = await GerarLinkAsync(organizacao.Cliente, evento.Id, convite.Id);
+        return (evento, convite, link.Token);
     }
 
     private static IEnumerable<(Guid Id, string Resposta)> Todos(ConviteDto convite, string resposta)
@@ -61,10 +61,10 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task GerarLink_DeveSerIdempotenteEArmazenarSoHashECopiaCifrada()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
 
-        var novamente = await GerarLinkAsync(OrganizacaoA.Cliente, casamento.Id, convite.Id);
-        var consultado = await OrganizacaoA.Cliente.GetFromJsonAsync<LinkRsvpDto>(RotaLink(casamento.Id, convite.Id));
+        var novamente = await GerarLinkAsync(OrganizacaoA.Cliente, evento.Id, convite.Id);
+        var consultado = await OrganizacaoA.Cliente.GetFromJsonAsync<LinkRsvpDto>(RotaLink(evento.Id, convite.Id));
 
         Assert.True(FormatoTokenRsvp.Valido(token));
         Assert.Equal(token, novamente.Token);
@@ -76,13 +76,13 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.NotEqual(token, acesso.TokenHash);
         Assert.DoesNotContain(token, acesso.TokenCifrado, StringComparison.Ordinal);
         Assert.Equal(OrganizacaoA.OrganizacaoId, acesso.OrganizacaoId);
-        Assert.Equal(casamento.Id, acesso.CasamentoId);
+        Assert.Equal(evento.Id, acesso.EventoId);
     }
 
     [Fact]
     public async Task Consulta_Anonima_DeveExporSoDadosDoConviteEMarcarVisualizado()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
 
         var resposta = await ConsultarAsync(ClienteAnonimo, token);
         var corpo = await resposta.Content.ReadAsStringAsync();
@@ -94,7 +94,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.DoesNotContain("exemplo.com", corpo, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Família da noiva", corpo, StringComparison.Ordinal);
         Assert.DoesNotContain("Flores brancas", corpo, StringComparison.Ordinal);
-        Assert.DoesNotContain(casamento.Id.ToString(), corpo, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(evento.Id.ToString(), corpo, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(convite.Id.ToString(), corpo, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(OrganizacaoA.OrganizacaoId.ToString(), corpo, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("telefone", corpo, StringComparison.OrdinalIgnoreCase);
@@ -102,20 +102,20 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
 
         var dto = JsonSerializer.Deserialize<RsvpPublicoDto>(corpo, new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
         Assert.Equal("Família Souza", dto.NomeConvite);
-        Assert.Equal("Ana Beatriz", dto.Casamento.NomePrimeiraPessoa);
-        Assert.Equal("16:30", dto.Casamento.Horario);
+        Assert.Equal("Ana Beatriz", dto.Evento.NomePrimeiraPessoa);
+        Assert.Equal("16:30", dto.Evento.Horario);
         Assert.Equal(new DateOnly(2027, 5, 5), dto.DataLimiteResposta);
         Assert.True(dto.PodeResponder);
         Assert.Equal(convite.Convidados.Select(pessoa => pessoa.Id).Order(), dto.Pessoas.Select(pessoa => pessoa.Id).Order());
 
-        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.Equal("Visualizado", Assert.Single(lista.Convites).StatusEnvio);
     }
 
     [Fact]
     public async Task Responder_FluxoCompleto_DeveGravarRespostasEAcompanhanteNaListaDaCerimonialista()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
 
         var resposta = await ResponderAsync(ClienteAnonimo, token, Todos(convite, "Confirmado"), Acompanhante("Pedro Lima"));
 
@@ -125,7 +125,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.Equal("Pedro Lima", Assert.Single(dto.Acompanhantes).Nome);
         Assert.NotNull(dto.RespondidoEm);
 
-        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         var atualizado = Assert.Single(lista.Convites);
         Assert.Equal("Visualizado", atualizado.StatusEnvio);
         Assert.NotNull(atualizado.RespondidoEm);
@@ -138,7 +138,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
             token,
             Todos(convite, "Recusado"));
         Assert.Equal(HttpStatusCode.OK, alteracao.StatusCode);
-        var semAcompanhante = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var semAcompanhante = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.DoesNotContain(semAcompanhante.Convites[0].Convidados, pessoa => pessoa.Acompanhante);
         Assert.All(semAcompanhante.Convites[0].Convidados, pessoa => Assert.Equal("Recusado", pessoa.Resposta));
     }
@@ -146,10 +146,10 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Idor_TokenDeAComPessoaDeOutroConviteDaMesmaOrganizacao_DeveRejeitarSemAlterarNada()
     {
-        var (casamento, conviteA, tokenA) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, conviteA, tokenA) = await CriarConviteComLinkAsync(OrganizacaoA);
         var conviteB = await ClienteConvites.CriarAsync(
             OrganizacaoA.Cliente,
-            casamento.Id,
+            evento.Id,
             ClienteConvites.CorpoValido("Família Lima", null, 0, ClienteConvites.Pessoa("Marcos Lima")));
 
         var pessoas = new List<(Guid, string)> { (conviteA.Convidados[0].Id, "Confirmado"), (conviteB.Convidados[0].Id, "Recusado") };
@@ -158,7 +158,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         Assert.DoesNotContain("Marcos", await consulta.Content.ReadAsStringAsync(), StringComparison.Ordinal);
-        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.All(lista.Convites.SelectMany(convite => convite.Convidados), pessoa => Assert.Equal("Pendente", pessoa.Resposta));
     }
 
@@ -166,7 +166,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     public async Task Idor_TokenDeAComPessoaDeOutraOrganizacao_DeveRejeitarENaoAlterarB()
     {
         var (_, conviteA, tokenA) = await CriarConviteComLinkAsync(OrganizacaoA);
-        var (casamentoB, conviteB, _) = await CriarConviteComLinkAsync(OrganizacaoB);
+        var (eventoB, conviteB, _) = await CriarConviteComLinkAsync(OrganizacaoB);
 
         var pessoas = conviteB.Convidados.Select(pessoa => (pessoa.Id, "Recusado")).Concat(Todos(conviteA, "Confirmado"));
         var resposta = await ResponderAsync(ClienteAnonimo, tokenA, pessoas);
@@ -178,7 +178,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, acompanhanteSequestrado.StatusCode);
-        var listaB = await ClienteConvites.ListarAsync(OrganizacaoB.Cliente, casamentoB.Id);
+        var listaB = await ClienteConvites.ListarAsync(OrganizacaoB.Cliente, eventoB.Id);
         Assert.All(listaB.Convites[0].Convidados, pessoa => Assert.Equal("Pendente", pessoa.Resposta));
         Assert.DoesNotContain(listaB.Convites[0].Convidados, pessoa => pessoa.Nome == "Sequestro");
     }
@@ -197,8 +197,8 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task TokenMalformadoInexistenteOuRevogado_DevemTerRespostaUniforme()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
-        var revogacao = await OrganizacaoA.Cliente.DeleteAsync(RotaLink(casamento.Id, convite.Id));
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var revogacao = await OrganizacaoA.Cliente.DeleteAsync(RotaLink(evento.Id, convite.Id));
         Assert.Equal(HttpStatusCode.NoContent, revogacao.StatusCode);
 
         var malformado = await LerProblemaAsync(await ConsultarAsync(ClienteAnonimo, "abc' OR 1=1 --"));
@@ -211,16 +211,16 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.Equal(revogado, malformado);
         Assert.Equal(revogado, inexistente);
         Assert.Equal(revogado, respostaRevogado);
-        Assert.Equal(HttpStatusCode.NotFound, (await OrganizacaoA.Cliente.GetAsync(RotaLink(casamento.Id, convite.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await OrganizacaoA.Cliente.GetAsync(RotaLink(evento.Id, convite.Id))).StatusCode);
     }
 
     [Fact]
     public async Task Regenerar_DeveInvalidarLinkAnteriorEPreservarRespostas()
     {
-        var (casamento, convite, tokenAntigo) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, convite, tokenAntigo) = await CriarConviteComLinkAsync(OrganizacaoA);
         Assert.Equal(HttpStatusCode.OK, (await ResponderAsync(ClienteAnonimo, tokenAntigo, Todos(convite, "Confirmado"))).StatusCode);
 
-        var regeneracao = await OrganizacaoA.Cliente.PostAsync($"{RotaLink(casamento.Id, convite.Id)}/regenerar", null);
+        var regeneracao = await OrganizacaoA.Cliente.PostAsync($"{RotaLink(evento.Id, convite.Id)}/regenerar", null);
         var novo = (await regeneracao.Content.ReadFromJsonAsync<LinkRsvpDto>())!;
 
         Assert.Equal(HttpStatusCode.OK, regeneracao.StatusCode);
@@ -233,7 +233,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task PrazoEncerrado_DeveMostrarLeituraERecusarResposta()
     {
-        var hoje = ClienteCasamentos.HojeEmSaoPaulo();
+        var hoje = ClienteEventos.HojeEmSaoPaulo();
         var corpo = new
         {
             nomePrimeiraPessoa = "Ana Beatriz",
@@ -241,7 +241,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
             data = hoje.AddDays(30).ToString("yyyy-MM-dd"),
             dataLimiteRsvp = hoje.AddDays(-1).ToString("yyyy-MM-dd"),
         };
-        var (_, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA, corpoCasamento: corpo);
+        var (_, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA, corpoEvento: corpo);
 
         var dto = await ConsultarComSucessoAsync(ClienteAnonimo, token);
         var resposta = await ResponderAsync(ClienteAnonimo, token, Todos(convite, "Confirmado"));
@@ -253,9 +253,9 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     }
 
     [Fact]
-    public async Task CasamentoComDataLimitePosteriorAoCasamento_DeveRetornar400()
+    public async Task EventoComDataLimitePosteriorAoEvento_DeveRetornar400()
     {
-        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(ClienteCasamentos.Rota, new
+        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(ClienteEventos.Rota, new
         {
             nomePrimeiraPessoa = "Ana",
             nomeSegundaPessoa = "Bruno",
@@ -269,13 +269,13 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Responder_AcimaDoLimiteDeAcompanhantes_DeveRetornar422SemGravar()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA, limiteAcompanhantes: 1);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA, limiteAcompanhantes: 1);
 
         var resposta = await ResponderAsync(ClienteAnonimo, token, Todos(convite, "Confirmado"), Acompanhante("Pedro"), Acompanhante("Nina"));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         Assert.Equal(MensagensConvidados.LimiteAcompanhantesExcedido, (await LerProblemaAsync(resposta)).Detalhe);
-        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.Equal(2, lista.Convites[0].Convidados.Count);
     }
 
@@ -294,13 +294,13 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task MarcarEnviado_DeveAvancarSemRegredirDepoisDeVisualizado()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
 
-        var enviado = await OrganizacaoA.Cliente.PostAsync(RotaEnvio(casamento.Id, convite.Id), null);
+        var enviado = await OrganizacaoA.Cliente.PostAsync(RotaEnvio(evento.Id, convite.Id), null);
         Assert.Equal("Enviado", (await enviado.Content.ReadFromJsonAsync<ConviteDto>())!.StatusEnvio);
 
         await ConsultarComSucessoAsync(ClienteAnonimo, token);
-        var novamente = await OrganizacaoA.Cliente.PostAsync(RotaEnvio(casamento.Id, convite.Id), null);
+        var novamente = await OrganizacaoA.Cliente.PostAsync(RotaEnvio(evento.Id, convite.Id), null);
 
         Assert.Equal("Visualizado", (await novamente.Content.ReadFromJsonAsync<ConviteDto>())!.StatusEnvio);
     }
@@ -308,14 +308,14 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task EndpointsDeLink_DeOutraOrganizacaoOuAnonimo_DevemSerNegados()
     {
-        var (casamento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA);
-        var rota = RotaLink(casamento.Id, convite.Id);
+        var (evento, convite, _) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var rota = RotaLink(evento.Id, convite.Id);
 
         await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(rota));
         await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsync(rota, null));
         await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsync($"{rota}/regenerar", null));
         await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.DeleteAsync(rota));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsync(RotaEnvio(casamento.Id, convite.Id), null));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsync(RotaEnvio(evento.Id, convite.Id), null));
         Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.GetAsync(rota)).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.PostAsync(rota, null)).StatusCode);
 
@@ -324,14 +324,14 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     }
 
     [Fact]
-    public async Task CasamentoArquivado_DeveBloquearGeracaoMasPermitirConsultarLink()
+    public async Task EventoArquivado_DeveBloquearGeracaoMasPermitirConsultarLink()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
-        var arquivamento = await OrganizacaoA.Cliente.PostAsync($"{ClienteCasamentos.Rota}/{casamento.Id}/arquivar", null);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var arquivamento = await OrganizacaoA.Cliente.PostAsync($"{ClienteEventos.Rota}/{evento.Id}/arquivar", null);
         Assert.True(arquivamento.IsSuccessStatusCode);
 
-        var regenerar = await OrganizacaoA.Cliente.PostAsync($"{RotaLink(casamento.Id, convite.Id)}/regenerar", null);
-        var consultar = await OrganizacaoA.Cliente.GetFromJsonAsync<LinkRsvpDto>(RotaLink(casamento.Id, convite.Id));
+        var regenerar = await OrganizacaoA.Cliente.PostAsync($"{RotaLink(evento.Id, convite.Id)}/regenerar", null);
+        var consultar = await OrganizacaoA.Cliente.GetFromJsonAsync<LinkRsvpDto>(RotaLink(evento.Id, convite.Id));
         var publico = await ConsultarComSucessoAsync(ClienteAnonimo, token);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, regenerar.StatusCode);
@@ -342,9 +342,9 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task ExcluirConvite_DeveApagarOAcessoEmCascata()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA);
 
-        Assert.Equal(HttpStatusCode.NoContent, (await OrganizacaoA.Cliente.DeleteAsync(ClienteConvites.Rota(casamento.Id, convite.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await OrganizacaoA.Cliente.DeleteAsync(ClienteConvites.Rota(evento.Id, convite.Id))).StatusCode);
 
         Assert.Equal(HttpStatusCode.NotFound, (await ConsultarAsync(ClienteAnonimo, token)).StatusCode);
         await using var contexto = CriarContextoSemOrganizacao();
@@ -372,7 +372,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Concorrencia_DuasRespostasSimultaneas_NaoDevemDuplicarAcompanhantes()
     {
-        var (casamento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA, limiteAcompanhantes: 1);
+        var (evento, convite, token) = await CriarConviteComLinkAsync(OrganizacaoA, limiteAcompanhantes: 1);
 
         using var cliente1 = Fabrica.CriarClienteHttps();
         using var cliente2 = Fabrica.CriarClienteHttps();
@@ -381,7 +381,7 @@ public sealed class RsvpPublicoApiTestes : IsolamentoOrganizacaoTestesBase
             ResponderAsync(cliente2, token, Todos(convite, "Confirmado"), Acompanhante("Pedro")));
 
         Assert.All(respostas, resposta => Assert.Contains(resposta.StatusCode, new[] { HttpStatusCode.OK, HttpStatusCode.Conflict }));
-        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var lista = await ClienteConvites.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.True(lista.Convites[0].Convidados.Count(pessoa => pessoa.Acompanhante) <= 1);
     }
 

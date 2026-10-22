@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Mesas;
 using Celebri.Dominio.Organizacoes;
@@ -10,7 +10,7 @@ namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 public class ConvidadoConfiguration : IEntityTypeConfiguration<Convidado>
 {
     public const string Tabela = "convidados";
-    public const string IndiceOrganizacaoCasamento = "ix_convidados_organizacao_id_casamento_id";
+    public const string IndiceOrganizacaoEvento = "ix_convidados_organizacao_id_evento_id";
     public const string IndiceConvite = "ix_convidados_convite_id";
     public const string RestricaoFaixaEtaria = "ck_convidados_faixa_etaria";
     public const string RestricaoResposta = "ck_convidados_resposta";
@@ -41,7 +41,7 @@ public class ConvidadoConfiguration : IEntityTypeConfiguration<Convidado>
 
         builder.HasKey(convidado => convidado.Id);
         builder.Property(convidado => convidado.Id).ValueGeneratedNever();
-        builder.Property(convidado => convidado.CasamentoId).IsRequired();
+        builder.Property(convidado => convidado.EventoId).IsRequired();
         builder.Property(convidado => convidado.ConviteId).IsRequired();
         builder.Property(convidado => convidado.Nome).HasMaxLength(Convidado.TamanhoMaximoNome).IsRequired();
         builder.Property(convidado => convidado.Telefone).HasMaxLength(NormalizadorTelefone.TamanhoMaximoArmazenado);
@@ -62,7 +62,7 @@ public class ConvidadoConfiguration : IEntityTypeConfiguration<Convidado>
         builder.Property(convidado => convidado.CriadoEm).IsRequired();
         builder.Property(convidado => convidado.AtualizadoEm).IsRequired();
 
-        builder.HasIndex(convidado => new { convidado.OrganizacaoId, convidado.CasamentoId }).HasDatabaseName(IndiceOrganizacaoCasamento);
+        builder.HasIndex(convidado => new { convidado.OrganizacaoId, convidado.EventoId }).HasDatabaseName(IndiceOrganizacaoEvento);
         builder.HasIndex(convidado => convidado.ConviteId).HasDatabaseName(IndiceConvite);
         builder.HasIndex(convidado => convidado.MesaId).HasDatabaseName(IndiceMesa);
         builder.HasIndex(convidado => convidado.MesaSaidaId).HasDatabaseName(IndiceMesaSaida);
@@ -79,9 +79,9 @@ public class ConvidadoConfiguration : IEntityTypeConfiguration<Convidado>
             .HasConstraintName(ChaveEstrangeiraMesaSaida)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne<CasamentoAssessorado>()
+        builder.HasOne<Evento>()
             .WithMany()
-            .HasForeignKey(convidado => convidado.CasamentoId)
+            .HasForeignKey(convidado => convidado.EventoId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Organizacao>()

@@ -14,7 +14,7 @@ export function previaExemplo(dados: Partial<PreVisualizacaoImportacaoDto> = {})
       linhasDuplicadas: 0,
       linhasComAviso: 0,
       convidadosExistentes: 20,
-      limitePorCasamento: 5000,
+      limitePorEvento: 5000,
     },
     colunasReconhecidas: ['Convite', 'Nome', 'Telefone'],
     colunasIgnoradas: [],

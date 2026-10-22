@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Celebri.Aplicacao.Fornecedores;
-using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.FornecedoresEvento;
 using Celebri.Aplicacao.ModelosCronograma;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,24 +26,24 @@ public static class ClienteModelosCronograma
         return $"{RotaItens(modeloId)}/{itemId}";
     }
 
-    public static string RotaSalvarComoModelo(Guid casamentoId)
+    public static string RotaSalvarComoModelo(Guid eventoId)
     {
-        return $"{ClienteCronograma.Rota(casamentoId)}/modelos";
+        return $"{ClienteCronograma.Rota(eventoId)}/modelos";
     }
 
-    public static string RotaPrevia(Guid casamentoId, Guid modeloId)
+    public static string RotaPrevia(Guid eventoId, Guid modeloId)
     {
-        return $"{ClienteCronograma.Rota(casamentoId)}/previa?modeloId={modeloId}";
+        return $"{ClienteCronograma.Rota(eventoId)}/previa?modeloId={modeloId}";
     }
 
-    public static string RotaAplicacoes(Guid casamentoId)
+    public static string RotaAplicacoes(Guid eventoId)
     {
-        return $"{ClienteCronograma.Rota(casamentoId)}/aplicacoes";
+        return $"{ClienteCronograma.Rota(eventoId)}/aplicacoes";
     }
 
-    public static string RotaRecalculo(Guid casamentoId)
+    public static string RotaRecalculo(Guid eventoId)
     {
-        return $"{ClienteCronograma.Rota(casamentoId)}/recalculo-horarios";
+        return $"{ClienteCronograma.Rota(eventoId)}/recalculo-horarios";
     }
 
     public static object CorpoItem(
@@ -103,21 +103,21 @@ public static class ClienteModelosCronograma
         return (await resposta.Content.ReadFromJsonAsync<ItemModeloCronogramaDto>())!;
     }
 
-    public static Task<HttpResponseMessage> AplicarAsync(HttpClient cliente, Guid casamentoId, Guid modeloId)
+    public static Task<HttpResponseMessage> AplicarAsync(HttpClient cliente, Guid eventoId, Guid modeloId)
     {
-        return cliente.PostAsJsonAsync(RotaAplicacoes(casamentoId), new { modeloId });
+        return cliente.PostAsJsonAsync(RotaAplicacoes(eventoId), new { modeloId });
     }
 
-    public static async Task<AplicacaoModeloCronogramaDto> AplicarComSucessoAsync(HttpClient cliente, Guid casamentoId, Guid modeloId)
+    public static async Task<AplicacaoModeloCronogramaDto> AplicarComSucessoAsync(HttpClient cliente, Guid eventoId, Guid modeloId)
     {
-        var resposta = await AplicarAsync(cliente, casamentoId, modeloId);
+        var resposta = await AplicarAsync(cliente, eventoId, modeloId);
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<AplicacaoModeloCronogramaDto>())!;
     }
 
-    public static async Task<AplicacaoModeloCronogramaDto> PreverAsync(HttpClient cliente, Guid casamentoId, Guid modeloId)
+    public static async Task<AplicacaoModeloCronogramaDto> PreverAsync(HttpClient cliente, Guid eventoId, Guid modeloId)
     {
-        var resposta = await cliente.GetAsync(RotaPrevia(casamentoId, modeloId));
+        var resposta = await cliente.GetAsync(RotaPrevia(eventoId, modeloId));
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<AplicacaoModeloCronogramaDto>())!;
     }
@@ -128,7 +128,7 @@ public static class ClienteModelosCronograma
         return problema.Extensions.TryGetValue("campo", out var campo) ? campo?.ToString() : null;
     }
 
-    public static async Task<Guid> VincularFornecedorAsync(HttpClient cliente, Guid casamentoId, string nome, string categoria, string status = "Contratado")
+    public static async Task<Guid> VincularFornecedorAsync(HttpClient cliente, Guid eventoId, string nome, string categoria, string status = "Contratado")
     {
         var fornecedor = await cliente.PostAsJsonAsync("/api/fornecedores", new
         {
@@ -144,7 +144,7 @@ public static class ClienteModelosCronograma
         Assert.Equal(HttpStatusCode.Created, fornecedor.StatusCode);
         var fornecedorId = (await fornecedor.Content.ReadFromJsonAsync<FornecedorDto>())!.Id;
 
-        var vinculo = await cliente.PostAsJsonAsync($"/api/casamentos/{casamentoId}/fornecedores", new
+        var vinculo = await cliente.PostAsJsonAsync($"/api/eventos/{eventoId}/fornecedores", new
         {
             fornecedorId,
             servico = "Serviço do dia",
@@ -154,6 +154,6 @@ public static class ClienteModelosCronograma
             notasInternas = (string?)null,
         });
         Assert.Equal(HttpStatusCode.Created, vinculo.StatusCode);
-        return (await vinculo.Content.ReadFromJsonAsync<FornecedorCasamentoDto>())!.Id;
+        return (await vinculo.Content.ReadFromJsonAsync<FornecedorEventoDto>())!.Id;
     }
 }

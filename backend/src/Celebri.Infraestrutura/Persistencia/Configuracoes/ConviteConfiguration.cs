@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Organizacoes;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +9,7 @@ namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 public class ConviteConfiguration : IEntityTypeConfiguration<Convite>
 {
     public const string Tabela = "convites";
-    public const string IndiceOrganizacaoCasamento = "ix_convites_organizacao_id_casamento_id";
+    public const string IndiceOrganizacaoEvento = "ix_convites_organizacao_id_evento_id";
     public const string RestricaoLimiteAcompanhantes = "ck_convites_limite_acompanhantes";
     public const string RestricaoStatusEnvio = "ck_convites_status_envio";
     public const string RestricaoQuantidadeCobrancas = "ck_convites_quantidade_cobrancas";
@@ -30,7 +30,7 @@ public class ConviteConfiguration : IEntityTypeConfiguration<Convite>
 
         builder.HasKey(convite => convite.Id);
         builder.Property(convite => convite.Id).ValueGeneratedNever();
-        builder.Property(convite => convite.CasamentoId).IsRequired();
+        builder.Property(convite => convite.EventoId).IsRequired();
         builder.Property(convite => convite.Nome).HasMaxLength(Convite.TamanhoMaximoNome).IsRequired();
         builder.Property(convite => convite.Grupo).HasMaxLength(Convite.TamanhoMaximoGrupo);
         builder.Property(convite => convite.LimiteAcompanhantes).IsRequired();
@@ -42,7 +42,7 @@ public class ConviteConfiguration : IEntityTypeConfiguration<Convite>
         builder.Property(convite => convite.QuantidadeCobrancas).IsRequired();
         builder.Property<uint>("Versao").IsRowVersion().HasColumnName("xmin").HasColumnType("xid");
 
-        builder.HasIndex(convite => new { convite.OrganizacaoId, convite.CasamentoId }).HasDatabaseName(IndiceOrganizacaoCasamento);
+        builder.HasIndex(convite => new { convite.OrganizacaoId, convite.EventoId }).HasDatabaseName(IndiceOrganizacaoEvento);
 
         builder.HasMany(convite => convite.Convidados)
             .WithOne()
@@ -51,9 +51,9 @@ public class ConviteConfiguration : IEntityTypeConfiguration<Convite>
 
         builder.Navigation(convite => convite.Convidados).UsePropertyAccessMode(PropertyAccessMode.Field);
 
-        builder.HasOne<CasamentoAssessorado>()
+        builder.HasOne<Evento>()
             .WithMany()
-            .HasForeignKey(convite => convite.CasamentoId)
+            .HasForeignKey(convite => convite.EventoId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Organizacao>()

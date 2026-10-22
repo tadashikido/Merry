@@ -8,8 +8,8 @@ using Celebri.Dominio.Fornecedores;
 using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
-using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
-using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteAcessoAnfitriao = Celebri.Testes.Integracao.AcessosAnfitriao.ClienteAcessoAnfitriao;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 
 namespace Celebri.Testes.Integracao.Fornecedores;
 
@@ -18,7 +18,7 @@ public sealed class FornecedoresApiTestes : IsolamentoOrganizacaoTestesBase, IDi
 {
     private const string Rota = "/api/fornecedores";
 
-    private readonly List<HttpClient> _clientesCasal = [];
+    private readonly List<HttpClient> _clientesAnfitriao = [];
 
     public FornecedoresApiTestes(BancoPostgreSqlFixture banco)
         : base(banco)
@@ -27,7 +27,7 @@ public sealed class FornecedoresApiTestes : IsolamentoOrganizacaoTestesBase, IDi
 
     public void Dispose()
     {
-        foreach (var cliente in _clientesCasal)
+        foreach (var cliente in _clientesAnfitriao)
         {
             cliente.Dispose();
         }
@@ -71,18 +71,18 @@ public sealed class FornecedoresApiTestes : IsolamentoOrganizacaoTestesBase, IDi
         return (await resposta.Content.ReadFromJsonAsync<JsonElement>())!;
     }
 
-    private async Task<HttpClient> CriarClienteCasalAsync()
+    private async Task<HttpClient> CriarClienteAnfitriaoAsync()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var email = ClienteAcessoCasal.EmailCasalUnico();
-        await ClienteAcessoCasal.ConvidarComSucessoAsync(OrganizacaoA.Cliente, casamento.Id, email);
-        var aceite = await ClienteAcessoCasal.AceitarAsync(ClienteAnonimo, ClienteAcessoCasal.UltimoToken(Fabrica.Email, email));
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var email = ClienteAcessoAnfitriao.EmailAnfitriaoUnico();
+        await ClienteAcessoAnfitriao.ConvidarComSucessoAsync(OrganizacaoA.Cliente, evento.Id, email);
+        var aceite = await ClienteAcessoAnfitriao.AceitarAsync(ClienteAnonimo, ClienteAcessoAnfitriao.UltimoToken(Fabrica.Email, email));
         Assert.Equal(HttpStatusCode.OK, aceite.StatusCode);
         var sessao = (await aceite.Content.ReadFromJsonAsync<SessaoDto>())!;
 
         var cliente = Fabrica.CriarClienteHttps();
         cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", sessao.TokenAcesso);
-        _clientesCasal.Add(cliente);
+        _clientesAnfitriao.Add(cliente);
         return cliente;
     }
 
@@ -288,20 +288,20 @@ public sealed class FornecedoresApiTestes : IsolamentoOrganizacaoTestesBase, IDi
     }
 
     [Fact]
-    public async Task Casal_DeveReceber403EmTodosOsEndpoints()
+    public async Task Anfitriao_DeveReceber403EmTodosOsEndpoints()
     {
         var fornecedor = await CriarAsync(OrganizacaoA.Cliente);
-        var casal = await CriarClienteCasalAsync();
+        var anfitriao = await CriarClienteAnfitriaoAsync();
 
         var respostas = new[]
         {
-            await casal.GetAsync(Rota),
-            await casal.PostAsJsonAsync(Rota, Corpo("Do casal")),
-            await casal.GetAsync(RotaFornecedor(fornecedor.Id)),
-            await casal.PutAsJsonAsync(RotaFornecedor(fornecedor.Id), Corpo("Alterado")),
-            await casal.PostAsync(RotaFornecedor(fornecedor.Id, "arquivar"), null),
-            await casal.PostAsync(RotaFornecedor(fornecedor.Id, "restaurar"), null),
-            await casal.DeleteAsync(RotaFornecedor(fornecedor.Id)),
+            await anfitriao.GetAsync(Rota),
+            await anfitriao.PostAsJsonAsync(Rota, Corpo("Dos anfitriões")),
+            await anfitriao.GetAsync(RotaFornecedor(fornecedor.Id)),
+            await anfitriao.PutAsJsonAsync(RotaFornecedor(fornecedor.Id), Corpo("Alterado")),
+            await anfitriao.PostAsync(RotaFornecedor(fornecedor.Id, "arquivar"), null),
+            await anfitriao.PostAsync(RotaFornecedor(fornecedor.Id, "restaurar"), null),
+            await anfitriao.DeleteAsync(RotaFornecedor(fornecedor.Id)),
         };
 
         Assert.All(respostas, resposta => Assert.Equal(HttpStatusCode.Forbidden, resposta.StatusCode));

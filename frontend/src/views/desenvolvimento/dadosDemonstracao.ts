@@ -1,6 +1,6 @@
 import type { CategoriaFornecedor } from '@/tipos/fornecedores'
 import type { AlertasPagamentosDto, ParcelaDto } from '@/tipos/financeiro'
-import type { FornecedorCasamentoDto, ResumoOrcamentoDto, StatusFornecedorCasamento } from '@/tipos/fornecedoresCasamento'
+import type { FornecedorEventoDto, ResumoOrcamentoDto, StatusFornecedorEvento } from '@/tipos/fornecedoresEvento'
 import type {
   ColunaListagem,
   FiltroProblemaLinha,
@@ -8,7 +8,7 @@ import type {
   ItemProblemaLinha,
   VarianteStatus,
 } from '@/componentes/base/tipos'
-import type { FaseCasamento } from '@/tipos/casamentos'
+import type { FaseEvento } from '@/tipos/eventos'
 import type { TotaisConvidadosDto } from '@/tipos/convidados'
 import type { PendenciasTarefasDto, TarefaDto } from '@/tipos/tarefas'
 
@@ -45,12 +45,12 @@ export const COLUNAS_DEMONSTRACAO: ColunaListagem<ConvidadoDemonstracao>[] = [
   { campo: 'respondidoEm', titulo: 'Respondido em', ocultarNoTablet: true },
 ]
 
-export const FASES_DEMONSTRACAO: FaseCasamento[] = ['Planejamento', 'RetaFinal', 'SemanaDoCasamento', 'DiaDoCasamento', 'Realizado']
+export const FASES_DEMONSTRACAO: FaseEvento[] = ['Planejamento', 'RetaFinal', 'SemanaDoEvento', 'DiaDoEvento', 'Realizado']
 
 export const CONTAGENS_DEMONSTRACAO = [229, 1, 0, -1, -261]
 
 export const DETALHES_DEMONSTRACAO: ItemDetalhe[] = [
-  { rotulo: 'Data do casamento', valor: '15 de maio de 2027' },
+  { rotulo: 'Data do evento', valor: '15 de maio de 2027' },
   { rotulo: 'Horário da cerimônia', valor: '16:30' },
   { rotulo: 'Local da cerimônia', valor: 'Capela São José' },
   { rotulo: 'Local da recepção', valor: null },
@@ -132,7 +132,7 @@ export const TAREFAS_DEMONSTRACAO: TarefaDto[] = [
     id: 't1',
     titulo: 'Assinar contrato da decoração',
     descricao: 'Contrato enviado por e-mail pela assessoria.',
-    responsavel: 'Casal',
+    responsavel: 'Anfitriao',
     categoria: 'Documentos',
     status: 'AFazer',
     prazo: '2026-09-26',
@@ -183,7 +183,7 @@ export const TAREFAS_DEMONSTRACAO: TarefaDto[] = [
     id: 't4',
     titulo: 'Escolher música da entrada',
     descricao: null,
-    responsavel: 'Casal',
+    responsavel: 'Anfitriao',
     categoria: 'Cerimonia',
     status: 'Concluida',
     prazo: null,
@@ -191,7 +191,7 @@ export const TAREFAS_DEMONSTRACAO: TarefaDto[] = [
     venceNaSemana: false,
     diasParaPrazo: null,
     concluidaEm: '2026-09-28T15:00:00Z',
-    concluidaPor: 'Casal',
+    concluidaPor: 'Anfitriao',
     geradaDeModelo: false,
     criadoEm: '2026-09-01T12:00:00Z',
     atualizadoEm: '2026-09-28T15:00:00Z',
@@ -218,11 +218,11 @@ export const TAREFAS_DEMONSTRACAO: TarefaDto[] = [
 export const PENDENCIAS_DEMONSTRACAO: PendenciasTarefasDto = {
   totalAtrasadas: 7,
   totalEstaSemana: 3,
-  casamentosComAtraso: 4,
+  eventosComAtraso: 4,
   atrasadas: [
     {
       id: 'p1',
-      casamentoId: '00000000-0000-0000-0000-000000000001',
+      eventoId: '00000000-0000-0000-0000-000000000001',
       nomePrimeiraPessoa: 'Luísa',
       nomeSegundaPessoa: 'Pedro',
       titulo: 'Confirmar horário do DJ',
@@ -234,11 +234,11 @@ export const PENDENCIAS_DEMONSTRACAO: PendenciasTarefasDto = {
     },
     {
       id: 'p2',
-      casamentoId: '00000000-0000-0000-0000-000000000002',
+      eventoId: '00000000-0000-0000-0000-000000000002',
       nomePrimeiraPessoa: 'Ana',
       nomeSegundaPessoa: 'João',
       titulo: 'Assinar contrato da decoração',
-      responsavel: 'Casal',
+      responsavel: 'Anfitriao',
       categoria: 'Documentos',
       status: 'AFazer',
       prazo: '2026-09-29',
@@ -248,11 +248,11 @@ export const PENDENCIAS_DEMONSTRACAO: PendenciasTarefasDto = {
   estaSemana: [
     {
       id: 'p3',
-      casamentoId: '00000000-0000-0000-0000-000000000002',
+      eventoId: '00000000-0000-0000-0000-000000000002',
       nomePrimeiraPessoa: 'Ana',
       nomeSegundaPessoa: 'João',
       titulo: 'Pagar parcela da fotografia',
-      responsavel: 'Casal',
+      responsavel: 'Anfitriao',
       categoria: 'Financeiro',
       status: 'AFazer',
       prazo: '2026-09-30',
@@ -265,12 +265,12 @@ function vinculoDemonstracao(
   id: string,
   categoria: CategoriaFornecedor,
   nomeEmpresa: string,
-  status: StatusFornecedorCasamento,
+  status: StatusFornecedorEvento,
   servico: string | null,
   valorOrcado: number | null,
   valorContratado: number | null,
   comContrato = false,
-): FornecedorCasamentoDto {
+): FornecedorEventoDto {
   return {
     id,
     fornecedor: {
@@ -295,7 +295,7 @@ function vinculoDemonstracao(
   }
 }
 
-export const VINCULOS_DEMONSTRACAO: FornecedorCasamentoDto[] = [
+export const VINCULOS_DEMONSTRACAO: FornecedorEventoDto[] = [
   vinculoDemonstracao('v1', 'Buffet', 'Buffet São João', 'Contratado', 'Jantar para 200', 18_000, 18_500, true),
   vinculoDemonstracao('v2', 'Decoracao', 'Florista Jardim', 'EmNegociacao', 'Arranjos baixos e velas', 15_800, null),
   vinculoDemonstracao('v3', 'Fotografia', 'Luz & Afeto Fotografia', 'Contratado', 'Cobertura completa', 8_000, 7_400, true),
@@ -327,7 +327,7 @@ function parcelaDemonstracao(
   dados: Partial<ParcelaDto> & Pick<ParcelaDto, 'id' | 'numero' | 'totalParcelas' | 'valor' | 'vencimento'>,
 ): ParcelaDto {
   return {
-    fornecedorCasamentoId: 'v-demo',
+    fornecedorEventoId: 'v-demo',
     observacao: null,
     situacao: 'Pendente',
     diasParaVencimento: 30,
@@ -377,15 +377,15 @@ export const ALERTAS_DEMONSTRACAO: AlertasPagamentosDto = {
   valorVencidas: 5250,
   totalProximas: 4,
   valorProximas: 14300,
-  casamentosComVencidas: 2,
+  eventosComVencidas: 2,
   hoje: HOJE_DEMONSTRACAO,
   vencidas: [
     {
       parcelaId: 'a1',
-      casamentoId: '00000000-0000-0000-0000-000000000002',
+      eventoId: '00000000-0000-0000-0000-000000000002',
       nomePrimeiraPessoa: 'Ana',
       nomeSegundaPessoa: 'João',
-      fornecedorCasamentoId: 'v1',
+      fornecedorEventoId: 'v1',
       nomeEmpresa: 'Fotografia Lumière',
       numero: 3,
       totalParcelas: 4,
@@ -395,10 +395,10 @@ export const ALERTAS_DEMONSTRACAO: AlertasPagamentosDto = {
     },
     {
       parcelaId: 'a2',
-      casamentoId: '00000000-0000-0000-0000-000000000003',
+      eventoId: '00000000-0000-0000-0000-000000000003',
       nomePrimeiraPessoa: 'Beatriz',
       nomeSegundaPessoa: 'Rafael',
-      fornecedorCasamentoId: 'v2',
+      fornecedorEventoId: 'v2',
       nomeEmpresa: 'Buffet São João',
       numero: 2,
       totalParcelas: 5,
@@ -410,10 +410,10 @@ export const ALERTAS_DEMONSTRACAO: AlertasPagamentosDto = {
   proximas: [
     {
       parcelaId: 'a3',
-      casamentoId: '00000000-0000-0000-0000-000000000003',
+      eventoId: '00000000-0000-0000-0000-000000000003',
       nomePrimeiraPessoa: 'Beatriz',
       nomeSegundaPessoa: 'Rafael',
-      fornecedorCasamentoId: 'v3',
+      fornecedorEventoId: 'v3',
       nomeEmpresa: 'Decoração Jardim',
       numero: 3,
       totalParcelas: 3,
@@ -429,7 +429,7 @@ export const ALERTAS_VAZIOS_DEMONSTRACAO: AlertasPagamentosDto = {
   valorVencidas: 0,
   totalProximas: 0,
   valorProximas: 0,
-  casamentosComVencidas: 0,
+  eventosComVencidas: 0,
   hoje: HOJE_DEMONSTRACAO,
   vencidas: [],
   proximas: [],

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}/convites/{conviteId:guid}")]
+[Route("api/eventos/{eventoId:guid}/convites/{conviteId:guid}")]
 [Produces("application/json")]
 [Authorize(Policy = PoliticasAutorizacao.ConsultarConvidados)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -26,9 +26,9 @@ public class LinkRsvpController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<LinkRsvpDto>> Obter(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<ActionResult<LinkRsvpDto>> Obter(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        return Ok(await _linkRsvpService.ObterAsync(casamentoId, conviteId, cancelamento));
+        return Ok(await _linkRsvpService.ObterAsync(eventoId, conviteId, cancelamento));
     }
 
     [HttpPost("link-rsvp")]
@@ -39,9 +39,9 @@ public class LinkRsvpController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<LinkRsvpDto>> Gerar(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<ActionResult<LinkRsvpDto>> Gerar(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        return Ok(await _linkRsvpService.GerarAsync(casamentoId, conviteId, cancelamento));
+        return Ok(await _linkRsvpService.GerarAsync(eventoId, conviteId, cancelamento));
     }
 
     [HttpPost("link-rsvp/regenerar")]
@@ -52,9 +52,9 @@ public class LinkRsvpController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<LinkRsvpDto>> Regenerar(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<ActionResult<LinkRsvpDto>> Regenerar(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        return Ok(await _linkRsvpService.RegenerarAsync(casamentoId, conviteId, cancelamento));
+        return Ok(await _linkRsvpService.RegenerarAsync(eventoId, conviteId, cancelamento));
     }
 
     [HttpDelete("link-rsvp")]
@@ -64,9 +64,9 @@ public class LinkRsvpController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> Revogar(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<IActionResult> Revogar(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        await _linkRsvpService.RevogarAsync(casamentoId, conviteId, cancelamento);
+        await _linkRsvpService.RevogarAsync(eventoId, conviteId, cancelamento);
         return NoContent();
     }
 
@@ -78,8 +78,8 @@ public class LinkRsvpController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<ConviteDto>> MarcarEnviado(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<ActionResult<ConviteDto>> MarcarEnviado(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        return Ok(await _linkRsvpService.MarcarEnviadoAsync(casamentoId, conviteId, cancelamento));
+        return Ok(await _linkRsvpService.MarcarEnviadoAsync(eventoId, conviteId, cancelamento));
     }
 }

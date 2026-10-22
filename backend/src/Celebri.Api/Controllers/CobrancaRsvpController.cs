@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}/convites/{conviteId:guid}")]
+[Route("api/eventos/{eventoId:guid}/convites/{conviteId:guid}")]
 [Produces("application/json")]
 [Authorize(Policy = PoliticasAutorizacao.GerenciarConvidados)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -26,8 +26,8 @@ public class CobrancaRsvpController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<CobrancaRsvpDto>> Registrar(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<ActionResult<CobrancaRsvpDto>> Registrar(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        return Ok(await _cobrancaRsvpService.RegistrarAsync(casamentoId, conviteId, cancelamento));
+        return Ok(await _cobrancaRsvpService.RegistrarAsync(eventoId, conviteId, cancelamento));
     }
 }

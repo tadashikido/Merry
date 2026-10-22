@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}/fornecedores/{vinculoId:guid}/parcelas")]
+[Route("api/eventos/{eventoId:guid}/fornecedores/{vinculoId:guid}/parcelas")]
 [Produces("application/json")]
-[Authorize(Policy = PoliticasAutorizacao.ConsultarFinanceiroCasamento)]
+[Authorize(Policy = PoliticasAutorizacao.ConsultarFinanceiroEvento)]
 public class ParcelasFornecedorController : ControllerBase
 {
     public const long TamanhoMaximoRequisicaoComprovante = ArquivoPdf.TamanhoMaximoBytes + (64 * 1024);
@@ -30,13 +30,13 @@ public class ParcelasFornecedorController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CronogramaParcelasDto>> Listar(Guid casamentoId, Guid vinculoId, CancellationToken cancelamento)
+    public async Task<ActionResult<CronogramaParcelasDto>> Listar(Guid eventoId, Guid vinculoId, CancellationToken cancelamento)
     {
-        return Ok(await _parcelaService.ListarAsync(casamentoId, vinculoId, cancelamento));
+        return Ok(await _parcelaService.ListarAsync(eventoId, vinculoId, cancelamento));
     }
 
     [HttpPost]
-    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroCasamento)]
+    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroEvento)]
     [ProducesResponseType(typeof(ParcelaDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -45,17 +45,17 @@ public class ParcelasFornecedorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<ParcelaDto>> Criar(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         SalvarParcelaRequest request,
         CancellationToken cancelamento)
     {
-        var parcela = await _parcelaService.CriarAsync(casamentoId, vinculoId, request, cancelamento);
-        return Created($"/api/casamentos/{casamentoId}/fornecedores/{vinculoId}/parcelas/{parcela.Id}", parcela);
+        var parcela = await _parcelaService.CriarAsync(eventoId, vinculoId, request, cancelamento);
+        return Created($"/api/eventos/{eventoId}/fornecedores/{vinculoId}/parcelas/{parcela.Id}", parcela);
     }
 
     [HttpPost("geracao")]
-    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroCasamento)]
+    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroEvento)]
     [ProducesResponseType(typeof(CronogramaParcelasDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -64,16 +64,16 @@ public class ParcelasFornecedorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<CronogramaParcelasDto>> Gerar(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         GerarParcelasRequest request,
         CancellationToken cancelamento)
     {
-        return Ok(await _parcelaService.GerarAsync(casamentoId, vinculoId, request, cancelamento));
+        return Ok(await _parcelaService.GerarAsync(eventoId, vinculoId, request, cancelamento));
     }
 
     [HttpPut("{parcelaId:guid}")]
-    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroCasamento)]
+    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroEvento)]
     [ProducesResponseType(typeof(ParcelaDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -82,31 +82,31 @@ public class ParcelasFornecedorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<ParcelaDto>> Atualizar(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         SalvarParcelaRequest request,
         CancellationToken cancelamento)
     {
-        return Ok(await _parcelaService.AtualizarAsync(casamentoId, vinculoId, parcelaId, request, cancelamento));
+        return Ok(await _parcelaService.AtualizarAsync(eventoId, vinculoId, parcelaId, request, cancelamento));
     }
 
     [HttpDelete("{parcelaId:guid}")]
-    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroCasamento)]
+    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroEvento)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> Remover(Guid casamentoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento)
+    public async Task<IActionResult> Remover(Guid eventoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento)
     {
-        await _parcelaService.RemoverAsync(casamentoId, vinculoId, parcelaId, cancelamento);
+        await _parcelaService.RemoverAsync(eventoId, vinculoId, parcelaId, cancelamento);
         return NoContent();
     }
 
     [HttpPut("{parcelaId:guid}/pagamento")]
-    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroCasamento)]
+    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroEvento)]
     [ProducesResponseType(typeof(ParcelaDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -115,17 +115,17 @@ public class ParcelasFornecedorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<ParcelaDto>> RegistrarPagamento(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         RegistrarPagamentoRequest request,
         CancellationToken cancelamento)
     {
-        return Ok(await _parcelaService.RegistrarPagamentoAsync(casamentoId, vinculoId, parcelaId, request, cancelamento));
+        return Ok(await _parcelaService.RegistrarPagamentoAsync(eventoId, vinculoId, parcelaId, request, cancelamento));
     }
 
     [HttpDelete("{parcelaId:guid}/pagamento")]
-    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroCasamento)]
+    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroEvento)]
     [ProducesResponseType(typeof(ParcelaDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -133,16 +133,16 @@ public class ParcelasFornecedorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<ParcelaDto>> DesfazerPagamento(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         CancellationToken cancelamento)
     {
-        return Ok(await _parcelaService.DesfazerPagamentoAsync(casamentoId, vinculoId, parcelaId, cancelamento));
+        return Ok(await _parcelaService.DesfazerPagamentoAsync(eventoId, vinculoId, parcelaId, cancelamento));
     }
 
     [HttpPut("{parcelaId:guid}/comprovante")]
-    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroCasamento)]
+    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroEvento)]
     [Consumes("multipart/form-data")]
     [EnableRateLimiting(PoliticasLimiteRequisicao.Comprovante)]
     [LimitarTamanhoRequisicao(TamanhoMaximoRequisicaoComprovante, MensagensFinanceiro.ComprovanteGrandeDemais)]
@@ -161,7 +161,7 @@ public class ParcelasFornecedorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<ParcelaDto>> AnexarComprovante(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         IFormFile arquivo,
@@ -169,7 +169,7 @@ public class ParcelasFornecedorController : ControllerBase
     {
         await using var conteudo = arquivo.OpenReadStream();
         return Ok(await _parcelaService.AnexarComprovanteAsync(
-            casamentoId,
+            eventoId,
             vinculoId,
             parcelaId,
             arquivo.FileName,
@@ -184,18 +184,18 @@ public class ParcelasFornecedorController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> BaixarComprovante(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         CancellationToken cancelamento)
     {
-        var comprovante = await _parcelaService.ObterComprovanteAsync(casamentoId, vinculoId, parcelaId, cancelamento);
+        var comprovante = await _parcelaService.ObterComprovanteAsync(eventoId, vinculoId, parcelaId, cancelamento);
         Response.Headers.CacheControl = "no-store";
         return File(comprovante.Conteudo, comprovante.TipoConteudo, comprovante.NomeArquivo);
     }
 
     [HttpDelete("{parcelaId:guid}/comprovante")]
-    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroCasamento)]
+    [Authorize(Policy = PoliticasAutorizacao.GerenciarFinanceiroEvento)]
     [ProducesResponseType(typeof(ParcelaDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -203,11 +203,11 @@ public class ParcelasFornecedorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<ParcelaDto>> RemoverComprovante(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         CancellationToken cancelamento)
     {
-        return Ok(await _parcelaService.RemoverComprovanteAsync(casamentoId, vinculoId, parcelaId, cancelamento));
+        return Ok(await _parcelaService.RemoverComprovanteAsync(eventoId, vinculoId, parcelaId, cancelamento));
     }
 }

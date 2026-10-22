@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}/cronograma")]
+[Route("api/eventos/{eventoId:guid}/cronograma")]
 [Produces("application/json")]
 [Authorize(Policy = PoliticasAutorizacao.ConsultarCronograma)]
 public class CronogramaController : ControllerBase
@@ -23,9 +23,9 @@ public class CronogramaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CronogramaDto>> Listar(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ActionResult<CronogramaDto>> Listar(Guid eventoId, CancellationToken cancelamento)
     {
-        return Ok(await _cronogramaService.ListarAsync(casamentoId, cancelamento));
+        return Ok(await _cronogramaService.ListarAsync(eventoId, cancelamento));
     }
 
     [HttpGet("{itemId:guid}", Name = nameof(ObterItemCronograma))]
@@ -34,11 +34,11 @@ public class CronogramaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ItemCronogramaDto>> ObterItemCronograma(
-        Guid casamentoId,
+        Guid eventoId,
         Guid itemId,
         CancellationToken cancelamento)
     {
-        return Ok(await _cronogramaService.ObterAsync(casamentoId, itemId, cancelamento));
+        return Ok(await _cronogramaService.ObterAsync(eventoId, itemId, cancelamento));
     }
 
     [HttpPost]
@@ -50,12 +50,12 @@ public class CronogramaController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<ItemCronogramaDto>> Criar(
-        Guid casamentoId,
+        Guid eventoId,
         SalvarItemCronogramaRequest request,
         CancellationToken cancelamento)
     {
-        var item = await _cronogramaService.CriarAsync(casamentoId, request, cancelamento);
-        return CreatedAtRoute(nameof(ObterItemCronograma), new { casamentoId, itemId = item.Id }, item);
+        var item = await _cronogramaService.CriarAsync(eventoId, request, cancelamento);
+        return CreatedAtRoute(nameof(ObterItemCronograma), new { eventoId, itemId = item.Id }, item);
     }
 
     [HttpPut("{itemId:guid}")]
@@ -68,12 +68,12 @@ public class CronogramaController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<ItemCronogramaDto>> Atualizar(
-        Guid casamentoId,
+        Guid eventoId,
         Guid itemId,
         SalvarItemCronogramaRequest request,
         CancellationToken cancelamento)
     {
-        return Ok(await _cronogramaService.AtualizarAsync(casamentoId, itemId, request, cancelamento));
+        return Ok(await _cronogramaService.AtualizarAsync(eventoId, itemId, request, cancelamento));
     }
 
     [HttpDelete("{itemId:guid}")]
@@ -83,9 +83,9 @@ public class CronogramaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> Remover(Guid casamentoId, Guid itemId, CancellationToken cancelamento)
+    public async Task<IActionResult> Remover(Guid eventoId, Guid itemId, CancellationToken cancelamento)
     {
-        await _cronogramaService.RemoverAsync(casamentoId, itemId, cancelamento);
+        await _cronogramaService.RemoverAsync(eventoId, itemId, cancelamento);
         return NoContent();
     }
 }

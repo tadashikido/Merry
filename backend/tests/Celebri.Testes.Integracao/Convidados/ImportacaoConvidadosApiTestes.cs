@@ -10,7 +10,7 @@ using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
 using static Celebri.Testes.Integracao.Convidados.ClienteConvites;
-using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 
 namespace Celebri.Testes.Integracao.Convidados;
 
@@ -30,9 +30,9 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
     {
     }
 
-    private static string RotaImportacao(Guid casamentoId, bool previa = false)
+    private static string RotaImportacao(Guid eventoId, bool previa = false)
     {
-        return previa ? $"{Rota(casamentoId)}/importacao/pre-visualizacao" : $"{Rota(casamentoId)}/importacao";
+        return previa ? $"{Rota(eventoId)}/importacao/pre-visualizacao" : $"{Rota(eventoId)}/importacao";
     }
 
     private static byte[] Windows1252(string conteudo)
@@ -66,9 +66,9 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
             ]);
     }
 
-    private async Task<Guid> CriarCasamentoAsync()
+    private async Task<Guid> CriarEventoAsync()
     {
-        return (await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente)).Id;
+        return (await ClienteEventos.CriarAsync(OrganizacaoA.Cliente)).Id;
     }
 
     private static async Task<PreVisualizacaoImportacaoDto> LerPreviaAsync(HttpResponseMessage resposta)
@@ -84,18 +84,18 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
         Assert.Equal(mensagem, json.RootElement.GetProperty("detail").GetString());
     }
 
-    private async Task<int> ContarConvidadosAsync(Guid casamentoId)
+    private async Task<int> ContarConvidadosAsync(Guid eventoId)
     {
         await using var contexto = CriarContexto(OrganizacaoA);
-        return await contexto.Convidados.CountAsync(convidado => convidado.CasamentoId == casamentoId);
+        return await contexto.Convidados.CountAsync(convidado => convidado.EventoId == eventoId);
     }
 
     [Fact]
     public async Task PreVisualizar_ExcelWindows1252_DeveMostrarAcentosAgruparENaoGravar()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(Windows1252(PlanilhaExcel)));
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(Windows1252(PlanilhaExcel)));
 
         var previa = await LerPreviaAsync(resposta);
         Assert.Equal(2, previa.Resumo.ConvitesValidos);
@@ -106,21 +106,21 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
         Assert.Equal("Irene Araújo", previa.Convites[1].Nome);
         Assert.DoesNotContain("98765", await resposta.Content.ReadAsStringAsync(), StringComparison.Ordinal);
         Assert.DoesNotContain("organizacao", await resposta.Content.ReadAsStringAsync(), StringComparison.OrdinalIgnoreCase);
-        Assert.Equal(0, await ContarConvidadosAsync(casamentoId));
+        Assert.Equal(0, await ContarConvidadosAsync(eventoId));
     }
 
     [Fact]
-    public async Task Importar_SemProblemas_DeveGravarTudoNaOrganizacaoECasamentoCorretos()
+    public async Task Importar_SemProblemas_DeveGravarTudoNaOrganizacaoEEventoCorretos()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId), Confirmacao(Windows1252(PlanilhaExcel), false, 2, 3));
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId), Confirmacao(Windows1252(PlanilhaExcel), false, 2, 3));
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         var resultado = await resposta.Content.ReadFromJsonAsync<ResultadoImportacaoDto>(OpcoesJson);
         Assert.Equal(new ResultadoImportacaoDto(2, 3), resultado);
         await using var contexto = CriarContexto(OrganizacaoA);
-        var convites = await contexto.Convites.Include(convite => convite.Convidados).Where(convite => convite.CasamentoId == casamentoId).ToListAsync();
+        var convites = await contexto.Convites.Include(convite => convite.Convidados).Where(convite => convite.EventoId == eventoId).ToListAsync();
         Assert.Equal(2, convites.Count);
         Assert.All(convites, convite =>
         {
@@ -134,14 +134,14 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
         Assert.Equal("joao@exemplo.com", joao.Email);
         Assert.Equal(FaixaEtaria.Crianca, familia.ConvidadosOrdenados()[1].FaixaEtaria);
 
-        var lista = await ListarAsync(OrganizacaoA.Cliente, casamentoId);
+        var lista = await ListarAsync(OrganizacaoA.Cliente, eventoId);
         Assert.Equal(3, lista.Totais.Pessoas);
     }
 
     [Fact]
     public async Task Importar_QuinhentasLinhas_DeveConcluirEmPoucosSegundos()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
         var construtor = new StringBuilder("Convite;Grupo;Nome;Telefone;E-mail;Faixa etária\n");
         for (var indice = 1; indice <= 500; indice++)
         {
@@ -150,17 +150,17 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
 
         var arquivo = Encoding.UTF8.GetBytes(construtor.ToString());
         var cronometro = Stopwatch.StartNew();
-        var previa = await LerPreviaAsync(await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(arquivo)));
+        var previa = await LerPreviaAsync(await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(arquivo)));
         var tempoPrevia = cronometro.Elapsed;
         cronometro.Restart();
         var resposta = await OrganizacaoA.Cliente.PostAsync(
-            RotaImportacao(casamentoId),
+            RotaImportacao(eventoId),
             Confirmacao(arquivo, false, previa.Resumo.ConvitesValidos, previa.Resumo.PessoasValidas));
         var tempoImportacao = cronometro.Elapsed;
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         Assert.Equal(126, previa.Resumo.ConvitesValidos);
-        Assert.Equal(500, await ContarConvidadosAsync(casamentoId));
+        Assert.Equal(500, await ContarConvidadosAsync(eventoId));
         Assert.True(tempoPrevia < TimeSpan.FromSeconds(3), $"Pré-visualização levou {tempoPrevia.TotalMilliseconds} ms");
         Assert.True(tempoImportacao < TimeSpan.FromSeconds(3), $"Importação levou {tempoImportacao.TotalMilliseconds} ms");
     }
@@ -168,25 +168,25 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
     [Fact]
     public async Task Importar_ComProblemasSemSomenteValidos_DeveRetornar422ENaoGravarNada()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId), Confirmacao(Encoding.UTF8.GetBytes(PlanilhaComErro), false, 1, 1));
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId), Confirmacao(Encoding.UTF8.GetBytes(PlanilhaComErro), false, 1, 1));
 
         await AssertRegraAsync(resposta, MensagensImportacaoConvidados.ImportacaoComProblemas);
-        Assert.Equal(0, await ContarConvidadosAsync(casamentoId));
+        Assert.Equal(0, await ContarConvidadosAsync(eventoId));
     }
 
     [Fact]
     public async Task Importar_SomenteValidos_DeveGravarSoOsConvitesSemProblema()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
         var arquivo = Encoding.UTF8.GetBytes(PlanilhaComErro);
-        var previa = await LerPreviaAsync(await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(arquivo)));
+        var previa = await LerPreviaAsync(await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(arquivo)));
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId), Confirmacao(arquivo, true, previa.Resumo.ConvitesValidos, previa.Resumo.PessoasValidas));
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId), Confirmacao(arquivo, true, previa.Resumo.ConvitesValidos, previa.Resumo.PessoasValidas));
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
-        var lista = await ListarAsync(OrganizacaoA.Cliente, casamentoId);
+        var lista = await ListarAsync(OrganizacaoA.Cliente, eventoId);
         var convite = Assert.Single(lista.Convites);
         Assert.Equal("Carlos Dias", convite.Nome);
         var linha = Assert.Single(previa.LinhasComProblema);
@@ -197,22 +197,22 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
     [Fact]
     public async Task Importar_PlanilhaDiferenteDaPrevia_DeveRetornar422ENaoGravar()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId), Confirmacao(Windows1252(PlanilhaExcel), false, 5, 9));
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId), Confirmacao(Windows1252(PlanilhaExcel), false, 5, 9));
 
         await AssertRegraAsync(resposta, MensagensImportacaoConvidados.PlanilhaAlterada);
-        Assert.Equal(0, await ContarConvidadosAsync(casamentoId));
+        Assert.Equal(0, await ContarConvidadosAsync(eventoId));
     }
 
     [Fact]
     public async Task ReimportarMesmaPlanilha_DeveApontarPessoasJaCadastradas()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
         var arquivo = Windows1252(PlanilhaExcel);
-        Assert.Equal(HttpStatusCode.OK, (await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId), Confirmacao(arquivo, false, 2, 3))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId), Confirmacao(arquivo, false, 2, 3))).StatusCode);
 
-        var previa = await LerPreviaAsync(await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(arquivo)));
+        var previa = await LerPreviaAsync(await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(arquivo)));
 
         Assert.Equal(3, previa.Resumo.ConvidadosExistentes);
         Assert.Equal(2, previa.Resumo.LinhasDuplicadas);
@@ -220,32 +220,32 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
         Assert.All(
             previa.LinhasComProblema.Where(linha => linha.Valores.Telefone.Length > 0),
             linha => Assert.Equal(MensagensImportacaoConvidados.JaCadastrada, linha.Problemas.Single(problema => problema.Tipo == "Duplicado").Mensagem));
-        var novaTentativa = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId), Confirmacao(arquivo, true, 0, 0));
+        var novaTentativa = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId), Confirmacao(arquivo, true, 0, 0));
         await AssertRegraAsync(novaTentativa, MensagensImportacaoConvidados.NenhumConviteValido);
-        Assert.Equal(3, await ContarConvidadosAsync(casamentoId));
+        Assert.Equal(3, await ContarConvidadosAsync(eventoId));
     }
 
     [Fact]
-    public async Task CasamentoArquivado_DeveRetornar422NasDuasRotas()
+    public async Task EventoArquivado_DeveRetornar422NasDuasRotas()
     {
-        var casamentoId = await CriarCasamentoAsync();
-        await OrganizacaoA.Cliente.PostAsync($"{ClienteCasamentos.Rota}/{casamentoId}/arquivar", null);
+        var eventoId = await CriarEventoAsync();
+        await OrganizacaoA.Cliente.PostAsync($"{ClienteEventos.Rota}/{eventoId}/arquivar", null);
 
-        var previa = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(Windows1252(PlanilhaExcel)));
-        var importacao = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId), Confirmacao(Windows1252(PlanilhaExcel), false, 2, 3));
+        var previa = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(Windows1252(PlanilhaExcel)));
+        var importacao = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId), Confirmacao(Windows1252(PlanilhaExcel), false, 2, 3));
 
-        await AssertRegraAsync(previa, MensagensConvidados.CasamentoArquivado);
-        await AssertRegraAsync(importacao, MensagensConvidados.CasamentoArquivado);
-        Assert.Equal(0, await ContarConvidadosAsync(casamentoId));
+        await AssertRegraAsync(previa, MensagensConvidados.EventoArquivado);
+        await AssertRegraAsync(importacao, MensagensConvidados.EventoArquivado);
+        Assert.Equal(0, await ContarConvidadosAsync(eventoId));
     }
 
     [Fact]
     public async Task ArquivoBinarioComExtensaoCsv_DeveRetornar422()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
         byte[] png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0x0D, 0x49, 0x48, 0x44, 0x52];
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(png, "foto.csv", "text/csv"));
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(png, "foto.csv", "text/csv"));
 
         await AssertRegraAsync(resposta, MensagensImportacaoConvidados.ArquivoNaoTexto);
     }
@@ -253,9 +253,9 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
     [Fact]
     public async Task PlanilhaSemColunaNome_DeveRetornar422()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(Encoding.UTF8.GetBytes("Convidada;Telefone\n")));
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(Encoding.UTF8.GetBytes("Convidada;Telefone\n")));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
     }
@@ -263,10 +263,10 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
     [Fact]
     public async Task ArquivoLigeiramenteAcimaDe2MB_DeveRetornar422()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
         var arquivo = Encoding.UTF8.GetBytes("Nome\n" + new string('a', LimitesImportacao.TamanhoMaximoBytes));
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(arquivo));
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(arquivo));
 
         await AssertRegraAsync(resposta, MensagensImportacaoConvidados.ArquivoGrandeDemais);
     }
@@ -274,24 +274,24 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
     [Fact]
     public async Task ArquivoMuitoAcimaDoLimite_DeveRetornar413AntesDeProcessar()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
         var arquivo = new byte[3 * 1024 * 1024];
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(arquivo));
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(arquivo));
 
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, resposta.StatusCode);
         using var json = JsonDocument.Parse(await resposta.Content.ReadAsStringAsync());
         Assert.Equal(MensagensImportacaoConvidados.ArquivoGrandeDemais, json.RootElement.GetProperty("detail").GetString());
-        Assert.Equal(0, await ContarConvidadosAsync(casamentoId));
+        Assert.Equal(0, await ContarConvidadosAsync(eventoId));
     }
 
     [Fact]
     public async Task SemArquivo_DeveRetornar400()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
         using var formulario = new MultipartFormDataContent { { new StringContent("true"), "somenteValidos" } };
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), formulario);
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), formulario);
 
         Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
     }
@@ -299,9 +299,9 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
     [Fact]
     public async Task SemAutenticacao_DeveRetornar401()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
 
-        var resposta = await ClienteAnonimo.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(Windows1252(PlanilhaExcel)));
+        var resposta = await ClienteAnonimo.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(Windows1252(PlanilhaExcel)));
 
         Assert.Equal(HttpStatusCode.Unauthorized, resposta.StatusCode);
     }
@@ -309,17 +309,17 @@ public sealed class ImportacaoConvidadosApiTestes : IsolamentoOrganizacaoTestesB
     [Fact]
     public async Task OutraOrganizacao_DeveRetornar404IndistinguivelENaoGravar()
     {
-        var casamentoId = await CriarCasamentoAsync();
+        var eventoId = await CriarEventoAsync();
 
-        var previa = await OrganizacaoB.Cliente.PostAsync(RotaImportacao(casamentoId, previa: true), Formulario(Windows1252(PlanilhaExcel)));
-        var importacao = await OrganizacaoB.Cliente.PostAsync(RotaImportacao(casamentoId), Confirmacao(Windows1252(PlanilhaExcel), false, 2, 3));
+        var previa = await OrganizacaoB.Cliente.PostAsync(RotaImportacao(eventoId, previa: true), Formulario(Windows1252(PlanilhaExcel)));
+        var importacao = await OrganizacaoB.Cliente.PostAsync(RotaImportacao(eventoId), Confirmacao(Windows1252(PlanilhaExcel), false, 2, 3));
         var inexistente = await OrganizacaoB.Cliente.PostAsync(RotaImportacao(Guid.NewGuid(), previa: true), Formulario(Windows1252(PlanilhaExcel)));
 
         await AssertNaoEncontradoAsync(previa);
         await AssertNaoEncontradoAsync(importacao);
         await AssertNaoEncontradoAsync(inexistente);
         Assert.DoesNotContain("Conceição", await previa.Content.ReadAsStringAsync(), StringComparison.Ordinal);
-        Assert.Equal(0, await ContarConvidadosAsync(casamentoId));
+        Assert.Equal(0, await ContarConvidadosAsync(eventoId));
         await using var contextoB = CriarContexto(OrganizacaoB);
         Assert.False(await contextoB.Convidados.AnyAsync());
     }

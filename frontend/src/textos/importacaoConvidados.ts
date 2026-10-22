@@ -52,7 +52,7 @@ function pronome(quantidade: number, singular: string, varias: string): string {
 
 export const TEXTOS_IMPORTACAO = {
   titulo: 'Importar convidados',
-  subtitulo: 'Traga a lista do casal de uma planilha. Nada é gravado antes da sua confirmação.',
+  subtitulo: 'Traga a lista dos anfitriões de uma planilha. Nada é gravado antes da sua confirmação.',
   trilha: 'Importar',
   tituloDocumento: (nomes: string) => `Importar convidados de ${nomes}`,
   rotuloEtapas: 'Etapas da importação',
@@ -87,9 +87,9 @@ export const TEXTOS_IMPORTACAO = {
   rotuloCriancas: (quantidade: number) => pronome(quantidade, 'criança', 'crianças'),
   rotuloConvites: (quantidade: number) => pronome(quantidade, 'convite', 'convites'),
   rodapeResumo: (atuais: number, depois: number) =>
-    `Hoje o casamento tem ${contar(atuais, 'pessoa', 'pessoas')}; depois da importação, ${formatarNumero(depois)}.`,
+    `Hoje o evento tem ${contar(atuais, 'pessoa', 'pessoas')}; depois da importação, ${formatarNumero(depois)}.`,
   acimaDoLimite: (limite: number) =>
-    `A importação passaria do limite de ${formatarNumero(limite)} convidados por casamento. Divida a lista ou remova pessoas antes.`,
+    `A importação passaria do limite de ${formatarNumero(limite)} convidados por evento. Divida a lista ou remova pessoas antes.`,
   colunasIgnoradas: (colunas: string[]) => `Colunas não usadas: ${colunas.join(', ')}.`,
   secaoProblemas: 'Linhas para corrigir',
   secaoAvisos: 'Avisos',
@@ -120,8 +120,8 @@ export const TEXTOS_IMPORTACAO = {
   confirmarVoltar: 'Voltar e corrigir',
   cancelar: 'Cancelar',
   sucessoTitulo: 'Lista importada',
-  sucessoTexto: (convites: number, pessoas: number, casal: string) =>
-    `${contar(convites, 'convite', 'convites')} e ${contar(pessoas, 'pessoa', 'pessoas')} ${convites === 1 && pessoas === 1 ? 'foi adicionado' : 'foram adicionados'}${casal ? ` a ${casal}` : ''}.`,
+  sucessoTexto: (convites: number, pessoas: number, anfitriao: string) =>
+    `${contar(convites, 'convite', 'convites')} e ${contar(pessoas, 'pessoa', 'pessoas')} ${convites === 1 && pessoas === 1 ? 'foi adicionado' : 'foram adicionados'}${anfitriao ? ` a ${anfitriao}` : ''}.`,
   toastSucesso: (convites: number, pessoas: number) =>
     `${contar(convites, 'convite', 'convites')} e ${contar(pessoas, 'pessoa', 'pessoas')} importados.`,
   verConvidados: 'Ver convidados',
@@ -130,7 +130,7 @@ export const TEXTOS_IMPORTACAO = {
   voltarConvidados: 'Voltar para convidados',
   acaoImportar: 'Importar planilha',
   vazioImportar: 'Já tem a lista numa planilha? Importe de uma vez.',
-  arquivado: 'Este casamento está arquivado. Restaure para voltar a editar os convidados.',
+  arquivado: 'Este evento está arquivado. Restaure para voltar a editar os convidados.',
   semPermissao: 'Você não tem permissão para alterar convidados.',
   erroInesperado: 'Não foi possível ler a planilha agora. Tente de novo em instantes.',
   anuncioPrevia: (validos: number, linhas: number) =>

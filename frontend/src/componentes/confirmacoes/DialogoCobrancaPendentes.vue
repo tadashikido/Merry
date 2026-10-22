@@ -10,7 +10,7 @@ import { breakpoints, dimensoes } from '@/design/tokens'
 import { TEXTOS_COBRANCA } from '@/textos/confirmacoes'
 import { ROTULOS_STATUS_ENVIO } from '@/textos/convidados'
 import { TEXTOS_ENVIO_CONVITE, VARIANTE_STATUS_ENVIO } from '@/textos/rsvp'
-import type { CasamentoDto } from '@/tipos/casamentos'
+import type { EventoDto } from '@/tipos/eventos'
 import type { ConvitePendenteDto } from '@/tipos/confirmacoes'
 import { cobradoHoje, contarCobradosHoje, filtrarPendentes, textoUltimaCobranca } from '@/utilitarios/painelConfirmacoes'
 import { formatarDiaMes, montarMensagemLembrete } from '@/utilitarios/rsvp'
@@ -18,7 +18,7 @@ import { formatarDiaMes, montarMensagemLembrete } from '@/utilitarios/rsvp'
 const props = defineProps<{
   visivel: boolean
   fila: ConvitePendenteDto[]
-  casamento: CasamentoDto | null
+  evento: EventoDto | null
   conviteEmAndamento: string | null
   anuncio: string
 }>()
@@ -59,7 +59,7 @@ watch(
 )
 
 const filtrados = computed(() => filtrarPendentes(props.fila, busca.value))
-const prazo = computed(() => (props.casamento ? formatarDiaMes(props.casamento.dataLimiteRsvpEfetiva) : ''))
+const prazo = computed(() => (props.evento ? formatarDiaMes(props.evento.dataLimiteRsvpEfetiva) : ''))
 const resumo = computed(() => TEXTOS_COBRANCA.resumo(props.fila.length, contarCobradosHoje(props.fila, agora.value)))
 
 function alternarPrevia(conviteId: string) {
@@ -73,7 +73,7 @@ function alternarPrevia(conviteId: string) {
 }
 
 function previa(pendente: ConvitePendenteDto): string {
-  return props.casamento ? montarMensagemLembrete(props.casamento, pendente, TEXTOS_COBRANCA.previaLink) : ''
+  return props.evento ? montarMensagemLembrete(props.evento, pendente, TEXTOS_COBRANCA.previaLink) : ''
 }
 
 function ocupado(pendente: ConvitePendenteDto): boolean {

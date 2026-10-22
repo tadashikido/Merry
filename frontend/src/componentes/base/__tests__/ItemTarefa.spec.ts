@@ -18,13 +18,13 @@ function montarItem(props: Record<string, unknown> = {}) {
 
 describe('ItemTarefa', () => {
   it('[COMPONENTE] anel é um botão com rótulo acessível e estado pressionado', async () => {
-    const wrapper = montarItem({ metadados: ['Casal', 'venceu há 3 dias'], badge: { texto: 'Atrasada', variante: 'erro' } })
+    const wrapper = montarItem({ metadados: ['Anfitriões', 'venceu há 3 dias'], badge: { texto: 'Atrasada', variante: 'erro' } })
     const anel = wrapper.get('[data-teste="alternar-tarefa"]')
 
     expect(anel.element.tagName).toBe('BUTTON')
     expect(anel.attributes('aria-label')).toBe('Concluir: Assinar contrato')
     expect(anel.attributes('aria-pressed')).toBe('false')
-    expect(wrapper.get('[data-teste="metadados-tarefa"]').text()).toBe('Casal · venceu há 3 dias')
+    expect(wrapper.get('[data-teste="metadados-tarefa"]').text()).toBe('Anfitriões · venceu há 3 dias')
     expect(wrapper.get('[data-teste="badge-status"]').attributes('data-variante')).toBe('erro')
     expect(wrapper.text()).toContain('Atrasada')
 
@@ -84,14 +84,14 @@ describe('BlocoPendenciasTarefas', () => {
 
   it('[COMPONENTE] mostra totais, até 5 itens por grupo e link com a situação', async () => {
     const atrasadas = Array.from({ length: 7 }, (_, indice) => pendenteExemplo({ id: `a${indice}`, titulo: `Atrasada ${indice}` }))
-    const wrapper = await montarBloco({ pendencias: pendenciasExemplo({ totalAtrasadas: 7, casamentosComAtraso: 4, atrasadas }) })
+    const wrapper = await montarBloco({ pendencias: pendenciasExemplo({ totalAtrasadas: 7, eventosComAtraso: 4, atrasadas }) })
 
     expect(wrapper.get('[data-teste="total-atrasadas"]').text()).toBe('7')
-    expect(wrapper.text()).toContain('atrasadas em 4 casamentos')
+    expect(wrapper.text()).toContain('atrasadas em 4 eventos')
     expect(wrapper.get('[data-teste="grupo-pendencias-atrasadas"]').findAll('[data-teste="item-pendencia"]')).toHaveLength(5)
     expect(wrapper.text()).toContain('Mais 2')
     const link = wrapper.get('[data-teste="grupo-pendencias-atrasadas"] a')
-    expect(link.attributes('href')).toBe('/casamentos/11111111-1111-4111-8111-111111111111/tarefas?situacao=atrasadas')
+    expect(link.attributes('href')).toBe('/eventos/11111111-1111-4111-8111-111111111111/tarefas?situacao=atrasadas')
     expect(wrapper.get('[data-teste="grupo-pendencias-semana"]').text()).toContain('hoje')
     expect(wrapper.get('[data-teste="grupo-pendencias-atrasadas"]').text()).toContain('Luísa & Pedro')
   })

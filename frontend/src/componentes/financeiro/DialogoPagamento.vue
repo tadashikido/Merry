@@ -17,7 +17,7 @@ import { formatarDataCalendarioCurta, formatarMoeda } from '@/utilitarios/format
 
 const props = defineProps<{
   visivel: boolean
-  casamentoId: string
+  eventoId: string
   parcela: ParcelaDto | null
   nomeEmpresa: string
   hoje: string
@@ -111,7 +111,7 @@ async function confirmar() {
   }
   executando.value = true
   const parcela = props.parcela
-  const resultado = await store.registrarPagamento(props.casamentoId, parcela.fornecedorCasamentoId, parcela.id, {
+  const resultado = await store.registrarPagamento(props.eventoId, parcela.fornecedorEventoId, parcela.id, {
     pagaEm: pagaEm.value,
   })
   if (!resultado.ok) {
@@ -126,7 +126,7 @@ async function confirmar() {
   }
   let comprovanteFalhou = false
   if (arquivo.value) {
-    const envio = await store.enviarComprovante(props.casamentoId, parcela.fornecedorCasamentoId, parcela.id, arquivo.value)
+    const envio = await store.enviarComprovante(props.eventoId, parcela.fornecedorEventoId, parcela.id, arquivo.value)
     comprovanteFalhou = !envio.ok
   }
   executando.value = false

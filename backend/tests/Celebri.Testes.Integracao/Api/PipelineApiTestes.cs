@@ -158,7 +158,7 @@ public class PipelineApiTestes : IClassFixture<FabricaApiSemBanco>
     [Theory]
     [InlineData("https://site-malicioso.exemplo")]
     [InlineData("null")]
-    [InlineData("https://app.casamento.teste.exemplo")]
+    [InlineData("https://app.evento.teste.exemplo")]
     public async Task Cors_OrigemNaoPermitida_NaoDeveReceberCabecalhoDeOrigem(string origem)
     {
         using var cliente = _fabrica.CreateClient();

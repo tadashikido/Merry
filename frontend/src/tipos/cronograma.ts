@@ -1,6 +1,6 @@
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 
-export const DIAS_CRONOGRAMA = ['Vespera', 'DiaDoCasamento', 'DiaSeguinte'] as const
+export const DIAS_CRONOGRAMA = ['Vespera', 'DiaDoEvento', 'DiaSeguinte'] as const
 
 export type DiaCronograma = (typeof DIAS_CRONOGRAMA)[number]
 
@@ -9,7 +9,7 @@ export type StatusItemCronograma = 'Previsto' | 'Concluido'
 export type MotivoConflitoCronograma = 'Responsavel' | 'Fornecedor'
 
 export interface FornecedorItemCronogramaDto {
-  fornecedorCasamentoId: string
+  fornecedorEventoId: string
   nomeEmpresa: string
   categoria: string
 }
@@ -45,8 +45,8 @@ export interface ItemCronogramaDto {
 }
 
 export interface CronogramaDto {
-  casamentoId: string
-  dataCasamento: DataCalendario
+  eventoId: string
+  dataEvento: DataCalendario
   horarioCerimonia: string | null
   localCerimonia: string | null
   localRecepcao: string | null
@@ -65,7 +65,7 @@ export interface SalvarItemCronogramaRequest {
   atividade: string
   local: string | null
   responsavel: string | null
-  fornecedorCasamentoId: string | null
+  fornecedorEventoId: string | null
   instrucoes: string | null
   notasInternas: string | null
 }

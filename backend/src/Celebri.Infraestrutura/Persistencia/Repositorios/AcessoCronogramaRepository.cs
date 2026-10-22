@@ -6,9 +6,9 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class AcessoCronogramaRepository : IAcessoCronogramaRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public AcessoCronogramaRepository(CasamentoDbContext contexto)
+    public AcessoCronogramaRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }
@@ -18,18 +18,18 @@ public class AcessoCronogramaRepository : IAcessoCronogramaRepository
         return _contexto.AcessosCronograma.AsNoTracking().FirstOrDefaultAsync(acesso => acesso.TokenHash == tokenHash, cancelamento);
     }
 
-    public async Task<IReadOnlyList<AcessoCronograma>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<IReadOnlyList<AcessoCronograma>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
         return await _contexto.AcessosCronograma
             .AsNoTracking()
-            .Where(acesso => acesso.CasamentoId == casamentoId)
+            .Where(acesso => acesso.EventoId == eventoId)
             .ToListAsync(cancelamento);
     }
 
-    public Task<AcessoCronograma?> ObterAsync(Guid casamentoId, Guid acessoId, CancellationToken cancelamento)
+    public Task<AcessoCronograma?> ObterAsync(Guid eventoId, Guid acessoId, CancellationToken cancelamento)
     {
         return _contexto.AcessosCronograma
-            .FirstOrDefaultAsync(acesso => acesso.CasamentoId == casamentoId && acesso.Id == acessoId, cancelamento);
+            .FirstOrDefaultAsync(acesso => acesso.EventoId == eventoId && acesso.Id == acessoId, cancelamento);
     }
 
     public void Adicionar(AcessoCronograma acesso)

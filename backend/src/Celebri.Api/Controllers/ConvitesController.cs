@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}/convites")]
+[Route("api/eventos/{eventoId:guid}/convites")]
 [Produces("application/json")]
 [Authorize(Policy = PoliticasAutorizacao.ConsultarConvidados)]
 public class ConvitesController : ControllerBase
@@ -23,9 +23,9 @@ public class ConvitesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ListaConvitesDto>> Listar(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ActionResult<ListaConvitesDto>> Listar(Guid eventoId, CancellationToken cancelamento)
     {
-        return Ok(await _conviteService.ListarAsync(casamentoId, cancelamento));
+        return Ok(await _conviteService.ListarAsync(eventoId, cancelamento));
     }
 
     [HttpGet("totais")]
@@ -33,9 +33,9 @@ public class ConvitesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<TotaisConvidadosDto>> ObterTotais(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ActionResult<TotaisConvidadosDto>> ObterTotais(Guid eventoId, CancellationToken cancelamento)
     {
-        return Ok(await _conviteService.ObterTotaisAsync(casamentoId, cancelamento));
+        return Ok(await _conviteService.ObterTotaisAsync(eventoId, cancelamento));
     }
 
     [HttpGet("{conviteId:guid}", Name = nameof(ObterConvite))]
@@ -43,9 +43,9 @@ public class ConvitesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ConviteDto>> ObterConvite(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<ActionResult<ConviteDto>> ObterConvite(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        return Ok(await _conviteService.ObterAsync(casamentoId, conviteId, cancelamento));
+        return Ok(await _conviteService.ObterAsync(eventoId, conviteId, cancelamento));
     }
 
     [HttpPost]
@@ -56,10 +56,10 @@ public class ConvitesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<ConviteDto>> Criar(Guid casamentoId, SalvarConviteRequest request, CancellationToken cancelamento)
+    public async Task<ActionResult<ConviteDto>> Criar(Guid eventoId, SalvarConviteRequest request, CancellationToken cancelamento)
     {
-        var convite = await _conviteService.CriarAsync(casamentoId, request, cancelamento);
-        return CreatedAtRoute(nameof(ObterConvite), new { casamentoId, conviteId = convite.Id }, convite);
+        var convite = await _conviteService.CriarAsync(eventoId, request, cancelamento);
+        return CreatedAtRoute(nameof(ObterConvite), new { eventoId, conviteId = convite.Id }, convite);
     }
 
     [HttpPut("{conviteId:guid}")]
@@ -71,12 +71,12 @@ public class ConvitesController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<ConviteDto>> Atualizar(
-        Guid casamentoId,
+        Guid eventoId,
         Guid conviteId,
         SalvarConviteRequest request,
         CancellationToken cancelamento)
     {
-        return Ok(await _conviteService.AtualizarAsync(casamentoId, conviteId, request, cancelamento));
+        return Ok(await _conviteService.AtualizarAsync(eventoId, conviteId, request, cancelamento));
     }
 
     [HttpDelete("{conviteId:guid}")]
@@ -86,9 +86,9 @@ public class ConvitesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> Remover(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<IActionResult> Remover(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        await _conviteService.RemoverAsync(casamentoId, conviteId, cancelamento);
+        await _conviteService.RemoverAsync(eventoId, conviteId, cancelamento);
         return NoContent();
     }
 }

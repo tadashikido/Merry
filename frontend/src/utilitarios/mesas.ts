@@ -38,7 +38,7 @@ export interface OpcaoSentar {
 
 export function rotuloMesa(mesa: Pick<MesaResumoDto, 'numero' | 'nome' | 'especial'>): string {
   if (mesa.especial && !mesa.nome) {
-    return TEXTOS_MESAS.rotuloMesaNoivos
+    return TEXTOS_MESAS.rotuloMesaAnfitrioes
   }
   return TEXTOS_MESAS.rotuloMesa(mesa.numero, mesa.nome)
 }

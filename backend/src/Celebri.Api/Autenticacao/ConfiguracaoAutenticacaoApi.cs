@@ -81,7 +81,7 @@ public static class ConfiguracaoAutenticacaoApi
         };
         opcoes.Events = new JwtBearerEvents
         {
-            OnTokenValidated = ValidadorSessaoCasal.ValidarAsync,
+            OnTokenValidated = ValidadorSessaoAnfitriao.ValidarAsync,
         };
     }
 

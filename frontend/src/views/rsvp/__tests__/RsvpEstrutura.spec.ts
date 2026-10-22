@@ -11,7 +11,7 @@ import SeloConfirmacao from '@/componentes/base/SeloConfirmacao.vue'
 import LayoutPublico from '@/layouts/LayoutPublico.vue'
 import { TEXTOS_LISTA_ACOMPANHANTES, TEXTOS_RSVP } from '@/textos/rsvp'
 import type { RsvpPublicoDto } from '@/tipos/rsvp'
-import { RaizRotas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { RaizRotas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
 const ROTA_CONSULTA = '/api/rsvp/consulta'
@@ -19,7 +19,7 @@ const global = { plugins: [[PrimeVue, { unstyled: true }] as [typeof PrimeVue, {
 
 function dados(extra: Partial<RsvpPublicoDto> = {}): RsvpPublicoDto {
   return {
-    casamento: {
+    evento: {
       nomePrimeiraPessoa: 'Ana Beatriz',
       nomeSegundaPessoa: 'Bruno',
       data: '2027-05-22',

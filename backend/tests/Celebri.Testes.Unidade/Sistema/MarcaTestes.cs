@@ -38,9 +38,9 @@ public class MarcaTestes
     }
 
     [Fact]
-    public void ConviteAcessoCasal_NaoDeveConterMarcaLegadaEmNenhumCampo()
+    public void ConviteAcessoAnfitriao_NaoDeveConterMarcaLegadaEmNenhumCampo()
     {
-        var mensagem = ModelosEmail.ConviteAcessoCasal(
+        var mensagem = ModelosEmail.ConviteAcessoAnfitriao(
             "Marina",
             "marina@exemplo.com",
             "https://app/aceitar-convite#token=abc",
@@ -49,7 +49,7 @@ public class MarcaTestes
             7);
 
         AssertSemMarcaLegada(mensagem);
-        Assert.Equal("Convite para acompanhar o casamento de Marina & Pedro", mensagem.Assunto);
+        Assert.Equal("Convite para acompanhar o evento de Marina & Pedro", mensagem.Assunto);
     }
 
     private static void AssertSemMarcaLegada(MensagemEmail mensagem)

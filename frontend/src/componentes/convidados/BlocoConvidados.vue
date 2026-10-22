@@ -12,17 +12,17 @@ import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
 import { ROTULOS_ACOES } from '@/textos/rotulos'
 import { complementoResumoConvidados, itensResumoConvidados } from '@/utilitarios/resumoConvidados'
 
-const props = defineProps<{ casamentoId: string; arquivado: boolean; convidadosEstimados: number | null }>()
+const props = defineProps<{ eventoId: string; arquivado: boolean; convidadosEstimados: number | null }>()
 
 const store = useConvidadosStore()
 const roteador = useRouter()
 
-const totais = computed(() => (store.casamentoIdTotais === props.casamentoId ? store.totais : null))
-const falha = computed(() => (store.casamentoIdTotais === props.casamentoId ? store.falhaTotais : null))
+const totais = computed(() => (store.eventoIdTotais === props.eventoId ? store.totais : null))
+const falha = computed(() => (store.eventoIdTotais === props.eventoId ? store.falhaTotais : null))
 const oculto = computed(() => falha.value?.tipo === 'semPermissao')
 
 watch(
-  () => props.casamentoId,
+  () => props.eventoId,
   (id) => {
     void store.carregarTotais(id)
   },
@@ -30,15 +30,15 @@ watch(
 )
 
 function gerenciar() {
-  void roteador.push({ name: 'casamento-convidados', params: { id: props.casamentoId } })
+  void roteador.push({ name: 'evento-convidados', params: { id: props.eventoId } })
 }
 
 function abrirConfirmacoes() {
-  void roteador.push({ name: 'painel-confirmacoes', params: { id: props.casamentoId } })
+  void roteador.push({ name: 'painel-confirmacoes', params: { id: props.eventoId } })
 }
 
 function adicionar() {
-  void roteador.push({ name: 'convite-novo', params: { id: props.casamentoId } })
+  void roteador.push({ name: 'convite-novo', params: { id: props.eventoId } })
 }
 </script>
 
@@ -96,7 +96,7 @@ function adicionar() {
         :label="ROTULOS_ACOES.tentarNovamente"
         severity="secondary"
         text
-        @click="store.carregarTotais(casamentoId)"
+        @click="store.carregarTotais(eventoId)"
       />
     </div>
 

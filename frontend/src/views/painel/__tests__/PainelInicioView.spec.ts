@@ -6,18 +6,18 @@ import Button from 'primevue/button'
 
 import PainelInicioView from '@/views/painel/PainelInicioView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
+import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import { TEXTOS_PAINEL } from '@/textos/autenticacao'
 import { PASSOS_ONBOARDING, PASSOS_PRIMEIRO_ACESSO } from '@/textos/proximosPassos'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
-import { ID_CASAMENTO, chamadas, quando, resumoCasamento, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, chamadas, quando, resumoEvento, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 import { alertasExemplo } from '@/__tests__/auxiliaresFinanceiro'
 import { TEXTOS_ALERTAS_PAGAMENTOS } from '@/textos/financeiro'
 import { pendenciasExemplo } from '@/__tests__/auxiliaresTarefas'
 import { ROTA_PENDENCIAS_TAREFAS } from '@/stores/tarefas'
 
-const ROTA_ATIVOS = '/api/casamentos?situacao=Ativos'
+const ROTA_ATIVOS = '/api/eventos?situacao=Ativos'
 
 const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
 const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
@@ -37,7 +37,7 @@ describe('PainelInicioView', () => {
     registrarProvedorAutenticacao(null)
   })
 
-  it('[COMPONENTE] saúda pelo primeiro nome, mostra a assessoria e o estado de primeiro acesso sem casamentos', async () => {
+  it('[COMPONENTE] saúda pelo primeiro nome, mostra a assessoria e o estado de primeiro acesso sem eventos', async () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([])))
     const montagem = await prepararAplicacao('/')
 
@@ -48,42 +48,42 @@ describe('PainelInicioView', () => {
     const primeiroAcesso = wrapper.get('[data-teste="estado-primeiro-acesso"]')
     expect(primeiroAcesso.text()).toContain(TEXTOS_PAINEL.primeiroAcessoTitulo)
     expect(primeiroAcesso.findAll('[data-teste="passo-primeiro-acesso"]').map((passo) => passo.text())).toEqual(PASSOS_PRIMEIRO_ACESSO.map((rotulo, indice) => `${indice + 1}${rotulo}`))
-    expect(PASSOS_PRIMEIRO_ACESSO).toEqual(['Dados do casamento', ...PASSOS_ONBOARDING.map((passo) => passo.rotulo)])
-    expect(PASSOS_PRIMEIRO_ACESSO).toEqual(['Dados do casamento', 'Convidar o casal', 'Aplicar o checklist', 'Cadastrar convidados', 'Enviar convites'])
-    expect(primeiroAcesso.get('[aria-current="step"]').text()).toContain('Dados do casamento')
-    expect(wrapper.find('[data-teste="novo-casamento"]').exists()).toBe(false)
+    expect(PASSOS_PRIMEIRO_ACESSO).toEqual(['Dados do evento', ...PASSOS_ONBOARDING.map((passo) => passo.rotulo)])
+    expect(PASSOS_PRIMEIRO_ACESSO).toEqual(['Dados do evento', 'Convidar os anfitriões', 'Aplicar o checklist', 'Cadastrar convidados', 'Enviar convites'])
+    expect(primeiroAcesso.get('[aria-current="step"]').text()).toContain('Dados do evento')
+    expect(wrapper.find('[data-teste="novo-evento"]').exists()).toBe(false)
     expect(wrapper.find('[data-teste="estado-vazio"]').exists()).toBe(false)
     expect(wrapper.find('[data-teste="ver-todos"]').exists()).toBe(false)
     expect(wrapper.get('[data-teste="resumo-usuario"]').text()).toContain('Renata Albuquerque')
   })
 
-  it('[COMPONENTE] mostra até 6 próximos casamentos e ignora os já realizados', async () => {
+  it('[COMPONENTE] mostra até 6 próximos eventos e ignora os já realizados', async () => {
     const lista = [
       ...Array.from({ length: 7 }, (_, indice) =>
-        resumoCasamento({ id: `${indice}`.padStart(8, '0') + ID_CASAMENTO.slice(8), nomePrimeiraPessoa: `Pessoa ${indice}`, diasRestantes: indice }),
+        resumoEvento({ id: `${indice}`.padStart(8, '0') + ID_EVENTO.slice(8), nomePrimeiraPessoa: `Pessoa ${indice}`, diasRestantes: indice }),
       ),
-      resumoCasamento({ id: '99999999' + ID_CASAMENTO.slice(8), nomePrimeiraPessoa: 'Realizado', diasRestantes: -2, fase: 'Realizado' }),
+      resumoEvento({ id: '99999999' + ID_EVENTO.slice(8), nomePrimeiraPessoa: 'Realizado', diasRestantes: -2, fase: 'Realizado' }),
     ]
     rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson(lista)))
     const montagem = await prepararAplicacao('/')
 
     wrapper = await montarView(PainelInicioView, montagem)
 
-    const cartoes = wrapper.findAll('[data-teste="cartao-casamento"]')
+    const cartoes = wrapper.findAll('[data-teste="cartao-evento"]')
     expect(cartoes).toHaveLength(6)
     expect(cartoes[0]?.text()).toContain('Pessoa 0')
     expect(cartoes[0]?.text()).toContain('É hoje')
     expect(wrapper.text()).not.toContain('Realizado')
-    expect(wrapper.get('[data-teste="ver-todos"]').attributes('href')).toBe('/casamentos')
+    expect(wrapper.get('[data-teste="ver-todos"]').attributes('href')).toBe('/eventos')
   })
 
-  it('[COMPONENTE] só com casamentos realizados mostra o estado vazio e o link para todos', async () => {
-    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento({ diasRestantes: -10, fase: 'Realizado' })])))
+  it('[COMPONENTE] só com eventos realizados mostra o estado vazio e o link para todos', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoEvento({ diasRestantes: -10, fase: 'Realizado' })])))
     const montagem = await prepararAplicacao('/')
 
     wrapper = await montarView(PainelInicioView, montagem)
 
-    expect(wrapper.text()).toContain(TEXTOS_CASAMENTOS.painelVazioTitulo)
+    expect(wrapper.text()).toContain(TEXTOS_EVENTOS.painelVazioTitulo)
     expect(wrapper.find('[data-teste="ver-todos"]').exists()).toBe(true)
   })
 
@@ -92,7 +92,7 @@ describe('PainelInicioView', () => {
     const montagem = await prepararAplicacao('/')
     wrapper = await montarView(PainelInicioView, montagem)
 
-    expect(wrapper.get('[data-teste="estado-erro"]').text()).toContain(TEXTOS_CASAMENTOS.erroCarregarTitulo)
+    expect(wrapper.get('[data-teste="estado-erro"]').text()).toContain(TEXTOS_EVENTOS.erroCarregarTitulo)
     await wrapper.get('[data-teste="tentar-novamente"]').trigger('click')
     await flushPromises()
 
@@ -104,29 +104,29 @@ describe('PainelInicioView', () => {
     const montagem = await prepararAplicacao('/')
     wrapper = await montarView(PainelInicioView, montagem)
 
-    expect(wrapper.text()).toContain(TEXTOS_CASAMENTOS.semAcesso)
+    expect(wrapper.text()).toContain(TEXTOS_EVENTOS.semAcesso)
     expect(wrapper.find('[data-teste="tentar-novamente"]').exists()).toBe(false)
   })
 
-  it('[INTEGRAÇÃO] a ação do primeiro acesso leva ao formulário de novo casamento', async () => {
+  it('[INTEGRAÇÃO] a ação do primeiro acesso leva ao formulário de novo evento', async () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([])))
     const montagem = await prepararAplicacao('/')
     wrapper = await montarView(PainelInicioView, montagem)
 
     await wrapper.get('[data-teste="primeiro-acesso-continuar"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-novo'), { timeout: 10000 })
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento-novo'), { timeout: 10000 })
   })
 
-  it('[INTEGRAÇÃO] com casamentos, "Novo casamento" no cabeçalho leva ao formulário', async () => {
-    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento()])))
+  it('[INTEGRAÇÃO] com eventos, "Novo evento" no cabeçalho leva ao formulário', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoEvento()])))
     const montagem = await prepararAplicacao('/')
     wrapper = await montarView(PainelInicioView, montagem)
 
     expect(wrapper.find('[data-teste="estado-primeiro-acesso"]').exists()).toBe(false)
-    await wrapper.get('[data-teste="novo-casamento"]').trigger('click')
+    await wrapper.get('[data-teste="novo-evento"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-novo'), { timeout: 10000 })
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento-novo'), { timeout: 10000 })
   })
 
   it('[INTEGRAÇÃO] sair revoga a sessão na API e leva para entrar', async () => {
@@ -145,22 +145,22 @@ describe('PainelInicioView', () => {
     await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('entrar'), { timeout: 10000 })
   })
 
-  it('[COMPONENTE] o rail tem Dashboard e Casamentos com rótulo acessível e Dashboard ativo', async () => {
+  it('[COMPONENTE] o rail tem Dashboard e Eventos com rótulo acessível e Dashboard ativo', async () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([])))
     const montagem = await prepararAplicacao('/')
     wrapper = await montarView(PainelInicioView, montagem)
 
     const itens = wrapper.findAll('[data-teste="item-menu"]')
-    expect(itens.map((item) => item.text())).toEqual(['Dashboard', TEXTOS_CASAMENTOS.menu, 'Fornecedores', 'Modelos'])
+    expect(itens.map((item) => item.text())).toEqual(['Dashboard', TEXTOS_EVENTOS.menu, 'Fornecedores', 'Modelos'])
     expect(itens[0]?.attributes('aria-current')).toBe('page')
-    expect(itens[1]?.attributes('href')).toBe('/casamentos')
+    expect(itens[1]?.attributes('href')).toBe('/eventos')
     expect(itens[1]?.attributes('aria-current')).toBeUndefined()
-    expect(wrapper.find('[data-teste="workspace-casamento"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="workspace-evento"]').exists()).toBe(false)
   })
-  it('[INTEGRAÇÃO] com casamentos mostra o bloco consolidado de pagamentos ao lado das tarefas', async () => {
+  it('[INTEGRAÇÃO] com eventos mostra o bloco consolidado de pagamentos ao lado das tarefas', async () => {
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento()])),
+      quando('GET', ROTA_ATIVOS, () => respostaJson([resumoEvento()])),
       quando('GET', '/api/financeiro/alertas', () => respostaJson(alertasExemplo())),
     )
     const montagem = await prepararAplicacao('/')
@@ -170,14 +170,14 @@ describe('PainelInicioView', () => {
 
     const bloco = wrapper.get('[data-teste="bloco-alertas-pagamentos"]')
     expect(bloco.text()).toContain(TEXTOS_ALERTAS_PAGAMENTOS.titulo)
-    expect(bloco.text()).toContain('2 vencidas em 2 casamentos')
+    expect(bloco.text()).toContain('2 vencidas em 2 eventos')
     expect(bloco.findAll('[data-teste="linha-parcela"]')).toHaveLength(3)
     expect(chamadas(fetchSimulado, 'GET', '/api/financeiro/alertas')).toHaveLength(1)
     expect(wrapper.find('[data-teste="bloco-pendencias-tarefas"]').exists()).toBe(true)
   })
 
   it('[COMPONENTE] falha nos pagamentos não derruba o dashboard e permite tentar de novo', async () => {
-    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento()])))
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoEvento()])))
     const montagem = await prepararAplicacao('/')
 
     wrapper = await montarView(PainelInicioView, montagem)
@@ -185,16 +185,16 @@ describe('PainelInicioView', () => {
 
     const bloco = wrapper.get('[data-teste="bloco-alertas-pagamentos"]')
     expect(bloco.text()).toContain(TEXTOS_ALERTAS_PAGAMENTOS.erro)
-    expect(wrapper.findAll('[data-teste="cartao-casamento"]')).toHaveLength(1)
+    expect(wrapper.findAll('[data-teste="cartao-evento"]')).toHaveLength(1)
     await bloco.get('[data-teste="tentar-alertas"]').trigger('click')
     await flushPromises()
     expect(chamadas(fetchSimulado, 'GET', '/api/financeiro/alertas')).toHaveLength(2)
   })
 
-  it('[COMPONENTE] organiza a página em seções do ritmo da fundação, com pendências lado a lado e a grade larga de casamentos', async () => {
+  it('[COMPONENTE] organiza a página em seções do ritmo da fundação, com pendências lado a lado e a grade larga de eventos', async () => {
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento()])),
+      quando('GET', ROTA_ATIVOS, () => respostaJson([resumoEvento()])),
       quando('GET', ROTA_PENDENCIAS_TAREFAS, () => respostaJson(pendenciasExemplo())),
       quando('GET', '/api/financeiro/alertas', () => respostaJson(alertasExemplo())),
     )
@@ -210,38 +210,38 @@ describe('PainelInicioView', () => {
     const proximos = secoes.get('section[aria-labelledby="titulo-proximos"]')
     expect(proximos.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--cartao']))
     const cabecalho = proximos.get('.cabecalho-secao')
-    expect(cabecalho.get('h2#titulo-proximos').text()).toBe(TEXTOS_CASAMENTOS.proximosTitulo)
-    expect(cabecalho.get('.texto-legenda').text()).toBe(TEXTOS_CASAMENTOS.proximosLegenda)
-    expect(proximos.get('[data-teste="proximos-casamentos"]').classes()).toEqual(expect.arrayContaining(['grade', 'grade--larga']))
+    expect(cabecalho.get('h2#titulo-proximos').text()).toBe(TEXTOS_EVENTOS.proximosTitulo)
+    expect(cabecalho.get('.texto-legenda').text()).toBe(TEXTOS_EVENTOS.proximosLegenda)
+    expect(proximos.get('[data-teste="proximos-eventos"]').classes()).toEqual(expect.arrayContaining(['grade', 'grade--larga']))
   })
 
-  it('[COMPONENTE] "Ver todos os casamentos" é um link real com cara de botão secundário no cabeçalho da seção', async () => {
-    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento()])))
+  it('[COMPONENTE] "Ver todos os eventos" é um link real com cara de botão secundário no cabeçalho da seção', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoEvento()])))
     const montagem = await prepararAplicacao('/')
 
     wrapper = await montarView(PainelInicioView, montagem)
 
     const verTodos = wrapper.get('.cabecalho-secao [data-teste="ver-todos"]')
     expect(verTodos.element.tagName).toBe('A')
-    expect(verTodos.attributes('href')).toBe('/casamentos')
+    expect(verTodos.attributes('href')).toBe('/eventos')
     const botao = wrapper.findAllComponents(Button).find((componente) => componente.attributes('data-teste') === 'ver-todos')
     expect(botao?.props('severity')).toBe('secondary')
     expect(botao?.props('outlined')).toBe(true)
-    expect(verTodos.text()).toBe(TEXTOS_CASAMENTOS.verTodos)
+    expect(verTodos.text()).toBe(TEXTOS_EVENTOS.verTodos)
   })
 
-  it('[INTEGRAÇÃO] acionar "Ver todos os casamentos" leva à lista de casamentos', async () => {
-    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento()])))
+  it('[INTEGRAÇÃO] acionar "Ver todos os eventos" leva à lista de eventos', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoEvento()])))
     const montagem = await prepararAplicacao('/')
     wrapper = await montarView(PainelInicioView, montagem)
 
     await wrapper.get('[data-teste="ver-todos"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamentos'), { timeout: 10000 })
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('eventos'), { timeout: 10000 })
   })
 
-  it('[COMPONENTE] sem próximos casamentos a legenda da seção não aparece', async () => {
-    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoCasamento({ diasRestantes: -10, fase: 'Realizado' })])))
+  it('[COMPONENTE] sem próximos eventos a legenda da seção não aparece', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoEvento({ diasRestantes: -10, fase: 'Realizado' })])))
     const montagem = await prepararAplicacao('/')
 
     wrapper = await montarView(PainelInicioView, montagem)
@@ -262,8 +262,8 @@ describe('PainelInicioView', () => {
     expect(estilo).toContain('var(--p-fonte-peso-leve)')
   })
 
-  it('[UNITÁRIO] cartão de casamento e blocos do painel seguem a fundação: sem sombra e com padding do ritmo de cartão', () => {
-    const cartao = estiloDe(lerFonte('componentes/casamentos/CartaoCasamento.vue'))
+  it('[UNITÁRIO] cartão de evento e blocos do painel seguem a fundação: sem sombra e com padding do ritmo de cartão', () => {
+    const cartao = estiloDe(lerFonte('componentes/eventos/CartaoEvento.vue'))
     const tarefas = estiloDe(lerFonte('componentes/tarefas/BlocoPendenciasTarefas.vue'))
     const pagamentos = estiloDe(lerFonte('componentes/base/BlocoAlertasPagamentos.vue'))
 

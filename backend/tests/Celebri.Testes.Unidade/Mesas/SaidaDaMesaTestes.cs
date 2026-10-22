@@ -126,7 +126,7 @@ public class SaidaDaMesaTestes
     {
         var mesa = NovaMesa();
         var dados = new DadosConvite("Família Souza", null, 1, [new DadosConvidado(null, "Carla Souza", null, null, FaixaEtaria.Adulto, RespostaRsvp.Confirmado)]);
-        var convite = Convite.Criar(CasamentoId, dados, Agora);
+        var convite = Convite.Criar(EventoId, dados, Agora);
         var carla = convite.Convidados[0];
         convite.RegistrarRespostaRsvp([new RespostaPessoaRsvp(carla.Id, RespostaRsvp.Confirmado)], [new DadosAcompanhanteRsvp(null, "Pedro Lima", FaixaEtaria.Adulto)], Agora);
         var acompanhante = convite.Convidados.Single(pessoa => pessoa.Acompanhante);

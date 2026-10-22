@@ -2,7 +2,7 @@ using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.Convidados.Importacao;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Excecoes;
 using Celebri.Testes.Unidade.Autenticacao.Fakes;
@@ -17,29 +17,29 @@ public class ImportacaoConvidadosServiceTestes
 
     private static readonly DateTimeOffset Agora = new(2027, 3, 10, 12, 0, 0, TimeSpan.Zero);
 
-    private readonly RepositorioCasamentos _casamentos = new();
+    private readonly RepositorioEventos _eventos = new();
     private readonly RepositorioConvites _convites = new();
     private readonly UnidadeTrabalho _unidadeTrabalho = new();
     private readonly ImportacaoConvidadosService _service;
-    private readonly CasamentoAssessorado _casamento;
+    private readonly Evento _evento;
 
     public ImportacaoConvidadosServiceTestes()
     {
-        _service = new ImportacaoConvidadosService(_casamentos, _convites, _unidadeTrabalho, new RelogioFixo(Agora));
-        _casamento = NovoCasamento();
+        _service = new ImportacaoConvidadosService(_eventos, _convites, _unidadeTrabalho, new RelogioFixo(Agora));
+        _evento = NovoEvento();
     }
 
-    private CasamentoAssessorado NovoCasamento(bool arquivado = false)
+    private Evento NovoEvento(bool arquivado = false)
     {
-        var casamento = CasamentoAssessorado.Criar(
-            new DadosCasamento("Ana", "Bruno", new DateOnly(2027, 5, 15), null, null, null, 150, null),
+        var evento = Evento.Criar(
+            new DadosEvento("Ana", "Bruno", new DateOnly(2027, 5, 15), null, null, null, 150, null),
             Agora);
         if (arquivado)
         {
-            casamento.Arquivar(Agora);
+            evento.Arquivar(Agora);
         }
-        _casamentos.Itens.Add(casamento);
-        return casamento;
+        _eventos.Itens.Add(evento);
+        return evento;
     }
 
     private static MemoryStream Fluxo(string conteudo)
@@ -50,11 +50,11 @@ public class ImportacaoConvidadosServiceTestes
     [Fact]
     public async Task PreVisualizar_NaoDeveGravarEDeveResumirSemContatoNaListaDeConvites()
     {
-        var previa = await _service.PreVisualizarAsync(_casamento.Id, Fluxo(PlanilhaValida), CancellationToken.None);
+        var previa = await _service.PreVisualizarAsync(_evento.Id, Fluxo(PlanilhaValida), CancellationToken.None);
 
         Assert.Equal(0, _unidadeTrabalho.Salvamentos);
         Assert.Empty(_convites.Itens);
-        Assert.Equal(new ResumoImportacaoDto(3, 2, 3, 2, 3, 2, 1, 0, 0, 0, 0, Convite.ConvidadosMaximoPorCasamento), previa.Resumo);
+        Assert.Equal(new ResumoImportacaoDto(3, 2, 3, 2, 3, 2, 1, 0, 0, 0, 0, Convite.ConvidadosMaximoPorEvento), previa.Resumo);
         Assert.Equal(["Convite", "Nome", "Telefone", "FaixaEtaria"], previa.ColunasReconhecidas);
         Assert.Equal("Família Lima", previa.Convites[0].Nome);
         Assert.Equal("Crianca", previa.Convites[0].Pessoas[1].FaixaEtaria);
@@ -64,7 +64,7 @@ public class ImportacaoConvidadosServiceTestes
     [Fact]
     public async Task PreVisualizar_ComErro_DeveDevolverValoresOriginaisSoDasLinhasComProblema()
     {
-        var previa = await _service.PreVisualizarAsync(_casamento.Id, Fluxo(PlanilhaComErro), CancellationToken.None);
+        var previa = await _service.PreVisualizarAsync(_evento.Id, Fluxo(PlanilhaComErro), CancellationToken.None);
 
         var linha = Assert.Single(previa.LinhasComProblema);
         Assert.Equal(3, linha.Linha);
@@ -83,11 +83,11 @@ public class ImportacaoConvidadosServiceTestes
     public async Task PreVisualizar_DeveInformarConvidadosExistentesEApontarJaCadastrados()
     {
         _convites.Itens.Add(Convite.Criar(
-            _casamento.Id,
+            _evento.Id,
             new DadosConvite(null, null, 0, [new DadosConvidado(null, "Carlos Dias", "21998765432", null, FaixaEtaria.Adulto, RespostaRsvp.Pendente)]),
             Agora));
 
-        var previa = await _service.PreVisualizarAsync(_casamento.Id, Fluxo(PlanilhaValida), CancellationToken.None);
+        var previa = await _service.PreVisualizarAsync(_evento.Id, Fluxo(PlanilhaValida), CancellationToken.None);
 
         Assert.Equal(1, previa.Resumo.ConvidadosExistentes);
         Assert.Equal(1, previa.Resumo.LinhasDuplicadas);
@@ -95,36 +95,36 @@ public class ImportacaoConvidadosServiceTestes
     }
 
     [Fact]
-    public async Task PreVisualizar_CasamentoInexistente_DeveLancar404()
+    public async Task PreVisualizar_EventoInexistente_DeveLancar404()
     {
         await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => _service.PreVisualizarAsync(Guid.NewGuid(), Fluxo(PlanilhaValida), CancellationToken.None));
     }
 
     [Fact]
-    public async Task PreVisualizarEImportar_CasamentoArquivado_DevemLancar422()
+    public async Task PreVisualizarEImportar_EventoArquivado_DevemLancar422()
     {
-        var arquivado = NovoCasamento(arquivado: true);
+        var arquivado = NovoEvento(arquivado: true);
 
         var previa = await Assert.ThrowsAsync<RegraNegocioException>(() => _service.PreVisualizarAsync(arquivado.Id, Fluxo(PlanilhaValida), CancellationToken.None));
         var importacao = await Assert.ThrowsAsync<RegraNegocioException>(() =>
             _service.ImportarAsync(arquivado.Id, Fluxo(PlanilhaValida), new ConfirmarImportacaoRequest(false, 2, 3), CancellationToken.None));
 
-        Assert.Equal(MensagensConvidados.CasamentoArquivado, previa.Message);
-        Assert.Equal(MensagensConvidados.CasamentoArquivado, importacao.Message);
+        Assert.Equal(MensagensConvidados.EventoArquivado, previa.Message);
+        Assert.Equal(MensagensConvidados.EventoArquivado, importacao.Message);
         Assert.Equal(0, _unidadeTrabalho.Salvamentos);
     }
 
     [Fact]
     public async Task Importar_SemProblemas_DeveCriarTodosOsConvitesNumUnicoSalvamento()
     {
-        var resultado = await _service.ImportarAsync(_casamento.Id, Fluxo(PlanilhaValida), new ConfirmarImportacaoRequest(false, 2, 3), CancellationToken.None);
+        var resultado = await _service.ImportarAsync(_evento.Id, Fluxo(PlanilhaValida), new ConfirmarImportacaoRequest(false, 2, 3), CancellationToken.None);
 
         Assert.Equal(new ResultadoImportacaoDto(2, 3), resultado);
         Assert.Equal(1, _unidadeTrabalho.Salvamentos);
         Assert.Equal(1, _convites.ChamadasAdicionarVarios);
         Assert.Equal(2, _convites.Itens.Count);
         var familia = _convites.Itens[0];
-        Assert.Equal(_casamento.Id, familia.CasamentoId);
+        Assert.Equal(_evento.Id, familia.EventoId);
         Assert.Equal(StatusEnvioConvite.NaoEnviado, familia.StatusEnvio);
         Assert.Equal(["Ana Lima", "Bia Lima"], familia.ConvidadosOrdenados().Select(pessoa => pessoa.Nome));
         Assert.Equal("Carlos Dias", _convites.Itens[1].Nome);
@@ -134,7 +134,7 @@ public class ImportacaoConvidadosServiceTestes
     public async Task Importar_ComProblemasSemSomenteValidos_DeveLancar422ENaoGravar()
     {
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            _service.ImportarAsync(_casamento.Id, Fluxo(PlanilhaComErro), new ConfirmarImportacaoRequest(false, 1, 1), CancellationToken.None));
+            _service.ImportarAsync(_evento.Id, Fluxo(PlanilhaComErro), new ConfirmarImportacaoRequest(false, 1, 1), CancellationToken.None));
 
         Assert.Equal(MensagensImportacaoConvidados.ImportacaoComProblemas, excecao.Message);
         Assert.Empty(_convites.Itens);
@@ -144,7 +144,7 @@ public class ImportacaoConvidadosServiceTestes
     [Fact]
     public async Task Importar_SomenteValidos_DeveDeixarDeForaOConviteInteiroComProblema()
     {
-        var resultado = await _service.ImportarAsync(_casamento.Id, Fluxo(PlanilhaComErro), new ConfirmarImportacaoRequest(true, 1, 1), CancellationToken.None);
+        var resultado = await _service.ImportarAsync(_evento.Id, Fluxo(PlanilhaComErro), new ConfirmarImportacaoRequest(true, 1, 1), CancellationToken.None);
 
         Assert.Equal(new ResultadoImportacaoDto(1, 1), resultado);
         var convite = Assert.Single(_convites.Itens);
@@ -158,7 +158,7 @@ public class ImportacaoConvidadosServiceTestes
     public async Task Importar_ConferenciaDivergente_DeveLancar422ENaoGravar(int convites, int pessoas)
     {
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            _service.ImportarAsync(_casamento.Id, Fluxo(PlanilhaComErro), new ConfirmarImportacaoRequest(true, convites, pessoas), CancellationToken.None));
+            _service.ImportarAsync(_evento.Id, Fluxo(PlanilhaComErro), new ConfirmarImportacaoRequest(true, convites, pessoas), CancellationToken.None));
 
         Assert.Equal(MensagensImportacaoConvidados.PlanilhaAlterada, excecao.Message);
         Assert.Equal(0, _unidadeTrabalho.Salvamentos);
@@ -168,20 +168,20 @@ public class ImportacaoConvidadosServiceTestes
     public async Task Importar_NenhumConviteValido_DeveLancar422()
     {
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            _service.ImportarAsync(_casamento.Id, Fluxo("Nome;Telefone\nAna;123\n"), new ConfirmarImportacaoRequest(true, 0, 0), CancellationToken.None));
+            _service.ImportarAsync(_evento.Id, Fluxo("Nome;Telefone\nAna;123\n"), new ConfirmarImportacaoRequest(true, 0, 0), CancellationToken.None));
 
         Assert.Equal(MensagensImportacaoConvidados.NenhumConviteValido, excecao.Message);
     }
 
     [Fact]
-    public async Task Importar_AcimaDoLimiteDoCasamento_DeveLancar422ENaoGravar()
+    public async Task Importar_AcimaDoLimiteDoEvento_DeveLancar422ENaoGravar()
     {
-        _convites.ContagemForcada = Convite.ConvidadosMaximoPorCasamento - 2;
+        _convites.ContagemForcada = Convite.ConvidadosMaximoPorEvento - 2;
 
         var excecao = await Assert.ThrowsAsync<RegraNegocioException>(() =>
-            _service.ImportarAsync(_casamento.Id, Fluxo(PlanilhaValida), new ConfirmarImportacaoRequest(false, 2, 3), CancellationToken.None));
+            _service.ImportarAsync(_evento.Id, Fluxo(PlanilhaValida), new ConfirmarImportacaoRequest(false, 2, 3), CancellationToken.None));
 
-        Assert.Equal(MensagensConvidados.LimitePorCasamento, excecao.Message);
+        Assert.Equal(MensagensConvidados.LimitePorEvento, excecao.Message);
         Assert.Empty(_convites.Itens);
         Assert.Equal(0, _unidadeTrabalho.Salvamentos);
     }
@@ -209,28 +209,28 @@ public class ImportacaoConvidadosServiceTestes
     [Fact]
     public async Task Parametros_Nulos_DevemLancarArgumentNull()
     {
-        await Assert.ThrowsAsync<ArgumentNullException>(() => _service.PreVisualizarAsync(_casamento.Id, null!, CancellationToken.None));
-        await Assert.ThrowsAsync<ArgumentNullException>(() => _service.ImportarAsync(_casamento.Id, Fluxo(PlanilhaValida), null!, CancellationToken.None));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _service.PreVisualizarAsync(_evento.Id, null!, CancellationToken.None));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _service.ImportarAsync(_evento.Id, Fluxo(PlanilhaValida), null!, CancellationToken.None));
     }
 
-    private sealed class RepositorioCasamentos : ICasamentoRepository
+    private sealed class RepositorioEventos : IEventoRepository
     {
-        public List<CasamentoAssessorado> Itens { get; } = [];
+        public List<Evento> Itens { get; } = [];
 
-        public Task<IReadOnlyList<CasamentoAssessorado>> ListarAsync(bool arquivados, CancellationToken cancelamento)
+        public Task<IReadOnlyList<Evento>> ListarAsync(bool arquivados, CancellationToken cancelamento)
         {
-            IReadOnlyList<CasamentoAssessorado> resultado = Itens.Where(casamento => casamento.Arquivado == arquivados).ToList();
+            IReadOnlyList<Evento> resultado = Itens.Where(evento => evento.Arquivado == arquivados).ToList();
             return Task.FromResult(resultado);
         }
 
-        public Task<CasamentoAssessorado?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
+        public Task<Evento?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
         {
-            return Task.FromResult(Itens.FirstOrDefault(casamento => casamento.Id == id));
+            return Task.FromResult(Itens.FirstOrDefault(evento => evento.Id == id));
         }
 
-        public void Adicionar(CasamentoAssessorado casamento)
+        public void Adicionar(Evento evento)
         {
-            Itens.Add(casamento);
+            Itens.Add(evento);
         }
     }
 
@@ -242,41 +242,41 @@ public class ImportacaoConvidadosServiceTestes
 
         public int ChamadasAdicionarVarios { get; private set; }
 
-        public Task<IReadOnlyList<Convite>> ListarSemDadosSensiveisAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<IReadOnlyList<Convite>> ListarSemDadosSensiveisAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            return ListarPorCasamentoAsync(casamentoId, cancelamento);
+            return ListarPorEventoAsync(eventoId, cancelamento);
         }
 
-        public Task<IReadOnlyList<Convite>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<IReadOnlyList<Convite>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            IReadOnlyList<Convite> resultado = Itens.Where(convite => convite.CasamentoId == casamentoId).ToList();
+            IReadOnlyList<Convite> resultado = Itens.Where(convite => convite.EventoId == eventoId).ToList();
             return Task.FromResult(resultado);
         }
 
-        public Task<Convite?> ObterPorIdAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+        public Task<Convite?> ObterPorIdAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
         {
-            return Task.FromResult(Itens.FirstOrDefault(convite => convite.Id == conviteId && convite.CasamentoId == casamentoId));
+            return Task.FromResult(Itens.FirstOrDefault(convite => convite.Id == conviteId && convite.EventoId == eventoId));
         }
 
-        public Task<int> ContarConvidadosAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<int> ContarConvidadosAsync(Guid eventoId, CancellationToken cancelamento)
         {
-            return Task.FromResult(ContagemForcada ?? Itens.Where(convite => convite.CasamentoId == casamentoId).Sum(convite => convite.Convidados.Count));
+            return Task.FromResult(ContagemForcada ?? Itens.Where(convite => convite.EventoId == eventoId).Sum(convite => convite.Convidados.Count));
         }
 
-        public Task<ResumoConvidados> ObterResumoAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<ResumoConvidados> ObterResumoAsync(Guid eventoId, CancellationToken cancelamento)
         {
             return Task.FromResult(new ResumoConvidados([], 0, 0));
         }
 
-        public Task<ResumoEnvioConvites> ObterResumoEnvioAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<ResumoEnvioConvites> ObterResumoEnvioAsync(Guid eventoId, CancellationToken cancelamento)
         {
             return Task.FromResult(ResumoEnvioConvites.Vazio);
         }
 
-        public Task<IReadOnlyList<IdentificacaoConvidado>> ListarIdentificacoesAsync(Guid casamentoId, CancellationToken cancelamento)
+        public Task<IReadOnlyList<IdentificacaoConvidado>> ListarIdentificacoesAsync(Guid eventoId, CancellationToken cancelamento)
         {
             IReadOnlyList<IdentificacaoConvidado> resultado = Itens
-                .Where(convite => convite.CasamentoId == casamentoId)
+                .Where(convite => convite.EventoId == eventoId)
                 .SelectMany(convite => convite.Convidados)
                 .Select(convidado => new IdentificacaoConvidado(convidado.Nome, convidado.Telefone))
                 .ToList();

@@ -23,24 +23,24 @@ public static class ClienteChecklist
         return $"{RotaItens(modeloId)}/{itemId}";
     }
 
-    public static string RotaChecklist(Guid casamentoId)
+    public static string RotaChecklist(Guid eventoId)
     {
-        return $"/api/casamentos/{casamentoId}/checklist";
+        return $"/api/eventos/{eventoId}/checklist";
     }
 
-    public static string RotaPrevia(Guid casamentoId, Guid modeloId)
+    public static string RotaPrevia(Guid eventoId, Guid modeloId)
     {
-        return $"{RotaChecklist(casamentoId)}/previa?modeloId={modeloId}";
+        return $"{RotaChecklist(eventoId)}/previa?modeloId={modeloId}";
     }
 
-    public static string RotaAplicacoes(Guid casamentoId)
+    public static string RotaAplicacoes(Guid eventoId)
     {
-        return $"{RotaChecklist(casamentoId)}/aplicacoes";
+        return $"{RotaChecklist(eventoId)}/aplicacoes";
     }
 
-    public static string RotaRecalculo(Guid casamentoId)
+    public static string RotaRecalculo(Guid eventoId)
     {
-        return $"{RotaChecklist(casamentoId)}/recalculo-prazos";
+        return $"{RotaChecklist(eventoId)}/recalculo-prazos";
     }
 
     public static object CorpoItem(
@@ -50,7 +50,7 @@ public static class ClienteChecklist
         string categoria = "Fornecedores",
         string? descricao = null)
     {
-        return new { titulo, descricao, responsavel, categoria, diasAntesDoCasamento = dias };
+        return new { titulo, descricao, responsavel, categoria, diasAntesDoEvento = dias };
     }
 
     public static async Task<IReadOnlyList<ModeloChecklistResumoDto>> ListarModelosAsync(HttpClient cliente)
@@ -60,7 +60,7 @@ public static class ClienteChecklist
         return (await resposta.Content.ReadFromJsonAsync<List<ModeloChecklistResumoDto>>())!;
     }
 
-    public static async Task<ModeloChecklistDto> CriarModeloAsync(HttpClient cliente, string nome = "Casamento no campo", string? descricao = null)
+    public static async Task<ModeloChecklistDto> CriarModeloAsync(HttpClient cliente, string nome = "Evento no campo", string? descricao = null)
     {
         var resposta = await cliente.PostAsJsonAsync(RotaModelos, new { nome, descricao });
         Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
@@ -81,28 +81,28 @@ public static class ClienteChecklist
         foreach (var valor in dias)
         {
             indice++;
-            await CriarItemAsync(cliente, modelo.Id, CorpoItem($"Item {indice:000}", valor, indice % 3 == 0 ? "Casal" : "Assessoria"));
+            await CriarItemAsync(cliente, modelo.Id, CorpoItem($"Item {indice:000}", valor, indice % 3 == 0 ? "Anfitriao" : "Assessoria"));
         }
 
         return (await cliente.GetFromJsonAsync<ModeloChecklistDto>(RotaModelo(modelo.Id)))!;
     }
 
-    public static async Task<HttpResponseMessage> AplicarAsync(HttpClient cliente, Guid casamentoId, Guid modeloId)
+    public static async Task<HttpResponseMessage> AplicarAsync(HttpClient cliente, Guid eventoId, Guid modeloId)
     {
-        return await cliente.PostAsJsonAsync(RotaAplicacoes(casamentoId), new { modeloId });
+        return await cliente.PostAsJsonAsync(RotaAplicacoes(eventoId), new { modeloId });
     }
 
-    public static async Task<AplicacaoModeloChecklistDto> AplicarComSucessoAsync(HttpClient cliente, Guid casamentoId, Guid modeloId)
+    public static async Task<AplicacaoModeloChecklistDto> AplicarComSucessoAsync(HttpClient cliente, Guid eventoId, Guid modeloId)
     {
-        var resposta = await AplicarAsync(cliente, casamentoId, modeloId);
+        var resposta = await AplicarAsync(cliente, eventoId, modeloId);
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<AplicacaoModeloChecklistDto>())!;
     }
 
-    public static async Task<ChecklistCasamentoDto> ObterChecklistAsync(HttpClient cliente, Guid casamentoId)
+    public static async Task<ChecklistEventoDto> ObterChecklistAsync(HttpClient cliente, Guid eventoId)
     {
-        var resposta = await cliente.GetAsync(RotaChecklist(casamentoId));
+        var resposta = await cliente.GetAsync(RotaChecklist(eventoId));
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
-        return (await resposta.Content.ReadFromJsonAsync<ChecklistCasamentoDto>())!;
+        return (await resposta.Content.ReadFromJsonAsync<ChecklistEventoDto>())!;
     }
 }

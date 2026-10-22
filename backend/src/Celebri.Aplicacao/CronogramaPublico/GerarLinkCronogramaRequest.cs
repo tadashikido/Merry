@@ -9,7 +9,7 @@ public sealed record GerarLinkCronogramaRequest(
     [Required(ErrorMessage = MensagensAcessoCronograma.TipoInvalido)]
     [property: JsonConverter(typeof(JsonStringEnumConverter<TipoAcessoCronograma>))]
     TipoAcessoCronograma? Tipo,
-    Guid? FornecedorCasamentoId,
+    Guid? FornecedorEventoId,
     [StringLength(ItemCronograma.TamanhoMaximoResponsavel, ErrorMessage = MensagensCronograma.TamanhoResponsavel)]
     string? Responsavel) : IValidatableObject
 {
@@ -25,7 +25,7 @@ public sealed record GerarLinkCronogramaRequest(
     {
         return Tipo switch
         {
-            TipoAcessoCronograma.Fornecedor => DestinoAcessoCronograma.DoFornecedor(FornecedorCasamentoId),
+            TipoAcessoCronograma.Fornecedor => DestinoAcessoCronograma.DoFornecedor(FornecedorEventoId),
             TipoAcessoCronograma.Responsavel => DestinoAcessoCronograma.DoResponsavel(Responsavel),
             TipoAcessoCronograma.Geral => DestinoAcessoCronograma.Geral(),
             _ => throw new RegraNegocioException(MensagensAcessoCronograma.TipoInvalido, DestinoAcessoCronograma.CampoTipo),

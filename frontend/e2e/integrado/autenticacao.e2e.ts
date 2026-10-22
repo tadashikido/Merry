@@ -57,7 +57,7 @@ test.describe('Autenticação', () => {
     await expect(page).toHaveURL(/\/entrar/)
     await expect(page.getByText('Você saiu da sua conta.')).toBeVisible()
 
-    await page.goto('/casamentos')
+    await page.goto('/eventos')
     await expect(page).toHaveURL(/\/entrar\?destino=/)
   })
 

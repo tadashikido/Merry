@@ -15,11 +15,11 @@ public class ExcecaoGlobalHandlerTestes
     {
         var handler = CriarHandler(Environments.Production);
 
-        var detalhes = handler.CriarDetalhesProblema(new RegraNegocioException("O casamento já foi encerrado."));
+        var detalhes = handler.CriarDetalhesProblema(new RegraNegocioException("O evento já foi encerrado."));
 
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, detalhes.Status);
         Assert.Equal(ExcecaoGlobalHandler.TituloRegraNegocio, detalhes.Title);
-        Assert.Equal("O casamento já foi encerrado.", detalhes.Detail);
+        Assert.Equal("O evento já foi encerrado.", detalhes.Detail);
     }
 
     [Fact]

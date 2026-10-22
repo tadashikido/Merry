@@ -9,19 +9,19 @@ public static class ClienteTarefas
 {
     public const string RotaPendencias = "/api/tarefas/pendencias";
 
-    public static string Rota(Guid casamentoId)
+    public static string Rota(Guid eventoId)
     {
-        return $"/api/casamentos/{casamentoId}/tarefas";
+        return $"/api/eventos/{eventoId}/tarefas";
     }
 
-    public static string Rota(Guid casamentoId, Guid tarefaId)
+    public static string Rota(Guid eventoId, Guid tarefaId)
     {
-        return $"{Rota(casamentoId)}/{tarefaId}";
+        return $"{Rota(eventoId)}/{tarefaId}";
     }
 
-    public static string RotaStatus(Guid casamentoId, Guid tarefaId)
+    public static string RotaStatus(Guid eventoId, Guid tarefaId)
     {
-        return $"{Rota(casamentoId, tarefaId)}/status";
+        return $"{Rota(eventoId, tarefaId)}/status";
     }
 
     public static string Data(DateOnly data)
@@ -46,22 +46,22 @@ public static class ClienteTarefas
         };
     }
 
-    public static async Task<TarefaDto> CriarAsync(HttpClient cliente, Guid casamentoId, object? corpo = null)
+    public static async Task<TarefaDto> CriarAsync(HttpClient cliente, Guid eventoId, object? corpo = null)
     {
-        var resposta = await cliente.PostAsJsonAsync(Rota(casamentoId), corpo ?? Corpo());
+        var resposta = await cliente.PostAsJsonAsync(Rota(eventoId), corpo ?? Corpo());
         Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<TarefaDto>())!;
     }
 
-    public static async Task<ListaTarefasDto> ListarAsync(HttpClient cliente, Guid casamentoId)
+    public static async Task<ListaTarefasDto> ListarAsync(HttpClient cliente, Guid eventoId)
     {
-        var resposta = await cliente.GetAsync(Rota(casamentoId));
+        var resposta = await cliente.GetAsync(Rota(eventoId));
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<ListaTarefasDto>())!;
     }
 
-    public static Task<HttpResponseMessage> AlterarStatusAsync(HttpClient cliente, Guid casamentoId, Guid tarefaId, string status)
+    public static Task<HttpResponseMessage> AlterarStatusAsync(HttpClient cliente, Guid eventoId, Guid tarefaId, string status)
     {
-        return cliente.PatchAsJsonAsync(RotaStatus(casamentoId, tarefaId), new { status });
+        return cliente.PatchAsJsonAsync(RotaStatus(eventoId, tarefaId), new { status });
     }
 }

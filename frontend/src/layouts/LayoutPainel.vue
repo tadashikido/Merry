@@ -4,27 +4,27 @@ import { useRoute } from 'vue-router'
 import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
 
-import NavegacaoCasamento from './NavegacaoCasamento.vue'
+import NavegacaoEvento from './NavegacaoEvento.vue'
 import RailNavegacao from './RailNavegacao.vue'
-import type { ContextoCasamento, ContextoVisual, GrupoNavegacaoCasamento, ItemRail, OpcaoSeletorCasamento } from './tipos'
+import type { ContextoEvento, ContextoVisual, GrupoNavegacaoEvento, ItemRail, OpcaoSeletorEvento } from './tipos'
 import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
 import { useTelaPequena } from '@/composables/useTelaPequena'
 import { ROTULOS_ACOES, ROTULOS_NAVEGACAO } from '@/textos/rotulos'
-import { formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 
 const props = withDefaults(
   defineProps<{
     itensRail: ItemRail[]
-    gruposCasamento?: GrupoNavegacaoCasamento[] | null
-    contextoCasamento?: ContextoCasamento | null
+    gruposEvento?: GrupoNavegacaoEvento[] | null
+    contextoEvento?: ContextoEvento | null
     contexto?: ContextoVisual
-    casamentoId?: string | null
-    opcoesSeletor?: OpcaoSeletorCasamento[] | null
+    eventoId?: string | null
+    opcoesSeletor?: OpcaoSeletorEvento[] | null
   }>(),
-  { gruposCasamento: null, contextoCasamento: null, contexto: 'assessoria', casamentoId: null, opcoesSeletor: null },
+  { gruposEvento: null, contextoEvento: null, contexto: 'assessoria', eventoId: null, opcoesSeletor: null },
 )
 
-const emit = defineEmits<{ trocarCasamento: [id: string] }>()
+const emit = defineEmits<{ trocarEvento: [id: string] }>()
 
 defineSlots<{
   default(): unknown
@@ -38,9 +38,9 @@ const menuAberto = ref(false)
 const telaPequena = useTelaPequena()
 const rota = useRoute()
 
-const temWorkspace = computed(() => props.gruposCasamento !== null)
-const nomesCasal = computed(() =>
-  props.contextoCasamento ? formatarNomesCasal(props.contextoCasamento.nomePrimeiraPessoa, props.contextoCasamento.nomeSegundaPessoa) : '',
+const temWorkspace = computed(() => props.gruposEvento !== null)
+const nomesAnfitrioes = computed(() =>
+  props.contextoEvento ? formatarNomesAnfitrioes(props.contextoEvento.nomePrimeiraPessoa, props.contextoEvento.nomeSegundaPessoa) : '',
 )
 
 watch(
@@ -92,16 +92,16 @@ watch(telaPequena, (pequena) => {
     </aside>
 
     <aside
-      v-if="!telaPequena && gruposCasamento"
+      v-if="!telaPequena && gruposEvento"
       class="layout-painel__workspace"
-      data-teste="workspace-casamento"
+      data-teste="workspace-evento"
     >
-      <NavegacaoCasamento
-        :casamento="contextoCasamento"
-        :grupos="gruposCasamento"
-        :casamento-id="casamentoId"
+      <NavegacaoEvento
+        :evento="contextoEvento"
+        :grupos="gruposEvento"
+        :evento-id="eventoId"
         :opcoes-seletor="opcoesSeletor"
-        @trocar-casamento="emit('trocarCasamento', $event)"
+        @trocar-evento="emit('trocarEvento', $event)"
       />
     </aside>
 
@@ -123,16 +123,16 @@ watch(telaPequena, (pequena) => {
           expandido
         />
         <div
-          v-if="gruposCasamento"
-          class="layout-painel__gaveta-casamento"
+          v-if="gruposEvento"
+          class="layout-painel__gaveta-evento"
         >
-          <NavegacaoCasamento
-            :casamento="contextoCasamento"
-            :grupos="gruposCasamento"
-            :casamento-id="casamentoId"
+          <NavegacaoEvento
+            :evento="contextoEvento"
+            :grupos="gruposEvento"
+            :evento-id="eventoId"
             :opcoes-seletor="opcoesSeletor"
             anexar-seletor="self"
-            @trocar-casamento="emit('trocarCasamento', $event)"
+            @trocar-evento="emit('trocarEvento', $event)"
           />
         </div>
         <div
@@ -167,10 +167,10 @@ watch(telaPequena, (pequena) => {
           tom="claro"
         />
         <span
-          v-if="nomesCasal"
-          class="layout-painel__casal-barra"
-          data-teste="barra-casal"
-        >{{ nomesCasal }}</span>
+          v-if="nomesAnfitrioes"
+          class="layout-painel__anfitriao-barra"
+          data-teste="barra-anfitriao"
+        >{{ nomesAnfitrioes }}</span>
       </header>
 
       <main
@@ -193,15 +193,15 @@ watch(telaPequena, (pequena) => {
 }
 
 .layout-painel--workspace {
-  grid-template-columns: var(--p-dimensao-largura-rail) var(--p-dimensao-largura-navegacao-casamento) minmax(0, 1fr);
+  grid-template-columns: var(--p-dimensao-largura-rail) var(--p-dimensao-largura-navegacao-evento) minmax(0, 1fr);
 }
 
 .layout-painel--compacto {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.layout-painel--casal {
-  background: var(--p-cor-fundo-casal);
+.layout-painel--anfitriao {
+  background: var(--p-cor-fundo-anfitriao);
 }
 
 .layout-painel__pular {
@@ -282,7 +282,7 @@ watch(telaPequena, (pequena) => {
   --marca-tamanho: 1.375rem;
 }
 
-.layout-painel__casal-barra {
+.layout-painel__anfitriao-barra {
   min-width: 0;
   margin-left: auto;
   overflow: hidden;
@@ -302,7 +302,7 @@ watch(telaPequena, (pequena) => {
   min-height: 100%;
 }
 
-.layout-painel__gaveta-casamento {
+.layout-painel__gaveta-evento {
   padding: var(--p-ritmo-grupo) 0 0;
   border-top: 1px solid var(--p-cor-borda);
 }

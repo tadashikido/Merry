@@ -4,7 +4,7 @@ using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.Rsvp.Portas;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Rsvp;
@@ -13,7 +13,7 @@ namespace Celebri.Aplicacao.Rsvp;
 
 public class LinkRsvpService : ILinkRsvpService
 {
-    private readonly ICasamentoRepository _casamentoRepository;
+    private readonly IEventoRepository _eventoRepository;
     private readonly IConviteRepository _conviteRepository;
     private readonly IAcessoRsvpRepository _acessoRepository;
     private readonly IGeradorTokenOpaco _geradorToken;
@@ -23,7 +23,7 @@ public class LinkRsvpService : ILinkRsvpService
     private readonly IUsuarioAtual _usuarioAtual;
 
     public LinkRsvpService(
-        ICasamentoRepository casamentoRepository,
+        IEventoRepository eventoRepository,
         IConviteRepository conviteRepository,
         IAcessoRsvpRepository acessoRepository,
         IGeradorTokenOpaco geradorToken,
@@ -33,7 +33,7 @@ public class LinkRsvpService : ILinkRsvpService
         IUsuarioAtual usuarioAtual)
     {
         _usuarioAtual = usuarioAtual;
-        _casamentoRepository = casamentoRepository;
+        _eventoRepository = eventoRepository;
         _conviteRepository = conviteRepository;
         _acessoRepository = acessoRepository;
         _geradorToken = geradorToken;
@@ -42,18 +42,18 @@ public class LinkRsvpService : ILinkRsvpService
         _relogio = relogio;
     }
 
-    public async Task<LinkRsvpDto> ObterAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<LinkRsvpDto> ObterAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        var convite = await ObterConviteAsync(casamentoId, conviteId, exigirEditavel: false, cancelamento);
+        var convite = await ObterConviteAsync(eventoId, conviteId, exigirEditavel: false, cancelamento);
         var acesso = await _acessoRepository.ObterPorConviteAsync(convite.Id, cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensRsvp.LinkInexistente);
 
         return ParaDto(acesso);
     }
 
-    public async Task<LinkRsvpDto> GerarAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<LinkRsvpDto> GerarAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        var convite = await ObterConviteAsync(casamentoId, conviteId, exigirEditavel: true, cancelamento);
+        var convite = await ObterConviteAsync(eventoId, conviteId, exigirEditavel: true, cancelamento);
         var existente = await _acessoRepository.ObterPorConviteAsync(convite.Id, cancelamento);
 
         if (existente is not null)
@@ -69,9 +69,9 @@ public class LinkRsvpService : ILinkRsvpService
         return new LinkRsvpDto(token, acesso.GeradoEm);
     }
 
-    public async Task<LinkRsvpDto> RegenerarAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<LinkRsvpDto> RegenerarAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        var convite = await ObterConviteAsync(casamentoId, conviteId, exigirEditavel: true, cancelamento);
+        var convite = await ObterConviteAsync(eventoId, conviteId, exigirEditavel: true, cancelamento);
         var token = _geradorToken.Gerar();
         var hash = _geradorToken.CalcularHash(token);
         var cifrado = _cifrador.Cifrar(token, convite.Id);
@@ -91,9 +91,9 @@ public class LinkRsvpService : ILinkRsvpService
         return new LinkRsvpDto(token, agora);
     }
 
-    public async Task RevogarAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task RevogarAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        var convite = await ObterConviteAsync(casamentoId, conviteId, exigirEditavel: true, cancelamento);
+        var convite = await ObterConviteAsync(eventoId, conviteId, exigirEditavel: true, cancelamento);
         var existente = await _acessoRepository.ObterPorConviteAsync(convite.Id, cancelamento);
 
         if (existente is null)
@@ -105,9 +105,9 @@ public class LinkRsvpService : ILinkRsvpService
         await _unidadeTrabalho.SalvarAsync(cancelamento);
     }
 
-    public async Task<ConviteDto> MarcarEnviadoAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<ConviteDto> MarcarEnviadoAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        var convite = await ObterConviteAsync(casamentoId, conviteId, exigirEditavel: true, cancelamento);
+        var convite = await ObterConviteAsync(eventoId, conviteId, exigirEditavel: true, cancelamento);
 
         if (convite.MarcarEnviado(_relogio.GetUtcNow()))
         {
@@ -117,17 +117,17 @@ public class LinkRsvpService : ILinkRsvpService
         return ConviteService.ParaDto(convite, _usuarioAtual.EhAssessoria());
     }
 
-    private async Task<Convite> ObterConviteAsync(Guid casamentoId, Guid conviteId, bool exigirEditavel, CancellationToken cancelamento)
+    private async Task<Convite> ObterConviteAsync(Guid eventoId, Guid conviteId, bool exigirEditavel, CancellationToken cancelamento)
     {
-        var casamento = await _casamentoRepository.ObterPorIdAsync(casamentoId, cancelamento)
-            ?? throw new RecursoNaoEncontradoException(MensagensCasamento.NaoEncontrado);
+        var evento = await _eventoRepository.ObterPorIdAsync(eventoId, cancelamento)
+            ?? throw new RecursoNaoEncontradoException(MensagensEvento.NaoEncontrado);
 
-        if (exigirEditavel && casamento.Arquivado)
+        if (exigirEditavel && evento.Arquivado)
         {
-            throw new RegraNegocioException(MensagensRsvp.CasamentoArquivado);
+            throw new RegraNegocioException(MensagensRsvp.EventoArquivado);
         }
 
-        return await _conviteRepository.ObterPorIdAsync(casamento.Id, conviteId, cancelamento)
+        return await _conviteRepository.ObterPorIdAsync(evento.Id, conviteId, cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensConvidados.ConviteNaoEncontrado);
     }
 

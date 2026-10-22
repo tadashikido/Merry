@@ -20,7 +20,7 @@ public class Usuario
 
     public Guid OrganizacaoId { get; private set; }
 
-    public Guid? CasamentoId { get; private set; }
+    public Guid? EventoId { get; private set; }
 
     public string Nome { get; private set; }
 
@@ -45,19 +45,19 @@ public class Usuario
         return Criar(organizacaoId, null, PapelUsuario.Dono, nome, email, senhaHash, agora);
     }
 
-    public static Usuario CriarCasal(Guid organizacaoId, Guid casamentoId, string nome, string email, string senhaHash, DateTimeOffset agora)
+    public static Usuario CriarAnfitriao(Guid organizacaoId, Guid eventoId, string nome, string email, string senhaHash, DateTimeOffset agora)
     {
         if (organizacaoId == Guid.Empty)
         {
-            throw new ArgumentException("A organização do usuário do casal é obrigatória.", nameof(organizacaoId));
+            throw new ArgumentException("A organização do usuário dos anfitriões é obrigatória.", nameof(organizacaoId));
         }
 
-        if (casamentoId == Guid.Empty)
+        if (eventoId == Guid.Empty)
         {
-            throw new ArgumentException("O casamento do usuário do casal é obrigatório.", nameof(casamentoId));
+            throw new ArgumentException("O evento do usuário dos anfitriões é obrigatório.", nameof(eventoId));
         }
 
-        return Criar(organizacaoId, casamentoId, PapelUsuario.Casal, nome, email, senhaHash, agora);
+        return Criar(organizacaoId, eventoId, PapelUsuario.Anfitriao, nome, email, senhaHash, agora);
     }
 
     public void Desativar()
@@ -65,16 +65,16 @@ public class Usuario
         Ativo = false;
     }
 
-    public void ReativarCasal(Guid casamentoId, string nome, string senhaHash, DateTimeOffset agora)
+    public void ReativarAnfitriao(Guid eventoId, string nome, string senhaHash, DateTimeOffset agora)
     {
-        if (Papel != PapelUsuario.Casal || CasamentoId != casamentoId)
+        if (Papel != PapelUsuario.Anfitriao || EventoId != eventoId)
         {
-            throw new RegraNegocioException("Somente o acesso do casal deste casamento pode ser reativado.");
+            throw new RegraNegocioException("Somente o acesso dos anfitriões deste evento pode ser reativado.");
         }
 
         if (Ativo)
         {
-            throw new RegraNegocioException("Este acesso do casal já está ativo.");
+            throw new RegraNegocioException("Este acesso dos anfitriões já está ativo.");
         }
 
         Nome = NormalizarNome(nome);
@@ -84,7 +84,7 @@ public class Usuario
 
     private static Usuario Criar(
         Guid organizacaoId,
-        Guid? casamentoId,
+        Guid? eventoId,
         PapelUsuario papel,
         string nome,
         string email,
@@ -108,7 +108,7 @@ public class Usuario
         {
             Id = Guid.NewGuid(),
             OrganizacaoId = organizacaoId,
-            CasamentoId = casamentoId,
+            EventoId = eventoId,
             Nome = nomeNormalizado,
             Email = emailNormalizado,
             SenhaHash = senhaHash,

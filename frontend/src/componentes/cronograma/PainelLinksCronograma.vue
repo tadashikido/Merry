@@ -12,7 +12,7 @@ import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { breakpoints, dimensoes } from '@/design/tokens'
-import type { FalhaCasamento } from '@/stores/casamentos'
+import type { FalhaEvento } from '@/stores/eventos'
 import { useLinksCronogramaStore } from '@/stores/linksCronograma'
 import { TEXTOS_LINKS_CRONOGRAMA } from '@/textos/cronogramaPublico'
 import type { DestinoLinkCronogramaDto, TipoLinkCronograma } from '@/tipos/cronogramaPublico'
@@ -31,8 +31,8 @@ import { formatarDataCalendarioExtenso } from '@/utilitarios/formatacao'
 
 const props = defineProps<{
   visivel: boolean
-  casamentoId: string
-  casamento: DadosMensagemCronograma | null
+  eventoId: string
+  evento: DadosMensagemCronograma | null
 }>()
 
 const emit = defineEmits<{ 'update:visivel': [valor: boolean] }>()
@@ -51,8 +51,8 @@ const aberto = computed({
   set: (valor: boolean) => emit('update:visivel', valor),
 })
 
-const links = computed(() => (store.casamentoId === props.casamentoId ? store.links : null))
-const falha = computed(() => (store.casamentoId === props.casamentoId ? store.falha : null))
+const links = computed(() => (store.eventoId === props.eventoId ? store.links : null))
+const falha = computed(() => (store.eventoId === props.eventoId ? store.falha : null))
 const bloqueado = computed(() => Boolean(links.value && (links.value.arquivado || links.value.expirado)))
 const validade = computed(() => (links.value ? formatarDataCalendarioExtenso(links.value.validoAte) : ''))
 const semItens = computed(() => links.value?.destinos.find((destino) => destino.tipo === 'Geral')?.quantidadeItens === 0)
@@ -71,7 +71,7 @@ const grupos = computed(() =>
 )
 
 watch(
-  () => [props.visivel, props.casamentoId] as const,
+  () => [props.visivel, props.eventoId] as const,
   ([visivel, id]) => {
     if (visivel) {
       void store.carregar(id)
@@ -102,7 +102,7 @@ function acoesMenu(destino: DestinoLinkCronogramaDto): ItemMenuAcoes[] {
   return itens
 }
 
-function notificarFalha(falhaAcao: FalhaCasamento) {
+function notificarFalha(falhaAcao: FalhaEvento) {
   if (falhaAcao.tipo === 'semPermissao') {
     notificacao.erro(TEXTOS_LINKS_CRONOGRAMA.toastSemPermissao)
     return
@@ -130,7 +130,7 @@ async function obterToken(destino: DestinoLinkCronogramaDto): Promise<string | n
   if (destino.link?.token) {
     return destino.link.token
   }
-  const resultado = await store.gerar(props.casamentoId, requestDoDestino(destino))
+  const resultado = await store.gerar(props.eventoId, requestDoDestino(destino))
   if (!resultado.ok) {
     notificarFalha(resultado.falha)
     return null
@@ -167,9 +167,9 @@ function copiarLink(destino: DestinoLinkCronogramaDto) {
 function copiarMensagem(destino: DestinoLinkCronogramaDto) {
   void comDestino(destino, async () => {
     const token = await obterToken(destino)
-    if (token && props.casamento) {
+    if (token && props.evento) {
       await copiar(
-        montarMensagemCronograma(props.casamento, destino, montarUrlCronogramaPublico(token)),
+        montarMensagemCronograma(props.evento, destino, montarUrlCronogramaPublico(token)),
         TEXTOS_LINKS_CRONOGRAMA.toastMensagemCopiada,
       )
     }
@@ -180,11 +180,11 @@ function enviarWhatsApp(destino: DestinoLinkCronogramaDto) {
   const janela = window.open('about:blank', '_blank')
   void comDestino(destino, async () => {
     const token = await obterToken(destino)
-    if (!token || !props.casamento) {
+    if (!token || !props.evento) {
       janela?.close()
       return
     }
-    const destinoWhatsApp = montarWhatsAppCronograma(props.casamento, destino, montarUrlCronogramaPublico(token))
+    const destinoWhatsApp = montarWhatsAppCronograma(props.evento, destino, montarUrlCronogramaPublico(token))
     if (janela) {
       janela.opener = null
       janela.location.href = destinoWhatsApp
@@ -224,8 +224,8 @@ async function confirmar() {
   executandoConfirmacao.value = true
   const resultado =
     atual.acao === 'regenerar'
-      ? await store.regenerar(props.casamentoId, linkId)
-      : await store.revogar(props.casamentoId, linkId)
+      ? await store.regenerar(props.eventoId, linkId)
+      : await store.revogar(props.eventoId, linkId)
   executandoConfirmacao.value = false
   confirmacao.value = null
   if (!resultado.ok) {
@@ -263,7 +263,7 @@ async function confirmar() {
         :mensagem="TEXTOS_LINKS_CRONOGRAMA.erroTexto"
         :pode-tentar-novamente="falha.tipo !== 'semPermissao'"
         :variante="falha.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
-        @tentar-novamente="store.carregar(casamentoId)"
+        @tentar-novamente="store.carregar(eventoId)"
       />
 
       <template v-else-if="links">

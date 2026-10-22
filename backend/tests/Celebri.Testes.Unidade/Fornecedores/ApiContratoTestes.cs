@@ -40,10 +40,10 @@ public class ApiContratoTestes
             new HostingEnvironment { EnvironmentName = Environments.Production },
             NullLogger<ExcecaoGlobalHandler>.Instance);
 
-        var detalhes = handler.CriarDetalhesProblema(new ArquivoGrandeDemaisException(MensagensFornecedoresCasamento.ContratoGrandeDemais));
+        var detalhes = handler.CriarDetalhesProblema(new ArquivoGrandeDemaisException(MensagensFornecedoresEvento.ContratoGrandeDemais));
 
         Assert.Equal(StatusCodes.Status413PayloadTooLarge, detalhes.Status);
-        Assert.Equal(MensagensFornecedoresCasamento.ContratoGrandeDemais, detalhes.Detail);
+        Assert.Equal(MensagensFornecedoresEvento.ContratoGrandeDemais, detalhes.Detail);
     }
 
     private sealed class ServicoProblemDetailsNulo : IProblemDetailsService

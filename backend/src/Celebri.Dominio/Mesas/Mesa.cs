@@ -4,14 +4,14 @@ using Celebri.Dominio.Isolamento;
 
 namespace Celebri.Dominio.Mesas;
 
-public class Mesa : IPertenceCasamento
+public class Mesa : IPertenceEvento
 {
     public const int NumeroMinimo = 1;
     public const int NumeroMaximo = 999;
     public const int CapacidadeMinima = 1;
     public const int CapacidadeMaxima = 30;
     public const int TamanhoMaximoNome = 60;
-    public const int MesasMaximoPorCasamento = 500;
+    public const int MesasMaximoPorEvento = 500;
     public const int PessoasMaximoPorOperacao = 200;
     public const string CampoNumero = "numero";
     public const string CampoCapacidade = "capacidade";
@@ -26,7 +26,7 @@ public class Mesa : IPertenceCasamento
 
     public Guid OrganizacaoId { get; private set; }
 
-    public Guid CasamentoId { get; private set; }
+    public Guid EventoId { get; private set; }
 
     public int Numero { get; private set; }
 
@@ -46,23 +46,23 @@ public class Mesa : IPertenceCasamento
     {
         if (especial && nome is null)
         {
-            return "Mesa dos noivos";
+            return "Mesa dos anfitriões";
         }
 
         return nome is null ? $"Mesa {numero}" : $"Mesa {numero} · {nome}";
     }
 
-    public static Mesa Criar(Guid casamentoId, DadosMesa dados, DateTimeOffset agora)
+    public static Mesa Criar(Guid eventoId, DadosMesa dados, DateTimeOffset agora)
     {
-        if (casamentoId == Guid.Empty)
+        if (eventoId == Guid.Empty)
         {
-            throw new ArgumentException("O casamento da mesa é obrigatório.", nameof(casamentoId));
+            throw new ArgumentException("O evento da mesa é obrigatório.", nameof(eventoId));
         }
 
         var mesa = new Mesa
         {
             Id = Guid.NewGuid(),
-            CasamentoId = casamentoId,
+            EventoId = eventoId,
             CriadoEm = agora,
         };
 

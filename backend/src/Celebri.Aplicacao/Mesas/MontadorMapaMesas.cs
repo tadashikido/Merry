@@ -17,7 +17,7 @@ public static class MontadorMapaMesas
             .ToList();
     }
 
-    public static MapaMesasDto Montar(IEnumerable<Mesa> mesas, IEnumerable<Convite> convites, bool casamentoArquivado)
+    public static MapaMesasDto Montar(IEnumerable<Mesa> mesas, IEnumerable<Convite> convites, bool eventoArquivado)
     {
         ArgumentNullException.ThrowIfNull(mesas);
         ArgumentNullException.ThrowIfNull(convites);
@@ -85,7 +85,7 @@ public static class MontadorMapaMesas
             .ThenBy(aviso => aviso.ConvidadoId)
             .ToList();
 
-        return new MapaMesasDto(mesasDto, pessoas, avisosOrdenados, totais, casamentoArquivado);
+        return new MapaMesasDto(mesasDto, pessoas, avisosOrdenados, totais, eventoArquivado);
     }
 
     public static MesaDto ParaDto(Mesa mesa, int ocupacao)

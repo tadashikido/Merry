@@ -3,8 +3,8 @@ import { computed, ref, useId, watch } from 'vue'
 import Button from 'primevue/button'
 
 import EnvioArquivo from './EnvioArquivo.vue'
-import { TEXTOS_CONTRATO, TEXTOS_ENVIO_CONTRATO } from '@/textos/fornecedoresCasamento'
-import type { ContratoFornecedorDto } from '@/tipos/fornecedoresCasamento'
+import { TEXTOS_CONTRATO, TEXTOS_ENVIO_CONTRATO } from '@/textos/fornecedoresEvento'
+import type { ContratoFornecedorDto } from '@/tipos/fornecedoresEvento'
 import { ACEITE_CONTRATO, formatarTamanhoArquivo } from '@/utilitarios/arquivo'
 import { formatarData } from '@/utilitarios/formatacao'
 

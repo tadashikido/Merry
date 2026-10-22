@@ -7,33 +7,33 @@ import LayoutImpressao from '@/layouts/LayoutImpressao.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import OcupacaoMesa from '@/componentes/base/OcupacaoMesa.vue'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useMesasStore } from '@/stores/mesas'
 import { TEXTOS_IMPRESSAO_MESAS, TEXTOS_MESAS } from '@/textos/mesas'
 import type { PessoaMesaDto } from '@/tipos/mesas'
-import { formatarDataCalendarioComDiaSemana, formatarDataHora, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarDataCalendarioComDiaSemana, formatarDataHora, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { agruparPorConvite, conviteDeUmaPessoa, mesasComPessoas, rotuloMesa } from '@/utilitarios/mesas'
 
 const props = defineProps<{ id: string }>()
 
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const store = useMesasStore()
 
 const geradoEm = new Date().toISOString()
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
-const mapa = computed(() => (store.casamentoId === props.id ? store.mapa : null))
-const falha = computed(() => (store.casamentoId === props.id ? store.falha : null))
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
+const mapa = computed(() => (store.eventoId === props.id ? store.mapa : null))
+const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
 
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
 const quando = computed(() => {
-  if (!casamento.value) {
+  if (!evento.value) {
     return ''
   }
-  const data = formatarDataCalendarioComDiaSemana(casamento.value.data)
-  return casamento.value.horario ? `${data}, ${casamento.value.horario}` : data
+  const data = formatarDataCalendarioComDiaSemana(evento.value.data)
+  return evento.value.horario ? `${data}, ${evento.value.horario}` : data
 })
 const mesas = computed(() => (mapa.value ? mesasComPessoas(mapa.value.mesas, mapa.value.pessoas, mapa.value.pessoas) : []))
 const semMesa = computed(() => agruparPorConvite((mapa.value?.pessoas ?? []).filter((pessoa) => pessoa.mesaId === null)))
@@ -57,7 +57,7 @@ function descreverPessoa(pessoa: PessoaMesaDto): string {
 watch(
   () => props.id,
   (id) => {
-    void casamentos.obter(id)
+    void eventos.obter(id)
     void store.carregar(id)
   },
   { immediate: true },
@@ -82,7 +82,7 @@ function imprimir() {
   <LayoutImpressao :rotulo-acoes="TEXTOS_IMPRESSAO_MESAS.acoesRotulo">
     <template #acoes>
       <RouterLink
-        :to="{ name: 'casamento-mesas', params: { id } }"
+        :to="{ name: 'evento-mesas', params: { id } }"
         data-teste="voltar-mesas"
       >
         {{ TEXTOS_IMPRESSAO_MESAS.voltar }}
@@ -126,7 +126,7 @@ function imprimir() {
           </p>
         </div>
         <div class="mapa__identificacao pilha pilha--campo">
-          <h1 class="mapa__casal">
+          <h1 class="mapa__anfitriao">
             {{ nomes }}
           </h1>
           <p
@@ -136,11 +136,11 @@ function imprimir() {
             {{ quando }}
           </p>
           <p
-            v-if="casamento?.localRecepcao"
+            v-if="evento?.localRecepcao"
             class="mapa__local"
             data-teste="local-impressao"
           >
-            {{ casamento.localRecepcao }}
+            {{ evento.localRecepcao }}
           </p>
         </div>
       </header>
@@ -173,9 +173,9 @@ function imprimir() {
             <p
               v-if="item.mesa.especial && item.mesa.nome"
               class="mapa__selo texto-rotulo"
-              data-teste="selo-noivos"
+              data-teste="selo-anfitrioes"
             >
-              {{ TEXTOS_MESAS.rotuloMesaNoivos }}
+              {{ TEXTOS_MESAS.rotuloMesaAnfitrioes }}
             </p>
             <h2 class="mapa__mesa-titulo">
               {{ rotuloMesa(item.mesa) }}
@@ -274,7 +274,7 @@ function imprimir() {
   min-width: 0;
 }
 
-.mapa__casal {
+.mapa__anfitriao {
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina-celular);
   font-weight: var(--p-fonte-peso-leve);
@@ -390,7 +390,7 @@ function imprimir() {
 }
 
 @container mapa (min-width: 36rem) {
-  .mapa__casal {
+  .mapa__anfitriao {
     font-size: var(--p-fonte-tamanho-pagina);
   }
 
@@ -412,7 +412,7 @@ function imprimir() {
     --pilha-espaco: var(--p-ritmo-cartao);
   }
 
-  .mapa__casal {
+  .mapa__anfitriao {
     font-size: var(--p-fonte-tamanho-pagina-celular);
   }
 

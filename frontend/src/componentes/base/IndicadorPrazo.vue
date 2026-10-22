@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 import { TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 import { formatarDiaMes } from '@/utilitarios/rsvp'
 
 const DIAS_ALERTA = 3

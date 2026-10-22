@@ -6,17 +6,17 @@ namespace Celebri.Aplicacao.Persistencia;
 
 public interface IChecklistRepository
 {
-    Task<ProgressoChecklist> ObterProgressoAsync(Guid casamentoId, CancellationToken cancelamento);
+    Task<ProgressoChecklist> ObterProgressoAsync(Guid eventoId, CancellationToken cancelamento);
 
-    Task<IReadOnlyList<TarefaCasamento>> ListarTarefasAsync(Guid casamentoId, CancellationToken cancelamento);
+    Task<IReadOnlyList<TarefaEvento>> ListarTarefasAsync(Guid eventoId, CancellationToken cancelamento);
 
     Task<IReadOnlyList<Guid>> ListarOrigensAplicadasAsync(
-        Guid casamentoId,
+        Guid eventoId,
         IReadOnlyCollection<Guid> itensModelo,
         CancellationToken cancelamento);
 
     Task<IReadOnlyList<TarefaComPrazoRelativo>> ListarAbertasComPrazoRelativoAsync(
-        Guid casamentoId,
+        Guid eventoId,
         bool rastrear,
         CancellationToken cancelamento);
 }

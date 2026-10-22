@@ -1,4 +1,4 @@
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 import type { CategoriaTarefa, ResponsavelTarefa, TarefaDto } from '@/tipos/tarefas'
 
 export const MARCOS_CHECKLIST = [
@@ -31,7 +31,7 @@ export interface ItemModeloChecklistDto {
   descricao: string | null
   responsavel: ResponsavelTarefa
   categoria: CategoriaTarefa
-  diasAntesDoCasamento: number
+  diasAntesDoEvento: number
 }
 
 export interface ModeloChecklistDto {
@@ -54,7 +54,7 @@ export interface SalvarItemModeloChecklistRequest {
   descricao: string | null
   responsavel: ResponsavelTarefa
   categoria: CategoriaTarefa
-  diasAntesDoCasamento: number
+  diasAntesDoEvento: number
 }
 
 export interface ProgressoChecklistDto {
@@ -65,10 +65,10 @@ export interface ProgressoChecklistDto {
   total: number
 }
 
-export interface ChecklistCasamentoDto {
+export interface ChecklistEventoDto {
   progresso: ProgressoChecklistDto
-  dataCasamento: DataCalendario
-  casamentoArquivado: boolean
+  dataEvento: DataCalendario
+  eventoArquivado: boolean
   prazosDesatualizados: number
   tarefas: TarefaDto[]
 }
@@ -78,7 +78,7 @@ export interface AplicacaoModeloChecklistDto {
   tarefasCriadas: number
   jaAplicadas: number
   nascemAtrasadas: number
-  tarefasNoCasamento: number
+  tarefasNoEvento: number
   excedeLimite: boolean
   progresso: ProgressoChecklistDto
 }

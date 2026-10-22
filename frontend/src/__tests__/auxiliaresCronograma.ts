@@ -3,7 +3,7 @@ import type { CronogramaDto, ItemCronogramaDto } from '@/tipos/cronograma'
 export function itemCronograma(dados: Partial<ItemCronogramaDto> = {}): ItemCronogramaDto {
   return {
     id: 'i1',
-    dia: 'DiaDoCasamento',
+    dia: 'DiaDoEvento',
     data: '2027-05-15',
     inicio: '16:30',
     duracaoMinutos: 45,
@@ -27,8 +27,8 @@ export function itemCronograma(dados: Partial<ItemCronogramaDto> = {}): ItemCron
 
 export function cronogramaExemplo(itens: ItemCronogramaDto[], dados: Partial<CronogramaDto> = {}): CronogramaDto {
   return {
-    casamentoId: '11111111-1111-4111-8111-111111111111',
-    dataCasamento: '2027-05-15',
+    eventoId: '11111111-1111-4111-8111-111111111111',
+    dataEvento: '2027-05-15',
     horarioCerimonia: '16:30',
     localCerimonia: 'Capela São José',
     localRecepcao: 'Espaço Jardim',
@@ -36,7 +36,7 @@ export function cronogramaExemplo(itens: ItemCronogramaDto[], dados: Partial<Cro
     somenteLeitura: false,
     itens,
     itensComConflito: itens.filter((item) => item.conflitos.length > 0).length,
-    fornecedoresDisponiveis: [{ fornecedorCasamentoId: 'v1', nomeEmpresa: 'Coral Harmonia', categoria: 'Musica' }],
+    fornecedoresDisponiveis: [{ fornecedorEventoId: 'v1', nomeEmpresa: 'Coral Harmonia', categoria: 'Musica' }],
     horariosDesatualizados: 0,
     ...dados,
   }

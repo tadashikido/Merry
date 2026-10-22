@@ -8,17 +8,17 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class ChecklistRepository : IChecklistRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public ChecklistRepository(CasamentoDbContext contexto)
+    public ChecklistRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }
 
-    public async Task<ProgressoChecklist> ObterProgressoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ProgressoChecklist> ObterProgressoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var contagem = await DoChecklist(casamentoId)
-            .GroupBy(tarefa => tarefa.CasamentoId)
+        var contagem = await DoChecklist(eventoId)
+            .GroupBy(tarefa => tarefa.EventoId)
             .Select(grupo => new
             {
                 Total = grupo.Count(),
@@ -32,13 +32,13 @@ public class ChecklistRepository : IChecklistRepository
             : new ProgressoChecklist(contagem.Total, contagem.Concluidas, contagem.Canceladas);
     }
 
-    public async Task<IReadOnlyList<TarefaCasamento>> ListarTarefasAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<IReadOnlyList<TarefaEvento>> ListarTarefasAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        return await DoChecklist(casamentoId).AsNoTracking().ToListAsync(cancelamento);
+        return await DoChecklist(eventoId).AsNoTracking().ToListAsync(cancelamento);
     }
 
     public async Task<IReadOnlyList<Guid>> ListarOrigensAplicadasAsync(
-        Guid casamentoId,
+        Guid eventoId,
         IReadOnlyCollection<Guid> itensModelo,
         CancellationToken cancelamento)
     {
@@ -49,33 +49,33 @@ public class ChecklistRepository : IChecklistRepository
 
         var itens = itensModelo.ToArray();
 
-        return await DoChecklist(casamentoId)
+        return await DoChecklist(eventoId)
             .Where(tarefa => itens.Contains(tarefa.OrigemModeloItemId!.Value))
             .Select(tarefa => tarefa.OrigemModeloItemId!.Value)
             .ToListAsync(cancelamento);
     }
 
     public async Task<IReadOnlyList<TarefaComPrazoRelativo>> ListarAbertasComPrazoRelativoAsync(
-        Guid casamentoId,
+        Guid eventoId,
         bool rastrear,
         CancellationToken cancelamento)
     {
-        var tarefas = rastrear ? _contexto.TarefasCasamento : _contexto.TarefasCasamento.AsNoTracking();
+        var tarefas = rastrear ? _contexto.TarefasEvento : _contexto.TarefasEvento.AsNoTracking();
 
         var consulta =
             from tarefa in tarefas
             join item in _contexto.ItensModeloChecklist on tarefa.OrigemModeloItemId equals (Guid?)item.Id
-            where tarefa.CasamentoId == casamentoId
+            where tarefa.EventoId == eventoId
                 && (tarefa.Status == StatusTarefa.AFazer || tarefa.Status == StatusTarefa.EmAndamento)
-            select new { Tarefa = tarefa, item.DiasAntesDoCasamento };
+            select new { Tarefa = tarefa, item.DiasAntesDoEvento };
 
         var resultado = await consulta.ToListAsync(cancelamento);
-        return resultado.Select(linha => new TarefaComPrazoRelativo(linha.Tarefa, linha.DiasAntesDoCasamento)).ToList();
+        return resultado.Select(linha => new TarefaComPrazoRelativo(linha.Tarefa, linha.DiasAntesDoEvento)).ToList();
     }
 
-    private IQueryable<TarefaCasamento> DoChecklist(Guid casamentoId)
+    private IQueryable<TarefaEvento> DoChecklist(Guid eventoId)
     {
-        return _contexto.TarefasCasamento
-            .Where(tarefa => tarefa.CasamentoId == casamentoId && tarefa.OrigemModeloItemId != null);
+        return _contexto.TarefasEvento
+            .Where(tarefa => tarefa.EventoId == eventoId && tarefa.OrigemModeloItemId != null);
     }
 }

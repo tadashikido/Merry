@@ -8,7 +8,7 @@ afterEach(() => {
 })
 
 describe('dispensaProximosPassos', () => {
-  it('[UNITÁRIO] registra a dispensa por casamento sem afetar os outros', () => {
+  it('[UNITÁRIO] registra a dispensa por evento sem afetar os outros', () => {
     registrarDispensa('a')
 
     expect(estaDispensado('a')).toBe(true)
@@ -16,7 +16,7 @@ describe('dispensaProximosPassos', () => {
     expect(JSON.parse(window.localStorage.getItem(CHAVE_DISPENSA_PROXIMOS_PASSOS)!)).toEqual(['a'])
   })
 
-  it('[UNITÁRIO] não duplica o mesmo casamento', () => {
+  it('[UNITÁRIO] não duplica o mesmo evento', () => {
     registrarDispensa('a')
     registrarDispensa('b')
     registrarDispensa('a')
@@ -24,7 +24,7 @@ describe('dispensaProximosPassos', () => {
     expect(JSON.parse(window.localStorage.getItem(CHAVE_DISPENSA_PROXIMOS_PASSOS)!)).toEqual(['b', 'a'])
   })
 
-  it('[UNITÁRIO] guarda no máximo 200 casamentos, descartando os mais antigos', () => {
+  it('[UNITÁRIO] guarda no máximo 200 eventos, descartando os mais antigos', () => {
     for (let indice = 0; indice < 205; indice++) {
       registrarDispensa(`c${indice}`)
     }

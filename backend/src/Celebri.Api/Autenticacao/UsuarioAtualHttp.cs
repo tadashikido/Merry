@@ -18,7 +18,7 @@ public class UsuarioAtualHttp : IUsuarioAtual
 
     public Guid? OrganizacaoId => LerGuid(ClaimsAutenticacao.OrganizacaoId);
 
-    public Guid? CasamentoId => LerGuid(ClaimsAutenticacao.CasamentoId);
+    public Guid? EventoId => LerGuid(ClaimsAutenticacao.EventoId);
 
     public string? Papel => Autenticado ? _acessorContexto.HttpContext?.User.FindFirst(ClaimsAutenticacao.Papel)?.Value : null;
 

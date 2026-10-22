@@ -26,7 +26,7 @@ describe('requisitarArquivo', () => {
       }),
     )
 
-    const arquivo = await requisitarArquivo('/api/casamentos/c/fornecedores/v/contrato')
+    const arquivo = await requisitarArquivo('/api/eventos/c/fornecedores/v/contrato')
 
     expect(arquivo.nomeArquivo).toBe('contrato São João.pdf')
     expect(await arquivo.conteudo.text()).toBe('%PDF-1.4')

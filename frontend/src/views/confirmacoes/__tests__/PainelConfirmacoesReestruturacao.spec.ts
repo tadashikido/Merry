@@ -13,11 +13,11 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_COBRANCA, TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
 import type { ConvitePendenteDto } from '@/tipos/confirmacoes'
 import type { RelatorioRestricoesAlimentaresDto } from '@/tipos/dadosSensiveis'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_PAINEL = `${ROTA_CASAMENTO}/painel-confirmacoes`
-const ROTA_RESTRICOES = `${ROTA_CASAMENTO}/restricoes-alimentares`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_PAINEL = `${ROTA_EVENTO}/painel-confirmacoes`
+const ROTA_RESTRICOES = `${ROTA_EVENTO}/restricoes-alimentares`
 
 const lerEstilo = (arquivo: string) => {
   const fonte = readFileSync(resolve(__dirname, arquivo), 'utf-8')
@@ -83,11 +83,11 @@ afterEach(() => {
 async function abrir(painel: () => Response) {
   rotearFetch(
     fetchSimulado,
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' }))),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' }))),
     quando('GET', ROTA_PAINEL, painel),
     quando('GET', ROTA_RESTRICOES, () => respostaJson(relatorio)),
   )
-  const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/confirmacoes`)
+  const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/confirmacoes`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
 }

@@ -1,7 +1,7 @@
 namespace Celebri.Aplicacao.Financeiro;
 
 public sealed record FornecedorFinanceiroDto(
-    Guid FornecedorCasamentoId,
+    Guid FornecedorEventoId,
     Guid FornecedorId,
     string NomeEmpresa,
     string Categoria,

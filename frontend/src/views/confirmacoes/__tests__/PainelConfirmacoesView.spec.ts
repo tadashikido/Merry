@@ -8,7 +8,7 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CONFIRMACOES, TEXTOS_PREVIA_RSVP } from '@/textos/confirmacoes'
 import type { RelatorioRestricoesAlimentaresDto } from '@/tipos/dadosSensiveis'
 import * as arquivo from '@/utilitarios/arquivo'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -18,11 +18,11 @@ vi.mock('@/composables/useNotificacao', () => ({
   DURACAO_TOAST_ERRO: 6000,
 }))
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_PAINEL = `${ROTA_CASAMENTO}/painel-confirmacoes`
-const ROTA_RESTRICOES = `${ROTA_CASAMENTO}/restricoes-alimentares`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_PAINEL = `${ROTA_EVENTO}/painel-confirmacoes`
+const ROTA_RESTRICOES = `${ROTA_EVENTO}/restricoes-alimentares`
 const ID_LIMA = '33333333-3333-4333-8333-333333333333'
-const ROTA_CONVITE = `${ROTA_CASAMENTO}/convites/${ID_LIMA}`
+const ROTA_CONVITE = `${ROTA_EVENTO}/convites/${ID_LIMA}`
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
 
 function relatorio(dados: Partial<RelatorioRestricoesAlimentaresDto> = {}): RelatorioRestricoesAlimentaresDto {
@@ -70,7 +70,7 @@ afterEach(() => {
 })
 
 async function abrir(): Promise<Montagem> {
-  const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/confirmacoes`)
+  const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/confirmacoes`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
   return montagem
@@ -78,7 +78,7 @@ async function abrir(): Promise<Montagem> {
 
 function rotas(painel = painelExemplo(), arquivado = false) {
   return [
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ arquivado, data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' }))),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ arquivado, data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' }))),
     quando('GET', ROTA_PAINEL, () => respostaJson(painel)),
     quando('GET', ROTA_RESTRICOES, () => respostaJson(relatorio())),
   ]
@@ -103,7 +103,7 @@ describe('PainelConfirmacoesView', { timeout: 20_000 }, () => {
     expect(wrapper!.get('[data-teste="legenda-visualizados"] dd').text()).toBe('1')
     expect(wrapper!.get('[data-teste="respondidos"]').text()).toBe('2 respondidos · 1 aguardando resposta')
     expect(wrapper!.get('[data-teste="cardapio-SemGluten"] dd').text()).toBe('3')
-    expect(wrapper!.get('[data-teste="ver-restricoes"]').attributes('href')).toBe(`/casamentos/${ID_CASAMENTO}/restricoes-alimentares`)
+    expect(wrapper!.get('[data-teste="ver-restricoes"]').attributes('href')).toBe(`/eventos/${ID_EVENTO}/restricoes-alimentares`)
     const pendente = wrapper!.get('[data-teste="pendente"]')
     expect(pendente.text()).toContain('Família Lima')
     expect(pendente.text()).toContain('Bia Lima')
@@ -120,7 +120,7 @@ describe('PainelConfirmacoesView', { timeout: 20_000 }, () => {
     expect(wrapper!.get('[data-teste="pendentes-vazio"]').text()).toContain(TEXTOS_CONFIRMACOES.pendentesVazio)
   })
 
-  it('[COMPONENTE] casamento sem convites mostra vazio e esconde exportação', async () => {
+  it('[COMPONENTE] evento sem convites mostra vazio e esconde exportação', async () => {
     rotearFetch(
       fetchSimulado,
       ...rotas(painelExemplo({ convites: { total: 0, naoEnviados: 0, enviados: 0, visualizados: 0, respondidos: 0, aguardandoResposta: 0 }, pendentes: [] })),
@@ -135,7 +135,7 @@ describe('PainelConfirmacoesView', { timeout: 20_000 }, () => {
     let falhar = true
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_PAINEL, () => (falhar ? respostaProblema(500) : respostaJson(painelExemplo()))),
       quando('GET', ROTA_RESTRICOES, () => respostaJson(relatorio())),
     )
@@ -150,23 +150,23 @@ describe('PainelConfirmacoesView', { timeout: 20_000 }, () => {
     expect(wrapper!.find('[data-teste="indicador-prazo"]').exists()).toBe(true)
   })
 
-  it('[SEGURANÇA] casamento de outra organização mostra não encontrado', async () => {
+  it('[SEGURANÇA] evento de outra organização mostra não encontrado', async () => {
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_CASAMENTO, () => respostaProblema(404)),
+      quando('GET', ROTA_EVENTO, () => respostaProblema(404)),
       quando('GET', ROTA_PAINEL, () => respostaProblema(404)),
       quando('GET', ROTA_RESTRICOES, () => respostaProblema(404)),
     )
     await abrir()
 
     expect(wrapper!.text()).toContain(TEXTOS_CONFIRMACOES.naoEncontradoTitulo)
-    expect(wrapper!.find('[data-teste="voltar-casamentos"]').exists()).toBe(true)
+    expect(wrapper!.find('[data-teste="voltar-eventos"]').exists()).toBe(true)
   })
 
   it('[COMPONENTE] falha só nas restrições não derruba o painel', async () => {
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_PAINEL, () => respostaJson(painelExemplo())),
       quando('GET', ROTA_RESTRICOES, () => respostaProblema(500)),
     )
@@ -178,13 +178,13 @@ describe('PainelConfirmacoesView', { timeout: 20_000 }, () => {
 
   it('[INTEGRAÇÃO] Baixar planilha exporta em CSV, baixa o arquivo sem contato e avisa', async () => {
     const baixar = vi.spyOn(arquivo, 'baixarTexto').mockImplementation(() => undefined)
-    rotearFetch(fetchSimulado, ...rotas(), quando('GET', `${ROTA_CASAMENTO}/exportacao-buffet?formato=csv`, () => respostaJson(exportacaoExemplo())))
+    rotearFetch(fetchSimulado, ...rotas(), quando('GET', `${ROTA_EVENTO}/exportacao-buffet?formato=csv`, () => respostaJson(exportacaoExemplo())))
     await abrir()
 
     await wrapper!.get('[data-teste="baixar-planilha"]').trigger('click')
     await flushPromises()
 
-    expect(chamadas(fetchSimulado, 'GET', `${ROTA_CASAMENTO}/exportacao-buffet?formato=csv`)).toHaveLength(1)
+    expect(chamadas(fetchSimulado, 'GET', `${ROTA_EVENTO}/exportacao-buffet?formato=csv`)).toHaveLength(1)
     expect(baixar).toHaveBeenCalledTimes(1)
     const [nome, conteudo] = baixar.mock.calls[0]!
     expect(nome).toBe('buffet-ana-beatriz-e-bruno-2027-05-22.csv')
@@ -194,7 +194,7 @@ describe('PainelConfirmacoesView', { timeout: 20_000 }, () => {
 
   it('[COMPONENTE] erro na exportação avisa sem baixar', async () => {
     const baixar = vi.spyOn(arquivo, 'baixarTexto').mockImplementation(() => undefined)
-    rotearFetch(fetchSimulado, ...rotas(), quando('GET', `${ROTA_CASAMENTO}/exportacao-buffet?formato=csv`, () => respostaProblema(500)))
+    rotearFetch(fetchSimulado, ...rotas(), quando('GET', `${ROTA_EVENTO}/exportacao-buffet?formato=csv`, () => respostaProblema(500)))
     await abrir()
 
     await wrapper!.get('[data-teste="baixar-planilha"]').trigger('click')
@@ -211,14 +211,14 @@ describe('PainelConfirmacoesView', { timeout: 20_000 }, () => {
     await wrapper!.get('[data-teste="abrir-impressao"]').trigger('click')
     await flushPromises()
 
-    expect(window.open).toHaveBeenCalledWith(`/casamentos/${ID_CASAMENTO}/confirmacoes/buffet`, '_blank')
+    expect(window.open).toHaveBeenCalledWith(`/eventos/${ID_EVENTO}/confirmacoes/buffet`, '_blank')
     expect(janela.opener).toBeNull()
     expect(montagem.roteador.currentRoute.value.name).toBe('painel-confirmacoes')
   })
 
   it('[COMPONENTE] com pop-up bloqueado a ficha abre na própria aba', async () => {
     vi.mocked(window.open).mockReturnValue(null)
-    rotearFetch(fetchSimulado, ...rotas(), quando('GET', `${ROTA_CASAMENTO}/exportacao-buffet?formato=impressao`, () => respostaJson(exportacaoExemplo())))
+    rotearFetch(fetchSimulado, ...rotas(), quando('GET', `${ROTA_EVENTO}/exportacao-buffet?formato=impressao`, () => respostaJson(exportacaoExemplo())))
     const montagem = await abrir()
 
     await wrapper!.get('[data-teste="abrir-impressao"]').trigger('click')
@@ -262,8 +262,8 @@ describe('PainelConfirmacoesView', { timeout: 20_000 }, () => {
     expect(chamadas(fetchSimulado, 'POST', `${ROTA_CONVITE}/envio`)).toHaveLength(0)
   })
 
-  it('[COMPONENTE] casamento arquivado mostra aviso, esconde WhatsApp e alterar prazo, mas exporta', async () => {
-    rotearFetch(fetchSimulado, ...rotas(painelExemplo({ casamentoArquivado: true, prazo: { dataLimite: '2027-05-12', diasRestantes: 5, aceitaRespostas: false } }), true))
+  it('[COMPONENTE] evento arquivado mostra aviso, esconde WhatsApp e alterar prazo, mas exporta', async () => {
+    rotearFetch(fetchSimulado, ...rotas(painelExemplo({ eventoArquivado: true, prazo: { dataLimite: '2027-05-12', diasRestantes: 5, aceitaRespostas: false } }), true))
     await abrir()
 
     expect(wrapper!.find('[data-teste="aviso-arquivado"]').exists()).toBe(true)

@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 
 namespace Celebri.Dominio.Cronogramas;
 
@@ -17,11 +17,11 @@ public class AcessoCronograma
 
     public Guid OrganizacaoId { get; private set; }
 
-    public Guid CasamentoId { get; private set; }
+    public Guid EventoId { get; private set; }
 
     public TipoAcessoCronograma Tipo { get; private set; }
 
-    public Guid? FornecedorCasamentoId { get; private set; }
+    public Guid? FornecedorEventoId { get; private set; }
 
     public string? ResponsavelChave { get; private set; }
 
@@ -33,33 +33,33 @@ public class AcessoCronograma
 
     public DestinoAcessoCronograma Destino => Tipo switch
     {
-        TipoAcessoCronograma.Fornecedor => DestinoAcessoCronograma.DoFornecedor(FornecedorCasamentoId),
+        TipoAcessoCronograma.Fornecedor => DestinoAcessoCronograma.DoFornecedor(FornecedorEventoId),
         TipoAcessoCronograma.Responsavel => DestinoAcessoCronograma.DoResponsavel(ResponsavelChave),
         _ => DestinoAcessoCronograma.Geral(),
     };
 
     public static AcessoCronograma Gerar(
-        CasamentoAssessorado casamento,
+        Evento evento,
         DestinoAcessoCronograma destino,
         string tokenHash,
         string tokenCifrado,
         DateTimeOffset agora)
     {
-        ArgumentNullException.ThrowIfNull(casamento);
+        ArgumentNullException.ThrowIfNull(evento);
         ArgumentNullException.ThrowIfNull(destino);
 
-        if (casamento.OrganizacaoId == Guid.Empty)
+        if (evento.OrganizacaoId == Guid.Empty)
         {
-            throw new InvalidOperationException("O casamento precisa estar persistido na organização antes de gerar o link do cronograma.");
+            throw new InvalidOperationException("O evento precisa estar persistido na organização antes de gerar o link do cronograma.");
         }
 
         var acesso = new AcessoCronograma
         {
             Id = Guid.NewGuid(),
-            OrganizacaoId = casamento.OrganizacaoId,
-            CasamentoId = casamento.Id,
+            OrganizacaoId = evento.OrganizacaoId,
+            EventoId = evento.Id,
             Tipo = destino.Tipo,
-            FornecedorCasamentoId = destino.FornecedorCasamentoId,
+            FornecedorEventoId = destino.FornecedorEventoId,
             ResponsavelChave = destino.ResponsavelChave,
         };
 
@@ -85,7 +85,7 @@ public class AcessoCronograma
     public bool AtendeItem(ItemCronograma item)
     {
         ArgumentNullException.ThrowIfNull(item);
-        return item.CasamentoId == CasamentoId && Destino.AtendeItem(item);
+        return item.EventoId == EventoId && Destino.AtendeItem(item);
     }
 
     public bool MesmoDestino(DestinoAcessoCronograma destino)

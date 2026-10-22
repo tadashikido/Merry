@@ -6,7 +6,7 @@ import { useConfirmacoesStore } from '@/stores/confirmacoes'
 import { useConvidadosStore, type FalhaConvidados } from '@/stores/convidados'
 import { TEXTOS_COBRANCA, TEXTOS_PREVIA_RSVP } from '@/textos/confirmacoes'
 import { TEXTOS_ENVIO_CONVITE } from '@/textos/rsvp'
-import type { CasamentoDto } from '@/tipos/casamentos'
+import type { EventoDto } from '@/tipos/eventos'
 import type { StatusEnvioConvite } from '@/tipos/convidados'
 import {
   montarLinkWhatsApp,
@@ -31,8 +31,8 @@ interface ConfirmacaoLink {
 }
 
 export interface OpcoesEnvioConvite {
-  casamentoId: MaybeRefOrGetter<string>
-  casamento: MaybeRefOrGetter<CasamentoDto | null>
+  eventoId: MaybeRefOrGetter<string>
+  evento: MaybeRefOrGetter<EventoDto | null>
   arquivado: MaybeRefOrGetter<boolean>
   aoAlterar?: () => void | Promise<void>
 }
@@ -77,10 +77,10 @@ export function useEnvioConvite(opcoes: OpcoesEnvioConvite) {
   }
 
   async function obterToken(convite: ConviteParaEnvio): Promise<string | null> {
-    const casamentoId = toValue(opcoes.casamentoId)
+    const eventoId = toValue(opcoes.eventoId)
     const resultado = toValue(opcoes.arquivado)
-      ? await store.consultarLinkRsvp(casamentoId, convite.id)
-      : await store.obterOuGerarLinkRsvp(casamentoId, convite.id)
+      ? await store.consultarLinkRsvp(eventoId, convite.id)
+      : await store.obterOuGerarLinkRsvp(eventoId, convite.id)
     if (!resultado.ok) {
       notificarFalhaLink(resultado.falha)
       return null
@@ -89,8 +89,8 @@ export function useEnvioConvite(opcoes: OpcoesEnvioConvite) {
   }
 
   function mensagemDoConvite(convite: ConviteParaEnvio, url: string): string | null {
-    const casamento = toValue(opcoes.casamento)
-    return casamento ? montarMensagemConvite(casamento, convite, url) : null
+    const evento = toValue(opcoes.evento)
+    return evento ? montarMensagemConvite(evento, convite, url) : null
   }
 
   async function copiar(texto: string, sucesso: string, alternativa: string) {
@@ -115,7 +115,7 @@ export function useEnvioConvite(opcoes: OpcoesEnvioConvite) {
   }
 
   async function marcarEnviado(convite: ConviteParaEnvio): Promise<boolean> {
-    const resultado = await store.marcarEnviado(toValue(opcoes.casamentoId), convite.id)
+    const resultado = await store.marcarEnviado(toValue(opcoes.eventoId), convite.id)
     if (!resultado.ok) {
       notificarFalhaLink(resultado.falha)
       return false
@@ -203,13 +203,13 @@ export function useEnvioConvite(opcoes: OpcoesEnvioConvite) {
     if (!confirmacao) {
       return
     }
-    const casamentoId = toValue(opcoes.casamentoId)
+    const eventoId = toValue(opcoes.eventoId)
     executandoConfirmacao.value = true
     try {
       const resultado =
         confirmacao.acao === 'regenerar'
-          ? await store.regenerarLinkRsvp(casamentoId, confirmacao.convite.id)
-          : await store.revogarLinkRsvp(casamentoId, confirmacao.convite.id)
+          ? await store.regenerarLinkRsvp(eventoId, confirmacao.convite.id)
+          : await store.revogarLinkRsvp(eventoId, confirmacao.convite.id)
       if (resultado.ok) {
         notificacao.sucesso(confirmacao.acao === 'regenerar' ? TEXTOS_ENVIO_CONVITE.linkRegenerado : TEXTOS_ENVIO_CONVITE.linkRevogado)
       } else {
@@ -226,8 +226,8 @@ export function useEnvioConvite(opcoes: OpcoesEnvioConvite) {
   }
 
   function lembreteDoConvite(convite: ConviteParaEnvio, url: string): string | null {
-    const casamento = toValue(opcoes.casamento)
-    return casamento ? montarMensagemLembrete(casamento, convite, url) : null
+    const evento = toValue(opcoes.evento)
+    return evento ? montarMensagemLembrete(evento, convite, url) : null
   }
 
   async function notificarFalhaCobranca(falha: FalhaConvidados) {
@@ -248,7 +248,7 @@ export function useEnvioConvite(opcoes: OpcoesEnvioConvite) {
   }
 
   async function gravarCobranca(convite: ConviteParaEnvio): Promise<boolean> {
-    const resultado = await confirmacoes.registrarCobranca(toValue(opcoes.casamentoId), convite.id)
+    const resultado = await confirmacoes.registrarCobranca(toValue(opcoes.eventoId), convite.id)
     if (!resultado.ok) {
       await notificarFalhaCobranca(resultado.falha)
       return false
@@ -258,7 +258,7 @@ export function useEnvioConvite(opcoes: OpcoesEnvioConvite) {
   }
 
   async function obterLinkAtivo(convite: ConviteParaEnvio): Promise<string | null> {
-    const resultado = await store.consultarLinkRsvp(toValue(opcoes.casamentoId), convite.id)
+    const resultado = await store.consultarLinkRsvp(toValue(opcoes.eventoId), convite.id)
     if (!resultado.ok) {
       if (resultado.falha.tipo === 'naoEncontrado') {
         await notificarFalhaCobranca(resultado.falha)

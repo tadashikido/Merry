@@ -12,7 +12,7 @@ import { TEXTOS_MESAS } from '@/textos/mesas'
 import type { ListaConvitesDto } from '@/tipos/convidados'
 import type { MapaMesasDto } from '@/tipos/mesas'
 import * as arquivo from '@/utilitarios/arquivo'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, rotearFetch, type Rota } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch, type Rota } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -22,8 +22,8 @@ vi.mock('@/composables/useNotificacao', () => ({
   DURACAO_TOAST_ERRO: 6000,
 }))
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_MESAS = `${ROTA_CASAMENTO}/mesas`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_MESAS = `${ROTA_EVENTO}/mesas`
 
 let fetchSimulado: ReturnType<typeof simularFetch>
 let wrapper: VueWrapper | undefined
@@ -52,10 +52,10 @@ afterEach(() => {
 })
 
 function rotasPadrao(mapa: MapaMesasDto = mapaExemplo(), ...extras: Rota[]): Rota[] {
-  return [quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())), quando('GET', ROTA_MESAS, () => respostaJson(mapa)), ...extras]
+  return [quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())), quando('GET', ROTA_MESAS, () => respostaJson(mapa)), ...extras]
 }
 
-async function abrir(caminho = `/casamentos/${ID_CASAMENTO}/mesas`) {
+async function abrir(caminho = `/eventos/${ID_EVENTO}/mesas`) {
   const montagem = await prepararAplicacao(caminho)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
@@ -99,14 +99,14 @@ describe('MesasView', { timeout: 30_000 }, () => {
     const aviso = await excluirMesa('Mesa 2 · Padrinhos')
 
     expect(aviso.mensagem).toBe(TEXTOS_MESAS.mesaExcluida('Mesa 2 · Padrinhos'))
-    expect(titulosMesas()).toEqual(['Mesa dos noivos', 'Mesa 3 · Tios'])
+    expect(titulosMesas()).toEqual(['Mesa dos anfitriões', 'Mesa 3 · Tios'])
     expect(wrapper!.get('[data-teste="coluna-sem-mesa"]').text()).toContain('Rui Fontes')
 
     await aviso.desfazer!()
     await aviso.aoFechar!()
     await flushPromises()
 
-    expect(titulosMesas()).toEqual(['Mesa dos noivos', 'Mesa 2 · Padrinhos', 'Mesa 3 · Tios'])
+    expect(titulosMesas()).toEqual(['Mesa dos anfitriões', 'Mesa 2 · Padrinhos', 'Mesa 3 · Tios'])
     expect(wrapper!.get('[data-teste="coluna-sem-mesa"]').text()).not.toContain('Rui Fontes')
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_MESAS.mesaRestaurada('Mesa 2 · Padrinhos'))
     expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_MESAS}/${MESA_PADRINHOS}`)).toHaveLength(0)
@@ -150,7 +150,7 @@ describe('MesasView', { timeout: 30_000 }, () => {
     expect(semMesa.text()).toContain('=Primo Zeca')
     expect(semMesa.text()).not.toContain('Rui Fontes')
     const mesas = wrapper!.findAll('[data-teste="mesa"]')
-    expect(mesas.map((mesa) => mesa.get('h3').text())).toEqual(['Mesa dos noivos', 'Mesa 2 · Padrinhos', 'Mesa 3 · Tios'])
+    expect(mesas.map((mesa) => mesa.get('h3').text())).toEqual(['Mesa dos anfitriões', 'Mesa 2 · Padrinhos', 'Mesa 3 · Tios'])
     expect(mesas[0]!.classes()).toContain('mesas__mesa--especial')
     expect(mesas[1]!.get('[data-teste="texto-ocupacao"]').text()).toBe('1 de 3')
     expect(mesas[2]!.text()).toContain(TEXTOS_MESAS.mesaVazia)
@@ -264,7 +264,7 @@ describe('MesasView', { timeout: 30_000 }, () => {
     await linha('Carla Souza').get('[data-teste="convite-dividido"]').trigger('click')
     await flushPromises()
 
-    expect(wrapper!.get('[data-teste="detalhe-divisao"]').text()).toBe('Família Souza: 1 na Mesa dos noivos, 2 sem mesa.')
+    expect(wrapper!.get('[data-teste="detalhe-divisao"]').text()).toBe('Família Souza: 1 na Mesa dos anfitriões, 2 sem mesa.')
   })
 
   it('[COMPONENTE] filtros por grupo e busca reduzem as listas e "Limpar filtros" restaura', async () => {
@@ -291,7 +291,7 @@ describe('MesasView', { timeout: 30_000 }, () => {
         quando('POST', ROTA_MESAS, () => {
           tentativas++
           return tentativas === 1
-            ? respostaProblema(422, { detail: 'Já existe uma mesa com este número neste casamento.', campo: 'numero' })
+            ? respostaProblema(422, { detail: 'Já existe uma mesa com este número neste evento.', campo: 'numero' })
             : respostaJson({ ...mapaExemplo().mesas[2], id: 'nova', numero: 4, nome: null, capacidade: 6 }, 201)
         }),
       ),
@@ -306,7 +306,7 @@ describe('MesasView', { timeout: 30_000 }, () => {
     salvar()
     await flushPromises()
 
-    expect(document.body.textContent).toContain('Já existe uma mesa com este número neste casamento.')
+    expect(document.body.textContent).toContain('Já existe uma mesa com este número neste evento.')
     salvar()
     await flushPromises()
 
@@ -314,8 +314,8 @@ describe('MesasView', { timeout: 30_000 }, () => {
     expect(chamadas(fetchSimulado, 'POST', ROTA_MESAS)).toHaveLength(2)
   })
 
-  it('[COMPONENTE] casamento arquivado fica somente leitura, mas exporta', async () => {
-    rotearFetch(fetchSimulado, ...rotasPadrao(mapaExemplo({ casamentoArquivado: true, avisosSaida: [avisoExemplo()] })))
+  it('[COMPONENTE] evento arquivado fica somente leitura, mas exporta', async () => {
+    rotearFetch(fetchSimulado, ...rotasPadrao(mapaExemplo({ eventoArquivado: true, avisosSaida: [avisoExemplo()] })))
     await abrir()
 
     expect(wrapper!.get('[data-teste="aviso-arquivado"]').text()).toContain(TEXTOS_MESAS.arquivado)
@@ -360,7 +360,7 @@ describe('MesasView', { timeout: 30_000 }, () => {
     let falhar = true
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_MESAS, () => (falhar ? respostaProblema(500) : respostaJson(mapaExemplo()))),
     )
     await abrir()
@@ -372,8 +372,8 @@ describe('MesasView', { timeout: 30_000 }, () => {
     expect(wrapper!.findAll('[data-teste="mesa"]')).toHaveLength(3)
   })
 
-  it('[SEGURANÇA] sem permissão mostra o estado próprio sem tentar de novo e 404 mostra casamento não encontrado', async () => {
-    rotearFetch(fetchSimulado, quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())), quando('GET', ROTA_MESAS, () => respostaProblema(403)))
+  it('[SEGURANÇA] sem permissão mostra o estado próprio sem tentar de novo e 404 mostra evento não encontrado', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())), quando('GET', ROTA_MESAS, () => respostaProblema(403)))
     await abrir()
     expect(wrapper!.text()).toContain(TEXTOS_MESAS.semAcesso)
     expect(wrapper!.find('[data-teste="estado-erro"] button').exists()).toBe(false)
@@ -382,7 +382,7 @@ describe('MesasView', { timeout: 30_000 }, () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_MESAS, () => respostaProblema(404)))
     await abrir()
     expect(wrapper!.text()).toContain(TEXTOS_MESAS.naoEncontradoTitulo)
-    expect(wrapper!.find('[data-teste="voltar-casamentos"]').exists()).toBe(true)
+    expect(wrapper!.find('[data-teste="voltar-eventos"]').exists()).toBe(true)
   })
 
   it('[COMPONENTE] no celular alterna entre os painéis Sem mesa e Mesas', async () => {
@@ -402,10 +402,10 @@ describe('MesasView', { timeout: 30_000 }, () => {
 })
 
 describe('ImpressaoMesasView', { timeout: 30_000 }, () => {
-  it('[COMPONENTE] monta a folha com casal, totais, mesas e sem mesa, e imprime', async () => {
+  it('[COMPONENTE] monta a folha com anfitriões, totais, mesas e sem mesa, e imprime', async () => {
     const imprimir = vi.spyOn(window, 'print').mockImplementation(() => undefined)
     rotearFetch(fetchSimulado, ...rotasPadrao())
-    await abrir(`/casamentos/${ID_CASAMENTO}/mesas/impressao`)
+    await abrir(`/eventos/${ID_EVENTO}/mesas/impressao`)
 
     const folha = wrapper!.get('[data-teste="mapa-mesas-impressao"]')
     expect(folha.get('h1').text()).toBe('Ana Beatriz & Bruno')
@@ -453,15 +453,15 @@ describe('ConvidadosView com mesas', { timeout: 30_000 }, () => {
         recusados: { adultos: 0, criancas: 0, total: 0 },
       },
       convidadosEstimados: null,
-      casamentoArquivado: false,
+      eventoArquivado: false,
       mesas: [{ id: MESA_PADRINHOS, numero: 2, nome: 'Padrinhos', especial: false }],
     }
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
-      quando('GET', `${ROTA_CASAMENTO}/convites`, () => respostaJson(lista)),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
+      quando('GET', `${ROTA_EVENTO}/convites`, () => respostaJson(lista)),
     )
-    await abrir(`/casamentos/${ID_CASAMENTO}/convidados`)
+    await abrir(`/eventos/${ID_EVENTO}/convidados`)
 
     expect(wrapper!.findAll('[data-teste="mesa-pessoa"]').map((item) => item.text())).toEqual(['Mesa 2 · Padrinhos', 'Sem mesa'])
     expect(wrapper!.find('[data-teste="abrir-mesas"]').exists()).toBe(true)

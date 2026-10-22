@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Fornecedores;
 
 namespace Celebri.Dominio.Cronogramas;
@@ -40,21 +40,21 @@ public static class GeradorItensCronograma
     }
 
     public static IReadOnlyList<ItemCronograma> Gerar(
-        CasamentoAssessorado casamento,
+        Evento evento,
         TimeOnly horarioCerimonia,
         IEnumerable<ItemModeloCronograma> itensPendentes,
         IReadOnlyDictionary<CategoriaFornecedor, Guid> vinculoPorCategoria,
         Guid? criadoPorUsuarioId,
         DateTimeOffset agora)
     {
-        ArgumentNullException.ThrowIfNull(casamento);
+        ArgumentNullException.ThrowIfNull(evento);
         ArgumentNullException.ThrowIfNull(itensPendentes);
         ArgumentNullException.ThrowIfNull(vinculoPorCategoria);
 
         return itensPendentes
             .Select(item => ItemCronograma.CriarDeModelo(
-                casamento.Id,
-                item.ParaDadosItem(casamento, horarioCerimonia, FornecedorDoItem(item, vinculoPorCategoria)),
+                evento.Id,
+                item.ParaDadosItem(evento, horarioCerimonia, FornecedorDoItem(item, vinculoPorCategoria)),
                 item.Id,
                 horarioCerimonia,
                 criadoPorUsuarioId,

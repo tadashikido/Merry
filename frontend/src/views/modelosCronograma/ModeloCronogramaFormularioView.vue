@@ -14,7 +14,7 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
-import type { FalhaCasamento } from '@/stores/casamentos'
+import type { FalhaEvento } from '@/stores/eventos'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
 import { TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
 import type { SalvarModeloCronogramaRequest } from '@/tipos/modelosCronograma'
@@ -39,7 +39,7 @@ const notificacao = useNotificacao()
 
 const edicao = computed(() => Boolean(props.modeloId))
 const carregando = ref(false)
-const falhaCarga = ref<FalhaCasamento | null>(null)
+const falhaCarga = ref<FalhaEvento | null>(null)
 const enviando = ref(false)
 const mensagemErro = ref<string | null>(null)
 const nomeCarregado = ref('')
@@ -99,7 +99,7 @@ function montarRequest(): SalvarModeloCronogramaRequest {
   }
 }
 
-function tratarFalha(falha: FalhaCasamento) {
+function tratarFalha(falha: FalhaEvento) {
   const camposComErro = CAMPOS.filter((campo) => falha.errosCampos[campo])
   for (const campo of camposComErro) {
     formulario.erros[campo] = falha.errosCampos[campo]

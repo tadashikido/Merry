@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Organizacoes;
 using Celebri.Dominio.Rsvp;
@@ -19,7 +19,7 @@ public class AcessoRsvpConfiguration : IEntityTypeConfiguration<AcessoRsvp>
         builder.HasKey(acesso => acesso.Id);
         builder.Property(acesso => acesso.Id).ValueGeneratedNever();
         builder.Property(acesso => acesso.ConviteId).IsRequired();
-        builder.Property(acesso => acesso.CasamentoId).IsRequired();
+        builder.Property(acesso => acesso.EventoId).IsRequired();
         builder.Property(acesso => acesso.OrganizacaoId).IsRequired();
         builder.Property(acesso => acesso.TokenHash).HasMaxLength(AcessoRsvp.TamanhoHash).IsFixedLength().IsRequired();
         builder.Property(acesso => acesso.TokenCifrado).HasMaxLength(AcessoRsvp.TamanhoMaximoTokenCifrado).IsRequired();
@@ -27,7 +27,7 @@ public class AcessoRsvpConfiguration : IEntityTypeConfiguration<AcessoRsvp>
 
         builder.HasIndex(acesso => acesso.TokenHash).IsUnique().HasDatabaseName(IndiceTokenHash);
         builder.HasIndex(acesso => acesso.ConviteId).IsUnique().HasDatabaseName(IndiceConvite);
-        builder.HasIndex(acesso => acesso.CasamentoId);
+        builder.HasIndex(acesso => acesso.EventoId);
         builder.HasIndex(acesso => acesso.OrganizacaoId);
 
         builder.HasOne<Convite>()
@@ -35,9 +35,9 @@ public class AcessoRsvpConfiguration : IEntityTypeConfiguration<AcessoRsvp>
             .HasForeignKey(acesso => acesso.ConviteId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<CasamentoAssessorado>()
+        builder.HasOne<Evento>()
             .WithMany()
-            .HasForeignKey(acesso => acesso.CasamentoId)
+            .HasForeignKey(acesso => acesso.EventoId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Organizacao>()

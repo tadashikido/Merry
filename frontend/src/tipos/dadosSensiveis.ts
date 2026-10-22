@@ -1,4 +1,4 @@
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 import type { RespostaRsvp } from '@/tipos/convidados'
 
 export type TipoRestricaoAlimentar =

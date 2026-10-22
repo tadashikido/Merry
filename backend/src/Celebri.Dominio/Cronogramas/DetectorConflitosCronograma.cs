@@ -26,7 +26,7 @@ public static class DetectorConflitosCronograma
                     Registrar(conflitos, primeiro, segundo, MotivoConflito.Responsavel);
                 }
 
-                if (primeiro.FornecedorCasamentoId is not null && primeiro.FornecedorCasamentoId == segundo.FornecedorCasamentoId)
+                if (primeiro.FornecedorEventoId is not null && primeiro.FornecedorEventoId == segundo.FornecedorEventoId)
                 {
                     Registrar(conflitos, primeiro, segundo, MotivoConflito.Fornecedor);
                 }

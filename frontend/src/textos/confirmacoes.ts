@@ -13,7 +13,7 @@ export const TEXTOS_CONFIRMACOES = {
   exportarImpressao: 'Versão para impressão',
   csvBaixado: 'Planilha do buffet baixada.',
   erroExportar: 'Não foi possível gerar a planilha. Tente de novo.',
-  semAcessoExportar: 'Você não tem acesso a este casamento.',
+  semAcessoExportar: 'Você não tem acesso a este evento.',
   prazoAte: (data: string) => `Respostas até ${data}`,
   prazoFaltam: (dias: number) => {
     if (dias <= 0) {
@@ -52,11 +52,11 @@ export const TEXTOS_CONFIRMACOES = {
   adicionarConvite: 'Adicionar convite',
   importarPlanilha: 'Importar planilha',
   erroCarregar: 'Não foi possível carregar as confirmações.',
-  semAcesso: 'Você não tem acesso a este casamento.',
-  naoEncontradoTitulo: 'Casamento não encontrado',
+  semAcesso: 'Você não tem acesso a este evento.',
+  naoEncontradoTitulo: 'Evento não encontrado',
   naoEncontradoTexto: 'Ele pode ter sido removido ou pertencer a outra assessoria.',
-  voltarCasamentos: 'Voltar aos casamentos',
-  avisoArquivado: 'Casamento arquivado: dá para consultar e exportar, mas não enviar convites.',
+  voltarEventos: 'Voltar aos eventos',
+  avisoArquivado: 'Evento arquivado: dá para consultar e exportar, mas não enviar convites.',
 } as const
 
 export const TEXTOS_COBRANCA = {
@@ -85,7 +85,7 @@ export const TEXTOS_COBRANCA = {
   lembreteRegistrado: 'Lembrete registrado.',
   anuncioRegistrado: (nome: string) => `Lembrete registrado para ${nome}.`,
   naoCobravel: 'Este convite já respondeu ou não pode mais ser cobrado. A lista foi atualizada.',
-  semPermissao: 'Você não tem permissão para cobrar convites deste casamento.',
+  semPermissao: 'Você não tem permissão para cobrar convites deste evento.',
   semConexao: 'Sem conexão. Verifique a internet e tente de novo.',
   erroGenerico: 'Não foi possível registrar o lembrete. Tente de novo.',
   vazioTitulo: 'Ninguém para cobrar agora',
@@ -101,7 +101,7 @@ export const TEXTOS_COBRANCA = {
     dataLimite: string
     url: string
   }) =>
-    `Oi, ${dados.nomeConvite}! Passando para lembrar da confirmação de presença no casamento de ${dados.primeiro} e ${dados.segundo}, em ${dados.data}. Responda até ${dados.dataLimite} pelo link: ${dados.url}`,
+    `Oi, ${dados.nomeConvite}! Passando para lembrar da confirmação de presença no evento de ${dados.primeiro} e ${dados.segundo}, em ${dados.data}. Responda até ${dados.dataLimite} pelo link: ${dados.url}`,
 } as const
 
 export const TEXTOS_FICHA_BUFFET = {
@@ -125,7 +125,7 @@ export const TEXTOS_FICHA_BUFFET = {
   colunaConvite: 'Convite',
   colunaRestricao: 'Restrição',
   ilegiveis: (quantidade: number) => `${contar(quantidade, 'restrição não pôde', 'restrições não puderam')} ser lidas. Fale com o suporte.`,
-  dadosExcluidos: (data: string) => `As restrições deste casamento foram apagadas em ${data} pela política de privacidade.`,
+  dadosExcluidos: (data: string) => `As restrições deste evento foram apagadas em ${data} pela política de privacidade.`,
   confirmados: (convites: number) => `Confirmados por convite (${formatarNumero(convites)})`,
   crianca: 'criança',
   acompanhante: 'acompanhante',
@@ -136,7 +136,7 @@ export const TEXTOS_FICHA_BUFFET = {
 } as const
 
 export const TEXTOS_CSV_BUFFET = {
-  casamento: 'Casamento',
+  evento: 'Evento',
   data: 'Data',
   horario: 'Horário',
   local: 'Local da recepção',

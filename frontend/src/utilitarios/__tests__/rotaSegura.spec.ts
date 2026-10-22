@@ -4,7 +4,7 @@ import { destinoSeguro } from '@/utilitarios/rotaSegura'
 import { primeiroNome } from '@/utilitarios/formatacao'
 
 describe('destinoSeguro', () => {
-  it.each(['/', '/convidados', '/casamentos/1?aba=rsvp'])('[SEGURANÇA] aceita caminho interno %s', (caminho) => {
+  it.each(['/', '/convidados', '/eventos/1?aba=rsvp'])('[SEGURANÇA] aceita caminho interno %s', (caminho) => {
     expect(destinoSeguro(caminho)).toBe(caminho)
   })
 

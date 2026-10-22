@@ -6,7 +6,7 @@ import { TOKEN_CRONOGRAMA, linksExemplo } from '@/__tests__/auxiliaresCronograma
 import { caminhoLinksCronograma, useLinksCronogramaStore } from '@/stores/linksCronograma'
 
 const ID = '11111111-1111-4111-8111-111111111111'
-const ROTA = `/api/casamentos/${ID}/cronograma/links`
+const ROTA = `/api/eventos/${ID}/cronograma/links`
 
 let fetchSimulado: ReturnType<typeof simularFetch>
 
@@ -40,11 +40,11 @@ describe('store de links do cronograma', () => {
     const store = useLinksCronogramaStore()
     await store.carregar(ID)
 
-    const resultado = await store.gerar(ID, { tipo: 'Fornecedor', fornecedorCasamentoId: 'v-buffet' })
+    const resultado = await store.gerar(ID, { tipo: 'Fornecedor', fornecedorEventoId: 'v-buffet' })
 
     expect(resultado).toEqual({ ok: true, valor: { id: 'l2', token: TOKEN_CRONOGRAMA, geradoEm: '2027-03-10T12:00:00Z' } })
     expect(fetchSimulado.mock.calls[1]![1]?.method).toBe('POST')
-    expect(corpoDaChamada(fetchSimulado.mock.calls[1]!)).toEqual({ tipo: 'Fornecedor', fornecedorCasamentoId: 'v-buffet' })
+    expect(corpoDaChamada(fetchSimulado.mock.calls[1]!)).toEqual({ tipo: 'Fornecedor', fornecedorEventoId: 'v-buffet' })
     expect(fetchSimulado).toHaveBeenCalledTimes(3)
   })
 
@@ -69,17 +69,17 @@ describe('store de links do cronograma', () => {
   it('[SEGURANÇA] 403 e 422 viram falhas tipadas e a lista é recarregada', async () => {
     fetchSimulado
       .mockResolvedValueOnce(respostaProblema(403, { title: 'Proibido' }))
-      .mockResolvedValueOnce(respostaProblema(422, { title: 'Regra', detail: 'Escolha um fornecedor deste casamento.', campo: 'fornecedorCasamentoId' }))
+      .mockResolvedValueOnce(respostaProblema(422, { title: 'Regra', detail: 'Escolha um fornecedor deste evento.', campo: 'fornecedorEventoId' }))
       .mockResolvedValueOnce(respostaJson(linksExemplo()))
     const store = useLinksCronogramaStore()
 
     await store.carregar(ID)
     expect(store.falha?.tipo).toBe('semPermissao')
 
-    const resultado = await store.gerar(ID, { tipo: 'Fornecedor', fornecedorCasamentoId: 'x' })
+    const resultado = await store.gerar(ID, { tipo: 'Fornecedor', fornecedorEventoId: 'x' })
     expect(resultado).toMatchObject({
       ok: false,
-      falha: { tipo: 'regra', errosCampos: { fornecedorCasamentoId: 'Escolha um fornecedor deste casamento.' } },
+      falha: { tipo: 'regra', errosCampos: { fornecedorEventoId: 'Escolha um fornecedor deste evento.' } },
     })
     store.limpar()
     expect(store.links).toBeNull()

@@ -10,19 +10,19 @@ public static class ClienteRsvp
     public const string RotaConsulta = "/api/rsvp/consulta";
     public const string RotaResposta = "/api/rsvp/resposta";
 
-    public static string RotaLink(Guid casamentoId, Guid conviteId)
+    public static string RotaLink(Guid eventoId, Guid conviteId)
     {
-        return $"{ClienteConvites.Rota(casamentoId, conviteId)}/link-rsvp";
+        return $"{ClienteConvites.Rota(eventoId, conviteId)}/link-rsvp";
     }
 
-    public static string RotaEnvio(Guid casamentoId, Guid conviteId)
+    public static string RotaEnvio(Guid eventoId, Guid conviteId)
     {
-        return $"{ClienteConvites.Rota(casamentoId, conviteId)}/envio";
+        return $"{ClienteConvites.Rota(eventoId, conviteId)}/envio";
     }
 
-    public static async Task<LinkRsvpDto> GerarLinkAsync(HttpClient cliente, Guid casamentoId, Guid conviteId)
+    public static async Task<LinkRsvpDto> GerarLinkAsync(HttpClient cliente, Guid eventoId, Guid conviteId)
     {
-        var resposta = await cliente.PostAsync(RotaLink(casamentoId, conviteId), null);
+        var resposta = await cliente.PostAsync(RotaLink(eventoId, conviteId), null);
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<LinkRsvpDto>())!;
     }

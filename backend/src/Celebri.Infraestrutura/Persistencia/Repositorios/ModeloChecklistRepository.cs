@@ -7,9 +7,9 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class ModeloChecklistRepository : IModeloChecklistRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public ModeloChecklistRepository(CasamentoDbContext contexto)
+    public ModeloChecklistRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }

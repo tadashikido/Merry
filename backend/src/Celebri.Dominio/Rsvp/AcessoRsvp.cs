@@ -17,7 +17,7 @@ public class AcessoRsvp
 
     public Guid ConviteId { get; private set; }
 
-    public Guid CasamentoId { get; private set; }
+    public Guid EventoId { get; private set; }
 
     public Guid OrganizacaoId { get; private set; }
 
@@ -47,7 +47,7 @@ public class AcessoRsvp
         {
             Id = Guid.NewGuid(),
             ConviteId = convite.Id,
-            CasamentoId = convite.CasamentoId,
+            EventoId = convite.EventoId,
             OrganizacaoId = convite.OrganizacaoId,
             TokenHash = tokenHash,
             TokenCifrado = tokenCifrado,

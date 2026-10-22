@@ -41,12 +41,12 @@ export function novaAssessoria(): DadosAssessoria {
   }
 }
 
-export interface DadosCasal {
+export interface DadosAnfitriao {
   nomePrimeiraPessoa: string
   nomeSegundaPessoa: string
 }
 
-export function novoCasal(): DadosCasal {
+export function novoAnfitriao(): DadosAnfitriao {
   const sufixo = sufixoUnico().slice(-4)
   return {
     nomePrimeiraPessoa: `Marina ${sufixo}`,
@@ -54,12 +54,12 @@ export function novoCasal(): DadosCasal {
   }
 }
 
-export function nomesDoCasal(casal: DadosCasal): RegExp {
-  return new RegExp(`${casal.nomePrimeiraPessoa}.*${casal.nomeSegundaPessoa}`)
+export function nomesDosAnfitrioes(anfitriao: DadosAnfitriao): RegExp {
+  return new RegExp(`${anfitriao.nomePrimeiraPessoa}.*${anfitriao.nomeSegundaPessoa}`)
 }
 
 const MINUTOS_POR_DIA = 1440
-const DIAS_RELATIVOS = ['Vespera', 'DiaDoCasamento', 'DiaSeguinte'] as const
+const DIAS_RELATIVOS = ['Vespera', 'DiaDoEvento', 'DiaSeguinte'] as const
 
 function partesEmSaoPaulo(): Record<string, string> {
   const partes = new Intl.DateTimeFormat('en-CA', {

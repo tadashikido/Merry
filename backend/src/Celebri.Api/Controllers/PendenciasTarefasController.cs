@@ -11,9 +11,9 @@ namespace Celebri.Api.Controllers;
 [Authorize(Policy = PoliticasAutorizacao.ConsultarPendenciasTarefas)]
 public class PendenciasTarefasController : ControllerBase
 {
-    private readonly ITarefaCasamentoService _tarefaService;
+    private readonly ITarefaEventoService _tarefaService;
 
-    public PendenciasTarefasController(ITarefaCasamentoService tarefaService)
+    public PendenciasTarefasController(ITarefaEventoService tarefaService)
     {
         _tarefaService = tarefaService;
     }

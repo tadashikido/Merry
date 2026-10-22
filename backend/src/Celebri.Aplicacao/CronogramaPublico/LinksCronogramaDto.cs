@@ -4,7 +4,7 @@ public sealed record LinkCronogramaDto(Guid Id, string? Token, DateTimeOffset Ge
 
 public sealed record DestinoLinkCronogramaDto(
     string Tipo,
-    Guid? FornecedorCasamentoId,
+    Guid? FornecedorEventoId,
     string? Responsavel,
     string? Rotulo,
     string? Categoria,

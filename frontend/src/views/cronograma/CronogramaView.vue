@@ -22,9 +22,9 @@ import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useCronogramaStore } from '@/stores/cronograma'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
+import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import { ROTULOS_DIA_CRONOGRAMA, TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import { TEXTOS_LINKS_CRONOGRAMA } from '@/textos/cronogramaPublico'
 import {
@@ -43,12 +43,12 @@ import {
   rotuloLinha,
   textosConflitos,
 } from '@/utilitarios/cronograma'
-import { formatarDataCalendarioComDiaSemana, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarDataCalendarioComDiaSemana, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 
 const props = defineProps<{ id: string }>()
 
 const autenticacao = useAutenticacaoStore()
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const store = useCronogramaStore()
 const notificacao = useNotificacao()
 const { confirmarExclusao } = useConfirmarExclusao()
@@ -63,28 +63,28 @@ const dialogoRecalculo = ref(false)
 const recalculando = ref(false)
 const painelLinks = ref(false)
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
-const cronograma = computed(() => (store.casamentoId === props.id ? store.cronograma : null))
-const falha = computed(() => (store.casamentoId === props.id ? store.falha : null))
-const visaoDoCasal = computed(() => autenticacao.ehCasal)
-const arquivado = computed(() => cronograma.value?.arquivado ?? casamento.value?.arquivado ?? false)
-const podeGerenciar = computed(() => cronograma.value !== null && !cronograma.value.somenteLeitura && !visaoDoCasal.value)
+const cronograma = computed(() => (store.eventoId === props.id ? store.cronograma : null))
+const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
+const visaoDoAnfitriao = computed(() => autenticacao.ehAnfitriao)
+const arquivado = computed(() => cronograma.value?.arquivado ?? evento.value?.arquivado ?? false)
+const podeGerenciar = computed(() => cronograma.value !== null && !cronograma.value.somenteLeitura && !visaoDoAnfitriao.value)
 const grupos = computed(() => agruparPorDia(cronograma.value?.itens ?? []))
 const semItens = computed(() => cronograma.value !== null && cronograma.value.itens.length === 0)
 const semHorarioCerimonia = computed(() => cronograma.value !== null && cronograma.value.horarioCerimonia === null)
-const podeInformarHorario = computed(() => !visaoDoCasal.value && !arquivado.value)
-const podeSalvarModelo = computed(() => cronograma.value !== null && !visaoDoCasal.value && cronograma.value.itens.length > 0)
+const podeInformarHorario = computed(() => !visaoDoAnfitriao.value && !arquivado.value)
+const podeSalvarModelo = computed(() => cronograma.value !== null && !visaoDoAnfitriao.value && cronograma.value.itens.length > 0)
 const horariosDesatualizados = computed(() => (podeGerenciar.value ? (cronograma.value?.horariosDesatualizados ?? 0) : 0))
-const podeCompartilhar = computed(() => cronograma.value !== null && !visaoDoCasal.value)
+const podeCompartilhar = computed(() => cronograma.value !== null && !visaoDoAnfitriao.value)
 const dadosMensagem = computed(() =>
-  casamento.value
+  evento.value
     ? {
-        nomePrimeiraPessoa: casamento.value.nomePrimeiraPessoa,
-        nomeSegundaPessoa: casamento.value.nomeSegundaPessoa,
-        data: casamento.value.data,
+        nomePrimeiraPessoa: evento.value.nomePrimeiraPessoa,
+        nomeSegundaPessoa: evento.value.nomeSegundaPessoa,
+        data: evento.value.data,
       }
     : null,
 )
@@ -118,7 +118,7 @@ const descricao = computed(() => {
   if (!dados) {
     return undefined
   }
-  const data = formatarDataCalendarioComDiaSemana(dados.dataCasamento)
+  const data = formatarDataCalendarioComDiaSemana(dados.dataEvento)
   return dados.horarioCerimonia
     ? TEXTOS_CRONOGRAMA.subtituloCerimonia(data, dados.horarioCerimonia)
     : TEXTOS_CRONOGRAMA.subtituloSemCerimonia(data)
@@ -129,7 +129,7 @@ watch(
   (id) => {
     painelAplicar.value = false
     painelLinks.value = false
-    void casamentos.obter(id)
+    void eventos.obter(id)
     void store.carregar(id)
   },
   { immediate: true },
@@ -219,19 +219,19 @@ async function recalcularHorarios() {
 function excluir(item: ItemCronogramaDto) {
   dialogoVisivel.value = false
   ultimoFocado.value = null
-  const casamentoId = props.id
+  const eventoId = props.id
   confirmarExclusao({
     nomeItem: item.atividade,
     mensagem: TEXTOS_CRONOGRAMA.confirmarExcluir,
     mensagemSucesso: TEXTOS_CRONOGRAMA.sucessoExcluido,
     aoConfirmar: () => {
-      store.removerComDesfazer(casamentoId, item.id, (falha) => {
+      store.removerComDesfazer(eventoId, item.id, (falha) => {
         notificacao.erro(falha.mensagem ?? TEXTOS_CRONOGRAMA.erroExcluir(item.atividade))
       })
     },
     desfazer: () =>
-      desfazerExclusao(() => store.desfazerRemocao(casamentoId, item.id), TEXTOS_CRONOGRAMA.sucessoRestaurado(item.atividade)),
-    aoFecharAviso: () => store.concluirRemocao(casamentoId, item.id),
+      desfazerExclusao(() => store.desfazerRemocao(eventoId, item.id), TEXTOS_CRONOGRAMA.sucessoRestaurado(item.atividade)),
+    aoFecharAviso: () => store.concluirRemocao(eventoId, item.id),
   })
 }
 </script>
@@ -246,10 +246,10 @@ function excluir(item: ItemCronogramaDto) {
       />
       <RouterLink
         class="cronograma__voltar"
-        :to="autenticacao.casamentoDoCasal ? { name: 'casamento', params: { id: autenticacao.casamentoDoCasal } } : { name: 'casamentos' }"
+        :to="autenticacao.eventoDoAnfitriao ? { name: 'evento', params: { id: autenticacao.eventoDoAnfitriao } } : { name: 'eventos' }"
         data-teste="voltar"
       >
-        {{ autenticacao.casamentoDoCasal ? TEXTOS_CRONOGRAMA.voltarNossoCasamento : TEXTOS_CRONOGRAMA.voltarCasamentos }}
+        {{ autenticacao.eventoDoAnfitriao ? TEXTOS_CRONOGRAMA.voltarNossoEvento : TEXTOS_CRONOGRAMA.voltarEventos }}
       </RouterLink>
     </template>
 
@@ -263,7 +263,7 @@ function excluir(item: ItemCronogramaDto) {
           #detalhes
         >
           <BadgeStatus
-            :texto="TEXTOS_CASAMENTOS.statusArquivado"
+            :texto="TEXTOS_EVENTOS.statusArquivado"
             variante="neutro"
             icone="arquivar"
           />
@@ -330,7 +330,7 @@ function excluir(item: ItemCronogramaDto) {
           </p>
           <RouterLink
             v-if="podeInformarHorario"
-            :to="{ name: 'casamento-editar', params: { id } }"
+            :to="{ name: 'evento-editar', params: { id } }"
             data-teste="adicionar-horario"
           >
             {{ TEXTOS_CRONOGRAMA.incompletoAcao }}
@@ -355,7 +355,7 @@ function excluir(item: ItemCronogramaDto) {
 
         <PainelAplicarModeloCronograma
           v-if="painelAplicar && podeGerenciar"
-          :casamento-id="id"
+          :evento-id="id"
           :pode-informar-horario="podeInformarHorario"
           @fechar="fecharPainelAplicar"
         />
@@ -384,8 +384,8 @@ function excluir(item: ItemCronogramaDto) {
         <EstadoVazio
           v-else-if="semItens && !painelAplicar"
           icone="cronograma"
-          :titulo="podeGerenciar ? TEXTOS_CRONOGRAMA.vazioTitulo : TEXTOS_CRONOGRAMA.vazioCasalTitulo"
-          :descricao="podeGerenciar ? TEXTOS_CRONOGRAMA.vazioTexto : TEXTOS_CRONOGRAMA.vazioCasalTexto"
+          :titulo="podeGerenciar ? TEXTOS_CRONOGRAMA.vazioTitulo : TEXTOS_CRONOGRAMA.vazioAnfitriaoTitulo"
+          :descricao="podeGerenciar ? TEXTOS_CRONOGRAMA.vazioTexto : TEXTOS_CRONOGRAMA.vazioAnfitriaoTexto"
         >
           <template
             v-if="podeGerenciar"
@@ -550,11 +550,11 @@ function excluir(item: ItemCronogramaDto) {
             </div>
 
             <p
-              v-if="visaoDoCasal"
+              v-if="visaoDoAnfitriao"
               class="cronograma__apoio texto-legenda"
-              data-teste="apoio-casal"
+              data-teste="apoio-anfitriao"
             >
-              {{ TEXTOS_CRONOGRAMA.apoioCasal }}
+              {{ TEXTOS_CRONOGRAMA.apoioAnfitriao }}
             </p>
           </aside>
         </div>
@@ -563,7 +563,7 @@ function excluir(item: ItemCronogramaDto) {
       <DialogoItemCronograma
         v-if="cronograma && podeGerenciar"
         v-model:visivel="dialogoVisivel"
-        :casamento-id="id"
+        :evento-id="id"
         :cronograma="cronograma"
         :item="itemEmEdicao"
         @salvo="aoSalvar"
@@ -573,14 +573,14 @@ function excluir(item: ItemCronogramaDto) {
       <PainelLinksCronograma
         v-if="podeCompartilhar"
         v-model:visivel="painelLinks"
-        :casamento-id="id"
-        :casamento="dadosMensagem"
+        :evento-id="id"
+        :evento="dadosMensagem"
       />
 
       <DialogoSalvarModeloCronograma
         v-if="cronograma && podeSalvarModelo"
         v-model:visivel="dialogoSalvarModelo"
-        :casamento-id="id"
+        :evento-id="id"
         :horario-cerimonia="cronograma.horarioCerimonia"
       />
 

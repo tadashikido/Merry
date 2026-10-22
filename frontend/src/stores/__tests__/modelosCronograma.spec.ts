@@ -16,7 +16,7 @@ import { useCronogramaStore } from '@/stores/cronograma'
 import { ROTA_MODELOS_CRONOGRAMA, caminhoModeloCronograma, useModelosCronogramaStore } from '@/stores/modelosCronograma'
 import type { SalvarItemModeloCronogramaRequest } from '@/tipos/modelosCronograma'
 
-const ID_CASAMENTO = '11111111-1111-4111-8111-111111111111'
+const ID_EVENTO = '11111111-1111-4111-8111-111111111111'
 
 const ITEM: SalvarItemModeloCronogramaRequest = {
   minutosDesdeCerimonia: -60,
@@ -100,14 +100,14 @@ describe('useModelosCronogramaStore', () => {
     })
   })
 
-  it('[UNITÁRIO] salva o cronograma do casamento como modelo', async () => {
+  it('[UNITÁRIO] salva o cronograma do evento como modelo', async () => {
     const store = useModelosCronogramaStore()
     fetchSimulado.mockResolvedValueOnce(respostaJson(modeloCronogramaCompleto({ sugerido: false }), 201))
 
-    const resultado = await store.salvarDoCasamento(ID_CASAMENTO, { nome: 'Roteiro da Ana', descricao: null })
+    const resultado = await store.salvarDoEvento(ID_EVENTO, { nome: 'Roteiro da Ana', descricao: null })
 
     expect(resultado.ok).toBe(true)
-    expect(chamada(0)).toEqual({ url: `/api/casamentos/${ID_CASAMENTO}/cronograma/modelos`, metodo: 'POST' })
+    expect(chamada(0)).toEqual({ url: `/api/eventos/${ID_EVENTO}/cronograma/modelos`, metodo: 'POST' })
     expect(store.atual?.sugerido).toBe(false)
   })
 
@@ -145,34 +145,34 @@ describe('useCronogramaStore — modelos', () => {
     const store = useCronogramaStore()
     fetchSimulado.mockResolvedValueOnce(respostaJson(aplicacaoModeloCronograma()))
 
-    const resultado = await store.previa(ID_CASAMENTO, ID_MODELO_CRONOGRAMA)
+    const resultado = await store.previa(ID_EVENTO, ID_MODELO_CRONOGRAMA)
 
     expect(resultado.ok).toBe(true)
     expect(fetchSimulado).toHaveBeenCalledTimes(1)
-    expect(chamada(0).url).toBe(`/api/casamentos/${ID_CASAMENTO}/cronograma/previa?modeloId=${ID_MODELO_CRONOGRAMA}`)
+    expect(chamada(0).url).toBe(`/api/eventos/${ID_EVENTO}/cronograma/previa?modeloId=${ID_MODELO_CRONOGRAMA}`)
   })
 
   it('[UNITÁRIO] aplicar e recalcular recarregam o cronograma carregado', async () => {
     const store = useCronogramaStore()
     fetchSimulado.mockResolvedValueOnce(respostaJson(cronogramaExemplo([])))
-    await store.carregar(ID_CASAMENTO)
+    await store.carregar(ID_EVENTO)
 
     fetchSimulado.mockResolvedValueOnce(respostaJson(aplicacaoModeloCronograma()))
     fetchSimulado.mockResolvedValueOnce(respostaJson(cronogramaExemplo([], { horariosDesatualizados: 3 })))
-    const aplicado = await store.aplicar(ID_CASAMENTO, ID_MODELO_CRONOGRAMA)
+    const aplicado = await store.aplicar(ID_EVENTO, ID_MODELO_CRONOGRAMA)
     expect(aplicado.ok).toBe(true)
-    expect(chamada(1)).toEqual({ url: `/api/casamentos/${ID_CASAMENTO}/cronograma/aplicacoes`, metodo: 'POST' })
+    expect(chamada(1)).toEqual({ url: `/api/eventos/${ID_EVENTO}/cronograma/aplicacoes`, metodo: 'POST' })
     expect(corpoDaChamada(fetchSimulado.mock.calls[1]!)).toEqual({ modeloId: ID_MODELO_CRONOGRAMA })
     expect(store.cronograma?.horariosDesatualizados).toBe(3)
 
     fetchSimulado.mockResolvedValueOnce(respostaJson({ itens: 3 }))
-    const consulta = await store.consultarRecalculo(ID_CASAMENTO)
+    const consulta = await store.consultarRecalculo(ID_EVENTO)
     expect(consulta.ok && consulta.valor.itens).toBe(3)
-    expect(chamada(3)).toEqual({ url: `/api/casamentos/${ID_CASAMENTO}/cronograma/recalculo-horarios`, metodo: 'GET' })
+    expect(chamada(3)).toEqual({ url: `/api/eventos/${ID_EVENTO}/cronograma/recalculo-horarios`, metodo: 'GET' })
 
     fetchSimulado.mockResolvedValueOnce(respostaJson({ itens: 3 }))
     fetchSimulado.mockResolvedValueOnce(respostaJson(cronogramaExemplo([], { horariosDesatualizados: 0 })))
-    const recalculo = await store.recalcular(ID_CASAMENTO)
+    const recalculo = await store.recalcular(ID_EVENTO)
     expect(recalculo.ok).toBe(true)
     expect(chamada(4).metodo).toBe('POST')
     expect(store.cronograma?.horariosDesatualizados).toBe(0)
@@ -182,7 +182,7 @@ describe('useCronogramaStore — modelos', () => {
     const store = useCronogramaStore()
     fetchSimulado.mockResolvedValueOnce(respostaProblema(409, { title: 'Conflito', detail: 'O cronograma mudou em outra tela.' }))
 
-    const resultado = await store.aplicar(ID_CASAMENTO, ID_MODELO_CRONOGRAMA)
+    const resultado = await store.aplicar(ID_EVENTO, ID_MODELO_CRONOGRAMA)
 
     expect(resultado).toMatchObject({ ok: false, falha: { tipo: 'conflito' } })
     expect(fetchSimulado).toHaveBeenCalledTimes(1)

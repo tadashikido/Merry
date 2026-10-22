@@ -156,12 +156,12 @@ public class RestricaoAlimentarTestes
     [Theory]
     [InlineData("2027-05-15", "2027-06-14", false)]
     [InlineData("2027-05-15", "2027-06-15", true)]
-    public void Opcoes_RetencaoEncerrada_SoDepoisDoPrazo(string dataCasamento, string hoje, bool encerrada)
+    public void Opcoes_RetencaoEncerrada_SoDepoisDoPrazo(string dataEvento, string hoje, bool encerrada)
     {
         var opcoes = new OpcoesRetencaoDadosSensiveis();
 
-        Assert.Equal(encerrada, opcoes.RetencaoEncerrada(DateOnly.Parse(dataCasamento), DateOnly.Parse(hoje)));
-        Assert.Equal(new DateOnly(2027, 6, 14), opcoes.DataExclusao(DateOnly.Parse(dataCasamento)));
+        Assert.Equal(encerrada, opcoes.RetencaoEncerrada(DateOnly.Parse(dataEvento), DateOnly.Parse(hoje)));
+        Assert.Equal(new DateOnly(2027, 6, 14), opcoes.DataExclusao(DateOnly.Parse(dataEvento)));
     }
 
     [Theory]
@@ -172,6 +172,6 @@ public class RestricaoAlimentarTestes
     [InlineData(30, 1441, false)]
     public void Opcoes_Valida_DeveRespeitarFaixas(int dias, int intervalo, bool valida)
     {
-        Assert.Equal(valida, new OpcoesRetencaoDadosSensiveis { DiasAposCasamento = dias, IntervaloMinutos = intervalo }.Valida());
+        Assert.Equal(valida, new OpcoesRetencaoDadosSensiveis { DiasAposEvento = dias, IntervaloMinutos = intervalo }.Valida());
     }
 }

@@ -24,7 +24,7 @@ import {
 } from '@/utilitarios/financeiro'
 import { formatarDataCalendarioCurta, formatarMoeda } from '@/utilitarios/formatacao'
 
-const props = defineProps<{ visivel: boolean; casamentoId: string; fornecedor: FornecedorFinanceiroDto | null }>()
+const props = defineProps<{ visivel: boolean; eventoId: string; fornecedor: FornecedorFinanceiroDto | null }>()
 
 const emit = defineEmits<{ 'update:visivel': [valor: boolean]; gerado: [mensagem: string] }>()
 
@@ -96,7 +96,7 @@ async function gerar() {
     return
   }
   executando.value = true
-  const resultado = await store.gerarParcelas(props.casamentoId, props.fornecedor.fornecedorCasamentoId, {
+  const resultado = await store.gerarParcelas(props.eventoId, props.fornecedor.fornecedorEventoId, {
     quantidade: formulario.valores.quantidade ?? 1,
     valorTotal: deCentavos(totalCentavos.value),
     primeiroVencimento: formulario.valores.primeiroVencimento,

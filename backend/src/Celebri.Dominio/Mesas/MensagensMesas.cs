@@ -7,16 +7,16 @@ public static class MensagensMesas
     public const string CapacidadeObrigatoria = "Preencha este campo.";
     public const string CapacidadeForaDaFaixa = "Use de 1 a 30 lugares.";
     public const string TamanhoNome = "Use até 60 caracteres.";
-    public const string NumeroRepetido = "Já existe uma mesa com este número neste casamento.";
-    public const string EspecialRepetida = "Este casamento já tem uma mesa dos noivos.";
-    public const string LimitePorCasamento = "Este casamento chegou ao limite de 500 mesas.";
+    public const string NumeroRepetido = "Já existe uma mesa com este número neste evento.";
+    public const string EspecialRepetida = "Este evento já tem uma mesa dos anfitriões.";
+    public const string LimitePorEvento = "Este evento chegou ao limite de 500 mesas.";
     public const string MesaNaoEncontrada = "Mesa não encontrada.";
-    public const string CasamentoArquivado = "Este casamento está arquivado. Restaure para voltar a organizar as mesas.";
+    public const string EventoArquivado = "Este evento está arquivado. Restaure para voltar a organizar as mesas.";
     public const string SomenteConfirmados = "Só pessoas com presença confirmada podem ser sentadas.";
     public const string PessoasObrigatorias = "Selecione ao menos uma pessoa.";
     public const string PessoasDemais = "Selecione no máximo 200 pessoas por vez.";
     public const string PessoaRepetida = "Pessoa repetida na seleção.";
-    public const string PessoaDeOutroCasamento = "Uma ou mais pessoas não pertencem a este casamento.";
+    public const string PessoaDeOutroEvento = "Uma ou mais pessoas não pertencem a este evento.";
     public const string MesaAlteradaEmParalelo = "O mapa de mesas mudou enquanto você organizava. Atualize e tente de novo.";
 
     public static string CapacidadeExcedida(string rotuloMesa, int capacidade, int livres)

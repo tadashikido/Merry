@@ -253,6 +253,6 @@ public class AutenticacaoService : IAutenticacaoService
             usuario.Email,
             usuario.Papel.ToString(),
             new OrganizacaoResumoDto(organizacao.Id, organizacao.Nome),
-            usuario.CasamentoId);
+            usuario.EventoId);
     }
 }

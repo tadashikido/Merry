@@ -16,8 +16,8 @@ const CSV_COM_ERRO = [
 
 test.describe('Convidados, importação, RSVP e confirmações', () => {
   test('cria convite com duas pessoas, edita, busca e exclui', async ({ paginaAssessoria: page, api }) => {
-    const casamento = await api.criarCasamento()
-    await page.goto(`/casamentos/${casamento.id}/convidados`)
+    const evento = await api.criarEvento()
+    await page.goto(`/eventos/${evento.id}/convidados`)
 
     await page.getByRole('button', { name: 'Adicionar convite' }).first().click()
     await page.getByLabel('Nome do convite').fill('Família Andrade')
@@ -29,13 +29,13 @@ test.describe('Convidados, importação, RSVP e confirmações', () => {
     await page.getByRole('button', { name: 'Salvar convite' }).click()
 
     await expect(page.getByText('Convite “Família Andrade” salvo.')).toBeVisible()
-    await page.goto(`/casamentos/${casamento.id}/convidados`)
+    await page.goto(`/eventos/${evento.id}/convidados`)
     await expect(page.getByRole('region', { name: 'Totais de convidados' })).toContainText(/2\s*pessoas/)
 
     await page.getByRole('button', { name: 'Editar Família Andrade' }).click()
     await page.getByRole('group', { name: 'Pessoa 1' }).getByRole('button', { name: 'Confirmado' }).click()
     await page.getByRole('button', { name: 'Salvar convite' }).click()
-    await page.goto(`/casamentos/${casamento.id}/convidados`)
+    await page.goto(`/eventos/${evento.id}/convidados`)
     await expect(page.getByRole('region', { name: 'Totais de convidados' })).toContainText(/1\s*confirmadas?/)
 
     await page.getByRole('searchbox', { name: 'Buscar' }).fill('Inexistente')
@@ -49,8 +49,8 @@ test.describe('Convidados, importação, RSVP e confirmações', () => {
   })
 
   test('importa convidados de uma planilha CSV', async ({ paginaAssessoria: page, api }) => {
-    const casamento = await api.criarCasamento()
-    await page.goto(`/casamentos/${casamento.id}/convidados/importar`)
+    const evento = await api.criarEvento()
+    await page.goto(`/eventos/${evento.id}/convidados/importar`)
 
     await page.getByTestId('envio-arquivo-entrada').setInputFiles({
       name: 'convidados.csv',
@@ -67,8 +67,8 @@ test.describe('Convidados, importação, RSVP e confirmações', () => {
   })
 
   test('planilha com linha inválida aponta o que corrigir e importa só o que está pronto', async ({ paginaAssessoria: page, api }) => {
-    const casamento = await api.criarCasamento()
-    await page.goto(`/casamentos/${casamento.id}/convidados/importar`)
+    const evento = await api.criarEvento()
+    await page.goto(`/eventos/${evento.id}/convidados/importar`)
 
     await page.getByTestId('envio-arquivo-entrada').setInputFiles({
       name: 'convidados.csv',
@@ -87,9 +87,9 @@ test.describe('Convidados, importação, RSVP e confirmações', () => {
   })
 
   test('convidado confirma presença pelo link e a resposta aparece em Confirmações', async ({ browser, baseURL, paginaAssessoria, api }) => {
-    const casamento = await api.criarCasamento()
-    const convite = await api.criarConvite(casamento.id, [{ nome: 'Joana Prado' }, { nome: 'Pedro Prado' }], { nome: 'Família Prado' })
-    const token = await api.gerarLinkRsvp(casamento.id, convite.id)
+    const evento = await api.criarEvento()
+    const convite = await api.criarConvite(evento.id, [{ nome: 'Joana Prado' }, { nome: 'Pedro Prado' }], { nome: 'Família Prado' })
+    const token = await api.gerarLinkRsvp(evento.id, convite.id)
 
     const contextoConvidado = await browser.newContext({ baseURL })
     const convidado = await contextoConvidado.newPage()
@@ -101,12 +101,12 @@ test.describe('Convidados, importação, RSVP e confirmações', () => {
     await expect(convidado.getByText('Obrigado, Família Prado.')).toBeVisible()
     await contextoConvidado.close()
 
-    await paginaAssessoria.goto(`/casamentos/${casamento.id}/confirmacoes`)
+    await paginaAssessoria.goto(`/eventos/${evento.id}/confirmacoes`)
     const pessoas = paginaAssessoria.getByRole('region', { name: 'Pessoas por resposta' })
     await expect(pessoas).toContainText(/1\s*confirmadas?/)
     await expect(pessoas).toContainText(/1\s*recusadas?/)
 
-    await paginaAssessoria.goto(`/casamentos/${casamento.id}/confirmacoes/buffet`)
+    await paginaAssessoria.goto(`/eventos/${evento.id}/confirmacoes/buffet`)
     await expect(paginaAssessoria.getByRole('region', { name: 'Contagem' })).toContainText('Total confirmado')
     await expect(paginaAssessoria.getByRole('region', { name: 'Confirmados por convite (1)' })).toContainText('Joana Prado')
   })
@@ -117,10 +117,10 @@ test.describe('Convidados, importação, RSVP e confirmações', () => {
   })
 
   test('registra restrição alimentar exigindo o consentimento', async ({ paginaAssessoria: page, api }) => {
-    const casamento = await api.criarCasamento()
-    await api.criarConvite(casamento.id, [{ nome: 'Bianca Torres' }])
+    const evento = await api.criarEvento()
+    await api.criarConvite(evento.id, [{ nome: 'Bianca Torres' }])
     await page.setViewportSize({ width: 1600, height: 900 })
-    await page.goto(`/casamentos/${casamento.id}/restricoes-alimentares`)
+    await page.goto(`/eventos/${evento.id}/restricoes-alimentares`)
 
     await page.getByRole('button', { name: 'Registrar restrição' }).first().click()
     const janela = dialogo(page)

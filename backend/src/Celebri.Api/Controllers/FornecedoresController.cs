@@ -37,7 +37,7 @@ public class FornecedoresController : ControllerBase
         return Ok(await _fornecedorService.ObterAsync(fornecedorId, cancelamento));
     }
 
-    [HttpGet("{fornecedorId:guid}/casamentos")]
+    [HttpGet("{fornecedorId:guid}/eventos")]
     [ProducesResponseType(typeof(IReadOnlyList<ParticipacaoFornecedorDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

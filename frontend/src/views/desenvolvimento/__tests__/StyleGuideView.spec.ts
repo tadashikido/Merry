@@ -57,7 +57,7 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     wrapper = await montar()
 
     expect(wrapper.get('h1').text()).toBe('Style guide')
-    for (const id of ['cores', 'tipografia', 'espaco', 'textos', 'acoes', 'formulario', 'listagem', 'estados', 'feedback', 'casamento', 'convidados', 'importacao', 'tarefas', 'layouts', 'regras']) {
+    for (const id of ['cores', 'tipografia', 'espaco', 'textos', 'acoes', 'formulario', 'listagem', 'estados', 'feedback', 'evento', 'convidados', 'importacao', 'tarefas', 'layouts', 'regras']) {
       expect(wrapper.find(`#${id}`).exists()).toBe(true)
     }
     expect(wrapper.find('[data-teste="menu-lateral"]').exists()).toBe(true)
@@ -109,16 +109,16 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     expect(wrapper.findAll('main')).toHaveLength(1)
   })
 
-  it('[COMPONENTE] exibe os componentes de casamento com todos os estados', async () => {
+  it('[COMPONENTE] exibe os componentes de evento com todos os estados', async () => {
     wrapper = await montar()
 
-    const secao = wrapper.get('#casamento')
-    expect(secao.findAll('[data-teste="nomes-casal"]').length).toBeGreaterThanOrEqual(4)
+    const secao = wrapper.get('#evento')
+    expect(secao.findAll('[data-teste="nomes-anfitrioes"]').length).toBeGreaterThanOrEqual(4)
     expect(secao.findAll('[data-teste="contagem-regressiva"]')).toHaveLength(10)
-    expect(secao.text()).toContain('Semana do casamento')
+    expect(secao.text()).toContain('Semana do evento')
     expect(secao.text()).toContain('Arquivado')
     expect(secao.find('[data-teste="lista-detalhes"]').exists()).toBe(true)
-    expect(wrapper.get('.guia__indice').text()).toContain('Casamento')
+    expect(wrapper.get('.guia__indice').text()).toContain('Evento')
   })
 
   it('[COMPONENTE] lista todas as combinações de contraste aprovadas', async () => {
@@ -149,12 +149,12 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     ])
     expect(wrapper.get('#estados').find('[data-teste="estado-primeiro-acesso"]').exists()).toBe(true)
     const workspace = wrapper.get('[data-teste="guia-workspace"]')
-    const navegacoes = workspace.findAll('[data-teste="navegacao-casamento"]')
+    const navegacoes = workspace.findAll('[data-teste="navegacao-evento"]')
     expect(navegacoes).toHaveLength(2)
     expect(navegacoes[0]!.text()).toContain('Restrições alimentares')
     expect(navegacoes[1]!.text()).not.toContain('Restrições alimentares')
-    expect(wrapper.get('#navegacao').text()).toContain('MODULOS_CASAMENTO')
-    expect(wrapper.get('#contextos').text()).toContain('Seu casamento está tomando forma.')
+    expect(wrapper.get('#navegacao').text()).toContain('MODULOS_EVENTO')
+    expect(wrapper.get('#contextos').text()).toContain('Seu evento está tomando forma.')
     expect(wrapper.get('.guia__indice').text()).toContain('Os 8 estados')
   })
 
@@ -252,10 +252,10 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     ])
   })
 
-  it('[COMPONENTE] exibe a seção de fornecedores do casamento com resumo, os quatro status e os estados do contrato', async () => {
+  it('[COMPONENTE] exibe a seção de fornecedores do evento com resumo, os quatro status e os estados do contrato', async () => {
     wrapper = await montar()
 
-    const secao = wrapper.get('#fornecedores-casamento')
+    const secao = wrapper.get('#fornecedores-evento')
     expect(secao.get('[data-teste="resumo-frase"]').text().replace(/\s+/g, ' ')).toBe('R$ 25.900,00 contratados de R$ 43.300,00 orçados')
     expect(secao.find('[data-teste="resumo-excedente"]').exists()).toBe(true)
     const status = secao.findAll('[data-teste="status-vinculo"]').map((selo) => selo.text())
@@ -279,7 +279,7 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     expect(wrapper.get('.guia__indice').text()).toContain('Cronograma do dia')
   })
 
-  it('[COMPONENTE] exibe a seção Duplicar casamento com as opções de cópia nos quatro estados e o que fica na origem', async () => {
+  it('[COMPONENTE] exibe a seção Duplicar evento com as opções de cópia nos quatro estados e o que fica na origem', async () => {
     wrapper = await montar()
 
     const secao = wrapper.get('#duplicacao')
@@ -290,7 +290,7 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     expect(opcoes[2]!.get('input').attributes('disabled')).toBeDefined()
     expect(opcoes[3]!.find('.p-skeleton').exists() || opcoes[3]!.get('[data-teste="opcao-copia-quantidade"]').text() === '').toBe(true)
     expect(secao.get('[data-teste="lista-nao-copiado"]').text()).toContain('Fica com Ana & João')
-    expect(wrapper.get('.guia__indice').text()).toContain('Duplicar casamento')
+    expect(wrapper.get('.guia__indice').text()).toContain('Duplicar evento')
   })
 
   it('[COMPONENTE] exibe a seção Financeiro com resumo de pagamentos, parcelas, linha do hoje e os estados do bloco', async () => {

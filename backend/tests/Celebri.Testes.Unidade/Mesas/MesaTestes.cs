@@ -7,12 +7,12 @@ namespace Celebri.Testes.Unidade.Mesas;
 public class MesaTestes
 {
     public static readonly DateTimeOffset Agora = new(2027, 3, 10, 12, 0, 0, TimeSpan.Zero);
-    public static readonly Guid CasamentoId = Guid.NewGuid();
+    public static readonly Guid EventoId = Guid.NewGuid();
 
     public static Convite NovoConvite(string nome, params (string Nome, RespostaRsvp Resposta)[] pessoas)
     {
         var dados = pessoas.Select(pessoa => new DadosConvidado(null, pessoa.Nome, null, null, FaixaEtaria.Adulto, pessoa.Resposta)).ToList();
-        return Convite.Criar(CasamentoId, new DadosConvite(nome, null, 0, dados), Agora);
+        return Convite.Criar(EventoId, new DadosConvite(nome, null, 0, dados), Agora);
     }
 
     public static Convite ConviteConfirmado(string nome, params string[] pessoas)
@@ -22,16 +22,16 @@ public class MesaTestes
 
     public static Mesa NovaMesa(int numero = 1, int capacidade = 8, string? nome = null, bool especial = false)
     {
-        return Mesa.Criar(CasamentoId, new DadosMesa(numero, nome, capacidade, especial), Agora);
+        return Mesa.Criar(EventoId, new DadosMesa(numero, nome, capacidade, especial), Agora);
     }
 
     [Fact]
     public void Criar_DeveNormalizarNomeEGuardarDados()
     {
-        var mesa = Mesa.Criar(CasamentoId, new DadosMesa(3, "  Amigos   da faculdade ", 10, false), Agora);
+        var mesa = Mesa.Criar(EventoId, new DadosMesa(3, "  Amigos   da faculdade ", 10, false), Agora);
 
         Assert.NotEqual(Guid.Empty, mesa.Id);
-        Assert.Equal(CasamentoId, mesa.CasamentoId);
+        Assert.Equal(EventoId, mesa.EventoId);
         Assert.Equal(Guid.Empty, mesa.OrganizacaoId);
         Assert.Equal((3, "Amigos da faculdade", 10, false), (mesa.Numero, mesa.Nome, mesa.Capacidade, mesa.Especial));
         Assert.Equal("Mesa 3 · Amigos da faculdade", mesa.Rotulo);
@@ -45,21 +45,21 @@ public class MesaTestes
     [InlineData(1, 8, "Um nome de mesa com bem mais de sessenta caracteres para estourar o limite", "nome")]
     public void Criar_ForaDosLimites_DeveLancarRegraNoCampo(int numero, int capacidade, string? nome, string campo)
     {
-        var excecao = Assert.Throws<RegraNegocioException>(() => Mesa.Criar(CasamentoId, new DadosMesa(numero, nome, capacidade, false), Agora));
+        var excecao = Assert.Throws<RegraNegocioException>(() => Mesa.Criar(EventoId, new DadosMesa(numero, nome, capacidade, false), Agora));
 
         Assert.Equal(campo, excecao.Campo);
     }
 
     [Fact]
-    public void Criar_SemCasamento_DeveLancar()
+    public void Criar_SemEvento_DeveLancar()
     {
         Assert.Throws<ArgumentException>(() => Mesa.Criar(Guid.Empty, new DadosMesa(1, null, 8, false), Agora));
     }
 
     [Theory]
     [InlineData(4, null, false, "Mesa 4")]
-    [InlineData(1, null, true, "Mesa dos noivos")]
-    [InlineData(1, "Noivos e padrinhos", true, "Mesa 1 · Noivos e padrinhos")]
+    [InlineData(1, null, true, "Mesa dos anfitriões")]
+    [InlineData(1, "Anfitriões e padrinhos", true, "Mesa 1 · Anfitriões e padrinhos")]
     public void Rotulo_DeveCombinarNumeroNomeEEspecial(int numero, string? nome, bool especial, string esperado)
     {
         Assert.Equal(esperado, Mesa.Rotular(numero, nome, especial));

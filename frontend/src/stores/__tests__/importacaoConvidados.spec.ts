@@ -28,8 +28,8 @@ afterEach(() => {
 
 describe('useImportacaoConvidadosStore', () => {
   it('[UNITÁRIO] monta as rotas de prévia e de importação', () => {
-    expect(rotaImportacao(ID, true)).toBe(`/api/casamentos/${ID}/convites/importacao/pre-visualizacao`)
-    expect(rotaImportacao(ID)).toBe(`/api/casamentos/${ID}/convites/importacao`)
+    expect(rotaImportacao(ID, true)).toBe(`/api/eventos/${ID}/convites/importacao/pre-visualizacao`)
+    expect(rotaImportacao(ID)).toBe(`/api/eventos/${ID}/convites/importacao`)
   })
 
   it('[UNITÁRIO] pré-visualiza enviando o arquivo em multipart e guarda a prévia', async () => {
@@ -55,7 +55,7 @@ describe('useImportacaoConvidadosStore', () => {
     fetchSimulado.mockResolvedValueOnce(respostaJson(previaExemplo())).mockResolvedValueOnce(respostaJson({ convitesCriados: 2, pessoasCriadas: 3 }))
     const store = useImportacaoConvidadosStore()
     const convidados = useConvidadosStore()
-    convidados.casamentoIdTotais = ID
+    convidados.eventoIdTotais = ID
     const planilha = arquivo()
     await store.preVisualizar(ID, planilha)
 
@@ -70,7 +70,7 @@ describe('useImportacaoConvidadosStore', () => {
     expect(store.resultado).toEqual({ convitesCriados: 2, pessoasCriadas: 3 })
     expect(store.previa).toBeNull()
     expect(store.arquivo).toBeNull()
-    expect(convidados.casamentoIdTotais).toBeNull()
+    expect(convidados.eventoIdTotais).toBeNull()
   })
 
   it('[UNITÁRIO] importar sem prévia não chama a API', async () => {
@@ -145,7 +145,7 @@ describe('useImportacaoConvidadosStore', () => {
 
     expect(store.previa).toBeNull()
     expect(store.arquivo).toBeNull()
-    expect(store.casamentoId).toBeNull()
+    expect(store.eventoId).toBeNull()
   })
 
   it('[UNITÁRIO] usa tempo limite estendido para planilhas', () => {

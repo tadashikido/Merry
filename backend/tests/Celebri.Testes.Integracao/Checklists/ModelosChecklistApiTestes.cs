@@ -33,7 +33,7 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
         var detalhe = (await OrganizacaoA.Cliente.GetFromJsonAsync<ModeloChecklistDto>(RotaModelo(sugerido.Id)))!;
         Assert.Equal(
             [ModeloChecklistSugerido.DozeMeses, ModeloChecklistSugerido.SeisMeses, ModeloChecklistSugerido.TresMeses, ModeloChecklistSugerido.TrintaDias],
-            detalhe.Itens.Select(item => item.DiasAntesDoCasamento).Distinct());
+            detalhe.Itens.Select(item => item.DiasAntesDoEvento).Distinct());
 
         await using var contexto = CriarContexto(OrganizacaoA);
         Assert.Equal(1, await contexto.ModelosChecklist.CountAsync());
@@ -78,24 +78,24 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task CriarModeloEItens_DeveRetornarItensOrdenadosSemOrganizacao()
     {
-        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(RotaModelos, new { nome = "  Casamento   na praia ", descricao = "Pé na areia" });
+        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(RotaModelos, new { nome = "  Evento   na praia ", descricao = "Pé na areia" });
 
         Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
         var corpo = await resposta.Content.ReadAsStringAsync();
         Assert.DoesNotContain("organizacao", corpo, StringComparison.OrdinalIgnoreCase);
         var modelo = (await resposta.Content.ReadFromJsonAsync<ModeloChecklistDto>())!;
         Assert.Equal($"/api/modelos-checklist/{modelo.Id}", resposta.Headers.Location!.AbsolutePath);
-        Assert.Equal("Casamento na praia", modelo.Nome);
+        Assert.Equal("Evento na praia", modelo.Nome);
         Assert.False(modelo.Sugerido);
 
-        await CriarItemAsync(OrganizacaoA.Cliente, modelo.Id, CorpoItem("Prova final", 30, "Casal", "TrajesBeleza"));
+        await CriarItemAsync(OrganizacaoA.Cliente, modelo.Id, CorpoItem("Prova final", 30, "Anfitriao", "TrajesBeleza"));
         await CriarItemAsync(OrganizacaoA.Cliente, modelo.Id, CorpoItem("Reservar o local", 365, "Assessoria", "Cerimonia"));
         var album = await CriarItemAsync(OrganizacaoA.Cliente, modelo.Id, CorpoItem("Entregar o álbum", -20, "Assessoria", "Geral"));
 
         var detalhe = (await OrganizacaoA.Cliente.GetFromJsonAsync<ModeloChecklistDto>(RotaModelo(modelo.Id)))!;
         Assert.Equal(["Reservar o local", "Prova final", "Entregar o álbum"], detalhe.Itens.Select(item => item.Titulo));
-        Assert.Equal(-20, album.DiasAntesDoCasamento);
-        Assert.Equal("Casal", detalhe.Itens[1].Responsavel);
+        Assert.Equal(-20, album.DiasAntesDoEvento);
+        Assert.Equal("Anfitriao", detalhe.Itens[1].Responsavel);
 
         await using var contexto = CriarContexto(OrganizacaoA);
         Assert.All(await contexto.ItensModeloChecklist.ToListAsync(), item => Assert.Equal(OrganizacaoA.OrganizacaoId, item.OrganizacaoId));
@@ -107,10 +107,10 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
         var modelo = await CriarModeloAsync(OrganizacaoA.Cliente);
         var item = await CriarItemAsync(OrganizacaoA.Cliente, modelo.Id);
 
-        var atualizacao = await OrganizacaoA.Cliente.PutAsJsonAsync(RotaItem(modelo.Id, item.Id), CorpoItem("Degustação", 90, "Casal", "Recepcao", "Levar os pais"));
+        var atualizacao = await OrganizacaoA.Cliente.PutAsJsonAsync(RotaItem(modelo.Id, item.Id), CorpoItem("Degustação", 90, "Anfitriao", "Recepcao", "Levar os pais"));
         Assert.Equal(HttpStatusCode.OK, atualizacao.StatusCode);
         var atualizado = (await atualizacao.Content.ReadFromJsonAsync<ItemModeloChecklistDto>())!;
-        Assert.Equal(new ItemModeloChecklistDto(item.Id, "Degustação", "Levar os pais", "Casal", "Recepcao", 90), atualizado);
+        Assert.Equal(new ItemModeloChecklistDto(item.Id, "Degustação", "Levar os pais", "Anfitriao", "Recepcao", 90), atualizado);
 
         Assert.Equal(HttpStatusCode.NoContent, (await OrganizacaoA.Cliente.DeleteAsync(RotaItem(modelo.Id, item.Id))).StatusCode);
         var detalhe = (await OrganizacaoA.Cliente.GetFromJsonAsync<ModeloChecklistDto>(RotaModelo(modelo.Id)))!;
@@ -132,9 +132,9 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Criar_NomeRepetidoSemDiferenciarMaiusculas_DeveRetornar422()
     {
-        await CriarModeloAsync(OrganizacaoA.Cliente, "Casamento no campo");
+        await CriarModeloAsync(OrganizacaoA.Cliente, "Evento no campo");
 
-        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(RotaModelos, new { nome = "CASAMENTO NO CAMPO" });
+        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(RotaModelos, new { nome = "EVENTO NO CAMPO" });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         var problema = await resposta.Content.ReadFromJsonAsync<ProblemDetails>();
@@ -169,14 +169,14 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
     }
 
     [Theory]
-    [InlineData("""{"titulo":"Buffet","diasAntesDoCasamento":1096}""")]
-    [InlineData("""{"titulo":"Buffet","diasAntesDoCasamento":-366}""")]
+    [InlineData("""{"titulo":"Buffet","diasAntesDoEvento":1096}""")]
+    [InlineData("""{"titulo":"Buffet","diasAntesDoEvento":-366}""")]
     [InlineData("""{"titulo":"Buffet"}""")]
-    [InlineData("""{"titulo":"B","diasAntesDoCasamento":30}""")]
-    [InlineData("""{"diasAntesDoCasamento":30}""")]
-    [InlineData("""{"titulo":"Buffet","diasAntesDoCasamento":30,"responsavel":"Equipe"}""")]
-    [InlineData("""{"titulo":"Buffet","diasAntesDoCasamento":30,"categoria":"Viagem"}""")]
-    [InlineData("""{"titulo":"Buffet","diasAntesDoCasamento":"muitos"}""")]
+    [InlineData("""{"titulo":"B","diasAntesDoEvento":30}""")]
+    [InlineData("""{"diasAntesDoEvento":30}""")]
+    [InlineData("""{"titulo":"Buffet","diasAntesDoEvento":30,"responsavel":"Equipe"}""")]
+    [InlineData("""{"titulo":"Buffet","diasAntesDoEvento":30,"categoria":"Viagem"}""")]
+    [InlineData("""{"titulo":"Buffet","diasAntesDoEvento":"muitos"}""")]
     public async Task CriarItem_Invalido_DeveRetornar400ENaoGravar(string json)
     {
         var modelo = await CriarModeloAsync(OrganizacaoA.Cliente);
@@ -232,11 +232,11 @@ public sealed class ModelosChecklistApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task OutraOrganizacao_PodeUsarOMesmoNome()
     {
-        await CriarModeloAsync(OrganizacaoA.Cliente, "Casamento no campo");
+        await CriarModeloAsync(OrganizacaoA.Cliente, "Evento no campo");
 
-        var modeloB = await CriarModeloAsync(OrganizacaoB.Cliente, "Casamento no campo");
+        var modeloB = await CriarModeloAsync(OrganizacaoB.Cliente, "Evento no campo");
 
-        Assert.Equal("Casamento no campo", modeloB.Nome);
+        Assert.Equal("Evento no campo", modeloB.Nome);
     }
 
     [Fact]

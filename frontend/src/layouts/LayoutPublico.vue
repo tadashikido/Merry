@@ -45,7 +45,7 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
   gap: var(--p-ritmo-cartao);
   min-height: 100vh;
   padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo) var(--p-ritmo-bloco);
-  background: var(--p-cor-fundo-casal);
+  background: var(--p-cor-fundo-anfitriao);
 }
 
 .layout-publico__cabecalho {

@@ -110,7 +110,7 @@ const convitesExibidos = computed(() =>
 
         <MensagemFormulario
           v-if="acimaDoLimite"
-          :mensagem="TEXTOS_IMPORTACAO.acimaDoLimite(previa.resumo.limitePorCasamento)"
+          :mensagem="TEXTOS_IMPORTACAO.acimaDoLimite(previa.resumo.limitePorEvento)"
           data-teste="previa-limite"
         />
 

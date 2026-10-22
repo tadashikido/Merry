@@ -56,7 +56,7 @@ public class ContextoIsolamentoTestes
     public void AdicionarInfraestrutura_SemRegistroDaAplicacao_DeveUsarContextoFailClosed()
     {
         var configuracao = new ConfigurationBuilder()
-            .AddInMemoryCollection([new KeyValuePair<string, string?>("ConnectionStrings:Principal", "Host=localhost;Database=casamento_teste")])
+            .AddInMemoryCollection([new KeyValuePair<string, string?>("ConnectionStrings:Principal", "Host=localhost;Database=evento_teste")])
             .Build();
         var servicos = new ServiceCollection();
 

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}/mesas")]
+[Route("api/eventos/{eventoId:guid}/mesas")]
 [Produces("application/json")]
 [Authorize(Policy = PoliticasAutorizacao.ConsultarMesas)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -24,9 +24,9 @@ public class MesasController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<MapaMesasDto>> ObterMapa(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ActionResult<MapaMesasDto>> ObterMapa(Guid eventoId, CancellationToken cancelamento)
     {
-        return Ok(await _mesaService.ObterMapaAsync(casamentoId, cancelamento));
+        return Ok(await _mesaService.ObterMapaAsync(eventoId, cancelamento));
     }
 
     [HttpPost]
@@ -38,10 +38,10 @@ public class MesasController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<MesaDto>> Criar(Guid casamentoId, SalvarMesaRequest request, CancellationToken cancelamento)
+    public async Task<ActionResult<MesaDto>> Criar(Guid eventoId, SalvarMesaRequest request, CancellationToken cancelamento)
     {
-        var mesa = await _mesaService.CriarAsync(casamentoId, request, cancelamento);
-        return Created($"/api/casamentos/{casamentoId}/mesas/{mesa.Id}", mesa);
+        var mesa = await _mesaService.CriarAsync(eventoId, request, cancelamento);
+        return Created($"/api/eventos/{eventoId}/mesas/{mesa.Id}", mesa);
     }
 
     [HttpPut("{mesaId:guid}")]
@@ -53,9 +53,9 @@ public class MesasController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<MesaDto>> Atualizar(Guid casamentoId, Guid mesaId, SalvarMesaRequest request, CancellationToken cancelamento)
+    public async Task<ActionResult<MesaDto>> Atualizar(Guid eventoId, Guid mesaId, SalvarMesaRequest request, CancellationToken cancelamento)
     {
-        return Ok(await _mesaService.AtualizarAsync(casamentoId, mesaId, request, cancelamento));
+        return Ok(await _mesaService.AtualizarAsync(eventoId, mesaId, request, cancelamento));
     }
 
     [HttpDelete("{mesaId:guid}")]
@@ -66,9 +66,9 @@ public class MesasController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> Remover(Guid casamentoId, Guid mesaId, CancellationToken cancelamento)
+    public async Task<IActionResult> Remover(Guid eventoId, Guid mesaId, CancellationToken cancelamento)
     {
-        await _mesaService.RemoverAsync(casamentoId, mesaId, cancelamento);
+        await _mesaService.RemoverAsync(eventoId, mesaId, cancelamento);
         return NoContent();
     }
 
@@ -81,9 +81,9 @@ public class MesasController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<MapaMesasDto>> Sentar(Guid casamentoId, Guid mesaId, PessoasMesaRequest request, CancellationToken cancelamento)
+    public async Task<ActionResult<MapaMesasDto>> Sentar(Guid eventoId, Guid mesaId, PessoasMesaRequest request, CancellationToken cancelamento)
     {
-        return Ok(await _mesaService.SentarAsync(casamentoId, mesaId, request, cancelamento));
+        return Ok(await _mesaService.SentarAsync(eventoId, mesaId, request, cancelamento));
     }
 
     [HttpPost("retirada")]
@@ -95,9 +95,9 @@ public class MesasController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<MapaMesasDto>> Retirar(Guid casamentoId, PessoasMesaRequest request, CancellationToken cancelamento)
+    public async Task<ActionResult<MapaMesasDto>> Retirar(Guid eventoId, PessoasMesaRequest request, CancellationToken cancelamento)
     {
-        return Ok(await _mesaService.RetirarAsync(casamentoId, request, cancelamento));
+        return Ok(await _mesaService.RetirarAsync(eventoId, request, cancelamento));
     }
 
     [HttpPost("avisos-saida/dispensa")]
@@ -109,8 +109,8 @@ public class MesasController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<MapaMesasDto>> DispensarAvisos(Guid casamentoId, PessoasMesaRequest request, CancellationToken cancelamento)
+    public async Task<ActionResult<MapaMesasDto>> DispensarAvisos(Guid eventoId, PessoasMesaRequest request, CancellationToken cancelamento)
     {
-        return Ok(await _mesaService.DispensarAvisosAsync(casamentoId, request, cancelamento));
+        return Ok(await _mesaService.DispensarAvisosAsync(eventoId, request, cancelamento));
     }
 }

@@ -17,7 +17,7 @@ import { LIMITES_MESA, regraCapacidadeMesa, regraNomeMesa, regraNumeroMesa } fro
 import { rotuloMesa } from '@/utilitarios/mesas'
 
 const props = withDefaults(
-  defineProps<{ visivel: boolean; casamentoId: string; mesa?: MesaDto | null; numeroSugerido?: number }>(),
+  defineProps<{ visivel: boolean; eventoId: string; mesa?: MesaDto | null; numeroSugerido?: number }>(),
   { mesa: null, numeroSugerido: 1 },
 )
 
@@ -78,8 +78,8 @@ async function salvar() {
   }
   executando.value = true
   const resultado = props.mesa
-    ? await store.atualizarMesa(props.casamentoId, props.mesa.id, dados)
-    : await store.criarMesa(props.casamentoId, dados)
+    ? await store.atualizarMesa(props.eventoId, props.mesa.id, dados)
+    : await store.criarMesa(props.eventoId, dados)
   executando.value = false
 
   if (!resultado.ok) {
@@ -210,11 +210,11 @@ async function salvar() {
           data-teste="campo-especial-mesa"
         />
         <span class="dialogo-mesa__especial-textos">
-          <label for="mesa-especial">{{ TEXTOS_MESAS.campoNoivos }}</label>
+          <label for="mesa-especial">{{ TEXTOS_MESAS.campoAnfitrioes }}</label>
           <span
             id="mesa-especial-dica"
             class="dialogo-mesa__dica"
-          >{{ TEXTOS_MESAS.dicaNoivos }}</span>
+          >{{ TEXTOS_MESAS.dicaAnfitrioes }}</span>
         </span>
       </div>
 

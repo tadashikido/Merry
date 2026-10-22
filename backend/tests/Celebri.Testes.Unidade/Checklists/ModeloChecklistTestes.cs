@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Celebri.Aplicacao.Checklists;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Checklists;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Isolamento;
@@ -12,7 +12,7 @@ namespace Celebri.Testes.Unidade.Checklists;
 public class ModeloChecklistTestes
 {
     private static readonly DateTimeOffset Agora = new(2027, 3, 10, 15, 0, 0, TimeSpan.Zero);
-    private static readonly DateOnly DataCasamento = new(2027, 12, 12);
+    private static readonly DateOnly DataEvento = new(2027, 12, 12);
 
     private static DadosItemModeloChecklist Item(
         string? titulo = "Reservar o local",
@@ -24,9 +24,9 @@ public class ModeloChecklistTestes
         return new DadosItemModeloChecklist(titulo, descricao, responsavel, categoria, dias);
     }
 
-    private static CasamentoAssessorado Casamento(DateOnly data)
+    private static Evento NovoEvento(DateOnly data)
     {
-        return CasamentoAssessorado.Criar(new DadosCasamento("Ana", "Bruno", data, null, null, null, null, null), Agora);
+        return Evento.Criar(new DadosEvento("Ana", "Bruno", data, null, null, null, null, null), Agora);
     }
 
     [Fact]
@@ -41,11 +41,11 @@ public class ModeloChecklistTestes
     [Fact]
     public void Criar_DeveNormalizarNomeEIniciarSemOrganizacao()
     {
-        var modelo = ModeloChecklist.Criar("  Casamento   no campo ", "   ", Agora);
+        var modelo = ModeloChecklist.Criar("  Evento   no campo ", "   ", Agora);
 
         Assert.NotEqual(Guid.Empty, modelo.Id);
         Assert.Equal(Guid.Empty, modelo.OrganizacaoId);
-        Assert.Equal("Casamento no campo", modelo.Nome);
+        Assert.Equal("Evento no campo", modelo.Nome);
         Assert.Null(modelo.Descricao);
         Assert.False(modelo.Sugerido);
         Assert.Empty(modelo.Itens);
@@ -140,12 +140,12 @@ public class ModeloChecklistTestes
         var item = modelo.AdicionarItem(Item(), Agora);
         var alheio = outro.AdicionarItem(Item(), Agora);
 
-        modelo.AtualizarItem(item, Item("Visitar o espaço", 300, ResponsavelTarefa.Casal, CategoriaTarefa.Recepcao, "Com o casal"), Agora.AddDays(1));
+        modelo.AtualizarItem(item, Item("Visitar o espaço", 300, ResponsavelTarefa.Anfitriao, CategoriaTarefa.Recepcao, "Com os anfitriões"), Agora.AddDays(1));
 
         Assert.Equal("Visitar o espaço", item.Titulo);
-        Assert.Equal(300, item.DiasAntesDoCasamento);
-        Assert.Equal(ResponsavelTarefa.Casal, item.Responsavel);
-        Assert.Equal("Com o casal", item.Descricao);
+        Assert.Equal(300, item.DiasAntesDoEvento);
+        Assert.Equal(ResponsavelTarefa.Anfitriao, item.Responsavel);
+        Assert.Equal("Com os anfitriões", item.Descricao);
         Assert.Equal(Agora.AddDays(1), modelo.AtualizadoEm);
         Assert.Same(item, modelo.BuscarItem(item.Id));
         Assert.Null(modelo.BuscarItem(alheio.Id));
@@ -163,16 +163,16 @@ public class ModeloChecklistTestes
     [InlineData(30, "2027-11-12")]
     [InlineData(0, "2027-12-12")]
     [InlineData(-15, "2027-12-27")]
-    public void CalcularPrazo_DeveSubtrairOsDiasDaDataDoCasamento(int dias, string esperado)
+    public void CalcularPrazo_DeveSubtrairOsDiasDaDataDoEvento(int dias, string esperado)
     {
-        Assert.Equal(DateOnly.Parse(esperado, System.Globalization.CultureInfo.InvariantCulture), ItemModeloChecklist.CalcularPrazo(DataCasamento, dias));
+        Assert.Equal(DateOnly.Parse(esperado, System.Globalization.CultureInfo.InvariantCulture), ItemModeloChecklist.CalcularPrazo(DataEvento, dias));
     }
 
     [Fact]
     public void CalcularPrazo_DeveLimitarAFaixaValidaDePrazo()
     {
-        Assert.Equal(TarefaCasamento.PrazoMinimo, ItemModeloChecklist.CalcularPrazo(new DateOnly(2000, 3, 1), 365));
-        Assert.Equal(TarefaCasamento.PrazoMaximo, ItemModeloChecklist.CalcularPrazo(new DateOnly(2100, 12, 20), -365));
+        Assert.Equal(TarefaEvento.PrazoMinimo, ItemModeloChecklist.CalcularPrazo(new DateOnly(2000, 3, 1), 365));
+        Assert.Equal(TarefaEvento.PrazoMaximo, ItemModeloChecklist.CalcularPrazo(new DateOnly(2100, 12, 20), -365));
     }
 
     [Fact]
@@ -181,20 +181,20 @@ public class ModeloChecklistTestes
         var modelo = ModeloChecklist.Criar("Quarenta", null, Agora);
         for (var indice = 0; indice < 40; indice++)
         {
-            modelo.AdicionarItem(Item($"Item {indice:00}", (indice * 27) - 30, indice % 2 == 0 ? ResponsavelTarefa.Assessoria : ResponsavelTarefa.Casal), Agora);
+            modelo.AdicionarItem(Item($"Item {indice:00}", (indice * 27) - 30, indice % 2 == 0 ? ResponsavelTarefa.Assessoria : ResponsavelTarefa.Anfitriao), Agora);
         }
 
-        var casamento = Casamento(DataCasamento);
+        var evento = NovoEvento(DataEvento);
         var usuario = Guid.NewGuid();
 
-        var tarefas = GeradorTarefasChecklist.Gerar(casamento, modelo.Itens, usuario, Agora);
+        var tarefas = GeradorTarefasChecklist.Gerar(evento, modelo.Itens, usuario, Agora);
 
         Assert.Equal(40, tarefas.Count);
         foreach (var (tarefa, item) in tarefas.Zip(modelo.Itens))
         {
-            Assert.Equal(casamento.Id, tarefa.CasamentoId);
+            Assert.Equal(evento.Id, tarefa.EventoId);
             Assert.Equal(item.Id, tarefa.OrigemModeloItemId);
-            Assert.Equal(DataCasamento.AddDays(-item.DiasAntesDoCasamento), tarefa.Prazo);
+            Assert.Equal(DataEvento.AddDays(-item.DiasAntesDoEvento), tarefa.Prazo);
             Assert.Equal(item.Titulo, tarefa.Titulo);
             Assert.Equal(item.Responsavel, tarefa.Responsavel);
             Assert.Equal(item.Categoria, tarefa.Categoria);
@@ -220,22 +220,22 @@ public class ModeloChecklistTestes
     public void PrazoDesatualizado_DeveConsiderarSoTarefasAbertasComOrigem()
     {
         var itemId = Guid.NewGuid();
-        var casamentoId = Guid.NewGuid();
-        var aberta = TarefaCasamento.Criar(casamentoId, new DadosTarefa("Buffet", null, ResponsavelTarefa.Assessoria, CategoriaTarefa.Geral, new DateOnly(2026, 12, 12)), null, Agora, itemId);
-        var concluida = TarefaCasamento.Criar(casamentoId, new DadosTarefa("Local", null, ResponsavelTarefa.Assessoria, CategoriaTarefa.Geral, new DateOnly(2026, 12, 12)), null, Agora, itemId);
+        var eventoId = Guid.NewGuid();
+        var aberta = TarefaEvento.Criar(eventoId, new DadosTarefa("Buffet", null, ResponsavelTarefa.Assessoria, CategoriaTarefa.Geral, new DateOnly(2026, 12, 12)), null, Agora, itemId);
+        var concluida = TarefaEvento.Criar(eventoId, new DadosTarefa("Local", null, ResponsavelTarefa.Assessoria, CategoriaTarefa.Geral, new DateOnly(2026, 12, 12)), null, Agora, itemId);
         concluida.AlterarStatus(StatusTarefa.Concluida, ResponsavelTarefa.Assessoria, null, Agora);
-        var manual = TarefaCasamento.Criar(casamentoId, new DadosTarefa("Manual", null, ResponsavelTarefa.Assessoria, CategoriaTarefa.Geral, new DateOnly(2026, 12, 12)), null, Agora);
+        var manual = TarefaEvento.Criar(eventoId, new DadosTarefa("Manual", null, ResponsavelTarefa.Assessoria, CategoriaTarefa.Geral, new DateOnly(2026, 12, 12)), null, Agora);
 
-        Assert.False(GeradorTarefasChecklist.PrazoDesatualizado(aberta, 365, DataCasamento));
-        Assert.True(GeradorTarefasChecklist.PrazoDesatualizado(aberta, 365, DataCasamento.AddDays(10)));
-        Assert.False(GeradorTarefasChecklist.PrazoDesatualizado(concluida, 365, DataCasamento.AddDays(10)));
-        Assert.False(GeradorTarefasChecklist.PrazoDesatualizado(manual, 365, DataCasamento.AddDays(10)));
+        Assert.False(GeradorTarefasChecklist.PrazoDesatualizado(aberta, 365, DataEvento));
+        Assert.True(GeradorTarefasChecklist.PrazoDesatualizado(aberta, 365, DataEvento.AddDays(10)));
+        Assert.False(GeradorTarefasChecklist.PrazoDesatualizado(concluida, 365, DataEvento.AddDays(10)));
+        Assert.False(GeradorTarefasChecklist.PrazoDesatualizado(manual, 365, DataEvento.AddDays(10)));
     }
 
     [Fact]
     public void RedefinirPrazo_DeveAlterarSomenteOPrazoEValidarAFaixa()
     {
-        var tarefa = TarefaCasamento.Criar(Guid.NewGuid(), new DadosTarefa("Buffet", null, ResponsavelTarefa.Assessoria, CategoriaTarefa.Geral, new DateOnly(2026, 12, 12)), null, Agora, Guid.NewGuid());
+        var tarefa = TarefaEvento.Criar(Guid.NewGuid(), new DadosTarefa("Buffet", null, ResponsavelTarefa.Assessoria, CategoriaTarefa.Geral, new DateOnly(2026, 12, 12)), null, Agora, Guid.NewGuid());
 
         tarefa.RedefinirPrazo(new DateOnly(2027, 1, 5), Agora.AddDays(2));
 
@@ -267,16 +267,16 @@ public class ModeloChecklistTestes
     [Fact]
     public void Calcular_DeveContarSoTarefasComOrigem()
     {
-        var casamentoId = Guid.NewGuid();
+        var eventoId = Guid.NewGuid();
         var dados = new DadosTarefa("Tarefa", null, ResponsavelTarefa.Assessoria, CategoriaTarefa.Geral, null);
-        var concluida = TarefaCasamento.Criar(casamentoId, dados, null, Agora, Guid.NewGuid());
+        var concluida = TarefaEvento.Criar(eventoId, dados, null, Agora, Guid.NewGuid());
         concluida.AlterarStatus(StatusTarefa.Concluida, ResponsavelTarefa.Assessoria, null, Agora);
-        var cancelada = TarefaCasamento.Criar(casamentoId, dados, null, Agora, Guid.NewGuid());
+        var cancelada = TarefaEvento.Criar(eventoId, dados, null, Agora, Guid.NewGuid());
         cancelada.AlterarStatus(StatusTarefa.Cancelada, ResponsavelTarefa.Assessoria, null, Agora);
-        var aberta = TarefaCasamento.Criar(casamentoId, dados, null, Agora, Guid.NewGuid());
-        var manual = TarefaCasamento.Criar(casamentoId, dados, null, Agora);
+        var aberta = TarefaEvento.Criar(eventoId, dados, null, Agora, Guid.NewGuid());
+        var manual = TarefaEvento.Criar(eventoId, dados, null, Agora);
 
-        var progresso = ChecklistCasamentoService.Calcular([concluida, cancelada, aberta, manual]);
+        var progresso = ChecklistEventoService.Calcular([concluida, cancelada, aberta, manual]);
 
         Assert.Equal(new ProgressoChecklist(3, 1, 1), progresso);
         Assert.Equal(50, progresso.Percentual);
@@ -293,9 +293,9 @@ public class ModeloChecklistTestes
         Assert.InRange(modelo.Itens.Count, 20, ModeloChecklist.LimiteItens);
         Assert.Equal(
             [ModeloChecklistSugerido.DozeMeses, ModeloChecklistSugerido.SeisMeses, ModeloChecklistSugerido.TresMeses, ModeloChecklistSugerido.TrintaDias],
-            modelo.Itens.Select(item => item.DiasAntesDoCasamento).Distinct().OrderByDescending(dias => dias));
+            modelo.Itens.Select(item => item.DiasAntesDoEvento).Distinct().OrderByDescending(dias => dias));
         Assert.Equal(modelo.Itens.Count, modelo.Itens.Select(item => item.Titulo).Distinct().Count());
-        Assert.Contains(modelo.Itens, item => item.Responsavel == ResponsavelTarefa.Casal);
+        Assert.Contains(modelo.Itens, item => item.Responsavel == ResponsavelTarefa.Anfitriao);
         Assert.Contains(modelo.Itens, item => item.Categoria == CategoriaTarefa.Documentos);
     }
 
@@ -314,8 +314,8 @@ public class ModeloChecklistTestes
 
     public static TheoryData<SalvarItemModeloChecklistRequest, string> ItensInvalidos => new()
     {
-        { new SalvarItemModeloChecklistRequest("Buffet", null, null, null, 1096), nameof(SalvarItemModeloChecklistRequest.DiasAntesDoCasamento) },
-        { new SalvarItemModeloChecklistRequest("Buffet", null, null, null, -366), nameof(SalvarItemModeloChecklistRequest.DiasAntesDoCasamento) },
+        { new SalvarItemModeloChecklistRequest("Buffet", null, null, null, 1096), nameof(SalvarItemModeloChecklistRequest.DiasAntesDoEvento) },
+        { new SalvarItemModeloChecklistRequest("Buffet", null, null, null, -366), nameof(SalvarItemModeloChecklistRequest.DiasAntesDoEvento) },
         { new SalvarItemModeloChecklistRequest("B", null, null, null, 30), nameof(SalvarItemModeloChecklistRequest.Titulo) },
         { new SalvarItemModeloChecklistRequest("Buffet", null, (ResponsavelTarefa)7, null, 30), nameof(SalvarItemModeloChecklistRequest.Responsavel) },
         { new SalvarItemModeloChecklistRequest("Buffet", null, null, (CategoriaTarefa)40, 30), nameof(SalvarItemModeloChecklistRequest.Categoria) },

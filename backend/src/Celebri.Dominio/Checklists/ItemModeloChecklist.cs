@@ -29,7 +29,7 @@ public class ItemModeloChecklist : IPertenceOrganizacao
 
     public CategoriaTarefa Categoria { get; private set; }
 
-    public int DiasAntesDoCasamento { get; private set; }
+    public int DiasAntesDoEvento { get; private set; }
 
     public DateTimeOffset CriadoEm { get; private set; }
 
@@ -40,20 +40,20 @@ public class ItemModeloChecklist : IPertenceOrganizacao
         return dias is >= -DiasDepoisMaximo and <= DiasAntesMaximo;
     }
 
-    public static DateOnly CalcularPrazo(DateOnly dataCasamento, int diasAntesDoCasamento)
+    public static DateOnly CalcularPrazo(DateOnly dataEvento, int diasAntesDoEvento)
     {
-        var dia = dataCasamento.DayNumber - diasAntesDoCasamento;
-        return DateOnly.FromDayNumber(Math.Clamp(dia, TarefaCasamento.PrazoMinimo.DayNumber, TarefaCasamento.PrazoMaximo.DayNumber));
+        var dia = dataEvento.DayNumber - diasAntesDoEvento;
+        return DateOnly.FromDayNumber(Math.Clamp(dia, TarefaEvento.PrazoMinimo.DayNumber, TarefaEvento.PrazoMaximo.DayNumber));
     }
 
-    public DateOnly CalcularPrazo(DateOnly dataCasamento)
+    public DateOnly CalcularPrazo(DateOnly dataEvento)
     {
-        return CalcularPrazo(dataCasamento, DiasAntesDoCasamento);
+        return CalcularPrazo(dataEvento, DiasAntesDoEvento);
     }
 
-    public DadosTarefa ParaDadosTarefa(DateOnly dataCasamento)
+    public DadosTarefa ParaDadosTarefa(DateOnly dataEvento)
     {
-        return new DadosTarefa(Titulo, Descricao, Responsavel, Categoria, CalcularPrazo(dataCasamento));
+        return new DadosTarefa(Titulo, Descricao, Responsavel, Categoria, CalcularPrazo(dataEvento));
     }
 
     internal static ItemModeloChecklist Criar(Guid modeloId, DadosItemModeloChecklist dados, DateTimeOffset agora)
@@ -81,14 +81,14 @@ public class ItemModeloChecklist : IPertenceOrganizacao
         var titulo = NormalizadorTexto.Normalizar(dados.Titulo)
             ?? throw new RegraNegocioException(MensagensTarefas.TituloObrigatorio);
 
-        if (titulo.Length is < TarefaCasamento.TamanhoMinimoTitulo or > TarefaCasamento.TamanhoMaximoTitulo)
+        if (titulo.Length is < TarefaEvento.TamanhoMinimoTitulo or > TarefaEvento.TamanhoMaximoTitulo)
         {
             throw new RegraNegocioException(MensagensTarefas.TamanhoTitulo);
         }
 
         var descricao = string.IsNullOrWhiteSpace(dados.Descricao) ? null : dados.Descricao.Trim();
 
-        if (descricao is { Length: > TarefaCasamento.TamanhoMaximoDescricao })
+        if (descricao is { Length: > TarefaEvento.TamanhoMaximoDescricao })
         {
             throw new RegraNegocioException(MensagensTarefas.TamanhoDescricao);
         }
@@ -103,7 +103,7 @@ public class ItemModeloChecklist : IPertenceOrganizacao
             throw new RegraNegocioException(MensagensTarefas.CategoriaInvalida);
         }
 
-        if (!DiasValidos(dados.DiasAntesDoCasamento))
+        if (!DiasValidos(dados.DiasAntesDoEvento))
         {
             throw new RegraNegocioException(MensagensChecklist.DiasForaDaFaixa);
         }
@@ -112,7 +112,7 @@ public class ItemModeloChecklist : IPertenceOrganizacao
         Descricao = descricao;
         Responsavel = dados.Responsavel;
         Categoria = dados.Categoria;
-        DiasAntesDoCasamento = dados.DiasAntesDoCasamento;
+        DiasAntesDoEvento = dados.DiasAntesDoEvento;
         AtualizadoEm = agora;
     }
 }

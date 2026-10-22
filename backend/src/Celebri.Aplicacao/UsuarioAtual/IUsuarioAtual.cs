@@ -8,7 +8,7 @@ public interface IUsuarioAtual
 
     Guid? OrganizacaoId { get; }
 
-    Guid? CasamentoId { get; }
+    Guid? EventoId { get; }
 
     string? Papel { get; }
 }

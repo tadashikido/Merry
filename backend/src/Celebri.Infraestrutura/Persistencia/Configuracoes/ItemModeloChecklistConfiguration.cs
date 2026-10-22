@@ -22,14 +22,14 @@ public class ItemModeloChecklistConfiguration : IEntityTypeConfiguration<ItemMod
             tabela.HasCheckConstraint(RestricaoCategoria, $"categoria IN ({ConviteConfiguration.ValoresPermitidos<CategoriaTarefa>()})");
             tabela.HasCheckConstraint(
                 RestricaoDias,
-                $"dias_antes_do_casamento BETWEEN {-ItemModeloChecklist.DiasDepoisMaximo} AND {ItemModeloChecklist.DiasAntesMaximo}");
+                $"dias_antes_do_evento BETWEEN {-ItemModeloChecklist.DiasDepoisMaximo} AND {ItemModeloChecklist.DiasAntesMaximo}");
         });
 
         builder.HasKey(item => item.Id);
         builder.Property(item => item.Id).ValueGeneratedNever();
         builder.Property(item => item.ModeloId).IsRequired();
-        builder.Property(item => item.Titulo).HasMaxLength(TarefaCasamento.TamanhoMaximoTitulo).IsRequired();
-        builder.Property(item => item.Descricao).HasMaxLength(TarefaCasamento.TamanhoMaximoDescricao);
+        builder.Property(item => item.Titulo).HasMaxLength(TarefaEvento.TamanhoMaximoTitulo).IsRequired();
+        builder.Property(item => item.Descricao).HasMaxLength(TarefaEvento.TamanhoMaximoDescricao);
         builder.Property(item => item.Responsavel)
             .HasConversion<string>()
             .HasMaxLength(ConviteConfiguration.TamanhoMaximoEnum)
@@ -38,7 +38,7 @@ public class ItemModeloChecklistConfiguration : IEntityTypeConfiguration<ItemMod
             .HasConversion<string>()
             .HasMaxLength(ConviteConfiguration.TamanhoMaximoEnum)
             .IsRequired();
-        builder.Property(item => item.DiasAntesDoCasamento).IsRequired();
+        builder.Property(item => item.DiasAntesDoEvento).IsRequired();
         builder.Property(item => item.CriadoEm).IsRequired();
         builder.Property(item => item.AtualizadoEm).IsRequired();
         builder.Property<uint>("Versao").IsRowVersion().HasColumnName("xmin").HasColumnType("xid");

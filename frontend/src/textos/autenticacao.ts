@@ -80,7 +80,7 @@ export const MENSAGENS_AUTENTICACAO = {
 export const TEXTOS_PAINEL = {
   menuInicio: 'Dashboard',
   primeiroAcessoTitulo: `Boas-vindas ao ${NOME_PRODUTO}.`,
-  primeiroAcessoTexto: 'Vamos configurar seu primeiro casamento. Leva uns 5 minutos.',
+  primeiroAcessoTexto: 'Vamos configurar seu primeiro evento. Leva uns 5 minutos.',
   saudacao: (primeiroNome: string) => `Olá, ${primeiroNome}`,
   sair: 'Sair',
   contaConectada: 'Conta conectada',

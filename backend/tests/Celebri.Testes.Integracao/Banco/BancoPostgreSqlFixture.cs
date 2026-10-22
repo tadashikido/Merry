@@ -6,8 +6,8 @@ namespace Celebri.Testes.Integracao.Banco;
 public class BancoPostgreSqlFixture : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:16-alpine")
-        .WithDatabase("casamento_testes")
-        .WithUsername("casamento_testes")
+        .WithDatabase("evento_testes")
+        .WithUsername("evento_testes")
         .WithPassword(Guid.NewGuid().ToString("N"))
         .Build();
 
@@ -17,7 +17,7 @@ public class BancoPostgreSqlFixture : IAsyncLifetime
     {
         var construtor = new NpgsqlConnectionStringBuilder(StringConexao)
         {
-            Database = $"casamento_{Guid.NewGuid():N}",
+            Database = $"evento_{Guid.NewGuid():N}",
         };
         return construtor.ConnectionString;
     }

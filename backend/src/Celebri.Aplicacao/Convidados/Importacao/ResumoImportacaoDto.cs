@@ -12,4 +12,4 @@ public sealed record ResumoImportacaoDto(
     int LinhasDuplicadas,
     int LinhasComAviso,
     int ConvidadosExistentes,
-    int LimitePorCasamento);
+    int LimitePorEvento);

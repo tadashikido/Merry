@@ -9,14 +9,14 @@ namespace Celebri.Aplicacao.Convidados;
 public class ConviteService : IConviteService
 {
     private readonly IConviteRepository _conviteRepository;
-    private readonly VerificadorCasamentoConvidados _verificador;
+    private readonly VerificadorEventoConvidados _verificador;
     private readonly IUnidadeTrabalho _unidadeTrabalho;
     private readonly TimeProvider _relogio;
     private readonly IUsuarioAtual _usuarioAtual;
     private readonly IMesaRepository _mesaRepository;
 
     public ConviteService(
-        ICasamentoRepository casamentoRepository,
+        IEventoRepository eventoRepository,
         IConviteRepository conviteRepository,
         IUnidadeTrabalho unidadeTrabalho,
         TimeProvider relogio,
@@ -26,63 +26,63 @@ public class ConviteService : IConviteService
         _mesaRepository = mesaRepository;
         _usuarioAtual = usuarioAtual;
         _conviteRepository = conviteRepository;
-        _verificador = new VerificadorCasamentoConvidados(casamentoRepository, conviteRepository);
+        _verificador = new VerificadorEventoConvidados(eventoRepository, conviteRepository);
         _unidadeTrabalho = unidadeTrabalho;
         _relogio = relogio;
     }
 
-    public async Task<ListaConvitesDto> ListarAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ListaConvitesDto> ListarAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var casamento = await _verificador.ObterAsync(casamentoId, cancelamento);
-        var convites = await _conviteRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento);
+        var evento = await _verificador.ObterAsync(eventoId, cancelamento);
+        var convites = await _conviteRepository.ListarPorEventoAsync(evento.Id, cancelamento);
         var totais = CalculadoraTotaisConvidados.Calcular(CalculadoraTotaisConvidados.Resumir(convites));
-        var mesas = await _mesaRepository.ListarAsync(casamento.Id, cancelamento);
+        var mesas = await _mesaRepository.ListarAsync(evento.Id, cancelamento);
 
         return new ListaConvitesDto(
             OrdenacaoConvites.Ordenar(convites).Select(convite => ParaDto(convite, _usuarioAtual.EhAssessoria())).ToList(),
             totais,
-            casamento.ConvidadosEstimados,
-            casamento.Arquivado,
+            evento.ConvidadosEstimados,
+            evento.Arquivado,
             MontadorMapaMesas.Ordenar(mesas).Select(MontadorMapaMesas.ParaResumo).ToList());
     }
 
-    public async Task<TotaisConvidadosDto> ObterTotaisAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<TotaisConvidadosDto> ObterTotaisAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var casamento = await _verificador.ObterAsync(casamentoId, cancelamento);
-        var resumo = await _conviteRepository.ObterResumoAsync(casamento.Id, cancelamento);
+        var evento = await _verificador.ObterAsync(eventoId, cancelamento);
+        var resumo = await _conviteRepository.ObterResumoAsync(evento.Id, cancelamento);
         return CalculadoraTotaisConvidados.Calcular(resumo);
     }
 
-    public async Task<ConviteDto> ObterAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task<ConviteDto> ObterAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        var casamento = await _verificador.ObterAsync(casamentoId, cancelamento);
-        var convite = await ObterConviteAsync(casamento.Id, conviteId, cancelamento);
+        var evento = await _verificador.ObterAsync(eventoId, cancelamento);
+        var convite = await ObterConviteAsync(evento.Id, conviteId, cancelamento);
         return ParaDto(convite, _usuarioAtual.EhAssessoria());
     }
 
-    public async Task<ConviteDto> CriarAsync(Guid casamentoId, SalvarConviteRequest request, CancellationToken cancelamento)
+    public async Task<ConviteDto> CriarAsync(Guid eventoId, SalvarConviteRequest request, CancellationToken cancelamento)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var casamento = await _verificador.ObterEditavelAsync(casamentoId, cancelamento);
+        var evento = await _verificador.ObterEditavelAsync(eventoId, cancelamento);
         var dados = request.ParaDados();
-        await _verificador.GarantirLimiteAsync(casamento.Id, dados.Convidados.Count, 0, cancelamento);
+        await _verificador.GarantirLimiteAsync(evento.Id, dados.Convidados.Count, 0, cancelamento);
 
-        var convite = Convite.Criar(casamento.Id, dados, _relogio.GetUtcNow());
+        var convite = Convite.Criar(evento.Id, dados, _relogio.GetUtcNow());
         _conviteRepository.Adicionar(convite);
         await _unidadeTrabalho.SalvarAsync(cancelamento);
 
         return ParaDto(convite, _usuarioAtual.EhAssessoria());
     }
 
-    public async Task<ConviteDto> AtualizarAsync(Guid casamentoId, Guid conviteId, SalvarConviteRequest request, CancellationToken cancelamento)
+    public async Task<ConviteDto> AtualizarAsync(Guid eventoId, Guid conviteId, SalvarConviteRequest request, CancellationToken cancelamento)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var casamento = await _verificador.ObterEditavelAsync(casamentoId, cancelamento);
-        var convite = await ObterConviteAsync(casamento.Id, conviteId, cancelamento);
+        var evento = await _verificador.ObterEditavelAsync(eventoId, cancelamento);
+        var convite = await ObterConviteAsync(evento.Id, conviteId, cancelamento);
         var dados = request.ParaDados();
-        await _verificador.GarantirLimiteAsync(casamento.Id, dados.Convidados.Count, convite.Convidados.Count, cancelamento);
+        await _verificador.GarantirLimiteAsync(evento.Id, dados.Convidados.Count, convite.Convidados.Count, cancelamento);
 
         convite.Atualizar(dados, _relogio.GetUtcNow());
         await _unidadeTrabalho.SalvarAsync(cancelamento);
@@ -90,10 +90,10 @@ public class ConviteService : IConviteService
         return ParaDto(convite, _usuarioAtual.EhAssessoria());
     }
 
-    public async Task RemoverAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    public async Task RemoverAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        var casamento = await _verificador.ObterEditavelAsync(casamentoId, cancelamento);
-        var convite = await ObterConviteAsync(casamento.Id, conviteId, cancelamento);
+        var evento = await _verificador.ObterEditavelAsync(eventoId, cancelamento);
+        var convite = await ObterConviteAsync(evento.Id, conviteId, cancelamento);
 
         _conviteRepository.Remover(convite);
         await _unidadeTrabalho.SalvarAsync(cancelamento);
@@ -141,9 +141,9 @@ public class ConviteService : IConviteService
             convidado.MesaId);
     }
 
-    private async Task<Convite> ObterConviteAsync(Guid casamentoId, Guid conviteId, CancellationToken cancelamento)
+    private async Task<Convite> ObterConviteAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
     {
-        return await _conviteRepository.ObterPorIdAsync(casamentoId, conviteId, cancelamento)
+        return await _conviteRepository.ObterPorIdAsync(eventoId, conviteId, cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensConvidados.ConviteNaoEncontrado);
     }
 }

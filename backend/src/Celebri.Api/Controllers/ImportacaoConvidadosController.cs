@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}/convites/importacao")]
+[Route("api/eventos/{eventoId:guid}/convites/importacao")]
 [Produces("application/json")]
 [Consumes("multipart/form-data")]
 [Authorize(Policy = PoliticasAutorizacao.ConsultarConvidados)]
@@ -40,12 +40,12 @@ public class ImportacaoConvidadosController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PreVisualizacaoImportacaoDto>> PreVisualizar(
-        Guid casamentoId,
+        Guid eventoId,
         IFormFile arquivo,
         CancellationToken cancelamento)
     {
         await using var conteudo = arquivo.OpenReadStream();
-        return Ok(await _importacaoService.PreVisualizarAsync(casamentoId, conteudo, cancelamento));
+        return Ok(await _importacaoService.PreVisualizarAsync(eventoId, conteudo, cancelamento));
     }
 
     [HttpPost]
@@ -58,12 +58,12 @@ public class ImportacaoConvidadosController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<ResultadoImportacaoDto>> Importar(
-        Guid casamentoId,
+        Guid eventoId,
         IFormFile arquivo,
         [FromForm] ConfirmarImportacaoRequest confirmacao,
         CancellationToken cancelamento)
     {
         await using var conteudo = arquivo.OpenReadStream();
-        return Ok(await _importacaoService.ImportarAsync(casamentoId, conteudo, confirmacao, cancelamento));
+        return Ok(await _importacaoService.ImportarAsync(eventoId, conteudo, confirmacao, cancelamento));
     }
 }

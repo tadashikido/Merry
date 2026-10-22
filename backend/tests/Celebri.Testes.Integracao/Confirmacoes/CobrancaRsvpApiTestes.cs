@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Celebri.Aplicacao.Autenticacao;
-using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Confirmacoes;
 using Celebri.Aplicacao.Convidados;
 using Celebri.Dominio.Convidados;
@@ -16,8 +16,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using static Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
-using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
-using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteAcessoAnfitriao = Celebri.Testes.Integracao.AcessosAnfitriao.ClienteAcessoAnfitriao;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
 
 namespace Celebri.Testes.Integracao.Confirmacoes;
@@ -27,7 +27,7 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
 {
     private static readonly JsonSerializerOptions OpcoesJson = new(JsonSerializerDefaults.Web);
 
-    private readonly List<HttpClient> _clientesCasal = [];
+    private readonly List<HttpClient> _clientesAnfitriao = [];
 
     public CobrancaRsvpApiTestes(BancoPostgreSqlFixture banco)
         : base(banco)
@@ -36,25 +36,25 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
 
     public void Dispose()
     {
-        foreach (var cliente in _clientesCasal)
+        foreach (var cliente in _clientesAnfitriao)
         {
             cliente.Dispose();
         }
     }
 
-    private static string RotaCobranca(Guid casamentoId, Guid conviteId)
+    private static string RotaCobranca(Guid eventoId, Guid conviteId)
     {
-        return $"{ClienteConvites.Rota(casamentoId, conviteId)}/cobranca";
+        return $"{ClienteConvites.Rota(eventoId, conviteId)}/cobranca";
     }
 
-    private static string RotaPainel(Guid casamentoId)
+    private static string RotaPainel(Guid eventoId)
     {
-        return $"/api/casamentos/{casamentoId}/painel-confirmacoes";
+        return $"/api/eventos/{eventoId}/painel-confirmacoes";
     }
 
-    private static async Task<PainelConfirmacoesDto> ObterPainelAsync(HttpClient cliente, Guid casamentoId)
+    private static async Task<PainelConfirmacoesDto> ObterPainelAsync(HttpClient cliente, Guid eventoId)
     {
-        var resposta = await cliente.GetAsync(RotaPainel(casamentoId));
+        var resposta = await cliente.GetAsync(RotaPainel(eventoId));
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<PainelConfirmacoesDto>(OpcoesJson))!;
     }
@@ -65,28 +65,28 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
         return json.RootElement.TryGetProperty("detail", out var detalhe) ? detalhe.GetString() : null;
     }
 
-    private sealed record Cenario(CasamentoDto Casamento, ConviteDto Convite, string Token);
+    private sealed record Cenario(EventoDto Evento, ConviteDto Convite, string Token);
 
-    private static async Task<Cenario> CriarEnviadoComLinkAsync(HttpClient cliente, object? corpoCasamento = null)
+    private static async Task<Cenario> CriarEnviadoComLinkAsync(HttpClient cliente, object? corpoEvento = null)
     {
-        var casamento = await ClienteCasamentos.CriarAsync(cliente, corpoCasamento);
-        var convite = await ClienteConvites.CriarAsync(cliente, casamento.Id);
-        var link = await GerarLinkAsync(cliente, casamento.Id, convite.Id);
-        var envio = await cliente.PostAsync(RotaEnvio(casamento.Id, convite.Id), null);
+        var evento = await ClienteEventos.CriarAsync(cliente, corpoEvento);
+        var convite = await ClienteConvites.CriarAsync(cliente, evento.Id);
+        var link = await GerarLinkAsync(cliente, evento.Id, convite.Id);
+        var envio = await cliente.PostAsync(RotaEnvio(evento.Id, convite.Id), null);
         Assert.Equal(HttpStatusCode.OK, envio.StatusCode);
-        return new Cenario(casamento, convite, link.Token);
+        return new Cenario(evento, convite, link.Token);
     }
 
-    private async Task<HttpClient> CriarClienteCasalAsync(Guid casamentoId)
+    private async Task<HttpClient> CriarClienteAnfitriaoAsync(Guid eventoId)
     {
-        var email = ClienteAcessoCasal.EmailCasalUnico();
-        await ClienteAcessoCasal.ConvidarComSucessoAsync(OrganizacaoA.Cliente, casamentoId, email);
-        var aceite = await ClienteAcessoCasal.AceitarAsync(ClienteAnonimo, ClienteAcessoCasal.UltimoToken(Fabrica.Email, email));
+        var email = ClienteAcessoAnfitriao.EmailAnfitriaoUnico();
+        await ClienteAcessoAnfitriao.ConvidarComSucessoAsync(OrganizacaoA.Cliente, eventoId, email);
+        var aceite = await ClienteAcessoAnfitriao.AceitarAsync(ClienteAnonimo, ClienteAcessoAnfitriao.UltimoToken(Fabrica.Email, email));
         Assert.Equal(HttpStatusCode.OK, aceite.StatusCode);
         var sessao = (await aceite.Content.ReadFromJsonAsync<SessaoDto>())!;
         var cliente = Fabrica.CriarClienteHttps();
         cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", sessao.TokenAcesso);
-        _clientesCasal.Add(cliente);
+        _clientesAnfitriao.Add(cliente);
         return cliente;
     }
 
@@ -95,13 +95,13 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
     {
         var cenario = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente);
 
-        var antes = Assert.Single((await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Casamento.Id)).Pendentes);
+        var antes = Assert.Single((await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Evento.Id)).Pendentes);
         Assert.True(antes.Cobravel);
         Assert.Null(antes.UltimaCobrancaEm);
         Assert.Equal(0, antes.QuantidadeCobrancas);
 
-        var primeira = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Casamento.Id, cenario.Convite.Id), null);
-        var segunda = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Casamento.Id, cenario.Convite.Id), null);
+        var primeira = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Evento.Id, cenario.Convite.Id), null);
+        var segunda = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Evento.Id, cenario.Convite.Id), null);
 
         Assert.Equal(HttpStatusCode.OK, primeira.StatusCode);
         Assert.True(primeira.Headers.CacheControl?.NoStore);
@@ -111,7 +111,7 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
         Assert.Equal(2, dto.QuantidadeCobrancas);
         Assert.True(DateTimeOffset.UtcNow - dto.UltimaCobrancaEm < TimeSpan.FromMinutes(5));
 
-        var depois = Assert.Single((await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Casamento.Id)).Pendentes);
+        var depois = Assert.Single((await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Evento.Id)).Pendentes);
         Assert.True(depois.Cobravel);
         Assert.Equal(2, depois.QuantidadeCobrancas);
         Assert.NotNull(depois.UltimaCobrancaEm);
@@ -121,29 +121,29 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
     [Fact]
     public async Task Registrar_ConviteNaoEnviado_DeveRetornar422ESerNaoCobravel()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
-        await GerarLinkAsync(OrganizacaoA.Cliente, casamento.Id, convite.Id);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var convite = await ClienteConvites.CriarAsync(OrganizacaoA.Cliente, evento.Id);
+        await GerarLinkAsync(OrganizacaoA.Cliente, evento.Id, convite.Id);
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(casamento.Id, convite.Id), null);
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(evento.Id, convite.Id), null);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         Assert.Equal(MensagensConvidados.ConviteNaoCobravel, await LerDetalheAsync(resposta));
-        Assert.False(Assert.Single((await ObterPainelAsync(OrganizacaoA.Cliente, casamento.Id)).Pendentes).Cobravel);
+        Assert.False(Assert.Single((await ObterPainelAsync(OrganizacaoA.Cliente, evento.Id)).Pendentes).Cobravel);
     }
 
     [Fact]
     public async Task Registrar_LinkRevogado_DeveRetornar422ESerNaoCobravel()
     {
         var cenario = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente);
-        var revogacao = await OrganizacaoA.Cliente.DeleteAsync(RotaLink(cenario.Casamento.Id, cenario.Convite.Id));
+        var revogacao = await OrganizacaoA.Cliente.DeleteAsync(RotaLink(cenario.Evento.Id, cenario.Convite.Id));
         Assert.Equal(HttpStatusCode.NoContent, revogacao.StatusCode);
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Casamento.Id, cenario.Convite.Id), null);
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Evento.Id, cenario.Convite.Id), null);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         Assert.Equal(MensagensConvidados.CobrancaSemLink, await LerDetalheAsync(resposta));
-        Assert.False(Assert.Single((await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Casamento.Id)).Pendentes).Cobravel);
+        Assert.False(Assert.Single((await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Evento.Id)).Pendentes).Cobravel);
     }
 
     [Fact]
@@ -156,17 +156,17 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
             cenario.Convite.Convidados.Select(pessoa => (pessoa.Id, "Confirmado")));
         Assert.Equal(HttpStatusCode.OK, respostaRsvp.StatusCode);
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Casamento.Id, cenario.Convite.Id), null);
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Evento.Id, cenario.Convite.Id), null);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         Assert.Equal(MensagensConvidados.ConviteNaoCobravel, await LerDetalheAsync(resposta));
-        Assert.Empty((await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Casamento.Id)).Pendentes);
+        Assert.Empty((await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Evento.Id)).Pendentes);
     }
 
     [Fact]
     public async Task Registrar_PrazoEncerrado_DeveRetornar422ENinguemCobravel()
     {
-        var hoje = ClienteCasamentos.HojeEmSaoPaulo();
+        var hoje = ClienteEventos.HojeEmSaoPaulo();
         var cenario = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente, new
         {
             nomePrimeiraPessoa = "Ana Beatriz",
@@ -175,26 +175,26 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
             dataLimiteRsvp = hoje.AddDays(-1).ToString("yyyy-MM-dd"),
         });
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Casamento.Id, cenario.Convite.Id), null);
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Evento.Id, cenario.Convite.Id), null);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         Assert.Equal(MensagensConvidados.CobrancaPrazoEncerrado, await LerDetalheAsync(resposta));
-        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Casamento.Id);
+        var painel = await ObterPainelAsync(OrganizacaoA.Cliente, cenario.Evento.Id);
         Assert.False(painel.Prazo.AceitaRespostas);
         Assert.All(painel.Pendentes, pendente => Assert.False(pendente.Cobravel));
     }
 
     [Fact]
-    public async Task Registrar_CasamentoArquivado_DeveRetornar422()
+    public async Task Registrar_EventoArquivado_DeveRetornar422()
     {
         var cenario = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente);
-        var arquivamento = await OrganizacaoA.Cliente.PostAsync($"{ClienteCasamentos.Rota}/{cenario.Casamento.Id}/arquivar", null);
+        var arquivamento = await OrganizacaoA.Cliente.PostAsync($"{ClienteEventos.Rota}/{cenario.Evento.Id}/arquivar", null);
         Assert.True(arquivamento.IsSuccessStatusCode);
 
-        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Casamento.Id, cenario.Convite.Id), null);
+        var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(cenario.Evento.Id, cenario.Convite.Id), null);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
-        Assert.Equal(MensagensRsvp.CasamentoArquivado, await LerDetalheAsync(resposta));
+        Assert.Equal(MensagensRsvp.EventoArquivado, await LerDetalheAsync(resposta));
     }
 
     [Fact]
@@ -202,7 +202,7 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
     {
         var cenario = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente);
 
-        var resposta = await OrganizacaoB.Cliente.PostAsync(RotaCobranca(cenario.Casamento.Id, cenario.Convite.Id), null);
+        var resposta = await OrganizacaoB.Cliente.PostAsync(RotaCobranca(cenario.Evento.Id, cenario.Convite.Id), null);
 
         Assert.Equal(HttpStatusCode.NotFound, resposta.StatusCode);
         await using var contexto = CriarContexto(OrganizacaoA);
@@ -212,10 +212,10 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
     }
 
     [Fact]
-    public async Task Registrar_ConviteDeOutroCasamento_DeveRetornar404()
+    public async Task Registrar_ConviteDeOutroEvento_DeveRetornar404()
     {
         var cenario = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente);
-        var outro = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
+        var outro = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
 
         var resposta = await OrganizacaoA.Cliente.PostAsync(RotaCobranca(outro.Id, cenario.Convite.Id), null);
 
@@ -227,25 +227,25 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
     {
         var cenario = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente);
 
-        var resposta = await ClienteAnonimo.PostAsync(RotaCobranca(cenario.Casamento.Id, cenario.Convite.Id), null);
+        var resposta = await ClienteAnonimo.PostAsync(RotaCobranca(cenario.Evento.Id, cenario.Convite.Id), null);
 
         Assert.Equal(HttpStatusCode.Unauthorized, resposta.StatusCode);
     }
 
     [Fact]
-    public async Task Registrar_PeloCasal_DeveGravarNoProprioCasamentoENaoEmOutro()
+    public async Task Registrar_PeloAnfitriao_DeveGravarNoProprioEventoENaoEmOutro()
     {
         var cenario = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente);
         var outro = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente);
-        var casal = await CriarClienteCasalAsync(cenario.Casamento.Id);
+        var anfitriao = await CriarClienteAnfitriaoAsync(cenario.Evento.Id);
 
-        var proprio = await casal.PostAsync(RotaCobranca(cenario.Casamento.Id, cenario.Convite.Id), null);
-        var alheio = await casal.PostAsync(RotaCobranca(outro.Casamento.Id, outro.Convite.Id), null);
+        var proprio = await anfitriao.PostAsync(RotaCobranca(cenario.Evento.Id, cenario.Convite.Id), null);
+        var alheio = await anfitriao.PostAsync(RotaCobranca(outro.Evento.Id, outro.Convite.Id), null);
 
         Assert.Equal(HttpStatusCode.OK, proprio.StatusCode);
         Assert.Equal(1, (await proprio.Content.ReadFromJsonAsync<CobrancaRsvpDto>(OpcoesJson))!.QuantidadeCobrancas);
         Assert.Contains(alheio.StatusCode, new[] { HttpStatusCode.NotFound, HttpStatusCode.Forbidden });
-        Assert.True(Assert.Single((await ObterPainelAsync(casal, cenario.Casamento.Id)).Pendentes).Cobravel);
+        Assert.True(Assert.Single((await ObterPainelAsync(anfitriao, cenario.Evento.Id)).Pendentes).Cobravel);
     }
 
     [Fact]
@@ -258,12 +258,12 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
         cliente.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         var cenario = await CriarEnviadoComLinkAsync(cliente);
 
-        var resposta = await cliente.PostAsync(RotaCobranca(cenario.Casamento.Id, cenario.Convite.Id), null);
-        await cliente.GetAsync(RotaPainel(cenario.Casamento.Id));
+        var resposta = await cliente.PostAsync(RotaCobranca(cenario.Evento.Id, cenario.Convite.Id), null);
+        await cliente.GetAsync(RotaPainel(cenario.Evento.Id));
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         var trilha = Assert.Single(provedor.Mensagens, mensagem => mensagem.Contains("Cobrança de RSVP registrada", StringComparison.Ordinal));
-        Assert.Contains(cenario.Casamento.Id.ToString(), trilha, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(cenario.Evento.Id.ToString(), trilha, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(cenario.Convite.Id.ToString(), trilha, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(OrganizacaoA.UsuarioId.ToString(), trilha, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(provedor.Mensagens, mensagem => mensagem.Contains(cenario.Token, StringComparison.Ordinal)
@@ -275,7 +275,7 @@ public sealed class CobrancaRsvpApiTestes : IsolamentoOrganizacaoTestesBase, IDi
     {
         var cenario = await CriarEnviadoComLinkAsync(OrganizacaoA.Cliente);
 
-        var json = await OrganizacaoA.Cliente.GetStringAsync(RotaPainel(cenario.Casamento.Id));
+        var json = await OrganizacaoA.Cliente.GetStringAsync(RotaPainel(cenario.Evento.Id));
 
         Assert.DoesNotContain(cenario.Token, json, StringComparison.Ordinal);
         Assert.Contains("\"cobravel\":true", json, StringComparison.Ordinal);

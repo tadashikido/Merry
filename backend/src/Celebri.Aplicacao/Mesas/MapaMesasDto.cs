@@ -5,4 +5,4 @@ public sealed record MapaMesasDto(
     IReadOnlyList<PessoaMesaDto> Pessoas,
     IReadOnlyList<AvisoSaidaMesaDto> AvisosSaida,
     TotaisMesasDto Totais,
-    bool CasamentoArquivado);
+    bool EventoArquivado);

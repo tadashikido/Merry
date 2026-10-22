@@ -2,7 +2,7 @@ using Celebri.Dominio.Isolamento;
 
 namespace Celebri.Dominio.DadosSensiveis;
 
-public class DadosSensiveisConvidado : IPertenceCasamento
+public class DadosSensiveisConvidado : IPertenceEvento
 {
     public const int TamanhoMaximoConteudoCifrado = 1024;
     public const int TamanhoMaximoVersaoTermo = 20;
@@ -16,7 +16,7 @@ public class DadosSensiveisConvidado : IPertenceCasamento
 
     public Guid OrganizacaoId { get; private set; }
 
-    public Guid CasamentoId { get; private set; }
+    public Guid EventoId { get; private set; }
 
     public string? ConteudoCifrado { get; private set; }
 
@@ -36,7 +36,7 @@ public class DadosSensiveisConvidado : IPertenceCasamento
 
     internal static DadosSensiveisConvidado Criar(
         Guid convidadoId,
-        Guid casamentoId,
+        Guid eventoId,
         string conteudoCifrado,
         ConsentimentoDadosSensiveis consentimento,
         DateTimeOffset agora)
@@ -44,7 +44,7 @@ public class DadosSensiveisConvidado : IPertenceCasamento
         var dados = new DadosSensiveisConvidado
         {
             ConvidadoId = convidadoId,
-            CasamentoId = casamentoId,
+            EventoId = eventoId,
         };
 
         dados.Substituir(conteudoCifrado, consentimento, agora);

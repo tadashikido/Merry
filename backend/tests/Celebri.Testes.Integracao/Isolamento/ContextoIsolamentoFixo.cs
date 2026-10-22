@@ -4,13 +4,13 @@ namespace Celebri.Testes.Integracao.Isolamento;
 
 public class ContextoIsolamentoFixo : IContextoIsolamento
 {
-    public ContextoIsolamentoFixo(Guid? organizacaoId, IReadOnlyCollection<Guid>? casamentosPermitidos = null)
+    public ContextoIsolamentoFixo(Guid? organizacaoId, IReadOnlyCollection<Guid>? eventosPermitidos = null)
     {
         OrganizacaoId = organizacaoId;
-        CasamentosPermitidos = casamentosPermitidos;
+        EventosPermitidos = eventosPermitidos;
     }
 
     public Guid? OrganizacaoId { get; }
 
-    public IReadOnlyCollection<Guid>? CasamentosPermitidos { get; }
+    public IReadOnlyCollection<Guid>? EventosPermitidos { get; }
 }

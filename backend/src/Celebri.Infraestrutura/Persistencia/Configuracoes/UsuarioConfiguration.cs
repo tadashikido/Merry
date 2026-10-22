@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Organizacoes;
 using Celebri.Dominio.Usuarios;
 using Microsoft.EntityFrameworkCore;
@@ -9,12 +9,12 @@ namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
 {
     public const string IndiceEmailUnico = "ix_usuarios_email";
-    public const string RestricaoPapelCasamento = "ck_usuarios_papel_casamento";
+    public const string RestricaoPapelEvento = "ck_usuarios_papel_evento";
 
     public void Configure(EntityTypeBuilder<Usuario> builder)
     {
         builder.ToTable("usuarios", tabela =>
-            tabela.HasCheckConstraint(RestricaoPapelCasamento, $"(papel = '{nameof(PapelUsuario.Casal)}') = (casamento_id IS NOT NULL)"));
+            tabela.HasCheckConstraint(RestricaoPapelEvento, $"(papel = '{nameof(PapelUsuario.Anfitriao)}') = (evento_id IS NOT NULL)"));
         builder.HasKey(usuario => usuario.Id);
         builder.Property(usuario => usuario.Id).ValueGeneratedNever();
         builder.Property(usuario => usuario.Nome).HasMaxLength(Usuario.TamanhoMaximoNome).IsRequired();
@@ -28,16 +28,16 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
 
         builder.HasIndex(usuario => usuario.Email).IsUnique().HasDatabaseName(IndiceEmailUnico);
         builder.HasIndex(usuario => usuario.OrganizacaoId);
-        builder.HasIndex(usuario => usuario.CasamentoId);
+        builder.HasIndex(usuario => usuario.EventoId);
 
         builder.HasOne<Organizacao>()
             .WithMany()
             .HasForeignKey(usuario => usuario.OrganizacaoId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<CasamentoAssessorado>()
+        builder.HasOne<Evento>()
             .WithMany()
-            .HasForeignKey(usuario => usuario.CasamentoId)
+            .HasForeignKey(usuario => usuario.EventoId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

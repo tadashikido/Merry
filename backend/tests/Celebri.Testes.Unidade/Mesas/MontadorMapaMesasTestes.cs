@@ -10,12 +10,12 @@ public class MontadorMapaMesasTestes
     public void Montar_DeveOrdenarEspecialPrimeiroDepoisPorNumero()
     {
         var tres = NovaMesa(3);
-        var noivos = NovaMesa(7, 10, especial: true);
+        var anfitrioes = NovaMesa(7, 10, especial: true);
         var um = NovaMesa(1);
 
-        var mapa = MontadorMapaMesas.Montar([tres, noivos, um], [], false);
+        var mapa = MontadorMapaMesas.Montar([tres, anfitrioes, um], [], false);
 
-        Assert.Equal([noivos.Id, um.Id, tres.Id], mapa.Mesas.Select(mesa => mesa.Id));
+        Assert.Equal([anfitrioes.Id, um.Id, tres.Id], mapa.Mesas.Select(mesa => mesa.Id));
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class MontadorMapaMesasTestes
 
         var mapa = MontadorMapaMesas.Montar([mesa], [rui, bia], true);
 
-        Assert.True(mapa.CasamentoArquivado);
+        Assert.True(mapa.EventoArquivado);
         Assert.Equal(["Bia Sales", "Rui Fontes"], mapa.AvisosSaida.Select(aviso => aviso.Nome));
         var aviso = mapa.AvisosSaida[1];
         Assert.Equal(("Recusado", mesa.Id, 3, "Padrinhos", false), (aviso.Resposta, aviso.MesaId, aviso.MesaNumero, aviso.MesaNome, aviso.MesaEspecial!.Value));

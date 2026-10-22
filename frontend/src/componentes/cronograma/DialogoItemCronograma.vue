@@ -39,7 +39,7 @@ import { tamanhoMaximo } from '@/utilitarios/validacao'
 const props = withDefaults(
   defineProps<{
     visivel: boolean
-    casamentoId: string
+    eventoId: string
     cronograma: CronogramaDto
     item?: ItemCronogramaDto | null
   }>(),
@@ -61,13 +61,13 @@ let lerInicio: () => string = () => ''
 
 const formulario = useFormulario(
   {
-    dia: 'DiaDoCasamento' as DiaCronograma,
+    dia: 'DiaDoEvento' as DiaCronograma,
     inicio: '',
     termino: '',
     atividade: '',
     local: '',
     responsavel: '',
-    fornecedorCasamentoId: null as string | null,
+    fornecedorEventoId: null as string | null,
     instrucoes: '',
     notasInternas: '',
   },
@@ -88,12 +88,12 @@ const edicao = computed(() => props.item !== null)
 const opcoesDia = DIAS_CRONOGRAMA.map((valor) => ({ valor, rotulo: ROTULOS_DIA_CRONOGRAMA[valor] }))
 const opcoesFornecedor = computed(() => {
   const disponiveis = props.cronograma.fornecedoresDisponiveis.map((fornecedor) => ({
-    valor: fornecedor.fornecedorCasamentoId as string | null,
+    valor: fornecedor.fornecedorEventoId as string | null,
     rotulo: fornecedor.nomeEmpresa,
   }))
   const atual = props.item?.fornecedor
-  if (atual && !disponiveis.some((opcao) => opcao.valor === atual.fornecedorCasamentoId)) {
-    disponiveis.push({ valor: atual.fornecedorCasamentoId, rotulo: atual.nomeEmpresa })
+  if (atual && !disponiveis.some((opcao) => opcao.valor === atual.fornecedorEventoId)) {
+    disponiveis.push({ valor: atual.fornecedorEventoId, rotulo: atual.nomeEmpresa })
   }
   return [{ valor: null, rotulo: TEXTOS_CRONOGRAMA.nenhumFornecedor }, ...disponiveis]
 })
@@ -152,7 +152,7 @@ function preencher(item: ItemCronogramaDto | null) {
   formulario.valores.atividade = item.atividade
   formulario.valores.local = item.local ?? ''
   formulario.valores.responsavel = item.responsavel ?? ''
-  formulario.valores.fornecedorCasamentoId = item.fornecedor?.fornecedorCasamentoId ?? null
+  formulario.valores.fornecedorEventoId = item.fornecedor?.fornecedorEventoId ?? null
   formulario.valores.instrucoes = item.instrucoes ?? ''
   formulario.valores.notasInternas = item.notasInternas ?? ''
 }
@@ -191,7 +191,7 @@ function montarRequest(): SalvarItemCronogramaRequest {
     atividade: formulario.valores.atividade.trim(),
     local: texto(formulario.valores.local),
     responsavel: texto(formulario.valores.responsavel),
-    fornecedorCasamentoId: formulario.valores.fornecedorCasamentoId,
+    fornecedorEventoId: formulario.valores.fornecedorEventoId,
     instrucoes: texto(formulario.valores.instrucoes),
     notasInternas: texto(formulario.valores.notasInternas),
   }
@@ -204,7 +204,7 @@ const CAMPOS_SERVIDOR: Record<string, keyof typeof formulario.valores> = {
   atividade: 'atividade',
   local: 'local',
   responsavel: 'responsavel',
-  fornecedorCasamentoId: 'fornecedorCasamentoId',
+  fornecedorEventoId: 'fornecedorEventoId',
   instrucoes: 'instrucoes',
   notasInternas: 'notasInternas',
 }
@@ -218,8 +218,8 @@ async function salvar(continuar: boolean) {
   executando.value = true
   const dados = montarRequest()
   const resultado = props.item
-    ? await store.atualizar(props.casamentoId, props.item.id, dados)
-    : await store.criar(props.casamentoId, dados)
+    ? await store.atualizar(props.eventoId, props.item.id, dados)
+    : await store.criar(props.eventoId, dados)
   executando.value = false
 
   if (!resultado.ok) {
@@ -416,11 +416,11 @@ function excluir() {
       <CampoFormulario
         v-slot="{ id: idEntrada, invalido, descritoPor }"
         :rotulo="TEXTOS_CRONOGRAMA.campoFornecedor"
-        id-campo="cronograma-fornecedorCasamentoId"
-        :erro="formulario.erros.fornecedorCasamentoId"
+        id-campo="cronograma-fornecedorEventoId"
+        :erro="formulario.erros.fornecedorEventoId"
       >
         <Select
-          v-model="formulario.valores.fornecedorCasamentoId"
+          v-model="formulario.valores.fornecedorEventoId"
           :input-id="idEntrada"
           :options="opcoesFornecedor"
           option-label="rotulo"

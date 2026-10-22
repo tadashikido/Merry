@@ -8,7 +8,7 @@ public sealed record UsuarioAutenticadoDto(
     string Email,
     string Papel,
     OrganizacaoResumoDto Organizacao,
-    Guid? CasamentoId);
+    Guid? EventoId);
 
 public sealed record SessaoDto(string TokenAcesso, DateTimeOffset ExpiraEm, UsuarioAutenticadoDto Usuario);
 

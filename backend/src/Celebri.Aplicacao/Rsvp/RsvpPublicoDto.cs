@@ -1,7 +1,7 @@
 namespace Celebri.Aplicacao.Rsvp;
 
 public sealed record RsvpPublicoDto(
-    CasamentoRsvpDto Casamento,
+    EventoRsvpDto Evento,
     string NomeConvite,
     int LimiteAcompanhantes,
     DateOnly DataLimiteResposta,

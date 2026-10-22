@@ -25,7 +25,7 @@ public static class MensagensFinanceiro
     public const string ComprovanteVazio = "O arquivo está vazio. Escolha o comprovante.";
     public const string ComprovanteGrandeDemais = "O comprovante passa de 10 MB. Envie um arquivo menor.";
     public const string ComprovanteNaoEncontrado = "Esta parcela não tem comprovante anexado.";
-    public const string VinculoComParcelas = "Este fornecedor tem parcelas registradas. Remova as parcelas antes de tirá-lo do casamento.";
+    public const string VinculoComParcelas = "Este fornecedor tem parcelas registradas. Remova as parcelas antes de tirá-lo do evento.";
     public const string StatusComParcelas = "Este fornecedor tem parcelas. Para interromper o contrato, marque como cancelado.";
 
     public static string SomaExcede(string valor) =>

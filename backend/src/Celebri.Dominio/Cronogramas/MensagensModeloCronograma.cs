@@ -17,7 +17,7 @@ public static class MensagensModeloCronograma
     public const string ModeloNaoEncontrado = "Modelo não encontrado.";
     public const string ItemNaoEncontrado = "Item não encontrado.";
     public const string ModeloObrigatorio = "Escolha um modelo.";
-    public const string HorarioCerimoniaObrigatorio = "Falta o horário da cerimônia. Informe-o em Editar casamento para usar modelos de cronograma.";
+    public const string HorarioCerimoniaObrigatorio = "Falta o horário da cerimônia. Informe-o em Editar evento para usar modelos de cronograma.";
     public const string CronogramaVazio = "O cronograma ainda não tem itens para salvar como modelo.";
     public const string AplicacaoConcorrente = "O cronograma mudou em outra tela. Recarregue e tente de novo.";
 

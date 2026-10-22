@@ -27,7 +27,7 @@ import {
 } from '@/textos/modelosCronograma'
 import type { SessaoDto } from '@/tipos/api'
 import type { CronogramaDto } from '@/tipos/cronograma'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, type Rota } from '../../casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -37,25 +37,25 @@ vi.mock('@/composables/useNotificacao', () => ({
   DURACAO_TOAST_ERRO: 6000,
 }))
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_CRONOGRAMA = `${ROTA_CASAMENTO}/cronograma`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_CRONOGRAMA = `${ROTA_EVENTO}/cronograma`
 const ROTA_PREVIA = `${ROTA_CRONOGRAMA}/previa?modeloId=${ID_MODELO_CRONOGRAMA}`
 const ROTA_APLICACOES = `${ROTA_CRONOGRAMA}/aplicacoes`
 const ROTA_SALVAR = `${ROTA_CRONOGRAMA}/modelos`
 const ROTA_RECALCULO = `${ROTA_CRONOGRAMA}/recalculo-horarios`
 const ROTA_MODELOS = '/api/modelos-cronograma'
-const CAMINHO = `/casamentos/${ID_CASAMENTO}/cronograma`
+const CAMINHO = `/eventos/${ID_EVENTO}/cronograma`
 
-const SESSAO_CASAL: SessaoDto = {
-  tokenAcesso: 'token-casal',
+const SESSAO_ANFITRIAO: SessaoDto = {
+  tokenAcesso: 'token-anfitriao',
   expiraEm: '2026-09-28T12:15:00Z',
   usuario: {
-    id: 'u-casal',
+    id: 'u-anfitriao',
     nome: 'Lívia Moraes',
     email: 'livia@exemplo.com',
-    papel: 'Casal',
+    papel: 'Anfitriao',
     organizacao: { id: 'o1', nome: 'Albuquerque Assessoria' },
-    casamentoId: ID_CASAMENTO,
+    eventoId: ID_EVENTO,
   },
 }
 
@@ -106,7 +106,7 @@ async function abrir(sessao: SessaoDto, cronograma: () => Response, ...extras: R
   rotear(
     fetchSimulado,
     sessao,
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
     quando('GET', ROTA_CRONOGRAMA, cronograma),
     quando('GET', ROTA_MODELOS, () => respostaJson([resumoModeloCronograma()])),
     ...extras,
@@ -145,7 +145,7 @@ describe('Aplicar modelo no cronograma', () => {
     expect(previa.text()).toContain('Vai criar 20 itens.')
     expect(previa.text()).toContain('De Véspera 19:30 (Ensaio da cerimônia) a Dia seguinte 02:00 (Desmontagem).')
     expect(previa.text()).toContain('2 fornecedores serão preenchidos pela categoria.')
-    expect(wrapper!.find('[data-teste="grupo-cronograma-DiaDoCasamento"]').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="grupo-cronograma-DiaDoEvento"]').exists()).toBe(false)
 
     await painel.get('[data-teste="confirmar-aplicar-modelo"]').trigger('click')
     await flushPromises()
@@ -153,7 +153,7 @@ describe('Aplicar modelo no cronograma', () => {
     expect(corpoDaChamada(chamadas(fetchSimulado, 'POST', ROTA_APLICACOES)[0]!)).toEqual({ modeloId: ID_MODELO_CRONOGRAMA })
     expect(notificacoes.sucesso).toHaveBeenCalledWith('20 itens adicionados ao cronograma.')
     expect(wrapper!.find('[data-teste="painel-aplicar-modelo"]').exists()).toBe(false)
-    expect(wrapper!.find('[data-teste="grupo-cronograma-DiaDoCasamento"]').exists()).toBe(true)
+    expect(wrapper!.find('[data-teste="grupo-cronograma-DiaDoEvento"]').exists()).toBe(true)
   })
 
   it('[COMPONENTE] sem horário da cerimônia a prévia orienta e o botão fica desabilitado', async () => {
@@ -167,7 +167,7 @@ describe('Aplicar modelo no cronograma', () => {
 
     const painel = wrapper!.get('[data-teste="painel-aplicar-modelo"]')
     expect(painel.get('[data-teste="previa-sem-horario"]').text()).toContain(TEXTOS_APLICAR_MODELO_CRONOGRAMA.incompletoTitulo)
-    expect(painel.get('[data-teste="previa-adicionar-horario"]').attributes('href')).toBe(`/casamentos/${ID_CASAMENTO}/editar`)
+    expect(painel.get('[data-teste="previa-adicionar-horario"]').attributes('href')).toBe(`/eventos/${ID_EVENTO}/editar`)
     expect(painel.get('[data-teste="confirmar-aplicar-modelo"]').attributes('disabled')).toBeDefined()
   })
 
@@ -205,10 +205,10 @@ describe('Aplicar modelo no cronograma', () => {
     await flushPromises()
     expect(notificacoes.erro).toHaveBeenCalledWith(TEXTOS_APLICAR_MODELO_CRONOGRAMA.erroConcorrente)
 
-    resposta = () => respostaProblema(422, { title: 'Regra', detail: 'Este casamento está arquivado.' })
+    resposta = () => respostaProblema(422, { title: 'Regra', detail: 'Este evento está arquivado.' })
     await wrapper!.get('[data-teste="confirmar-aplicar-modelo"]').trigger('click')
     await flushPromises()
-    expect(wrapper!.get('[data-teste="erro-aplicacao"]').text()).toContain('Este casamento está arquivado.')
+    expect(wrapper!.get('[data-teste="erro-aplicacao"]').text()).toContain('Este evento está arquivado.')
   })
 })
 
@@ -278,8 +278,8 @@ describe('Salvar como modelo e recalcular horários', () => {
 })
 
 describe('Permissões nas ações de modelo', () => {
-  it('[SEGURANÇA] casal não vê aplicar, salvar como modelo nem recálculo', async () => {
-    await abrir(SESSAO_CASAL, () => respostaJson(cronogramaExemplo([CERIMONIA], { somenteLeitura: true, horariosDesatualizados: 2, fornecedoresDisponiveis: [] })))
+  it('[SEGURANÇA] anfitriões não veem aplicar, salvar como modelo nem recálculo', async () => {
+    await abrir(SESSAO_ANFITRIAO, () => respostaJson(cronogramaExemplo([CERIMONIA], { somenteLeitura: true, horariosDesatualizados: 2, fornecedoresDisponiveis: [] })))
 
     expect(wrapper!.find('[data-teste="abrir-aplicar-modelo"]').exists()).toBe(false)
     expect(wrapper!.findComponent({ name: 'MenuAcoes' }).exists()).toBe(false)
@@ -287,7 +287,7 @@ describe('Permissões nas ações de modelo', () => {
     expect(chamadas(fetchSimulado, 'GET', ROTA_MODELOS)).toHaveLength(0)
   })
 
-  it('[COMPONENTE] casamento arquivado só permite salvar como modelo', async () => {
+  it('[COMPONENTE] evento arquivado só permite salvar como modelo', async () => {
     await abrir(SESSAO_EXEMPLO, () => respostaJson(cronogramaExemplo([CERIMONIA], { arquivado: true, somenteLeitura: true, horariosDesatualizados: 2 })))
 
     expect(wrapper!.find('[data-teste="abrir-aplicar-modelo"]').exists()).toBe(false)

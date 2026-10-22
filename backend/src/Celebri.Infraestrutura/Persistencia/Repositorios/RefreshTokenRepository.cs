@@ -6,9 +6,9 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class RefreshTokenRepository : IRefreshTokenRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public RefreshTokenRepository(CasamentoDbContext contexto)
+    public RefreshTokenRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }

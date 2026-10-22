@@ -61,7 +61,7 @@ describe('cobrança de pendentes', () => {
     expect(formatarHoraCurta(new Date(2027, 4, 7, 14, 5))).toBe('14h05')
   })
 
-  it('[UNITÁRIO] lembrete traz convite, casal, data, prazo e link', () => {
+  it('[UNITÁRIO] lembrete traz convite, anfitriões, data, prazo e link', () => {
     const mensagem = montarMensagemLembrete(
       { nomePrimeiraPessoa: 'Ana Beatriz', nomeSegundaPessoa: 'Bruno', data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' },
       { nome: 'Família Lima' },
@@ -69,7 +69,7 @@ describe('cobrança de pendentes', () => {
     )
 
     expect(mensagem).toBe(
-      'Oi, Família Lima! Passando para lembrar da confirmação de presença no casamento de Ana Beatriz e Bruno, em 22 de maio de 2027. Responda até 12 de maio pelo link: https://merry.exemplo/rsvp/abc',
+      'Oi, Família Lima! Passando para lembrar da confirmação de presença no evento de Ana Beatriz e Bruno, em 22 de maio de 2027. Responda até 12 de maio pelo link: https://merry.exemplo/rsvp/abc',
     )
   })
 

@@ -6,7 +6,7 @@ import { rotaExportacaoBuffet, rotaPainelConfirmacoes, useConfirmacoesStore } fr
 import { useRsvpStore } from '@/stores/rsvp'
 import { exportacaoExemplo, painelExemplo } from '@/__tests__/auxiliaresConfirmacoes'
 
-const CASAMENTO = '11111111-1111-4111-8111-111111111111'
+const EVENTO = '11111111-1111-4111-8111-111111111111'
 
 let fetchSimulado: ReturnType<typeof simularFetch>
 
@@ -21,19 +21,19 @@ afterEach(() => {
 
 describe('useConfirmacoesStore', () => {
   it('[UNITÁRIO] monta rotas do painel e da exportação', () => {
-    expect(rotaPainelConfirmacoes(CASAMENTO)).toBe(`/api/casamentos/${CASAMENTO}/painel-confirmacoes`)
-    expect(rotaExportacaoBuffet(CASAMENTO, 'csv')).toBe(`/api/casamentos/${CASAMENTO}/exportacao-buffet?formato=csv`)
-    expect(rotaExportacaoBuffet(CASAMENTO, 'impressao')).toBe(`/api/casamentos/${CASAMENTO}/exportacao-buffet?formato=impressao`)
+    expect(rotaPainelConfirmacoes(EVENTO)).toBe(`/api/eventos/${EVENTO}/painel-confirmacoes`)
+    expect(rotaExportacaoBuffet(EVENTO, 'csv')).toBe(`/api/eventos/${EVENTO}/exportacao-buffet?formato=csv`)
+    expect(rotaExportacaoBuffet(EVENTO, 'impressao')).toBe(`/api/eventos/${EVENTO}/exportacao-buffet?formato=impressao`)
   })
 
-  it('[INTEGRAÇÃO] carrega o painel do casamento', async () => {
+  it('[INTEGRAÇÃO] carrega o painel do evento', async () => {
     fetchSimulado.mockResolvedValue(respostaJson(painelExemplo()))
     const store = useConfirmacoesStore()
 
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
     expect(store.painel?.convites.total).toBe(3)
-    expect(store.casamentoId).toBe(CASAMENTO)
+    expect(store.eventoId).toBe(EVENTO)
     expect(store.carregando).toBe(false)
     expect(store.falha).toBeNull()
   })
@@ -42,7 +42,7 @@ describe('useConfirmacoesStore', () => {
     fetchSimulado.mockResolvedValue(respostaProblema(404))
     const store = useConfirmacoesStore()
 
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
     expect(store.painel).toBeNull()
     expect(store.falha?.tipo).toBe('naoEncontrado')
@@ -52,7 +52,7 @@ describe('useConfirmacoesStore', () => {
     fetchSimulado.mockRejectedValue(new TypeError('rede'))
     const store = useConfirmacoesStore()
 
-    await store.carregar(CASAMENTO)
+    await store.carregar(EVENTO)
 
     expect(store.falha?.tipo).toBe('conexao')
   })
@@ -61,17 +61,17 @@ describe('useConfirmacoesStore', () => {
     fetchSimulado.mockResolvedValue(respostaJson(exportacaoExemplo()))
     const store = useConfirmacoesStore()
 
-    const resultado = await store.exportar(CASAMENTO, 'impressao')
+    const resultado = await store.exportar(EVENTO, 'impressao')
 
     expect(resultado.ok).toBe(true)
-    expect(String(fetchSimulado.mock.calls[0]![0])).toBe(`/api/casamentos/${CASAMENTO}/exportacao-buffet?formato=impressao`)
+    expect(String(fetchSimulado.mock.calls[0]![0])).toBe(`/api/eventos/${EVENTO}/exportacao-buffet?formato=impressao`)
   })
 
   it('[SEGURANÇA] exportação sem permissão devolve semPermissao', async () => {
     fetchSimulado.mockResolvedValue(respostaProblema(403))
     const store = useConfirmacoesStore()
 
-    const resultado = await store.exportar(CASAMENTO, 'csv')
+    const resultado = await store.exportar(EVENTO, 'csv')
 
     expect(resultado.ok).toBe(false)
     expect(resultado.ok ? null : resultado.falha.tipo).toBe('semPermissao')

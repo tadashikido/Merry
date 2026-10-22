@@ -2,13 +2,13 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { requisitar } from '@/servicos/clienteHttp'
-import { interpretarFalhaCasamento, type FalhaCasamento, type ResultadoCasamento } from '@/stores/casamentos'
+import { interpretarFalhaEvento, type FalhaEvento, type ResultadoEvento } from '@/stores/eventos'
 import type { FornecedorDto, FornecedorResumoDto, SalvarFornecedorRequest } from '@/tipos/fornecedores'
-import type { ParticipacaoFornecedorDto } from '@/tipos/fornecedoresCasamento'
+import type { ParticipacaoFornecedorDto } from '@/tipos/fornecedoresEvento'
 
 export const ROTA_FORNECEDORES = '/api/fornecedores'
 
-export function caminhoFornecedor(fornecedorId?: string, acao?: 'arquivar' | 'restaurar' | 'casamentos'): string {
+export function caminhoFornecedor(fornecedorId?: string, acao?: 'arquivar' | 'restaurar' | 'eventos'): string {
   if (!fornecedorId) {
     return ROTA_FORNECEDORES
   }
@@ -16,11 +16,11 @@ export function caminhoFornecedor(fornecedorId?: string, acao?: 'arquivar' | 're
   return acao ? `${base}/${acao}` : base
 }
 
-async function executar<T>(acao: () => Promise<T>): Promise<ResultadoCasamento<T>> {
+async function executar<T>(acao: () => Promise<T>): Promise<ResultadoEvento<T>> {
   try {
     return { ok: true, valor: await acao() }
   } catch (erro) {
-    return { ok: false, falha: interpretarFalhaCasamento(erro) }
+    return { ok: false, falha: interpretarFalhaEvento(erro) }
   }
 }
 
@@ -42,16 +42,16 @@ function paraResumo(fornecedor: FornecedorDto): FornecedorResumoDto {
 export const useFornecedoresStore = defineStore('fornecedores', () => {
   const lista = ref<FornecedorResumoDto[] | null>(null)
   const carregandoLista = ref(false)
-  const falhaLista = ref<FalhaCasamento | null>(null)
+  const falhaLista = ref<FalhaEvento | null>(null)
 
   const atual = ref<FornecedorDto | null>(null)
   const carregandoAtual = ref(false)
-  const falhaAtual = ref<FalhaCasamento | null>(null)
+  const falhaAtual = ref<FalhaEvento | null>(null)
 
   const participacoesDe = ref<string | null>(null)
   const participacoes = ref<ParticipacaoFornecedorDto[] | null>(null)
   const carregandoParticipacoes = ref(false)
-  const falhaParticipacoes = ref<FalhaCasamento | null>(null)
+  const falhaParticipacoes = ref<FalhaEvento | null>(null)
 
   function sincronizar(fornecedor: FornecedorDto) {
     if (atual.value?.id === fornecedor.id || atual.value === null) {
@@ -72,7 +72,7 @@ export const useFornecedoresStore = defineStore('fornecedores', () => {
       lista.value = await requisitar<FornecedorResumoDto[]>(ROTA_FORNECEDORES)
     } catch (erro) {
       lista.value = null
-      falhaLista.value = interpretarFalhaCasamento(erro)
+      falhaLista.value = interpretarFalhaEvento(erro)
     } finally {
       carregandoLista.value = false
     }
@@ -88,7 +88,7 @@ export const useFornecedoresStore = defineStore('fornecedores', () => {
       atual.value = await requisitar<FornecedorDto>(caminhoFornecedor(fornecedorId))
     } catch (erro) {
       atual.value = null
-      falhaAtual.value = interpretarFalhaCasamento(erro)
+      falhaAtual.value = interpretarFalhaEvento(erro)
     } finally {
       carregandoAtual.value = false
     }
@@ -102,14 +102,14 @@ export const useFornecedoresStore = defineStore('fornecedores', () => {
     carregandoParticipacoes.value = true
     falhaParticipacoes.value = null
     try {
-      const resposta = await requisitar<ParticipacaoFornecedorDto[]>(caminhoFornecedor(fornecedorId, 'casamentos'))
+      const resposta = await requisitar<ParticipacaoFornecedorDto[]>(caminhoFornecedor(fornecedorId, 'eventos'))
       if (participacoesDe.value === fornecedorId) {
         participacoes.value = resposta
       }
     } catch (erro) {
       if (participacoesDe.value === fornecedorId) {
         participacoes.value = null
-        falhaParticipacoes.value = interpretarFalhaCasamento(erro)
+        falhaParticipacoes.value = interpretarFalhaEvento(erro)
       }
     } finally {
       if (participacoesDe.value === fornecedorId) {
@@ -118,11 +118,11 @@ export const useFornecedoresStore = defineStore('fornecedores', () => {
     }
   }
 
-  function obter(fornecedorId: string): Promise<ResultadoCasamento<FornecedorDto>> {
+  function obter(fornecedorId: string): Promise<ResultadoEvento<FornecedorDto>> {
     return executar(() => requisitar<FornecedorDto>(caminhoFornecedor(fornecedorId)))
   }
 
-  async function criar(dados: SalvarFornecedorRequest): Promise<ResultadoCasamento<FornecedorDto>> {
+  async function criar(dados: SalvarFornecedorRequest): Promise<ResultadoEvento<FornecedorDto>> {
     const resultado = await executar(() =>
       requisitar<FornecedorDto>(ROTA_FORNECEDORES, { metodo: 'POST', corpo: dados }),
     )
@@ -133,7 +133,7 @@ export const useFornecedoresStore = defineStore('fornecedores', () => {
     return resultado
   }
 
-  async function atualizar(fornecedorId: string, dados: SalvarFornecedorRequest): Promise<ResultadoCasamento<FornecedorDto>> {
+  async function atualizar(fornecedorId: string, dados: SalvarFornecedorRequest): Promise<ResultadoEvento<FornecedorDto>> {
     const resultado = await executar(() =>
       requisitar<FornecedorDto>(caminhoFornecedor(fornecedorId), { metodo: 'PUT', corpo: dados }),
     )
@@ -146,7 +146,7 @@ export const useFornecedoresStore = defineStore('fornecedores', () => {
   async function alterarSituacao(
     fornecedorId: string,
     acao: 'arquivar' | 'restaurar',
-  ): Promise<ResultadoCasamento<FornecedorDto>> {
+  ): Promise<ResultadoEvento<FornecedorDto>> {
     const resultado = await executar(() =>
       requisitar<FornecedorDto>(caminhoFornecedor(fornecedorId, acao), { metodo: 'POST' }),
     )
@@ -156,15 +156,15 @@ export const useFornecedoresStore = defineStore('fornecedores', () => {
     return resultado
   }
 
-  function arquivar(fornecedorId: string): Promise<ResultadoCasamento<FornecedorDto>> {
+  function arquivar(fornecedorId: string): Promise<ResultadoEvento<FornecedorDto>> {
     return alterarSituacao(fornecedorId, 'arquivar')
   }
 
-  function restaurar(fornecedorId: string): Promise<ResultadoCasamento<FornecedorDto>> {
+  function restaurar(fornecedorId: string): Promise<ResultadoEvento<FornecedorDto>> {
     return alterarSituacao(fornecedorId, 'restaurar')
   }
 
-  async function remover(fornecedorId: string): Promise<ResultadoCasamento<null>> {
+  async function remover(fornecedorId: string): Promise<ResultadoEvento<null>> {
     const resultado = await executar(() => requisitar<void>(caminhoFornecedor(fornecedorId), { metodo: 'DELETE' }))
     if (!resultado.ok) {
       return resultado

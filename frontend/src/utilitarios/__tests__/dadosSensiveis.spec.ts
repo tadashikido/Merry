@@ -67,7 +67,7 @@ describe('dadosSensiveis', () => {
   })
 
   it('[UNITÁRIO] textos de privacidade trazem prazo e plural corretos', () => {
-    expect(TEXTOS_DADOS_SENSIVEIS.avisoTexto(30)).toContain('Tudo é apagado 30 dias depois do casamento.')
+    expect(TEXTOS_DADOS_SENSIVEIS.avisoTexto(30)).toContain('Tudo é apagado 30 dias depois do evento.')
     expect(TEXTOS_DADOS_SENSIVEIS.avisoTexto(1)).toContain('1 dia depois')
     expect(TEXTOS_DADOS_SENSIVEIS.totais(1, 1)).toBe('1 pessoa com restrição, 1 confirmada')
     expect(TEXTOS_DADOS_SENSIVEIS.ilegiveis(2)).toContain('restrições não puderam ser lidas')

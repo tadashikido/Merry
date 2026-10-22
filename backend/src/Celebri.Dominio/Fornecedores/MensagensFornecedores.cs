@@ -17,5 +17,5 @@ public static class MensagensFornecedores
     public const string LimiteFornecedores = "Sua base chegou a 1.000 fornecedores. Arquive ou exclua algum para cadastrar outro.";
     public const string ArquivadoSemEdicao = "Restaure o fornecedor para editar.";
     public const string FornecedorNaoEncontrado = "Fornecedor não encontrado.";
-    public const string ParticipouDeCasamentos = "Este fornecedor já participou de casamentos. Arquive-o em vez de excluir.";
+    public const string ParticipouDeEventos = "Este fornecedor já participou de eventos. Arquive-o em vez de excluir.";
 }

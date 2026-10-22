@@ -47,7 +47,7 @@ public class FabricaApiAutenticacao : FabricaApi
             ["LimitesRequisicao:renovar:Limite"] = "1000",
             ["LimitesRequisicao:importacao:Limite"] = "1000",
             ["LimitesRequisicao:rsvp:Limite"] = "1000",
-            ["LimitesRequisicao:acesso-casal:Limite"] = "1000",
+            ["LimitesRequisicao:acesso-anfitriao:Limite"] = "1000",
             ["LimitesRequisicao:comprovante:Limite"] = "1000",
         };
 

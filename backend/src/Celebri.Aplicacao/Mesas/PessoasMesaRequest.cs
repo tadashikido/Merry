@@ -18,7 +18,7 @@ public sealed record PessoasMesaRequest(
 
         if (ConvidadosIds.Any(identificador => identificador == Guid.Empty))
         {
-            yield return new ValidationResult(MensagensMesas.PessoaDeOutroCasamento, [nameof(ConvidadosIds)]);
+            yield return new ValidationResult(MensagensMesas.PessoaDeOutroEvento, [nameof(ConvidadosIds)]);
         }
 
         if (ConvidadosIds.Distinct().Count() != ConvidadosIds.Count)

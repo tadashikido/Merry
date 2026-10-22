@@ -1,10 +1,10 @@
 using Celebri.Aplicacao.Arquivos;
 using Celebri.Aplicacao.Calendario;
 using Celebri.Aplicacao.Excecoes;
-using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.FornecedoresEvento;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Financeiro;
 using Celebri.Dominio.Fornecedores;
@@ -14,10 +14,10 @@ namespace Celebri.Aplicacao.Financeiro;
 public class ParcelaFornecedorService : IParcelaFornecedorService
 {
     public const int LimiteAlertasOrganizacao = 10;
-    public const int LimiteAlertasCasamento = 5;
+    public const int LimiteAlertasEvento = 5;
 
-    private readonly ICasamentoRepository _casamentoRepository;
-    private readonly IFornecedorCasamentoRepository _vinculoRepository;
+    private readonly IEventoRepository _eventoRepository;
+    private readonly IFornecedorEventoRepository _vinculoRepository;
     private readonly IParcelaFornecedorRepository _parcelaRepository;
     private readonly IArmazenamentoArquivos _armazenamento;
     private readonly IUnidadeTrabalho _unidadeTrabalho;
@@ -26,8 +26,8 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     private readonly IUsuarioAtual _usuarioAtual;
 
     public ParcelaFornecedorService(
-        ICasamentoRepository casamentoRepository,
-        IFornecedorCasamentoRepository vinculoRepository,
+        IEventoRepository eventoRepository,
+        IFornecedorEventoRepository vinculoRepository,
         IParcelaFornecedorRepository parcelaRepository,
         IArmazenamentoArquivos armazenamento,
         IUnidadeTrabalho unidadeTrabalho,
@@ -35,7 +35,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
         ICalendarioLocal calendario,
         IUsuarioAtual usuarioAtual)
     {
-        _casamentoRepository = casamentoRepository;
+        _eventoRepository = eventoRepository;
         _vinculoRepository = vinculoRepository;
         _parcelaRepository = parcelaRepository;
         _armazenamento = armazenamento;
@@ -45,17 +45,17 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
         _usuarioAtual = usuarioAtual;
     }
 
-    public async Task<FinanceiroCasamentoDto> ObterFinanceiroAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<FinanceiroEventoDto> ObterFinanceiroAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
-        var vinculos = await _vinculoRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento);
-        var parcelas = await _parcelaRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento);
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
+        var vinculos = await _vinculoRepository.ListarPorEventoAsync(evento.Id, cancelamento);
+        var parcelas = await _parcelaRepository.ListarPorEventoAsync(evento.Id, cancelamento);
         var hoje = _calendario.Hoje();
         var numeracao = NumeracaoParcelas.Numerar(parcelas);
-        var parcelasPorVinculo = parcelas.ToLookup(parcela => parcela.FornecedorCasamentoId);
+        var parcelasPorVinculo = parcelas.ToLookup(parcela => parcela.FornecedorEventoId);
 
         var fornecedores = vinculos
-            .Where(item => item.Vinculo.Status == StatusFornecedorCasamento.Contratado
+            .Where(item => item.Vinculo.Status == StatusFornecedorEvento.Contratado
                 || (item.Vinculo.Cancelado && parcelasPorVinculo[item.Vinculo.Id].Any()))
             .OrderBy(item => item.Vinculo.Cancelado)
             .ThenBy(item => item.Fornecedor.Categoria)
@@ -64,27 +64,27 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
             .ToList();
 
         var contratados = vinculos
-            .Where(item => item.Vinculo.Status == StatusFornecedorCasamento.Contratado)
+            .Where(item => item.Vinculo.Status == StatusFornecedorEvento.Contratado)
             .Select(item => item.Vinculo.Id)
             .ToHashSet();
-        var consideradas = casamento.Arquivado
+        var consideradas = evento.Arquivado
             ? []
-            : parcelas.Where(parcela => contratados.Contains(parcela.FornecedorCasamentoId)).ToList();
+            : parcelas.Where(parcela => contratados.Contains(parcela.FornecedorEventoId)).ToList();
         var exibirAcoes = _usuarioAtual.EhAssessoria();
 
-        return new FinanceiroCasamentoDto(
+        return new FinanceiroEventoDto(
             CalculadoraResumoOrcamento.Calcular(vinculos, parcelas, hoje),
             CalculadoraAlertasPagamentos.Calcular(consideradas, hoje),
             fornecedores,
             hoje,
-            casamento.Arquivado,
-            !exibirAcoes || casamento.Arquivado);
+            evento.Arquivado,
+            !exibirAcoes || evento.Arquivado);
     }
 
-    public async Task<AlertasPagamentosDto> ObterAlertasCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<AlertasPagamentosDto> ObterAlertasEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
-        return await MontarAlertasAsync(casamento.Id, LimiteAlertasCasamento, cancelamento);
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
+        return await MontarAlertasAsync(evento.Id, LimiteAlertasEvento, cancelamento);
     }
 
     public Task<AlertasPagamentosDto> ObterAlertasOrganizacaoAsync(CancellationToken cancelamento)
@@ -92,23 +92,23 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
         return MontarAlertasAsync(null, LimiteAlertasOrganizacao, cancelamento);
     }
 
-    public async Task<CronogramaParcelasDto> ListarAsync(Guid casamentoId, Guid vinculoId, CancellationToken cancelamento)
+    public async Task<CronogramaParcelasDto> ListarAsync(Guid eventoId, Guid vinculoId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
-        var vinculo = await ObterVinculoAsync(casamento.Id, vinculoId, cancelamento);
-        var parcelas = await _parcelaRepository.ListarPorVinculoAsync(casamento.Id, vinculo.Id, cancelamento);
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
+        var vinculo = await ObterVinculoAsync(evento.Id, vinculoId, cancelamento);
+        var parcelas = await _parcelaRepository.ListarPorVinculoAsync(evento.Id, vinculo.Id, cancelamento);
         return ParaCronograma(vinculo, parcelas, _calendario.Hoje());
     }
 
     public async Task<ParcelaDto> CriarAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         SalvarParcelaRequest request,
         CancellationToken cancelamento)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var contexto = await ObterContextoEditavelAsync(casamentoId, vinculoId, cancelamento);
+        var contexto = await ObterContextoEditavelAsync(eventoId, vinculoId, cancelamento);
         var dados = request.ParaDados();
 
         if (contexto.Parcelas.Count >= ParcelaFornecedor.LimitePorVinculo)
@@ -130,14 +130,14 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     }
 
     public async Task<CronogramaParcelasDto> GerarAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         GerarParcelasRequest request,
         CancellationToken cancelamento)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var contexto = await ObterContextoEditavelAsync(casamentoId, vinculoId, cancelamento);
+        var contexto = await ObterContextoEditavelAsync(eventoId, vinculoId, cancelamento);
         var quantidade = request.Quantidade
             ?? throw new RegraNegocioException(MensagensFinanceiro.QuantidadeObrigatoria, ParcelaFornecedor.CampoQuantidade);
         var primeiroVencimento = request.PrimeiroVencimento
@@ -175,7 +175,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     }
 
     public async Task<ParcelaDto> AtualizarAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         SalvarParcelaRequest request,
@@ -183,7 +183,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var contexto = await ObterContextoEditavelAsync(casamentoId, vinculoId, cancelamento);
+        var contexto = await ObterContextoEditavelAsync(eventoId, vinculoId, cancelamento);
         var parcela = contexto.Obter(parcelaId);
         var dados = request.ParaDados();
 
@@ -200,9 +200,9 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
         return ParaDto(parcela, contexto.Parcelas, _calendario.Hoje());
     }
 
-    public async Task RemoverAsync(Guid casamentoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento)
+    public async Task RemoverAsync(Guid eventoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento)
     {
-        var contexto = await ObterContextoEditavelAsync(casamentoId, vinculoId, cancelamento);
+        var contexto = await ObterContextoEditavelAsync(eventoId, vinculoId, cancelamento);
         var parcela = contexto.Obter(parcelaId);
 
         parcela.GarantirPendente();
@@ -211,7 +211,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     }
 
     public async Task<ParcelaDto> RegistrarPagamentoAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         RegistrarPagamentoRequest request,
@@ -219,7 +219,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var contexto = await ObterContextoEditavelAsync(casamentoId, vinculoId, cancelamento);
+        var contexto = await ObterContextoEditavelAsync(eventoId, vinculoId, cancelamento);
         var parcela = contexto.Obter(parcelaId);
         var hoje = _calendario.Hoje();
         var agora = _relogio.GetUtcNow();
@@ -231,12 +231,12 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     }
 
     public async Task<ParcelaDto> DesfazerPagamentoAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         CancellationToken cancelamento)
     {
-        var contexto = await ObterContextoEditavelAsync(casamentoId, vinculoId, cancelamento);
+        var contexto = await ObterContextoEditavelAsync(eventoId, vinculoId, cancelamento);
         var parcela = contexto.Obter(parcelaId);
         var agora = _relogio.GetUtcNow();
 
@@ -248,7 +248,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     }
 
     public async Task<ParcelaDto> AnexarComprovanteAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         string? nomeArquivo,
@@ -257,7 +257,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     {
         ArgumentNullException.ThrowIfNull(conteudo);
 
-        var contexto = await ObterContextoEditavelAsync(casamentoId, vinculoId, cancelamento);
+        var contexto = await ObterContextoEditavelAsync(eventoId, vinculoId, cancelamento);
         var parcela = contexto.Obter(parcelaId);
 
         if (!parcela.Paga)
@@ -275,7 +275,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
         var formato = ArquivoComprovante.DetectarFormato(bytes)
             ?? throw new RegraNegocioException(MensagensFinanceiro.ComprovanteFormatoInvalido);
 
-        var novaChave = new ChaveArquivo(parcela.OrganizacaoId, parcela.CasamentoId, Guid.NewGuid());
+        var novaChave = new ChaveArquivo(parcela.OrganizacaoId, parcela.EventoId, Guid.NewGuid());
         await _armazenamento.SalvarAsync(novaChave, bytes, cancelamento);
 
         var agora = _relogio.GetUtcNow();
@@ -302,13 +302,13 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     }
 
     public async Task<ArquivoComprovanteParcela> ObterComprovanteAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
-        var parcela = await _parcelaRepository.ObterAsync(casamento.Id, vinculoId, parcelaId, cancelamento)
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
+        var parcela = await _parcelaRepository.ObterAsync(evento.Id, vinculoId, parcelaId, cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensFinanceiro.ParcelaNaoEncontrada);
 
         if (parcela.ComprovanteArquivoId is not { } arquivoId)
@@ -317,7 +317,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
         }
 
         var conteudo = await _armazenamento.AbrirLeituraAsync(
-                new ChaveArquivo(parcela.OrganizacaoId, parcela.CasamentoId, arquivoId),
+                new ChaveArquivo(parcela.OrganizacaoId, parcela.EventoId, arquivoId),
                 cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensFinanceiro.ComprovanteNaoEncontrado);
 
@@ -328,12 +328,12 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     }
 
     public async Task<ParcelaDto> RemoverComprovanteAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         Guid parcelaId,
         CancellationToken cancelamento)
     {
-        var contexto = await ObterContextoEditavelAsync(casamentoId, vinculoId, cancelamento);
+        var contexto = await ObterContextoEditavelAsync(eventoId, vinculoId, cancelamento);
         var parcela = contexto.Obter(parcelaId);
 
         if (!parcela.PossuiComprovante)
@@ -355,7 +355,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
 
         return new ParcelaDto(
             parcela.Id,
-            parcela.FornecedorCasamentoId,
+            parcela.FornecedorEventoId,
             numero,
             total,
             parcela.Valor,
@@ -382,7 +382,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     }
 
     private static CronogramaParcelasDto ParaCronograma(
-        FornecedorCasamento vinculo,
+        FornecedorEvento vinculo,
         IReadOnlyCollection<ParcelaFornecedor> parcelas,
         DateOnly hoje)
     {
@@ -429,13 +429,13 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
                 .ToList());
     }
 
-    private async Task<AlertasPagamentosDto> MontarAlertasAsync(Guid? casamentoId, int limite, CancellationToken cancelamento)
+    private async Task<AlertasPagamentosDto> MontarAlertasAsync(Guid? eventoId, int limite, CancellationToken cancelamento)
     {
         var hoje = _calendario.Hoje();
-        var alertas = await _parcelaRepository.ListarAlertasAsync(casamentoId, hoje, limite, cancelamento);
+        var alertas = await _parcelaRepository.ListarAlertasAsync(eventoId, hoje, limite, cancelamento);
         var vinculoIds = alertas.Vencidas
             .Concat(alertas.Proximas)
-            .Select(item => item.Parcela.FornecedorCasamentoId)
+            .Select(item => item.Parcela.FornecedorEventoId)
             .Distinct()
             .ToList();
         var numeracao = vinculoIds.Count == 0
@@ -447,7 +447,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
             alertas.ValorVencidas,
             alertas.TotalProximas,
             alertas.ValorProximas,
-            alertas.CasamentosComVencidas,
+            alertas.EventosComVencidas,
             hoje,
             alertas.Vencidas.Select(item => ParaAlertaDto(item, numeracao, hoje)).ToList(),
             alertas.Proximas.Select(item => ParaAlertaDto(item, numeracao, hoje)).ToList());
@@ -463,10 +463,10 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
 
         return new ParcelaAlertaDto(
             parcela.Id,
-            parcela.CasamentoId,
+            parcela.EventoId,
             item.NomePrimeiraPessoa,
             item.NomeSegundaPessoa,
-            parcela.FornecedorCasamentoId,
+            parcela.FornecedorEventoId,
             item.NomeEmpresa,
             posicao.Numero,
             posicao.Total,
@@ -475,7 +475,7 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
             parcela.DiasParaVencimento(hoje));
     }
 
-    private async Task SalvarComVinculoAsync(FornecedorCasamento vinculo, DateTimeOffset agora, CancellationToken cancelamento)
+    private async Task SalvarComVinculoAsync(FornecedorEvento vinculo, DateTimeOffset agora, CancellationToken cancelamento)
     {
         vinculo.RegistrarAlteracaoParcelas(agora);
         _vinculoRepository.MarcarAlterado(vinculo);
@@ -486,40 +486,40 @@ public class ParcelaFornecedorService : IParcelaFornecedorService
     {
         if (arquivoId is { } id)
         {
-            await _armazenamento.RemoverAsync(new ChaveArquivo(parcela.OrganizacaoId, parcela.CasamentoId, id), CancellationToken.None);
+            await _armazenamento.RemoverAsync(new ChaveArquivo(parcela.OrganizacaoId, parcela.EventoId, id), CancellationToken.None);
         }
     }
 
-    private async Task<ContextoParcelas> ObterContextoEditavelAsync(Guid casamentoId, Guid vinculoId, CancellationToken cancelamento)
+    private async Task<ContextoParcelas> ObterContextoEditavelAsync(Guid eventoId, Guid vinculoId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
 
-        if (casamento.Arquivado)
+        if (evento.Arquivado)
         {
-            throw new RegraNegocioException(MensagensCasamento.ArquivadoSemEdicao);
+            throw new RegraNegocioException(MensagensEvento.ArquivadoSemEdicao);
         }
 
-        var vinculo = await ObterVinculoAsync(casamento.Id, vinculoId, cancelamento);
+        var vinculo = await ObterVinculoAsync(evento.Id, vinculoId, cancelamento);
         ParcelaFornecedor.GarantirVinculoAceitaParcelas(vinculo);
-        var parcelas = await _parcelaRepository.ListarPorVinculoAsync(casamento.Id, vinculo.Id, cancelamento);
+        var parcelas = await _parcelaRepository.ListarPorVinculoAsync(evento.Id, vinculo.Id, cancelamento);
 
         return new ContextoParcelas(vinculo, parcelas);
     }
 
-    private async Task<CasamentoAssessorado> ObterCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    private async Task<Evento> ObterEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        return await _casamentoRepository.ObterPorIdAsync(casamentoId, cancelamento)
-            ?? throw new RecursoNaoEncontradoException(MensagensCasamento.NaoEncontrado);
+        return await _eventoRepository.ObterPorIdAsync(eventoId, cancelamento)
+            ?? throw new RecursoNaoEncontradoException(MensagensEvento.NaoEncontrado);
     }
 
-    private async Task<FornecedorCasamento> ObterVinculoAsync(Guid casamentoId, Guid vinculoId, CancellationToken cancelamento)
+    private async Task<FornecedorEvento> ObterVinculoAsync(Guid eventoId, Guid vinculoId, CancellationToken cancelamento)
     {
-        var item = await _vinculoRepository.ObterAsync(casamentoId, vinculoId, cancelamento)
-            ?? throw new RecursoNaoEncontradoException(MensagensFornecedoresCasamento.NaoEncontrado);
+        var item = await _vinculoRepository.ObterAsync(eventoId, vinculoId, cancelamento)
+            ?? throw new RecursoNaoEncontradoException(MensagensFornecedoresEvento.NaoEncontrado);
         return item.Vinculo;
     }
 
-    private sealed record ContextoParcelas(FornecedorCasamento Vinculo, IReadOnlyList<ParcelaFornecedor> Parcelas)
+    private sealed record ContextoParcelas(FornecedorEvento Vinculo, IReadOnlyList<ParcelaFornecedor> Parcelas)
     {
         public ParcelaFornecedor Obter(Guid parcelaId)
         {

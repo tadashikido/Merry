@@ -19,7 +19,7 @@ import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import type { SessaoDto } from '@/tipos/api'
 import type { CronogramaDto } from '@/tipos/cronograma'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, type Rota } from '../../casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -29,28 +29,28 @@ vi.mock('@/composables/useNotificacao', () => ({
   DURACAO_TOAST_ERRO: 6000,
 }))
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_CRONOGRAMA = `${ROTA_CASAMENTO}/cronograma`
-const CAMINHO = `/casamentos/${ID_CASAMENTO}/cronograma`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_CRONOGRAMA = `${ROTA_EVENTO}/cronograma`
+const CAMINHO = `/eventos/${ID_EVENTO}/cronograma`
 
-const SESSAO_CASAL: SessaoDto = {
-  tokenAcesso: 'token-casal',
+const SESSAO_ANFITRIAO: SessaoDto = {
+  tokenAcesso: 'token-anfitriao',
   expiraEm: '2026-09-28T12:15:00Z',
   usuario: {
-    id: 'u-casal',
+    id: 'u-anfitriao',
     nome: 'Lívia Moraes',
     email: 'livia@exemplo.com',
-    papel: 'Casal',
+    papel: 'Anfitriao',
     organizacao: { id: 'o1', nome: 'Albuquerque Assessoria' },
-    casamentoId: ID_CASAMENTO,
+    eventoId: ID_EVENTO,
   },
 }
 
 const MAKING = itemCronograma({ id: 'm', inicio: '13:00', termino: '15:00', duracaoMinutos: 120, atividade: 'Making of', minutosDesdeCerimonia: -210, responsavel: 'Ana', notasInternas: 'Pagar em dinheiro' })
 const CERIMONIA = itemCronograma({
   id: 'c',
-  fornecedor: { fornecedorCasamentoId: 'v1', nomeEmpresa: 'Coral Harmonia', categoria: 'Musica' },
-  conflitos: [{ itemId: 'r', atividade: 'Retoque', inicio: '17:00', dia: 'DiaDoCasamento', motivo: 'Responsavel' }],
+  fornecedor: { fornecedorEventoId: 'v1', nomeEmpresa: 'Coral Harmonia', categoria: 'Musica' },
+  conflitos: [{ itemId: 'r', atividade: 'Retoque', inicio: '17:00', dia: 'DiaDoEvento', motivo: 'Responsavel' }],
 })
 const RETOQUE = itemCronograma({
   id: 'r',
@@ -59,7 +59,7 @@ const RETOQUE = itemCronograma({
   duracaoMinutos: 20,
   atividade: 'Retoque',
   minutosDesdeCerimonia: 30,
-  conflitos: [{ itemId: 'c', atividade: 'Cerimônia', inicio: '16:30', dia: 'DiaDoCasamento', motivo: 'Responsavel' }],
+  conflitos: [{ itemId: 'c', atividade: 'Cerimônia', inicio: '16:30', dia: 'DiaDoEvento', motivo: 'Responsavel' }],
 })
 const MONTAGEM = itemCronograma({ id: 'v', dia: 'Vespera', data: '2027-05-14', inicio: '18:00', termino: '22:00', atividade: 'Montagem', minutosDesdeCerimonia: -1350 })
 
@@ -108,7 +108,7 @@ async function abrir(sessao: SessaoDto, cronograma: () => Response, ...extras: R
   rotear(
     fetchSimulado,
     sessao,
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
     quando('GET', ROTA_CRONOGRAMA, cronograma),
     ...extras,
   )
@@ -141,7 +141,7 @@ describe('CronogramaView — assessoria', () => {
     expect(wrapper!.get('h1').text()).toBe(TEXTOS_CRONOGRAMA.titulo)
     expect(wrapper!.text()).toContain('cerimônia às 16:30')
     expect(wrapper!.get('[data-teste="grupo-cronograma-Vespera"] h2').text()).toContain('Véspera')
-    const dia = wrapper!.get('[data-teste="grupo-cronograma-DiaDoCasamento"]')
+    const dia = wrapper!.get('[data-teste="grupo-cronograma-DiaDoEvento"]')
     expect(dia.findAll('[data-teste="linha-cronograma-atividade"]').map((linha) => linha.text())).toEqual(['Making of', 'Cerimônia', 'Retoque'])
     expect(dia.text()).toContain('3 itens')
     expect(dia.text()).toContain('3 h 30 antes da cerimônia')
@@ -151,7 +151,7 @@ describe('CronogramaView — assessoria', () => {
     expect(dia.findAll('[data-teste="linha-cronograma-conflito"]')).toHaveLength(2)
     expect(dia.find('[data-teste="linha-cronograma-nota"]').exists()).toBe(true)
     expect(wrapper!.find('[data-teste="aviso-sem-horario"]').exists()).toBe(false)
-    const itemMenu = wrapper!.findAll('[data-teste="item-casamento"]').find((item) => item.text() === 'Cronograma')
+    const itemMenu = wrapper!.findAll('[data-teste="item-evento"]').find((item) => item.text() === 'Cronograma')
     expect(itemMenu?.attributes('aria-current')).toBe('page')
   })
 
@@ -185,19 +185,19 @@ describe('CronogramaView — assessoria', () => {
 
     const [post] = chamadas(fetchSimulado, 'POST', ROTA_CRONOGRAMA)
     expect(corpoDaChamada(post!)).toEqual({
-      dia: 'DiaDoCasamento',
+      dia: 'DiaDoEvento',
       inicio: '21:30',
       duracaoMinutos: 270,
       atividade: 'Pista de dança',
       local: 'Espaço Jardim',
       responsavel: null,
-      fornecedorCasamentoId: null,
+      fornecedorEventoId: null,
       instrucoes: null,
       notasInternas: null,
     })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_CRONOGRAMA.sucessoCriado)
     expect(wrapper!.text()).toContain('Pista de dança')
-    expect(montagem.roteador.currentRoute.value.name).toBe('casamento-cronograma')
+    expect(montagem.roteador.currentRoute.value.name).toBe('evento-cronograma')
   })
 
   it('[COMPONENTE] valida campos obrigatórios antes de enviar', async () => {
@@ -237,7 +237,7 @@ describe('CronogramaView — assessoria', () => {
       SESSAO_EXEMPLO,
       () => respostaJson(cronogramaExemplo([CERIMONIA, RETOQUE])),
       quando('PUT', `${ROTA_CRONOGRAMA}/c`, () =>
-        respostaProblema(422, { detail: 'Escolha um fornecedor deste casamento.', campo: 'fornecedorCasamentoId' }),
+        respostaProblema(422, { detail: 'Escolha um fornecedor deste evento.', campo: 'fornecedorEventoId' }),
       ),
     )
 
@@ -253,7 +253,7 @@ describe('CronogramaView — assessoria', () => {
     expect(document.body.querySelector('[data-teste="conflito-dialogo"]')?.textContent).toContain('Conflito com Retoque às 17:00 (Fernanda).')
     await clicar('[data-teste="salvar-item-cronograma"]')
 
-    expect(document.body.textContent).toContain('Escolha um fornecedor deste casamento.')
+    expect(document.body.textContent).toContain('Escolha um fornecedor deste evento.')
     expect(document.body.querySelector('[data-teste="dialogo-item-cronograma"]')).not.toBeNull()
   })
 
@@ -316,7 +316,7 @@ describe('CronogramaView — assessoria', () => {
     const aviso = wrapper!.get('[data-teste="aviso-sem-horario"]')
     expect(aviso.text()).toContain(TEXTOS_CRONOGRAMA.incompletoTitulo)
     expect(aviso.text()).toContain(TEXTOS_CRONOGRAMA.incompletoTexto)
-    expect(aviso.get('[data-teste="adicionar-horario"]').attributes('href')).toBe(`/casamentos/${ID_CASAMENTO}/editar`)
+    expect(aviso.get('[data-teste="adicionar-horario"]').attributes('href')).toBe(`/eventos/${ID_EVENTO}/editar`)
     expect(wrapper!.text()).toContain('sem horário da cerimônia')
   })
 
@@ -347,7 +347,7 @@ describe('CronogramaView — assessoria', () => {
     expect(wrapper!.text()).toContain('Cerimônia')
   })
 
-  it('[SEGURANÇA] 403 mostra sem permissão e 404 mostra casamento não encontrado', async () => {
+  it('[SEGURANÇA] 403 mostra sem permissão e 404 mostra evento não encontrado', async () => {
     await abrir(SESSAO_EXEMPLO, () => respostaProblema(403))
     expect(wrapper!.text()).toContain(TEXTOS_CRONOGRAMA.semAcesso)
     wrapper!.unmount()
@@ -356,7 +356,7 @@ describe('CronogramaView — assessoria', () => {
 
     await abrir(SESSAO_EXEMPLO, () => respostaProblema(404, { title: 'Recurso não encontrado.' }))
     expect(wrapper!.text()).toContain(TEXTOS_CRONOGRAMA.naoEncontradoTitulo)
-    expect(wrapper!.get('[data-teste="voltar"]').text()).toBe(TEXTOS_CRONOGRAMA.voltarCasamentos)
+    expect(wrapper!.get('[data-teste="voltar"]').text()).toBe(TEXTOS_CRONOGRAMA.voltarEventos)
   })
 })
 
@@ -375,7 +375,7 @@ describe('CronogramaView — reestruturação da fundação', () => {
     expect(lateral.get('[data-teste="resumo-total-itens"]').text()).toBe('5')
     expect(lateral.get('[data-teste="resumo-conflitos"]').text()).toBe('2')
     expect(lateral.get('[data-teste="resumo-dia-Vespera"]').text()).toContain('1 item, das 18:00 às 22:00')
-    expect(lateral.get('[data-teste="resumo-dia-DiaDoCasamento"]').text()).toContain('4 itens, das 13:00 às 02:00 do dia seguinte')
+    expect(lateral.get('[data-teste="resumo-dia-DiaDoEvento"]').text()).toContain('4 itens, das 13:00 às 02:00 do dia seguinte')
     expect(lateral.find('button').exists()).toBe(false)
   })
 
@@ -385,7 +385,7 @@ describe('CronogramaView — reestruturação da fundação', () => {
     const lateral = wrapper!.get('[data-teste="lateral-cronograma"]')
     expect(lateral.get('[data-teste="resumo-cerimonia"]').text()).toContain(TEXTOS_CRONOGRAMA.resumoSemHorario)
     expect(lateral.find('[data-teste="resumo-conflitos"]').exists()).toBe(false)
-    expect(lateral.get('[data-teste="resumo-dia-DiaDoCasamento"]').text()).toContain('1 item, das 13:00 às 15:00')
+    expect(lateral.get('[data-teste="resumo-dia-DiaDoEvento"]').text()).toContain('1 item, das 13:00 às 15:00')
   })
 
   it('[COMPONENTE] estados vazio e de erro não mostram a lateral', async () => {
@@ -406,32 +406,32 @@ describe('CronogramaView — reestruturação da fundação', () => {
     await clicar('[data-teste="salvar-item-cronograma"]')
     expect(document.body.textContent).toContain(TEXTOS_CRONOGRAMA.erroAtividade)
 
-    await digitar('[data-teste="campo-atividade-cronograma"]', 'Entrada dos noivos')
+    await digitar('[data-teste="campo-atividade-cronograma"]', 'Entrada dos anfitriões')
     expect(document.body.textContent).not.toContain(TEXTOS_CRONOGRAMA.erroAtividade)
     expect(chamadas(fetchSimulado, 'POST', ROTA_CRONOGRAMA)).toHaveLength(0)
   })
 })
 
-describe('CronogramaView — casal', () => {
-  it('[SEGURANÇA] casal vê o roteiro em leitura, sem ações nem atalho de horário', async () => {
+describe('CronogramaView — anfitriões', () => {
+  it('[SEGURANÇA] anfitriões veem o roteiro em leitura, sem ações nem atalho de horário', async () => {
     await abrir(
-      SESSAO_CASAL,
+      SESSAO_ANFITRIAO,
       () => respostaJson(cronogramaExemplo([{ ...CERIMONIA, conflitos: [] }], { somenteLeitura: true, fornecedoresDisponiveis: [], horarioCerimonia: null })),
     )
 
     expect(wrapper!.find('[data-teste="adicionar-item-cronograma"]').exists()).toBe(false)
     expect(wrapper!.find('button[data-teste="linha-cronograma-conteudo"]').exists()).toBe(false)
     expect(wrapper!.get('[data-teste="aviso-sem-horario"]').find('[data-teste="adicionar-horario"]').exists()).toBe(false)
-    expect(wrapper!.get('[data-teste="apoio-casal"]').text()).toBe(TEXTOS_CRONOGRAMA.apoioCasal)
-    expect(wrapper!.get('[data-teste="lateral-cronograma"]').find('[data-teste="apoio-casal"]').exists()).toBe(true)
+    expect(wrapper!.get('[data-teste="apoio-anfitriao"]').text()).toBe(TEXTOS_CRONOGRAMA.apoioAnfitriao)
+    expect(wrapper!.get('[data-teste="lateral-cronograma"]').find('[data-teste="apoio-anfitriao"]').exists()).toBe(true)
     expect(wrapper!.find('[data-teste="linha-cronograma-nota"]').exists()).toBe(false)
     expect(document.body.querySelector('[data-teste="dialogo-item-cronograma"]')).toBeNull()
   })
 
-  it('[COMPONENTE] casal com cronograma vazio vê a explicação sem ação', async () => {
-    await abrir(SESSAO_CASAL, () => respostaJson(cronogramaExemplo([], { somenteLeitura: true })))
+  it('[COMPONENTE] anfitriões com cronograma vazio veem a explicação sem ação', async () => {
+    await abrir(SESSAO_ANFITRIAO, () => respostaJson(cronogramaExemplo([], { somenteLeitura: true })))
 
-    expect(wrapper!.get('[data-teste="estado-vazio"]').text()).toContain(TEXTOS_CRONOGRAMA.vazioCasalTitulo)
+    expect(wrapper!.get('[data-teste="estado-vazio"]').text()).toContain(TEXTOS_CRONOGRAMA.vazioAnfitriaoTitulo)
     expect(wrapper!.find('[data-teste="adicionar-item-cronograma"]').exists()).toBe(false)
   })
 })

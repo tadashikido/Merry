@@ -6,10 +6,10 @@ namespace Celebri.Testes.Unidade.Cronogramas;
 public class ItemCronogramaTestes
 {
     private static readonly DateTimeOffset Agora = new(2027, 3, 10, 12, 0, 0, TimeSpan.Zero);
-    private static readonly Guid CasamentoId = Guid.NewGuid();
+    private static readonly Guid EventoId = Guid.NewGuid();
 
     public static DadosItemCronograma Dados(
-        DiaCronograma dia = DiaCronograma.DiaDoCasamento,
+        DiaCronograma dia = DiaCronograma.DiaDoEvento,
         int hora = 16,
         int minuto = 30,
         int? duracao = 45,
@@ -25,19 +25,19 @@ public class ItemCronogramaTestes
 
     private static ItemCronograma Criar(DadosItemCronograma? dados = null)
     {
-        return ItemCronograma.Criar(CasamentoId, dados ?? Dados(), Guid.NewGuid(), Agora);
+        return ItemCronograma.Criar(EventoId, dados ?? Dados(), Guid.NewGuid(), Agora);
     }
 
     [Fact]
     public void Criar_DeveNormalizarTextosEComecarPrevisto()
     {
-        var item = Criar(Dados(atividade: "  Entrada   dos noivos ", local: "  Capela  ", responsavel: " Fernanda  Lima ", instrucoes: "  ", notas: " nota ")
+        var item = Criar(Dados(atividade: "  Entrada   dos anfitriões ", local: "  Capela  ", responsavel: " Fernanda  Lima ", instrucoes: "  ", notas: " nota ")
             with
         { Inicio = new TimeOnly(16, 30, 45) });
 
         Assert.NotEqual(Guid.Empty, item.Id);
-        Assert.Equal(CasamentoId, item.CasamentoId);
-        Assert.Equal("Entrada dos noivos", item.Atividade);
+        Assert.Equal(EventoId, item.EventoId);
+        Assert.Equal("Entrada dos anfitriões", item.Atividade);
         Assert.Equal("Capela", item.Local);
         Assert.Equal("Fernanda Lima", item.Responsavel);
         Assert.Equal("fernanda lima", item.ResponsavelChave);
@@ -58,7 +58,7 @@ public class ItemCronogramaTestes
     }
 
     [Fact]
-    public void Criar_SemCasamento_DeveLancar()
+    public void Criar_SemEvento_DeveLancar()
     {
         Assert.Throws<ArgumentException>(() => ItemCronograma.Criar(Guid.Empty, Dados(), null, Agora));
     }
@@ -129,7 +129,7 @@ public class ItemCronogramaTestes
 
     [Theory]
     [InlineData(DiaCronograma.Vespera, 18, 0, -360)]
-    [InlineData(DiaCronograma.DiaDoCasamento, 16, 30, 990)]
+    [InlineData(DiaCronograma.DiaDoEvento, 16, 30, 990)]
     [InlineData(DiaCronograma.DiaSeguinte, 1, 30, 1530)]
     public void MinutoInicial_DeveConsiderarODia(DiaCronograma dia, int hora, int minuto, int esperado)
     {
@@ -156,7 +156,7 @@ public class ItemCronogramaTestes
     }
 
     [Fact]
-    public void CalcularData_DeveDeslocarPelaDataDoCasamento()
+    public void CalcularData_DeveDeslocarPelaDataDoEvento()
     {
         var data = new DateOnly(2027, 5, 15);
 
@@ -220,12 +220,12 @@ public class ItemCronogramaTestes
         var copia = item.CopiarPara(destino, 60, "Casa Verde", vinculo, null, Agora.AddDays(1));
 
         Assert.NotEqual(item.Id, copia.Id);
-        Assert.Equal(destino, copia.CasamentoId);
+        Assert.Equal(destino, copia.EventoId);
         Assert.Equal(DiaCronograma.DiaSeguinte, copia.Dia);
         Assert.Equal(new TimeOnly(0, 30), copia.Inicio);
         Assert.Equal(120, copia.DuracaoMinutos);
         Assert.Equal("Casa Verde", copia.Local);
-        Assert.Equal(vinculo, copia.FornecedorCasamentoId);
+        Assert.Equal(vinculo, copia.FornecedorEventoId);
         Assert.Equal("Fernanda", copia.Responsavel);
         Assert.Equal("Chegar antes", copia.Instrucoes);
         Assert.Null(copia.NotasInternas);
@@ -249,8 +249,8 @@ public class ItemCronogramaTestes
     [Theory]
     [InlineData(-1440, DiaCronograma.Vespera, 0, 0)]
     [InlineData(-1, DiaCronograma.Vespera, 23, 59)]
-    [InlineData(0, DiaCronograma.DiaDoCasamento, 0, 0)]
-    [InlineData(1439, DiaCronograma.DiaDoCasamento, 23, 59)]
+    [InlineData(0, DiaCronograma.DiaDoEvento, 0, 0)]
+    [InlineData(1439, DiaCronograma.DiaDoEvento, 23, 59)]
     [InlineData(1440, DiaCronograma.DiaSeguinte, 0, 0)]
     [InlineData(2879, DiaCronograma.DiaSeguinte, 23, 59)]
     public void DePosicao_DeveConverterMinutoAbsoluto(int minuto, DiaCronograma dia, int hora, int minutos)

@@ -10,7 +10,7 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import OcupacaoMesa from '@/componentes/base/OcupacaoMesa.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_MESAS } from '@/textos/mesas'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 vi.mock('@/composables/useNotificacao', () => ({
   useNotificacao: () => ({ sucesso: vi.fn(), erro: vi.fn() }),
@@ -18,8 +18,8 @@ vi.mock('@/composables/useNotificacao', () => ({
   DURACAO_TOAST_ERRO: 6000,
 }))
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_MESAS = `${ROTA_CASAMENTO}/mesas`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_MESAS = `${ROTA_EVENTO}/mesas`
 
 function estilo(arquivo: string): string {
   const fonte = readFileSync(resolve(__dirname, arquivo), 'utf-8')
@@ -60,10 +60,10 @@ afterEach(() => {
 async function abrir() {
   rotearFetch(
     fetchSimulado,
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
     quando('GET', ROTA_MESAS, () => respostaJson(mapaExemplo())),
   )
-  const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/mesas`)
+  const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/mesas`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
 }
@@ -117,12 +117,12 @@ describe('MesasView reestruturada', { timeout: 30_000 }, () => {
   it('[COMPONENTE] sem mesas cadastradas a coluna mostra o estado vazio e não renderiza a grade', async () => {
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_MESAS, () =>
         respostaJson(mapaExemplo({ mesas: [], pessoas: mapaExemplo().pessoas.map((pessoa) => ({ ...pessoa, mesaId: null })) })),
       ),
     )
-    const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/mesas`)
+    const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/mesas`)
     wrapper = await montarView(RaizRotas, montagem)
     await flushPromises()
 

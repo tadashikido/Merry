@@ -1,7 +1,7 @@
-export type ChavePassoOnboarding = 'casalConvidado' | 'checklistAplicado' | 'convidadosCadastrados' | 'convitesEnviados'
+export type ChavePassoOnboarding = 'anfitriaoConvidado' | 'checklistAplicado' | 'convidadosCadastrados' | 'convitesEnviados'
 
-export interface ProximosPassosCasamentoDto {
-  casalConvidado: boolean
+export interface ProximosPassosEventoDto {
+  anfitriaoConvidado: boolean
   checklistAplicado: boolean
   convidadosCadastrados: boolean
   convitesEnviados: boolean

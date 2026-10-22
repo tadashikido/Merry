@@ -15,7 +15,7 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
-import type { FalhaCasamento } from '@/stores/casamentos'
+import type { FalhaEvento } from '@/stores/eventos'
 import { useFornecedoresStore } from '@/stores/fornecedores'
 import { TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
 import type { CategoriaFornecedor, SalvarFornecedorRequest } from '@/tipos/fornecedores'
@@ -44,7 +44,7 @@ const notificacao = useNotificacao()
 
 const edicao = computed(() => Boolean(props.fornecedorId))
 const carregando = ref(false)
-const falhaCarga = ref<FalhaCasamento | null>(null)
+const falhaCarga = ref<FalhaEvento | null>(null)
 const nomeCarregado = ref('')
 const enviando = ref(false)
 const mensagemErro = ref<string | null>(null)
@@ -142,7 +142,7 @@ function montarRequest(): SalvarFornecedorRequest {
   }
 }
 
-function tratarFalha(falha: FalhaCasamento) {
+function tratarFalha(falha: FalhaEvento) {
   const camposComErro = CAMPOS.filter((campo) => falha.errosCampos[campo])
   for (const campo of camposComErro) {
     formulario.erros[campo] = falha.errosCampos[campo]

@@ -7,9 +7,9 @@ namespace Celebri.Aplicacao.Tarefas;
 
 public sealed record SalvarTarefaRequest(
     [Required(ErrorMessage = MensagensTarefas.TituloObrigatorio)]
-    [StringLength(TarefaCasamento.TamanhoMaximoTitulo, ErrorMessage = MensagensTarefas.TamanhoTitulo)]
+    [StringLength(TarefaEvento.TamanhoMaximoTitulo, ErrorMessage = MensagensTarefas.TamanhoTitulo)]
     string? Titulo,
-    [StringLength(TarefaCasamento.TamanhoMaximoDescricao, ErrorMessage = MensagensTarefas.TamanhoDescricao)]
+    [StringLength(TarefaEvento.TamanhoMaximoDescricao, ErrorMessage = MensagensTarefas.TamanhoDescricao)]
     string? Descricao,
     [property: JsonConverter(typeof(JsonStringEnumConverter<ResponsavelTarefa>))]
     ResponsavelTarefa? Responsavel,
@@ -21,7 +21,7 @@ public sealed record SalvarTarefaRequest(
     {
         var titulo = NormalizadorTexto.Normalizar(Titulo);
 
-        if (titulo is not null && titulo.Length < TarefaCasamento.TamanhoMinimoTitulo)
+        if (titulo is not null && titulo.Length < TarefaEvento.TamanhoMinimoTitulo)
         {
             yield return new ValidationResult(MensagensTarefas.TamanhoTitulo, [nameof(Titulo)]);
         }
@@ -36,7 +36,7 @@ public sealed record SalvarTarefaRequest(
             yield return new ValidationResult(MensagensTarefas.CategoriaInvalida, [nameof(Categoria)]);
         }
 
-        if (Prazo is { } prazo && (prazo < TarefaCasamento.PrazoMinimo || prazo > TarefaCasamento.PrazoMaximo))
+        if (Prazo is { } prazo && (prazo < TarefaEvento.PrazoMinimo || prazo > TarefaEvento.PrazoMaximo))
         {
             yield return new ValidationResult(MensagensTarefas.PrazoForaDaFaixa, [nameof(Prazo)]);
         }

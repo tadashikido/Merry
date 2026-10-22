@@ -24,22 +24,22 @@ public class ConfiguracaoApiTestes
     [Fact]
     public void ObterOrigensPermitidas_DeveDescartarCuringaEValoresVazios()
     {
-        var configuracao = CriarConfiguracao("*", " ", "https://app.casamento.com.br", " * ");
+        var configuracao = CriarConfiguracao("*", " ", "https://app.evento.com.br", " * ");
 
         var origens = ConfiguracaoApi.ObterOrigensPermitidas(configuracao);
 
-        Assert.Equal(["https://app.casamento.com.br"], origens);
+        Assert.Equal(["https://app.evento.com.br"], origens);
     }
 
     [Fact]
     public void ObterOrigensPermitidas_DeveNormalizarBarraFinalEEliminarDuplicadas()
     {
-        var configuracao = CriarConfiguracao("https://app.casamento.com.br/", "HTTPS://APP.CASAMENTO.COM.BR", "http://localhost:5173");
+        var configuracao = CriarConfiguracao("https://app.evento.com.br/", "HTTPS://APP.EVENTO.COM.BR", "http://localhost:5173");
 
         var origens = ConfiguracaoApi.ObterOrigensPermitidas(configuracao);
 
         Assert.Equal(2, origens.Length);
-        Assert.Contains("https://app.casamento.com.br", origens);
+        Assert.Contains("https://app.evento.com.br", origens);
         Assert.Contains("http://localhost:5173", origens);
     }
 

@@ -26,7 +26,7 @@ import { obrigatorio } from '@/utilitarios/validacao'
 
 const props = defineProps<{
   visivel: boolean
-  casamentoId: string
+  eventoId: string
   horarioCerimonia: string | null
 }>()
 
@@ -80,7 +80,7 @@ async function salvar() {
   }
   executando.value = true
   const descricao = formulario.valores.descricao.trim()
-  const resultado = await store.salvarDoCasamento(props.casamentoId, {
+  const resultado = await store.salvarDoEvento(props.eventoId, {
     nome: formulario.valores.nome.trim(),
     descricao: descricao === '' ? null : descricao,
   })

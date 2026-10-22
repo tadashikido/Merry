@@ -4,13 +4,13 @@ public static class MomentoGrandeDia
 {
     public static RetratoGrandeDia Calcular(
         IReadOnlyList<ItemCronograma> itensOrdenados,
-        DateOnly dataCasamento,
+        DateOnly dataEvento,
         DateTime agoraLocal)
     {
         ArgumentNullException.ThrowIfNull(itensOrdenados);
 
         var dataAgora = DateOnly.FromDateTime(agoraLocal);
-        var minutoAtual = ((dataAgora.DayNumber - dataCasamento.DayNumber) * ItemCronograma.MinutosPorDia)
+        var minutoAtual = ((dataAgora.DayNumber - dataEvento.DayNumber) * ItemCronograma.MinutosPorDia)
             + (agoraLocal.Hour * 60)
             + agoraLocal.Minute;
         var inicioJanela = InicioJanela(itensOrdenados);
@@ -56,7 +56,7 @@ public static class MomentoGrandeDia
             proximoDefinido = true;
         }
 
-        return new RetratoGrandeDia(fase, minutoAtual, dataCasamento.DayNumber - dataAgora.DayNumber, situacoes);
+        return new RetratoGrandeDia(fase, minutoAtual, dataEvento.DayNumber - dataAgora.DayNumber, situacoes);
     }
 
     public static int InicioJanela(IReadOnlyList<ItemCronograma> itensOrdenados)

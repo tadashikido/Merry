@@ -26,9 +26,9 @@ const CAMPOS_VALORES: Record<ColunaImportacao, keyof ValoresLinhaImportacaoDto> 
 }
 
 const LINHAS_EXEMPLO: readonly (readonly string[])[] = [
-  ['Família Exemplo', 'Família da noiva', 'Carla Exemplo (exemplo)', '(11) 98765-4321', 'carla@exemplo.com', 'Adulto', '1', ''],
-  ['Família Exemplo', 'Família da noiva', 'Pedro Exemplo (exemplo)', '', '', 'Criança', '1', ''],
-  ['', 'Amigos do noivo', 'Marcos Exemplo (exemplo)', '(21) 99876-5432', '', 'Adulto', '0', 'Confirmado'],
+  ['Família Exemplo', 'Família', 'Carla Exemplo (exemplo)', '(11) 98765-4321', 'carla@exemplo.com', 'Adulto', '1', ''],
+  ['Família Exemplo', 'Família', 'Pedro Exemplo (exemplo)', '', '', 'Criança', '1', ''],
+  ['', 'Amigos do trabalho', 'Marcos Exemplo (exemplo)', '(21) 99876-5432', '', 'Adulto', '0', 'Confirmado'],
 ]
 
 export function cabecalhoModelo(): string[] {
@@ -78,5 +78,5 @@ export function frasePrevia(previa: PreVisualizacaoImportacaoDto): string {
 
 export function ultrapassaLimite(previa: PreVisualizacaoImportacaoDto): boolean {
   const { resumo } = previa
-  return resumo.convidadosExistentes + resumo.pessoasValidas > resumo.limitePorCasamento
+  return resumo.convidadosExistentes + resumo.pessoasValidas > resumo.limitePorEvento
 }

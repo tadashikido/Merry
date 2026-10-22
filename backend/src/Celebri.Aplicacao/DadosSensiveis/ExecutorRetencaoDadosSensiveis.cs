@@ -40,7 +40,7 @@ public sealed partial class ExecutorRetencaoDadosSensiveis : IExecutorRetencaoDa
             organizacoes = await escopo.ServiceProvider.GetRequiredService<IOrganizacaoRepository>().ListarIdsAsync(cancelamento);
         }
 
-        var limite = _calendario.Hoje().AddDays(-_opcoes.DiasAposCasamento);
+        var limite = _calendario.Hoje().AddDays(-_opcoes.DiasAposEvento);
         var agora = _relogio.GetUtcNow();
         var total = 0;
 
@@ -54,13 +54,13 @@ public sealed partial class ExecutorRetencaoDadosSensiveis : IExecutorRetencaoDa
                 .AnonimizarVencidosAsync(limite, agora, cancelamento);
         }
 
-        RegistrarExecucao(total, organizacoes.Count, _opcoes.DiasAposCasamento);
+        RegistrarExecucao(total, organizacoes.Count, _opcoes.DiasAposEvento);
         return total;
     }
 
     [LoggerMessage(
         EventId = 9201,
         Level = LogLevel.Information,
-        Message = "Retenção de dados sensíveis concluída: {Quantidade} registros anonimizados em {Organizacoes} organizações verificadas (prazo de {Dias} dias após o casamento).")]
+        Message = "Retenção de dados sensíveis concluída: {Quantidade} registros anonimizados em {Organizacoes} organizações verificadas (prazo de {Dias} dias após o evento).")]
     private partial void RegistrarExecucao(int quantidade, int organizacoes, int dias);
 }

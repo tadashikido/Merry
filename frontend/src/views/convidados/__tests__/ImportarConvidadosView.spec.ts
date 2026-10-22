@@ -7,12 +7,12 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
 import type { PreVisualizacaoImportacaoDto } from '@/tipos/importacaoConvidados'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_PREVIA = `${ROTA_CASAMENTO}/convites/importacao/pre-visualizacao`
-const ROTA_IMPORTACAO = `${ROTA_CASAMENTO}/convites/importacao`
-const CAMINHO = `/casamentos/${ID_CASAMENTO}/convidados/importar`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_PREVIA = `${ROTA_EVENTO}/convites/importacao/pre-visualizacao`
+const ROTA_IMPORTACAO = `${ROTA_EVENTO}/convites/importacao`
+const CAMINHO = `/eventos/${ID_EVENTO}/convidados/importar`
 
 let fetchSimulado: ReturnType<typeof simularFetch>
 let wrapper: VueWrapper | undefined
@@ -47,7 +47,7 @@ function previaSemProblemas(): PreVisualizacaoImportacaoDto {
 }
 
 async function abrir(...rotas: Parameters<typeof rotearFetch>[1][]) {
-  rotearFetch(fetchSimulado, quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())), ...rotas)
+  rotearFetch(fetchSimulado, quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())), ...rotas)
   const montagem = await prepararAplicacao(CAMINHO)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
@@ -97,7 +97,7 @@ describe('ImportarConvidadosView', { timeout: 20_000 }, () => {
     expect(wrapper!.get('[data-teste="previa-frase"]').text()).toBe('2 convites, 3 pessoas prontas para entrar na lista.')
     expect(wrapper!.find('[data-teste="previa-problemas"]').exists()).toBe(false)
     expect(wrapper!.findAll('[data-teste="previa-convite"]')).toHaveLength(2)
-    expect(wrapper!.text()).toContain('Hoje o casamento tem 20 pessoas; depois da importação, 23.')
+    expect(wrapper!.text()).toContain('Hoje o evento tem 20 pessoas; depois da importação, 23.')
     expect(wrapper!.get('[data-teste="anuncio-importacao"]').text()).toContain('Etapa 2 de 3: Confira')
     const importar = wrapper!.get('[data-teste="importar"]')
     expect(importar.text()).toContain('Importar 2 convites')
@@ -109,7 +109,7 @@ describe('ImportarConvidadosView', { timeout: 20_000 }, () => {
     expect(corpo.get('somenteValidos')).toBe('false')
     expect(wrapper!.get('[data-teste="importacao-concluida"]').text()).toContain('2 convites e 3 pessoas foram adicionados a Ana Beatriz & Bruno.')
     await wrapper!.get('[data-teste="ver-convidados"]').trigger('click')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('casamento-convidados'), { timeout: 5000 })
+    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento-convidados'), { timeout: 5000 })
   })
 
   it('[COMPONENTE] com problemas exige confirmação explícita e envia somenteValidos', async () => {
@@ -239,8 +239,8 @@ describe('ImportarConvidadosView', { timeout: 20_000 }, () => {
     expect(wrapper!.get('[data-teste="envio-arquivo-erro"]').text()).toBe(TEXTOS_IMPORTACAO.semPermissao)
   })
 
-  it('[COMPONENTE] casamento arquivado mostra só o aviso', async () => {
-    rotearFetch(fetchSimulado, quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ arquivado: true }))))
+  it('[COMPONENTE] evento arquivado mostra só o aviso', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ arquivado: true }))))
     const montagem = await prepararAplicacao(CAMINHO)
     wrapper = await montarView(RaizRotas, montagem)
     await flushPromises()
@@ -249,13 +249,13 @@ describe('ImportarConvidadosView', { timeout: 20_000 }, () => {
     expect(wrapper.find('[data-teste="envio-arquivo"]').exists()).toBe(false)
   })
 
-  it('[SEGURANÇA] casamento de outra organização mostra não encontrado', async () => {
+  it('[SEGURANÇA] evento de outra organização mostra não encontrado', async () => {
     rotearFetch(fetchSimulado)
     const montagem = await prepararAplicacao(CAMINHO)
     wrapper = await montarView(RaizRotas, montagem)
     await flushPromises()
 
-    expect(wrapper.find('[data-teste="voltar-casamentos"]').exists()).toBe(true)
+    expect(wrapper.find('[data-teste="voltar-eventos"]').exists()).toBe(true)
     expect(wrapper.find('[data-teste="envio-arquivo"]').exists()).toBe(false)
   })
 })

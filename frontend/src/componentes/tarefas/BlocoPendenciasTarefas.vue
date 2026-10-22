@@ -8,7 +8,7 @@ import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import { ROTULOS_ACOES } from '@/textos/rotulos'
 import { TEXTOS_TAREFAS } from '@/textos/tarefas'
 import type { PendenciasTarefasDto, SituacaoFiltroTarefa, TarefaPendenteDto } from '@/tipos/tarefas'
-import { formatarNomesCasal, formatarNumero } from '@/utilitarios/formatacao'
+import { formatarNomesAnfitrioes, formatarNumero } from '@/utilitarios/formatacao'
 import { LIMITE_ITENS_PENDENCIAS } from '@/utilitarios/tarefas'
 
 const props = withDefaults(
@@ -67,7 +67,7 @@ function prazoCurto(item: TarefaPendenteDto): string {
       >
         <div class="pendencias-tarefas__numero pendencias-tarefas__numero--atraso">
           <dt class="pendencias-tarefas__rotulo-numero">
-            {{ TEXTOS_TAREFAS.dashAtrasadas(pendencias.totalAtrasadas, pendencias.casamentosComAtraso) }}
+            {{ TEXTOS_TAREFAS.dashAtrasadas(pendencias.totalAtrasadas, pendencias.eventosComAtraso) }}
           </dt>
           <dd
             class="pendencias-tarefas__valor"
@@ -159,11 +159,11 @@ function prazoCurto(item: TarefaPendenteDto): string {
             />
             <RouterLink
               class="pendencias-tarefas__link"
-              :to="{ name: 'casamento-tarefas', params: { id: item.casamentoId }, query: { situacao: grupo.chave } }"
+              :to="{ name: 'evento-tarefas', params: { id: item.eventoId }, query: { situacao: grupo.chave } }"
             >
               {{ item.titulo }}
             </RouterLink>
-            <span class="pendencias-tarefas__casal">{{ formatarNomesCasal(item.nomePrimeiraPessoa, item.nomeSegundaPessoa) }}</span>
+            <span class="pendencias-tarefas__anfitriao">{{ formatarNomesAnfitrioes(item.nomePrimeiraPessoa, item.nomeSegundaPessoa) }}</span>
           </li>
         </ul>
         <p
@@ -277,7 +277,7 @@ function prazoCurto(item: TarefaPendenteDto): string {
   overflow-wrap: anywhere;
 }
 
-.pendencias-tarefas__casal {
+.pendencias-tarefas__anfitriao {
   grid-column: 2;
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-texto-apoio);
@@ -315,7 +315,7 @@ function prazoCurto(item: TarefaPendenteDto): string {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .pendencias-tarefas__casal {
+  .pendencias-tarefas__anfitriao {
     grid-column: auto;
     justify-self: end;
   }

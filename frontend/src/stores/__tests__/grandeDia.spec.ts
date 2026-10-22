@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
 import { respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
-import { grandeDia, ID_CASAMENTO_GRANDE_DIA as ID } from '@/__tests__/auxiliaresGrandeDia'
+import { grandeDia, ID_EVENTO_GRANDE_DIA as ID } from '@/__tests__/auxiliaresGrandeDia'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { caminhoConclusao, caminhoGrandeDia, useGrandeDiaStore } from '@/stores/grandeDia'
 
@@ -19,8 +19,8 @@ afterEach(() => {
 
 describe('useGrandeDiaStore', () => {
   it('[UNITÁRIO] monta os caminhos codificando os identificadores', () => {
-    expect(caminhoGrandeDia(ID)).toBe(`/api/casamentos/${ID}/grande-dia`)
-    expect(caminhoConclusao(ID, 'a/b')).toBe(`/api/casamentos/${ID}/grande-dia/itens/a%2Fb/conclusao`)
+    expect(caminhoGrandeDia(ID)).toBe(`/api/eventos/${ID}/grande-dia`)
+    expect(caminhoConclusao(ID, 'a/b')).toBe(`/api/eventos/${ID}/grande-dia/itens/a%2Fb/conclusao`)
   })
 
   it('[UNITÁRIO] carrega o Grande Dia e registra o instante da carga', async () => {
@@ -75,7 +75,7 @@ describe('useGrandeDiaStore', () => {
     expect(store.falha?.tipo).toBe('naoEncontrado')
   })
 
-  it('[UNITÁRIO] atualizar sem carga prévia ou de outro casamento não chama a API', async () => {
+  it('[UNITÁRIO] atualizar sem carga prévia ou de outro evento não chama a API', async () => {
     const store = useGrandeDiaStore()
     await store.atualizar(ID)
     expect(fetchSimulado).not.toHaveBeenCalled()
@@ -115,7 +115,7 @@ describe('useGrandeDiaStore', () => {
     expect(store.dados?.arquivado).toBe(true)
   })
 
-  it('[SEGURANÇA] casal recebe 403 ao tentar marcar e nada muda', async () => {
+  it('[SEGURANÇA] anfitriões recebem 403 ao tentar marcar e nada muda', async () => {
     fetchSimulado.mockResolvedValueOnce(respostaJson(grandeDia()))
     const store = useGrandeDiaStore()
     await store.carregar(ID)
@@ -135,7 +135,7 @@ describe('useGrandeDiaStore', () => {
     store.limpar()
 
     expect(store.dados).toBeNull()
-    expect(store.casamentoId).toBeNull()
+    expect(store.eventoId).toBeNull()
     expect(store.carregadoEm).toBeNull()
   })
 })

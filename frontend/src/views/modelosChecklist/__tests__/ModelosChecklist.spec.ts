@@ -9,7 +9,7 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_ITEM_MODELO, TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
-import { RaizRotas, chamadas, quando, rotearFetch } from '../../casamentos/__tests__/auxiliaresCasamentos'
+import { RaizRotas, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -168,8 +168,8 @@ describe('ModeloChecklistView', () => {
         respostaJson(
           modeloCompleto([
             itemModelo(),
-            itemModelo({ id: 'i2', titulo: 'Prova final dos trajes', diasAntesDoCasamento: 30, responsavel: 'Casal', categoria: 'TrajesBeleza' }),
-            itemModelo({ id: 'i3', titulo: 'Entregar o álbum', diasAntesDoCasamento: -20, categoria: 'Geral' }),
+            itemModelo({ id: 'i2', titulo: 'Prova final dos trajes', diasAntesDoEvento: 30, responsavel: 'Anfitriao', categoria: 'TrajesBeleza' }),
+            itemModelo({ id: 'i3', titulo: 'Entregar o álbum', diasAntesDoEvento: -20, categoria: 'Geral' }),
           ]),
         ),
       ),
@@ -201,8 +201,8 @@ describe('ModeloChecklistView', () => {
         respostaJson(
           modeloCompleto([
             itemModelo(),
-            itemModelo({ id: 'i2', titulo: 'Definir orçamento', diasAntesDoCasamento: 400, responsavel: 'Casal' }),
-            itemModelo({ id: 'i3', titulo: 'Prova final dos trajes', diasAntesDoCasamento: 30, responsavel: 'Casal' }),
+            itemModelo({ id: 'i2', titulo: 'Definir orçamento', diasAntesDoEvento: 400, responsavel: 'Anfitriao' }),
+            itemModelo({ id: 'i3', titulo: 'Prova final dos trajes', diasAntesDoEvento: 30, responsavel: 'Anfitriao' }),
           ]),
         ),
       ),
@@ -219,7 +219,7 @@ describe('ModeloChecklistView', () => {
     expect(lateral.get('[data-teste="resumo-marco-dozeMeses"]').text()).toContain('2')
     expect(lateral.get('[data-teste="resumo-marco-trintaDias"]').text()).toContain('1')
     expect(lateral.get('[data-teste="resumo-responsavel-Assessoria"]').text()).toContain('1')
-    expect(lateral.get('[data-teste="resumo-responsavel-Casal"]').text()).toContain('2')
+    expect(lateral.get('[data-teste="resumo-responsavel-Anfitriao"]').text()).toContain('2')
     expect(lateral.get('[data-teste="voltar-lateral"]').attributes('href')).toBe('/modelos-checklist')
     const listas = wrapper.findAll('ul.modelo__lista.cartao')
     expect(listas).toHaveLength(2)
@@ -233,7 +233,7 @@ describe('ModeloChecklistView', () => {
     const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}`)
 
     expect(wrapper.find('[data-teste="resumo-responsavel-Assessoria"]').exists()).toBe(true)
-    expect(wrapper.find('[data-teste="resumo-responsavel-Casal"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="resumo-responsavel-Anfitriao"]').exists()).toBe(false)
   })
 
   it('[COMPONENTE] modelo sem itens mostra o convite e não mostra a lateral', async () => {
@@ -262,7 +262,7 @@ describe('ModeloChecklistView', () => {
   })
 
   it('[COMPONENTE] excluir item confirma, chama a store e atualiza o resumo', async () => {
-    const restante = itemModelo({ id: 'i2', titulo: 'Definir orçamento', responsavel: 'Casal' })
+    const restante = itemModelo({ id: 'i2', titulo: 'Definir orçamento', responsavel: 'Anfitriao' })
     let excluido = false
     rotearFetch(
       fetchSimulado,
@@ -361,17 +361,17 @@ describe('Formulários de modelo e item', () => {
   it('[COMPONENTE] edição mostra o nome carregado no cabeçalho, salva com PUT e volta ao detalhe', async () => {
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([], { nome: 'Casamento no campo', descricao: 'Ao ar livre' }))),
+      quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([], { nome: 'Evento no campo', descricao: 'Ao ar livre' }))),
       quando('PUT', ROTA_MODELO, () => respostaJson(modeloCompleto([], { nome: 'Campo e praia' }))),
     )
     const { wrapper, montagem } = await abrir(`/modelos-checklist/${ID_MODELO}/editar`)
 
     expect(wrapper.get('h1').text()).toBe(TEXTOS_MODELOS_CHECKLIST.formEditar)
-    expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe('Casamento no campo')
+    expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe('Evento no campo')
     expect((wrapper.get('[data-teste="campo-descricao"]').element as HTMLTextAreaElement).value).toBe('Ao ar livre')
 
     await wrapper.get('[data-teste="campo-nome"]').setValue('Campo e praia')
-    expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe('Casamento no campo')
+    expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe('Evento no campo')
     await wrapper.get('[data-teste="formulario-modelo"]').trigger('submit')
     await flushPromises()
 
@@ -434,11 +434,11 @@ describe('Formulários de modelo e item', () => {
     expect(fonte).not.toContain("validarCampo('")
   })
 
-  it('[COMPONENTE] item com "depois do casamento" envia dias negativos', async () => {
+  it('[COMPONENTE] item com "depois do evento" envia dias negativos', async () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([]))),
-      quando('POST', ROTA_ITENS, () => respostaJson(itemModelo({ diasAntesDoCasamento: -15 }), 201)),
+      quando('POST', ROTA_ITENS, () => respostaJson(itemModelo({ diasAntesDoEvento: -15 }), 201)),
     )
     const { wrapper, montagem } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/novo`)
 
@@ -448,13 +448,13 @@ describe('Formulários de modelo e item', () => {
     await dias.setValue('15')
     await dias.trigger('input')
     await dias.trigger('blur')
-    const depois = wrapper.get('[data-teste="campo-sentido"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]').find((opcao) => opcao.text() === 'depois do casamento')!
+    const depois = wrapper.get('[data-teste="campo-sentido"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]').find((opcao) => opcao.text() === 'depois do evento')!
     await depois.trigger('click')
     await wrapper.get('[data-teste="formulario-item-modelo"]').trigger('submit')
     await flushPromises()
 
     const [chamada] = chamadas(fetchSimulado, 'POST', ROTA_ITENS)
-    expect(corpoDaChamada(chamada!)).toMatchObject({ titulo: 'Enviar fotos para o álbum', diasAntesDoCasamento: -15, responsavel: 'Assessoria', categoria: 'Geral' })
+    expect(corpoDaChamada(chamada!)).toMatchObject({ titulo: 'Enviar fotos para o álbum', diasAntesDoEvento: -15, responsavel: 'Assessoria', categoria: 'Geral' })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_ITEM_MODELO.toastCriado)
     await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('modelo-checklist'))
   })
@@ -462,9 +462,9 @@ describe('Formulários de modelo e item', () => {
   it('[COMPONENTE] edição preenche o item e mapeia erro do servidor para o campo Dias', async () => {
     rotearFetch(
       fetchSimulado,
-      quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([itemModelo({ diasAntesDoCasamento: -10 })]))),
+      quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([itemModelo({ diasAntesDoEvento: -10 })]))),
       quando('PUT', `${ROTA_ITENS}/${ID_ITEM}`, () =>
-        respostaProblema(400, { title: 'Dados inválidos', errors: { DiasAntesDoCasamento: ['Use de 0 a 1.095 dias antes ou até 365 dias depois.'] } }),
+        respostaProblema(400, { title: 'Dados inválidos', errors: { DiasAntesDoEvento: ['Use de 0 a 1.095 dias antes ou até 365 dias depois.'] } }),
       ),
     )
     const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/${ID_ITEM}/editar`)
@@ -475,7 +475,7 @@ describe('Formulários de modelo e item', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('Use de 0 a 1.095 dias antes ou até 365 dias depois.')
-    expect(corpoDaChamada(chamadas(fetchSimulado, 'PUT', `${ROTA_ITENS}/${ID_ITEM}`)[0]!)).toMatchObject({ diasAntesDoCasamento: -10 })
+    expect(corpoDaChamada(chamadas(fetchSimulado, 'PUT', `${ROTA_ITENS}/${ID_ITEM}`)[0]!)).toMatchObject({ diasAntesDoEvento: -10 })
   })
 
   it('[COMPONENTE] formulário de item agrupa "O item" e "Prazo e responsável" com o nome do modelo no cabeçalho', async () => {
@@ -534,7 +534,7 @@ describe('Formulários de modelo e item', () => {
     await dias.trigger('input')
     await dias.trigger('blur')
     const opcoes = () => wrapper.get('[data-teste="campo-sentido"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]')
-    await opcoes().find((opcao) => opcao.text() === 'depois do casamento')!.trigger('click')
+    await opcoes().find((opcao) => opcao.text() === 'depois do evento')!.trigger('click')
     expect(wrapper.text()).not.toContain(TEXTOS_ITEM_MODELO.erroDias)
 
     await wrapper.get('[data-teste="formulario-item-modelo"]').trigger('submit')
@@ -542,7 +542,7 @@ describe('Formulários de modelo e item', () => {
     expect(wrapper.text()).toContain(TEXTOS_ITEM_MODELO.erroDias)
     await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-dias'))
 
-    await opcoes().find((opcao) => opcao.text() === 'antes do casamento')!.trigger('click')
+    await opcoes().find((opcao) => opcao.text() === 'antes do evento')!.trigger('click')
     await flushPromises()
     expect(wrapper.text()).not.toContain(TEXTOS_ITEM_MODELO.erroDias)
   })
@@ -559,14 +559,14 @@ describe('Formulários de modelo e item', () => {
     expect(fonte).not.toContain("validarCampo('")
   })
 
-  it('[SEGURANÇA] casal é redirecionado para fora das rotas de modelos', async () => {
-    const sessaoCasal = { ...SESSAO_EXEMPLO, usuario: { ...SESSAO_EXEMPLO.usuario, papel: 'Casal' as const, casamentoId: '11111111-1111-4111-8111-111111111111' } }
+  it('[SEGURANÇA] anfitriões são redirecionados para fora das rotas de modelos', async () => {
+    const sessaoAnfitriao = { ...SESSAO_EXEMPLO, usuario: { ...SESSAO_EXEMPLO.usuario, papel: 'Anfitriao' as const, eventoId: '11111111-1111-4111-8111-111111111111' } }
     fetchSimulado.mockImplementation(async (entrada) => {
       const url = String(entrada)
       if (url === '/api/autenticacao/renovar') {
-        return respostaJson(sessaoCasal)
+        return respostaJson(sessaoAnfitriao)
       }
-      if (url === '/api/casamentos/11111111-1111-4111-8111-111111111111') {
+      if (url === '/api/eventos/11111111-1111-4111-8111-111111111111') {
         return respostaJson({})
       }
       return respostaProblema(404, { title: 'Não encontrado' })
@@ -574,7 +574,7 @@ describe('Formulários de modelo e item', () => {
 
     const { montagem } = await abrir('/modelos-checklist')
 
-    expect(montagem.roteador.currentRoute.value.name).toBe('casamento')
+    expect(montagem.roteador.currentRoute.value.name).toBe('evento')
     expect(chamadas(fetchSimulado, 'GET', ROTA_MODELOS)).toHaveLength(0)
   })
 })

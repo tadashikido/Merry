@@ -7,18 +7,18 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class DadosSensiveisRepository : IDadosSensiveisRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public DadosSensiveisRepository(CasamentoDbContext contexto)
+    public DadosSensiveisRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }
 
-    public async Task<IReadOnlyList<RegistroDadosSensiveis>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<IReadOnlyList<RegistroDadosSensiveis>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
         return await _contexto.DadosSensiveisConvidados
             .AsNoTracking()
-            .Where(dados => dados.CasamentoId == casamentoId)
+            .Where(dados => dados.EventoId == eventoId)
             .Join(
                 _contexto.Convidados,
                 dados => dados.ConvidadoId,
@@ -36,10 +36,10 @@ public class DadosSensiveisRepository : IDadosSensiveisRepository
             .ToListAsync(cancelamento);
     }
 
-    public Task<int> ContarPessoasComRestricaoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<int> ContarPessoasComRestricaoAsync(Guid eventoId, CancellationToken cancelamento)
     {
         return _contexto.DadosSensiveisConvidados
-            .Where(dados => dados.CasamentoId == casamentoId && dados.ConteudoCifrado != null)
+            .Where(dados => dados.EventoId == eventoId && dados.ConteudoCifrado != null)
             .Join(
                 _contexto.Convidados,
                 dados => dados.ConvidadoId,
@@ -48,11 +48,11 @@ public class DadosSensiveisRepository : IDadosSensiveisRepository
             .CountAsync(resposta => resposta != RespostaRsvp.Recusado, cancelamento);
     }
 
-    public Task<int> AnonimizarVencidosAsync(DateOnly dataCasamentoAnteriorA, DateTimeOffset agora, CancellationToken cancelamento)
+    public Task<int> AnonimizarVencidosAsync(DateOnly dataEventoAnteriorA, DateTimeOffset agora, CancellationToken cancelamento)
     {
         return _contexto.DadosSensiveisConvidados
             .Where(dados => dados.ConteudoCifrado != null)
-            .Where(dados => _contexto.Casamentos.Any(casamento => casamento.Id == dados.CasamentoId && casamento.Data < dataCasamentoAnteriorA))
+            .Where(dados => _contexto.Eventos.Any(evento => evento.Id == dados.EventoId && evento.Data < dataEventoAnteriorA))
             .ExecuteUpdateAsync(
                 atualizacao => atualizacao
                     .SetProperty(dados => dados.ConteudoCifrado, (string?)null)

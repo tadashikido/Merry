@@ -163,6 +163,10 @@ O renome técnico de Casamento/Nossia para Celebri trocou solução, projetos, n
 | Banco e usuário PostgreSQL | valores do `.env` (`casamento`) | trocar exige dump/restore |
 | Emissor e audiência do JWT | `casamento-api` / `casamento-web` | trocar invalida as sessões em andamento |
 | `UserSecretsId` | `casamento-api` | trocar perde os user-secrets locais dos desenvolvedores |
+| Cookie do refresh token | `casamento_rt` | trocar desconecta todas as sessões abertas |
+| Rótulos de contexto da cifra | `casamento/dados-sensiveis/v1`, `casamento/cronograma/token/v1`, `casamento/rsvp/token/v1` | são dados associados do AES-GCM: trocar torna ilegíveis as restrições gravadas e invalida os links de RSVP e cronograma já enviados |
+
+O renome de domínio (Casamento → Evento, Casal → Anfitrião) renomeou tabelas, colunas, índices e constraints pela migration `GeneralizarDominioEvento`, sem apagar dados, e trocou os valores gravados `Casal` → `Anfitriao` e `DiaDoCasamento` → `DiaDoEvento`. A API passou de `api/casamentos` e `api/acesso-casal` para `api/eventos` e `api/acesso-anfitriao`, sem alias. No front, `/casamentos/**` e `/acesso-casal` redirecionam para `/eventos/**` e `/acesso-anfitriao`, para que links já enviados por e-mail continuem funcionando. Tokens de acesso emitidos antes do deploy deixam de autorizar e são renovados pela sessão.
 
 O caminho de montagem dos arquivos dentro do container mudou para `/var/lib/celebri/arquivos`. Isso não afeta os arquivos já gravados: o volume é o mesmo e a API grava caminhos relativos à raiz configurada.
 
@@ -186,7 +190,7 @@ Nenhum segredo é versionado. Variáveis relevantes:
 | `Jwt__ChaveAssinatura` | chave HMAC do JWT, 32 bytes ou mais (obrigatória; nunca versionar) |
 | `Jwt__Emissor` / `Jwt__Audiencia` | emissor e audiência do JWT (padrão `casamento-api` / `casamento-web`) |
 | `DadosSensiveis__ChaveCifragem` | chave AES-256 dos dados sensíveis (restrição alimentar/necessidade especial): exatamente 32 bytes em Base64 (`openssl rand -base64 32`), diferente da chave JWT (obrigatória; nunca versionar; guarde backup — sem ela as restrições gravadas ficam ilegíveis). No `docker-compose`, variável `DADOS_SENSIVEIS_CHAVE` do `.env` |
-| `RetencaoDadosSensiveis__DiasAposCasamento` | dias após a data do casamento para apagar restrições e necessidades especiais (padrão 30; 1 a 365) |
+| `RetencaoDadosSensiveis__DiasAposEvento` | dias após a data do evento para apagar restrições e necessidades especiais (padrão 30; 1 a 365). O nome antigo `RetencaoDadosSensiveis__DiasAposCasamento` ainda é lido quando o novo não está definido |
 | `RetencaoDadosSensiveis__IntervaloMinutos` / `RetencaoDadosSensiveis__Habilitada` | intervalo do job de retenção (padrão 360) e liga/desliga (padrão `true`) |
 | `Autenticacao__UrlFrontend` | URL pública do frontend usada no link de redefinição de senha (obrigatória) |
 | `Email__Remetente`, `Email__Smtp__Host`, `Email__Smtp__Porta`, `Email__Smtp__UsarSsl`, `Email__Smtp__Usuario`, `Email__Smtp__Senha` | SMTP de envio (em desenvolvimento, o Mailpit do compose). O nome de exibição do remetente é sempre a marca Celebri e não é configurável |

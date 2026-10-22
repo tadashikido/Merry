@@ -4,7 +4,7 @@ using Celebri.Dominio.Isolamento;
 
 namespace Celebri.Dominio.Convidados;
 
-public class Convite : IPertenceCasamento
+public class Convite : IPertenceEvento
 {
     public const int TamanhoMinimoNome = 2;
     public const int TamanhoMaximoNome = 120;
@@ -13,7 +13,7 @@ public class Convite : IPertenceCasamento
     public const int LimiteAcompanhantesMaximo = 10;
     public const int ConvidadosMinimo = 1;
     public const int ConvidadosMaximo = 30;
-    public const int ConvidadosMaximoPorCasamento = 5000;
+    public const int ConvidadosMaximoPorEvento = 5000;
 
     private readonly List<Convidado> _convidados = [];
 
@@ -26,7 +26,7 @@ public class Convite : IPertenceCasamento
 
     public Guid OrganizacaoId { get; private set; }
 
-    public Guid CasamentoId { get; private set; }
+    public Guid EventoId { get; private set; }
 
     public string Nome { get; private set; }
 
@@ -48,17 +48,17 @@ public class Convite : IPertenceCasamento
 
     public IReadOnlyList<Convidado> Convidados => _convidados;
 
-    public static Convite Criar(Guid casamentoId, DadosConvite dados, DateTimeOffset agora)
+    public static Convite Criar(Guid eventoId, DadosConvite dados, DateTimeOffset agora)
     {
-        if (casamentoId == Guid.Empty)
+        if (eventoId == Guid.Empty)
         {
-            throw new ArgumentException("O casamento do convite é obrigatório.", nameof(casamentoId));
+            throw new ArgumentException("O evento do convite é obrigatório.", nameof(eventoId));
         }
 
         var convite = new Convite
         {
             Id = Guid.NewGuid(),
-            CasamentoId = casamentoId,
+            EventoId = eventoId,
             StatusEnvio = StatusEnvioConvite.NaoEnviado,
             CriadoEm = agora,
         };
@@ -310,7 +310,7 @@ public class Convite : IPertenceCasamento
             }
             else
             {
-                pessoa = Convidado.CriarAcompanhante(CasamentoId, Id, acompanhante.Nome!, acompanhante.FaixaEtaria, proximaOrdem, agora);
+                pessoa = Convidado.CriarAcompanhante(EventoId, Id, acompanhante.Nome!, acompanhante.FaixaEtaria, proximaOrdem, agora);
                 _convidados.Add(pessoa);
             }
 
@@ -400,7 +400,7 @@ public class Convite : IPertenceCasamento
                 continue;
             }
 
-            _convidados.Add(Convidado.Criar(CasamentoId, Id, dadosConvidado, ordem, agora));
+            _convidados.Add(Convidado.Criar(EventoId, Id, dadosConvidado, ordem, agora));
         }
     }
 }

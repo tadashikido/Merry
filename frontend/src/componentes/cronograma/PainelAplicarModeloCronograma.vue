@@ -12,7 +12,7 @@ import { ROTULOS_DIA_CRONOGRAMA } from '@/textos/cronograma'
 import { TEXTOS_APLICAR_MODELO_CRONOGRAMA } from '@/textos/modelosCronograma'
 import type { AplicacaoModeloCronogramaDto, ItemPrevistoCronogramaDto } from '@/tipos/modelosCronograma'
 
-const props = defineProps<{ casamentoId: string; podeInformarHorario: boolean }>()
+const props = defineProps<{ eventoId: string; podeInformarHorario: boolean }>()
 
 const emit = defineEmits<{ fechar: [] }>()
 
@@ -108,7 +108,7 @@ async function atualizarPrevia() {
   carregandoPrevia.value = true
   erroPrevia.value = false
   erroAplicacao.value = null
-  const resultado = await cronograma.previa(props.casamentoId, modeloId)
+  const resultado = await cronograma.previa(props.eventoId, modeloId)
   if (modeloSelecionado.value !== modeloId) {
     return
   }
@@ -128,13 +128,13 @@ async function aplicar() {
   }
   aplicando.value = true
   erroAplicacao.value = null
-  const resultado = await cronograma.aplicar(props.casamentoId, modeloId)
+  const resultado = await cronograma.aplicar(props.eventoId, modeloId)
   aplicando.value = false
 
   if (!resultado.ok) {
     if (resultado.falha.tipo === 'conflito') {
       notificacao.erro(TEXTOS_APLICAR_MODELO_CRONOGRAMA.erroConcorrente)
-      void cronograma.carregar(props.casamentoId)
+      void cronograma.carregar(props.eventoId)
       void atualizarPrevia()
       return
     }
@@ -223,7 +223,7 @@ async function aplicar() {
           </p>
           <RouterLink
             v-if="podeInformarHorario"
-            :to="{ name: 'casamento-editar', params: { id: casamentoId } }"
+            :to="{ name: 'evento-editar', params: { id: eventoId } }"
             data-teste="previa-adicionar-horario"
           >
             {{ TEXTOS_APLICAR_MODELO_CRONOGRAMA.incompletoAcao }}

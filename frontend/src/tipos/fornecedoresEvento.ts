@@ -1,0 +1,107 @@
+import type { CategoriaFornecedor } from '@/tipos/fornecedores'
+
+export const STATUS_FORNECEDOR_EVENTO = ['Cotacao', 'EmNegociacao', 'Contratado', 'Cancelado'] as const
+export type StatusFornecedorEvento = (typeof STATUS_FORNECEDOR_EVENTO)[number]
+
+export interface FornecedorVinculadoDto {
+  id: string
+  categoria: CategoriaFornecedor
+  nomeEmpresa: string
+  responsavel: string | null
+  telefone: string | null
+  email: string | null
+  site: string | null
+  instagram: string | null
+  arquivado: boolean
+}
+
+export interface ContratoFornecedorDto {
+  nomeArquivo: string
+  tamanhoBytes: number
+  enviadoEm: string
+}
+
+export interface ResumoParcelasVinculoDto {
+  quantidade: number
+  pagas: number
+  vencidas: number
+  parcelado: number
+  pago: number
+  saldoAParcelar: number
+  proximoVencimento: string | null
+  proximoValor: number | null
+}
+
+export interface FornecedorEventoDto {
+  id: string
+  fornecedor: FornecedorVinculadoDto
+  servico: string | null
+  valorOrcado: number | null
+  valorContratado: number | null
+  status: StatusFornecedorEvento
+  notasInternas: string | null
+  contrato: ContratoFornecedorDto | null
+  criadoEm: string
+  atualizadoEm: string
+  parcelas?: ResumoParcelasVinculoDto | null
+}
+
+export interface ResumoCategoriaOrcamentoDto {
+  categoria: CategoriaFornecedor
+  quantidade: number
+  contratados: number
+  orcado: number
+  contratado: number
+  pago?: number
+  pendente?: number
+  vencido?: number
+  parcelado?: number
+}
+
+export interface ResumoOrcamentoDto {
+  categorias: ResumoCategoriaOrcamentoDto[]
+  totalOrcado: number
+  totalContratado: number
+  quantidadeFornecedores: number
+  quantidadeContratados: number
+  totalPago?: number
+  totalPendente?: number
+  totalVencido?: number
+  totalParcelado?: number
+}
+
+export interface ListaFornecedoresEventoDto {
+  vinculos: FornecedorEventoDto[]
+  resumo: ResumoOrcamentoDto
+  eventoArquivado: boolean
+  somenteLeitura: boolean
+}
+
+export interface VincularFornecedorRequest {
+  fornecedorId: string
+  servico: string | null
+  valorOrcado: number | null
+  valorContratado: number | null
+  status: StatusFornecedorEvento
+  notasInternas: string | null
+}
+
+export type AtualizarFornecedorEventoRequest = Omit<VincularFornecedorRequest, 'fornecedorId'>
+
+export interface ImportarFornecedoresRequest {
+  eventoOrigemId: string
+}
+
+export interface ResultadoImportacaoFornecedoresDto {
+  importados: number
+  ignorados: number
+}
+
+export interface ParticipacaoFornecedorDto {
+  eventoId: string
+  nomePrimeiraPessoa: string
+  nomeSegundaPessoa: string
+  dataEvento: string
+  eventoArquivado: boolean
+  status: StatusFornecedorEvento
+}

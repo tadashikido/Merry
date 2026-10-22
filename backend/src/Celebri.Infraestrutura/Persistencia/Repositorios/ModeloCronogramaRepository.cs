@@ -7,9 +7,9 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class ModeloCronogramaRepository : IModeloCronogramaRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public ModeloCronogramaRepository(CasamentoDbContext contexto)
+    public ModeloCronogramaRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }

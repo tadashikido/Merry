@@ -2,7 +2,7 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
 import PainelInicioView from '@/views/painel/PainelInicioView.vue'
 import { NOME_PRODUTO } from '@/textos/rotulos'
-import { TEXTOS_CASAMENTOS } from '@/textos/casamentos'
+import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import { TEXTOS_CHECKLIST, TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
 import { TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
 import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
@@ -10,7 +10,7 @@ import { TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import { TEXTOS_DADOS_SENSIVEIS } from '@/textos/dadosSensiveis'
 import { TEXTOS_FINANCEIRO } from '@/textos/financeiro'
 import { TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
-import { TEXTOS_FORNECEDORES_CASAMENTO } from '@/textos/fornecedoresCasamento'
+import { TEXTOS_FORNECEDORES_EVENTO } from '@/textos/fornecedoresEvento'
 import { TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
 import { TEXTOS_MESAS } from '@/textos/mesas'
 import { TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
@@ -30,6 +30,13 @@ const rotasDesenvolvimento: RouteRecordRaw[] = import.meta.env.DEV
     ]
   : []
 
+export const PREFIXO_LEGADO_EVENTOS = '/casamentos'
+export const CAMINHO_LEGADO_ACESSO_ANFITRIAO = '/acesso-casal'
+
+export function caminhoEventoDoLegado(caminho: string): string {
+  return `/eventos${caminho.slice(PREFIXO_LEGADO_EVENTOS.length)}`
+}
+
 export function criarRotas(rotasExtras: RouteRecordRaw[] = []): RouteRecordRaw[] {
   return [
     {
@@ -39,132 +46,132 @@ export function criarRotas(rotasExtras: RouteRecordRaw[] = []): RouteRecordRaw[]
       meta: { titulo: TITULO_APLICACAO, requerAutenticacao: true },
     },
     {
-      path: '/casamentos',
+      path: '/eventos',
       meta: { requerAutenticacao: true },
       children: [
         {
           path: '',
-          name: 'casamentos',
-          component: () => import('@/views/casamentos/CasamentosView.vue'),
-          meta: { trilha: { rotulo: TEXTOS_CASAMENTOS.listaTitulo }, titulo: `Casamentos · ${TITULO_APLICACAO}`, somenteAssessoria: true },
+          name: 'eventos',
+          component: () => import('@/views/eventos/EventosView.vue'),
+          meta: { trilha: { rotulo: TEXTOS_EVENTOS.listaTitulo }, titulo: `Eventos · ${TITULO_APLICACAO}`, somenteAssessoria: true },
         },
         {
           path: 'novo',
-          name: 'casamento-novo',
-          component: () => import('@/views/casamentos/CasamentoFormularioView.vue'),
-          meta: { trilha: { pai: 'casamentos' }, titulo: `Novo casamento · ${TITULO_APLICACAO}`, somenteAssessoria: true },
+          name: 'evento-novo',
+          component: () => import('@/views/eventos/EventoFormularioView.vue'),
+          meta: { trilha: { pai: 'eventos' }, titulo: `Novo evento · ${TITULO_APLICACAO}`, somenteAssessoria: true },
         },
         {
           path: 'novo/a-partir-de-outro',
-          name: 'casamento-duplicar',
-          component: () => import('@/views/casamentos/DuplicarCasamentoView.vue'),
+          name: 'evento-duplicar',
+          component: () => import('@/views/eventos/DuplicarEventoView.vue'),
           props: (rota) => ({ origem: typeof rota.query.origem === 'string' ? rota.query.origem : undefined }),
-          meta: { trilha: { pai: 'casamentos' }, titulo: `Duplicar casamento · ${TITULO_APLICACAO}`, somenteAssessoria: true },
+          meta: { trilha: { pai: 'eventos' }, titulo: `Duplicar evento · ${TITULO_APLICACAO}`, somenteAssessoria: true },
         },
         {
           path: ':id([0-9a-fA-F-]{36})',
-          name: 'casamento',
-          component: () => import('@/views/casamentos/CasamentoView.vue'),
+          name: 'evento',
+          component: () => import('@/views/eventos/EventoView.vue'),
           props: true,
-          meta: { trilha: { pai: 'casamentos', casamento: true }, titulo: `Casamento · ${TITULO_APLICACAO}` },
+          meta: { trilha: { pai: 'eventos', evento: true }, titulo: `Evento · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/editar',
-          name: 'casamento-editar',
-          component: () => import('@/views/casamentos/CasamentoFormularioView.vue'),
+          name: 'evento-editar',
+          component: () => import('@/views/eventos/EventoFormularioView.vue'),
           props: true,
-          meta: { trilha: { pai: 'casamento' }, titulo: `Editar casamento · ${TITULO_APLICACAO}`, somenteAssessoria: true },
+          meta: { trilha: { pai: 'evento' }, titulo: `Editar evento · ${TITULO_APLICACAO}`, somenteAssessoria: true },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/tarefas',
-          name: 'casamento-tarefas',
+          name: 'evento-tarefas',
           component: () => import('@/views/tarefas/TarefasView.vue'),
           props: true,
-          meta: { trilha: { rotulo: TEXTOS_TAREFAS.titulo, pai: 'casamento' }, titulo: `Tarefas · ${TITULO_APLICACAO}` },
+          meta: { trilha: { rotulo: TEXTOS_TAREFAS.titulo, pai: 'evento' }, titulo: `Tarefas · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/tarefas/nova',
           name: 'tarefa-nova',
           component: () => import('@/views/tarefas/TarefaFormularioView.vue'),
           props: true,
-          meta: { trilha: { pai: 'casamento-tarefas' }, titulo: `Nova tarefa · ${TITULO_APLICACAO}`, somenteAssessoria: true },
+          meta: { trilha: { pai: 'evento-tarefas' }, titulo: `Nova tarefa · ${TITULO_APLICACAO}`, somenteAssessoria: true },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/tarefas/:tarefaId([0-9a-fA-F-]{36})/editar',
           name: 'tarefa-editar',
           component: () => import('@/views/tarefas/TarefaFormularioView.vue'),
           props: true,
-          meta: { trilha: { pai: 'casamento-tarefas' }, titulo: `Editar tarefa · ${TITULO_APLICACAO}`, somenteAssessoria: true },
+          meta: { trilha: { pai: 'evento-tarefas' }, titulo: `Editar tarefa · ${TITULO_APLICACAO}`, somenteAssessoria: true },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/checklist',
-          name: 'casamento-checklist',
+          name: 'evento-checklist',
           component: () => import('@/views/checklist/ChecklistView.vue'),
           props: true,
-          meta: { trilha: { rotulo: TEXTOS_CHECKLIST.titulo, pai: 'casamento' }, titulo: `Checklist · ${TITULO_APLICACAO}`, somenteAssessoria: true },
+          meta: { trilha: { rotulo: TEXTOS_CHECKLIST.titulo, pai: 'evento' }, titulo: `Checklist · ${TITULO_APLICACAO}`, somenteAssessoria: true },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/cronograma',
-          name: 'casamento-cronograma',
+          name: 'evento-cronograma',
           component: () => import('@/views/cronograma/CronogramaView.vue'),
           props: true,
-          meta: { trilha: { rotulo: TEXTOS_CRONOGRAMA.titulo, pai: 'casamento' }, titulo: `Cronograma · ${TITULO_APLICACAO}` },
+          meta: { trilha: { rotulo: TEXTOS_CRONOGRAMA.titulo, pai: 'evento' }, titulo: `Cronograma · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/grande-dia',
-          name: 'casamento-grande-dia',
+          name: 'evento-grande-dia',
           component: () => import('@/views/grandeDia/GrandeDiaView.vue'),
           props: true,
           meta: { titulo: `Grande Dia · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/fornecedores',
-          name: 'casamento-fornecedores',
-          component: () => import('@/views/fornecedoresCasamento/FornecedoresCasamentoView.vue'),
+          name: 'evento-fornecedores',
+          component: () => import('@/views/fornecedoresEvento/FornecedoresEventoView.vue'),
           props: true,
-          meta: { trilha: { rotulo: TEXTOS_FORNECEDORES_CASAMENTO.titulo, pai: 'casamento' }, titulo: `Fornecedores · ${TITULO_APLICACAO}` },
+          meta: { trilha: { rotulo: TEXTOS_FORNECEDORES_EVENTO.titulo, pai: 'evento' }, titulo: `Fornecedores · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/financeiro',
-          name: 'casamento-financeiro',
-          component: () => import('@/views/financeiro/FinanceiroCasamentoView.vue'),
+          name: 'evento-financeiro',
+          component: () => import('@/views/financeiro/FinanceiroEventoView.vue'),
           props: true,
-          meta: { trilha: { rotulo: TEXTOS_FINANCEIRO.titulo, pai: 'casamento' }, titulo: `Financeiro · ${TITULO_APLICACAO}` },
+          meta: { trilha: { rotulo: TEXTOS_FINANCEIRO.titulo, pai: 'evento' }, titulo: `Financeiro · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/fornecedores/novo',
-          name: 'fornecedor-casamento-novo',
-          component: () => import('@/views/fornecedoresCasamento/FornecedorCasamentoFormularioView.vue'),
+          name: 'fornecedor-evento-novo',
+          component: () => import('@/views/fornecedoresEvento/FornecedorEventoFormularioView.vue'),
           props: true,
-          meta: { trilha: { pai: 'casamento-fornecedores' }, titulo: `Adicionar fornecedor · ${TITULO_APLICACAO}`, somenteAssessoria: true },
+          meta: { trilha: { pai: 'evento-fornecedores' }, titulo: `Adicionar fornecedor · ${TITULO_APLICACAO}`, somenteAssessoria: true },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/fornecedores/:vinculoId([0-9a-fA-F-]{36})/editar',
-          name: 'fornecedor-casamento-editar',
-          component: () => import('@/views/fornecedoresCasamento/FornecedorCasamentoFormularioView.vue'),
+          name: 'fornecedor-evento-editar',
+          component: () => import('@/views/fornecedoresEvento/FornecedorEventoFormularioView.vue'),
           props: true,
-          meta: { trilha: { pai: 'casamento-fornecedores' }, titulo: `Editar fornecedor do casamento · ${TITULO_APLICACAO}`, somenteAssessoria: true },
+          meta: { trilha: { pai: 'evento-fornecedores' }, titulo: `Editar fornecedor do evento · ${TITULO_APLICACAO}`, somenteAssessoria: true },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/convidados',
-          name: 'casamento-convidados',
+          name: 'evento-convidados',
           component: () => import('@/views/convidados/ConvidadosView.vue'),
           props: true,
-          meta: { trilha: { rotulo: TEXTOS_CONVIDADOS.listaTitulo, pai: 'casamento' }, titulo: `Convidados · ${TITULO_APLICACAO}` },
+          meta: { trilha: { rotulo: TEXTOS_CONVIDADOS.listaTitulo, pai: 'evento' }, titulo: `Convidados · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/restricoes-alimentares',
           name: 'restricoes-alimentares',
           component: () => import('@/views/restricoes/RestricoesAlimentaresView.vue'),
           props: true,
-          meta: { trilha: { rotulo: TEXTOS_DADOS_SENSIVEIS.tituloPainel, pai: 'casamento-convidados' }, titulo: `Restrições alimentares · ${TITULO_APLICACAO}`, somenteAssessoria: true },
+          meta: { trilha: { rotulo: TEXTOS_DADOS_SENSIVEIS.tituloPainel, pai: 'evento-convidados' }, titulo: `Restrições alimentares · ${TITULO_APLICACAO}`, somenteAssessoria: true },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/confirmacoes',
           name: 'painel-confirmacoes',
           component: () => import('@/views/confirmacoes/PainelConfirmacoesView.vue'),
           props: true,
-          meta: { trilha: { rotulo: TEXTOS_CONFIRMACOES.titulo, pai: 'casamento' }, titulo: `Confirmações · ${TITULO_APLICACAO}` },
+          meta: { trilha: { rotulo: TEXTOS_CONFIRMACOES.titulo, pai: 'evento' }, titulo: `Confirmações · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/confirmacoes/buffet',
@@ -175,10 +182,10 @@ export function criarRotas(rotasExtras: RouteRecordRaw[] = []): RouteRecordRaw[]
         },
         {
           path: ':id([0-9a-fA-F-]{36})/mesas',
-          name: 'casamento-mesas',
+          name: 'evento-mesas',
           component: () => import('@/views/mesas/MesasView.vue'),
           props: true,
-          meta: { trilha: { rotulo: TEXTOS_MESAS.titulo, pai: 'casamento' }, titulo: `Mesas · ${TITULO_APLICACAO}` },
+          meta: { trilha: { rotulo: TEXTOS_MESAS.titulo, pai: 'evento' }, titulo: `Mesas · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/mesas/impressao',
@@ -192,21 +199,21 @@ export function criarRotas(rotasExtras: RouteRecordRaw[] = []): RouteRecordRaw[]
           name: 'convite-novo',
           component: () => import('@/views/convidados/ConviteFormularioView.vue'),
           props: true,
-          meta: { trilha: { pai: 'casamento-convidados' }, titulo: `Novo convite · ${TITULO_APLICACAO}` },
+          meta: { trilha: { pai: 'evento-convidados' }, titulo: `Novo convite · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/convidados/importar',
           name: 'convidados-importar',
           component: () => import('@/views/convidados/ImportarConvidadosView.vue'),
           props: true,
-          meta: { trilha: { rotulo: TEXTOS_IMPORTACAO.trilha, pai: 'casamento-convidados' }, titulo: `Importar convidados · ${TITULO_APLICACAO}` },
+          meta: { trilha: { rotulo: TEXTOS_IMPORTACAO.trilha, pai: 'evento-convidados' }, titulo: `Importar convidados · ${TITULO_APLICACAO}` },
         },
         {
           path: ':id([0-9a-fA-F-]{36})/convidados/:conviteId([0-9a-fA-F-]{36})/editar',
           name: 'convite-editar',
           component: () => import('@/views/convidados/ConviteFormularioView.vue'),
           props: true,
-          meta: { trilha: { pai: 'casamento-convidados' }, titulo: `Editar convite · ${TITULO_APLICACAO}` },
+          meta: { trilha: { pai: 'evento-convidados' }, titulo: `Editar convite · ${TITULO_APLICACAO}` },
         },
       ],
     },
@@ -367,16 +374,24 @@ export function criarRotas(rotasExtras: RouteRecordRaw[] = []): RouteRecordRaw[]
       meta: { titulo: `Cronograma do dia · ${TITULO_APLICACAO}`, semIndexacao: true },
     },
     {
-      path: '/acesso-casal',
-      name: 'aceite-acesso-casal',
-      component: () => import('@/views/autenticacao/AceiteAcessoCasalView.vue'),
-      meta: { titulo: `Acesso ao casamento · ${TITULO_APLICACAO}`, semIndexacao: true },
+      path: '/acesso-anfitriao',
+      name: 'aceite-acesso-anfitriao',
+      component: () => import('@/views/autenticacao/AceiteAcessoAnfitriaoView.vue'),
+      meta: { titulo: `Acesso ao evento · ${TITULO_APLICACAO}`, semIndexacao: true },
     },
     {
       path: '/redefinir-senha',
       name: 'redefinir-senha',
       component: () => import('@/views/autenticacao/RedefinirSenhaView.vue'),
       meta: { titulo: `Nova senha · ${TITULO_APLICACAO}` },
+    },
+    {
+      path: `${PREFIXO_LEGADO_EVENTOS}/:caminho(.*)*`,
+      redirect: (rota) => ({ path: caminhoEventoDoLegado(rota.path), query: rota.query, hash: rota.hash }),
+    },
+    {
+      path: CAMINHO_LEGADO_ACESSO_ANFITRIAO,
+      redirect: (rota) => ({ name: 'aceite-acesso-anfitriao', query: rota.query, hash: rota.hash }),
     },
     ...rotasExtras,
     {

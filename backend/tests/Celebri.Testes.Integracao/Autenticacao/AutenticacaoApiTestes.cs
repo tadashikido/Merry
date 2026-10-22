@@ -75,7 +75,7 @@ public sealed class AutenticacaoApiTestes : IAsyncLifetime
         var refresh = LerRefreshToken(resposta);
 
         await using var escopo = _fabrica.Services.CreateAsyncScope();
-        var contexto = escopo.ServiceProvider.GetRequiredService<CasamentoDbContext>();
+        var contexto = escopo.ServiceProvider.GetRequiredService<CelebriDbContext>();
         var usuario = await contexto.Usuarios.SingleAsync(item => item.Email == email);
         var tokens = await contexto.RefreshTokens.Where(item => item.UsuarioId == usuario.Id).ToListAsync();
         Assert.DoesNotContain(SenhaValida, usuario.SenhaHash);
@@ -313,7 +313,7 @@ public sealed class AutenticacaoApiTestes : IAsyncLifetime
         var token = ExtrairToken(_fabrica.Email.Enviadas.Single().CorpoTexto);
         await using (var escopo = _fabrica.Services.CreateAsyncScope())
         {
-            var contexto = escopo.ServiceProvider.GetRequiredService<CasamentoDbContext>();
+            var contexto = escopo.ServiceProvider.GetRequiredService<CelebriDbContext>();
             await contexto.Database.ExecuteSqlRawAsync("UPDATE tokens_redefinicao_senha SET expira_em = now() - interval '1 minute'");
         }
 

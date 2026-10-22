@@ -8,7 +8,7 @@ public static class AplicadorMigrations
     public static async Task AplicarMigrationsAsync(IServiceProvider provedor, CancellationToken cancelamento = default)
     {
         await using var escopo = provedor.CreateAsyncScope();
-        var contexto = escopo.ServiceProvider.GetRequiredService<CasamentoDbContext>();
+        var contexto = escopo.ServiceProvider.GetRequiredService<CelebriDbContext>();
         await contexto.Database.MigrateAsync(cancelamento);
     }
 }

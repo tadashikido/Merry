@@ -12,7 +12,7 @@ import {
   telefoneWhatsApp,
   tokenRsvpValido,
 } from '@/utilitarios/rsvp'
-import { dataLimiteRsvp } from '@/utilitarios/validacaoCasamento'
+import { dataLimiteRsvp } from '@/utilitarios/validacaoEvento'
 
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
 
@@ -53,7 +53,7 @@ describe('utilitários de RSVP', () => {
     expect(primeiroTelefone({ convidados: [] })).toBeNull()
   })
 
-  it('[UNITÁRIO] monta a mensagem pronta com casal, data, prazo e link', () => {
+  it('[UNITÁRIO] monta a mensagem pronta com anfitriões, data, prazo e link', () => {
     const mensagem = montarMensagemConvite(
       { nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bruno', data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' },
       { nome: 'Família Souza' },
@@ -82,11 +82,11 @@ describe('utilitários de RSVP', () => {
     expect(escolhaInicial({ resposta: 'Recusado' })).toBe('Recusado')
   })
 
-  it('[UNITÁRIO] valida data limite contra a data do casamento', () => {
+  it('[UNITÁRIO] valida data limite contra a data do evento', () => {
     const regra = dataLimiteRsvp(() => '2027-05-22')
     expect(regra('')).toBeNull()
     expect(regra('2027-05-22')).toBeNull()
-    expect(regra('2027-05-23')).toBe('A data limite precisa ser igual ou anterior à data do casamento.')
+    expect(regra('2027-05-23')).toBe('A data limite precisa ser igual ou anterior à data do evento.')
     expect(regra('1999-12-31')).not.toBeNull()
     expect(dataLimiteRsvp(() => '')('2030-01-01')).toBeNull()
   })

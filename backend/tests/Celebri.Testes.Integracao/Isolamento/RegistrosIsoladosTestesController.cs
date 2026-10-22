@@ -16,9 +16,9 @@ public class RegistrosIsoladosTestesController : ControllerBase
     public const string Rota = "api/testes/registros-isolados";
     public const string MensagemNaoEncontrado = "Registro não encontrado.";
 
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public RegistrosIsoladosTestesController(CasamentoDbContext contexto)
+    public RegistrosIsoladosTestesController(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }

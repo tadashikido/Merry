@@ -2,8 +2,8 @@
 import { computed } from 'vue'
 
 import { TEXTOS_CRONOGRAMA_PUBLICO } from '@/textos/cronogramaPublico'
-import type { DataCalendario } from '@/tipos/casamentos'
-import { formatarDataCalendarioComDiaSemana, formatarNomesCasal } from '@/utilitarios/formatacao'
+import type { DataCalendario } from '@/tipos/eventos'
+import { formatarDataCalendarioComDiaSemana, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 
 export interface LocalOperacao {
   rotulo: string
@@ -26,7 +26,7 @@ const dataExtenso = computed(() => {
   const texto = formatarDataCalendarioComDiaSemana(props.data)
   return texto.charAt(0).toUpperCase() + texto.slice(1)
 })
-const tituloOculto = computed(() => TEXTOS_CRONOGRAMA_PUBLICO.tituloOculto(formatarNomesCasal(props.primeiro, props.segundo)))
+const tituloOculto = computed(() => TEXTOS_CRONOGRAMA_PUBLICO.tituloOculto(formatarNomesAnfitrioes(props.primeiro, props.segundo)))
 </script>
 
 <template>

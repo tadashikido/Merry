@@ -3,18 +3,18 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Celebri.Aplicacao.Autenticacao;
 using Celebri.Testes.Integracao.Banco;
-using Celebri.Testes.Integracao.Casamentos;
+using Celebri.Testes.Integracao.Eventos;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
 using static Celebri.Testes.Integracao.Cronogramas.ClienteModelosCronograma;
-using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
+using ClienteAcessoAnfitriao = Celebri.Testes.Integracao.AcessosAnfitriao.ClienteAcessoAnfitriao;
 
 namespace Celebri.Testes.Integracao.Cronogramas;
 
 [Collection(ColecaoBancoPostgreSql.Nome)]
 public sealed class ModelosCronogramaSegurancaTestes : IsolamentoOrganizacaoTestesBase, IDisposable
 {
-    private readonly List<HttpClient> _clientesCasal = [];
+    private readonly List<HttpClient> _clientesAnfitriao = [];
 
     public ModelosCronogramaSegurancaTestes(BancoPostgreSqlFixture banco)
         : base(banco)
@@ -23,67 +23,67 @@ public sealed class ModelosCronogramaSegurancaTestes : IsolamentoOrganizacaoTest
 
     public void Dispose()
     {
-        foreach (var cliente in _clientesCasal)
+        foreach (var cliente in _clientesAnfitriao)
         {
             cliente.Dispose();
         }
     }
 
-    private async Task<(Guid CasamentoId, HttpClient Cliente)> CriarCasalAsync()
+    private async Task<(Guid EventoId, HttpClient Cliente)> CriarAnfitriaoAsync()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var email = ClienteAcessoCasal.EmailCasalUnico();
-        await ClienteAcessoCasal.ConvidarComSucessoAsync(OrganizacaoA.Cliente, casamento.Id, email);
-        var aceite = await ClienteAcessoCasal.AceitarAsync(ClienteAnonimo, ClienteAcessoCasal.UltimoToken(Fabrica.Email, email));
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var email = ClienteAcessoAnfitriao.EmailAnfitriaoUnico();
+        await ClienteAcessoAnfitriao.ConvidarComSucessoAsync(OrganizacaoA.Cliente, evento.Id, email);
+        var aceite = await ClienteAcessoAnfitriao.AceitarAsync(ClienteAnonimo, ClienteAcessoAnfitriao.UltimoToken(Fabrica.Email, email));
         Assert.Equal(HttpStatusCode.OK, aceite.StatusCode);
         var sessao = (await aceite.Content.ReadFromJsonAsync<SessaoDto>())!;
 
         var cliente = Fabrica.CriarClienteHttps();
         cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", sessao.TokenAcesso);
-        _clientesCasal.Add(cliente);
-        return (casamento.Id, cliente);
+        _clientesAnfitriao.Add(cliente);
+        return (evento.Id, cliente);
     }
 
     [Fact]
-    public async Task Casal_DeveReceber403EmModelosAplicacaoSalvarERecalculo()
+    public async Task Anfitriao_DeveReceber403EmModelosAplicacaoSalvarERecalculo()
     {
-        var (casamentoId, casal) = await CriarCasalAsync();
+        var (eventoId, anfitriao) = await CriarAnfitriaoAsync();
         var modelo = await CriarAsync(OrganizacaoA.Cliente);
         var item = await CriarItemAsync(OrganizacaoA.Cliente, modelo.Id);
 
         var respostas = new[]
         {
-            await casal.GetAsync(RotaModelos),
-            await casal.PostAsJsonAsync(RotaModelos, new { nome = "Do casal" }),
-            await casal.GetAsync(RotaModelo(modelo.Id)),
-            await casal.PutAsJsonAsync(RotaModelo(modelo.Id), new { nome = "Alterado" }),
-            await casal.DeleteAsync(RotaModelo(modelo.Id)),
-            await casal.PostAsJsonAsync(RotaItens(modelo.Id), CorpoItem()),
-            await casal.PutAsJsonAsync(RotaItem(modelo.Id, item.Id), CorpoItem()),
-            await casal.DeleteAsync(RotaItem(modelo.Id, item.Id)),
-            await casal.PostAsJsonAsync(RotaSalvarComoModelo(casamentoId), new { nome = "Nosso roteiro" }),
-            await casal.GetAsync(RotaPrevia(casamentoId, modelo.Id)),
-            await AplicarAsync(casal, casamentoId, modelo.Id),
-            await casal.GetAsync(RotaRecalculo(casamentoId)),
-            await casal.PostAsync(RotaRecalculo(casamentoId), null),
+            await anfitriao.GetAsync(RotaModelos),
+            await anfitriao.PostAsJsonAsync(RotaModelos, new { nome = "Dos anfitriões" }),
+            await anfitriao.GetAsync(RotaModelo(modelo.Id)),
+            await anfitriao.PutAsJsonAsync(RotaModelo(modelo.Id), new { nome = "Alterado" }),
+            await anfitriao.DeleteAsync(RotaModelo(modelo.Id)),
+            await anfitriao.PostAsJsonAsync(RotaItens(modelo.Id), CorpoItem()),
+            await anfitriao.PutAsJsonAsync(RotaItem(modelo.Id, item.Id), CorpoItem()),
+            await anfitriao.DeleteAsync(RotaItem(modelo.Id, item.Id)),
+            await anfitriao.PostAsJsonAsync(RotaSalvarComoModelo(eventoId), new { nome = "Nosso roteiro" }),
+            await anfitriao.GetAsync(RotaPrevia(eventoId, modelo.Id)),
+            await AplicarAsync(anfitriao, eventoId, modelo.Id),
+            await anfitriao.GetAsync(RotaRecalculo(eventoId)),
+            await anfitriao.PostAsync(RotaRecalculo(eventoId), null),
         };
 
         Assert.All(respostas, resposta => Assert.Equal(HttpStatusCode.Forbidden, resposta.StatusCode));
         Assert.Single((await ObterAsync(OrganizacaoA.Cliente, modelo.Id)).Itens);
-        Assert.Empty((await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, casamentoId)).Itens);
+        Assert.Empty((await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, eventoId)).Itens);
     }
 
     [Fact]
-    public async Task Casal_CronogramaNaoDeveExporHorariosDesatualizados()
+    public async Task Anfitriao_CronogramaNaoDeveExporHorariosDesatualizados()
     {
-        var (casamentoId, casal) = await CriarCasalAsync();
+        var (eventoId, anfitriao) = await CriarAnfitriaoAsync();
         var sugerido = await SugeridoAsync(OrganizacaoA.Cliente);
-        await AplicarComSucessoAsync(OrganizacaoA.Cliente, casamentoId, sugerido.Id);
+        await AplicarComSucessoAsync(OrganizacaoA.Cliente, eventoId, sugerido.Id);
         Assert.Equal(
             HttpStatusCode.OK,
-            (await OrganizacaoA.Cliente.PutAsJsonAsync($"{ClienteCasamentos.Rota}/{casamentoId}", ClienteCasamentos.CorpoValido(horario: "18:00"))).StatusCode);
+            (await OrganizacaoA.Cliente.PutAsJsonAsync($"{ClienteEventos.Rota}/{eventoId}", ClienteEventos.CorpoValido(horario: "18:00"))).StatusCode);
 
-        var resposta = await casal.GetAsync(ClienteCronograma.Rota(casamentoId));
+        var resposta = await anfitriao.GetAsync(ClienteCronograma.Rota(eventoId));
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         var cronograma = (await resposta.Content.ReadFromJsonAsync<Celebri.Aplicacao.Cronogramas.CronogramaDto>())!;
@@ -115,25 +115,25 @@ public sealed class ModelosCronogramaSegurancaTestes : IsolamentoOrganizacaoTest
     public async Task ModeloDeOutraOrganizacao_NaoPodeSerAplicadoNemPrevisto()
     {
         var modeloDeA = await SugeridoAsync(OrganizacaoA.Cliente);
-        var casamentoDeB = await ClienteCasamentos.CriarAsync(OrganizacaoB.Cliente);
+        var eventoDeB = await ClienteEventos.CriarAsync(OrganizacaoB.Cliente);
 
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaPrevia(casamentoDeB.Id, modeloDeA.Id)));
-        await AssertNaoEncontradoAsync(await AplicarAsync(OrganizacaoB.Cliente, casamentoDeB.Id, modeloDeA.Id));
-        Assert.Empty((await ClienteCronograma.ListarAsync(OrganizacaoB.Cliente, casamentoDeB.Id)).Itens);
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaPrevia(eventoDeB.Id, modeloDeA.Id)));
+        await AssertNaoEncontradoAsync(await AplicarAsync(OrganizacaoB.Cliente, eventoDeB.Id, modeloDeA.Id));
+        Assert.Empty((await ClienteCronograma.ListarAsync(OrganizacaoB.Cliente, eventoDeB.Id)).Itens);
     }
 
     [Fact]
-    public async Task CasamentoDeOutraOrganizacao_DeveReceber404EmSalvarPreviaAplicarERecalcular()
+    public async Task EventoDeOutraOrganizacao_DeveReceber404EmSalvarPreviaAplicarERecalcular()
     {
-        var casamentoDeA = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        await ClienteCronograma.CriarAsync(OrganizacaoA.Cliente, casamentoDeA.Id);
+        var eventoDeA = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        await ClienteCronograma.CriarAsync(OrganizacaoA.Cliente, eventoDeA.Id);
         var modeloDeB = await SugeridoAsync(OrganizacaoB.Cliente);
 
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsJsonAsync(RotaSalvarComoModelo(casamentoDeA.Id), new { nome = "Roubado" }));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaPrevia(casamentoDeA.Id, modeloDeB.Id)));
-        await AssertNaoEncontradoAsync(await AplicarAsync(OrganizacaoB.Cliente, casamentoDeA.Id, modeloDeB.Id));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaRecalculo(casamentoDeA.Id)));
-        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsync(RotaRecalculo(casamentoDeA.Id), null));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsJsonAsync(RotaSalvarComoModelo(eventoDeA.Id), new { nome = "Roubado" }));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaPrevia(eventoDeA.Id, modeloDeB.Id)));
+        await AssertNaoEncontradoAsync(await AplicarAsync(OrganizacaoB.Cliente, eventoDeA.Id, modeloDeB.Id));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.GetAsync(RotaRecalculo(eventoDeA.Id)));
+        await AssertNaoEncontradoAsync(await OrganizacaoB.Cliente.PostAsync(RotaRecalculo(eventoDeA.Id), null));
         Assert.Single(await ListarAsync(OrganizacaoB.Cliente));
     }
 

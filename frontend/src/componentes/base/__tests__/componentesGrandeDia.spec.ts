@@ -16,7 +16,7 @@ import { itemPainel } from '@/__tests__/auxiliaresGrandeDia'
 import { cores } from '@/design/tokens'
 import { PARES_CONTRASTE, razaoContraste } from '@/design/contraste'
 import { NOMES_ICONES } from '@/design/icones'
-import { MODULOS_CASAMENTO } from '@/layouts/modulosCasamento'
+import { MODULOS_EVENTO } from '@/layouts/modulosEvento'
 
 const global = { plugins: [[PrimeVue, { unstyled: true }]] as [typeof PrimeVue, Record<string, unknown>][] }
 
@@ -206,11 +206,11 @@ describe('style guide do Grande Dia', () => {
 
   it('[UNITÁRIO] módulo Grande Dia no grupo Execução com o ícone ao vivo', () => {
     expect(NOMES_ICONES).toContain('ao-vivo')
-    expect(MODULOS_CASAMENTO.find((modulo) => modulo.chave === 'grande-dia')).toMatchObject({
+    expect(MODULOS_EVENTO.find((modulo) => modulo.chave === 'grande-dia')).toMatchObject({
       grupo: 'execucao',
       rotulo: 'Grande Dia',
       icone: 'ao-vivo',
-      rota: 'casamento-grande-dia',
+      rota: 'evento-grande-dia',
     })
   })
 })

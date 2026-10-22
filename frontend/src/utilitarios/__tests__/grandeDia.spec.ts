@@ -24,7 +24,7 @@ describe('utilitários do Grande Dia', () => {
     expect(interpolarMomento('inválido', recebido, recebido)).toBeNull()
   })
 
-  it('[UNITÁRIO] calcula o minuto atual relativo ao dia do casamento', () => {
+  it('[UNITÁRIO] calcula o minuto atual relativo ao dia do evento', () => {
     expect(minutoAtualNoRoteiro({ data: '2027-05-15', hora: '16:34', minutoDoDia: 994 }, '2027-05-15')).toBe(994)
     expect(minutoAtualNoRoteiro({ data: '2027-05-16', hora: '01:00', minutoDoDia: 60 }, '2027-05-15')).toBe(1500)
     expect(minutoAtualNoRoteiro({ data: '2027-05-14', hora: '19:00', minutoDoDia: 1140 }, '2027-05-15')).toBe(-300)
@@ -33,7 +33,7 @@ describe('utilitários do Grande Dia', () => {
   it('[UNITÁRIO] posiciona itens por dia relativo e calcula quanto falta', () => {
     expect(minutoDoItem({ dia: 'Vespera', inicio: '19:00' })).toBe(-300)
     expect(minutoDoItem({ dia: 'DiaSeguinte', inicio: '01:00' })).toBe(1500)
-    expect(minutosAte({ dia: 'DiaDoCasamento', inicio: '17:15' }, 994)).toBe(41)
+    expect(minutosAte({ dia: 'DiaDoEvento', inicio: '17:15' }, 994)).toBe(41)
   })
 
   it('[UNITÁRIO] descreve quanto falta em minutos e horas', () => {
@@ -69,7 +69,7 @@ describe('utilitários do Grande Dia', () => {
     const itens = itensPainelPublicos([itemPublico({ situacao: 'Agora' })], '16:30')
     expect(itens[0]!.contato).toBeNull()
     expect(itens[0]!.fornecedor).toBe('Buffet Sabor')
-    expect(itens[0]!.chave).toBe('DiaDoCasamento-14:00-0')
+    expect(itens[0]!.chave).toBe('DiaDoEvento-14:00-0')
   })
 
   it('[UNITÁRIO] mostra a hora local do instante de conclusão', () => {

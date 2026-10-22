@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Fornecedores;
 using Celebri.Dominio.Organizacoes;
@@ -10,16 +10,16 @@ namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 public class ItemCronogramaConfiguration : IEntityTypeConfiguration<ItemCronograma>
 {
     public const string Tabela = "itens_cronograma";
-    public const string IndiceOrganizacaoCasamento = "ix_itens_cronograma_organizacao_id_casamento_id";
-    public const string IndiceCasamentoFornecedor = "ix_itens_cronograma_casamento_id_fornecedor_casamento_id";
-    public const string IndiceCasamentoResponsavel = "ix_itens_cronograma_casamento_id_responsavel_chave";
-    public const string ChaveEstrangeiraFornecedor = "fk_itens_cronograma_fornecedores_casamento_fornecedor_casamento_id";
+    public const string IndiceOrganizacaoEvento = "ix_itens_cronograma_organizacao_id_evento_id";
+    public const string IndiceEventoFornecedor = "ix_itens_cronograma_evento_id_fornecedor_evento_id";
+    public const string IndiceEventoResponsavel = "ix_itens_cronograma_evento_id_responsavel_chave";
+    public const string ChaveEstrangeiraFornecedor = "fk_itens_cronograma_fornecedores_evento_fornecedor_evento_id";
     public const string RestricaoDia = "ck_itens_cronograma_dia";
     public const string RestricaoStatus = "ck_itens_cronograma_status";
     public const string RestricaoDuracao = "ck_itens_cronograma_duracao";
     public const string RestricaoConclusao = "ck_itens_cronograma_conclusao";
     public const string RestricaoMinutosRelativos = "ck_itens_cronograma_minutos_relativos_cerimonia";
-    public const string IndiceOrigemModeloUnica = "ux_itens_cronograma_casamento_id_origem_modelo_item_id";
+    public const string IndiceOrigemModeloUnica = "ux_itens_cronograma_evento_id_origem_modelo_item_id";
 
     public void Configure(EntityTypeBuilder<ItemCronograma> builder)
     {
@@ -40,7 +40,7 @@ public class ItemCronogramaConfiguration : IEntityTypeConfiguration<ItemCronogra
 
         builder.HasKey(item => item.Id);
         builder.Property(item => item.Id).ValueGeneratedNever();
-        builder.Property(item => item.CasamentoId).IsRequired();
+        builder.Property(item => item.EventoId).IsRequired();
         builder.Property(item => item.Dia)
             .HasConversion<string>()
             .HasMaxLength(ConviteConfiguration.TamanhoMaximoEnum)
@@ -51,7 +51,7 @@ public class ItemCronogramaConfiguration : IEntityTypeConfiguration<ItemCronogra
         builder.Property(item => item.Local).HasMaxLength(ItemCronograma.TamanhoMaximoLocal);
         builder.Property(item => item.Responsavel).HasMaxLength(ItemCronograma.TamanhoMaximoResponsavel);
         builder.Property(item => item.ResponsavelChave).HasMaxLength(ItemCronograma.TamanhoMaximoResponsavel);
-        builder.Property(item => item.FornecedorCasamentoId);
+        builder.Property(item => item.FornecedorEventoId);
         builder.Property(item => item.Instrucoes).HasMaxLength(ItemCronograma.TamanhoMaximoTexto);
         builder.Property(item => item.NotasInternas).HasMaxLength(ItemCronograma.TamanhoMaximoTexto);
         builder.Property(item => item.Status)
@@ -72,23 +72,23 @@ public class ItemCronogramaConfiguration : IEntityTypeConfiguration<ItemCronogra
         builder.Ignore(item => item.TerminaEmOutroDia);
         builder.Ignore(item => item.AncoradoEmModelo);
 
-        builder.HasIndex(item => new { item.OrganizacaoId, item.CasamentoId }).HasDatabaseName(IndiceOrganizacaoCasamento);
-        builder.HasIndex(item => new { item.CasamentoId, item.FornecedorCasamentoId }).HasDatabaseName(IndiceCasamentoFornecedor);
-        builder.HasIndex(item => new { item.CasamentoId, item.ResponsavelChave }).HasDatabaseName(IndiceCasamentoResponsavel);
+        builder.HasIndex(item => new { item.OrganizacaoId, item.EventoId }).HasDatabaseName(IndiceOrganizacaoEvento);
+        builder.HasIndex(item => new { item.EventoId, item.FornecedorEventoId }).HasDatabaseName(IndiceEventoFornecedor);
+        builder.HasIndex(item => new { item.EventoId, item.ResponsavelChave }).HasDatabaseName(IndiceEventoResponsavel);
 
-        builder.HasOne<CasamentoAssessorado>()
+        builder.HasOne<Evento>()
             .WithMany()
-            .HasForeignKey(item => item.CasamentoId)
+            .HasForeignKey(item => item.EventoId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<FornecedorCasamento>()
+        builder.HasOne<FornecedorEvento>()
             .WithMany()
-            .HasForeignKey(item => item.FornecedorCasamentoId)
+            .HasForeignKey(item => item.FornecedorEventoId)
             .HasConstraintName(ChaveEstrangeiraFornecedor)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasIndex(item => new { item.CasamentoId, item.OrigemModeloItemId })
+        builder.HasIndex(item => new { item.EventoId, item.OrigemModeloItemId })
             .IsUnique()
             .HasFilter("origem_modelo_item_id IS NOT NULL")
             .HasDatabaseName(IndiceOrigemModeloUnica);

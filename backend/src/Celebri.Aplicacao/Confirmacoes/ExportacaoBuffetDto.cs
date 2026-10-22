@@ -1,14 +1,14 @@
 namespace Celebri.Aplicacao.Confirmacoes;
 
 public sealed record ExportacaoBuffetDto(
-    CasamentoExportacaoDto Casamento,
+    EventoExportacaoDto Evento,
     DateTimeOffset GeradoEm,
     ContagemBuffetDto Confirmados,
     int Pendentes,
     IReadOnlyList<ConviteBuffetDto> Convites,
     RestricoesBuffetDto Restricoes);
 
-public sealed record CasamentoExportacaoDto(
+public sealed record EventoExportacaoDto(
     string NomePrimeiraPessoa,
     string NomeSegundaPessoa,
     DateOnly Data,

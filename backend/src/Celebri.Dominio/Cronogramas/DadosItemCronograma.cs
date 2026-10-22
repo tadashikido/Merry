@@ -7,6 +7,6 @@ public sealed record DadosItemCronograma(
     string? Atividade,
     string? Local,
     string? Responsavel,
-    Guid? FornecedorCasamentoId,
+    Guid? FornecedorEventoId,
     string? Instrucoes,
     string? NotasInternas);

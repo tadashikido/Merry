@@ -12,17 +12,17 @@ import { useAlteracoesNaoSalvasStore } from '@/stores/alteracoesNaoSalvas'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { TEXTOS_ALTERACOES_NAO_SALVAS } from '@/textos/mensagens'
 import type { ConviteDto, ListaConvitesDto } from '@/tipos/convidados'
-import { ID_CASAMENTO, casamentoCompleto, chamadas, quando, rotearFetch, type Rota } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, eventoCompleto, chamadas, quando, rotearFetch, type Rota } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const ID_TAREFA = '33333333-3333-4333-8333-333333333333'
 const ID_CONVITE = '44444444-4444-4444-8444-444444444444'
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_TAREFAS = `${ROTA_CASAMENTO}/tarefas`
-const ROTA_CONVITES = `${ROTA_CASAMENTO}/convites`
-const CAMINHO_NOVA_TAREFA = `/casamentos/${ID_CASAMENTO}/tarefas/nova`
-const CAMINHO_EDITAR_TAREFA = `/casamentos/${ID_CASAMENTO}/tarefas/${ID_TAREFA}/editar`
-const CAMINHO_LISTA_TAREFAS = `/casamentos/${ID_CASAMENTO}/tarefas`
-const CAMINHO_CASAMENTO = `/casamentos/${ID_CASAMENTO}`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_TAREFAS = `${ROTA_EVENTO}/tarefas`
+const ROTA_CONVITES = `${ROTA_EVENTO}/convites`
+const CAMINHO_NOVA_TAREFA = `/eventos/${ID_EVENTO}/tarefas/nova`
+const CAMINHO_EDITAR_TAREFA = `/eventos/${ID_EVENTO}/tarefas/${ID_TAREFA}/editar`
+const CAMINHO_LISTA_TAREFAS = `/eventos/${ID_EVENTO}/tarefas`
+const CAMINHO_EVENTO = `/eventos/${ID_EVENTO}`
 
 const Raiz = () => h('div', [h(RouterView), h(ProvedorFeedback)])
 
@@ -59,13 +59,13 @@ function listaConvites(): ListaConvitesDto {
       recusados: { adultos: 0, criancas: 0, total: 0 },
     },
     convidadosEstimados: 150,
-    casamentoArquivado: false,
+    eventoArquivado: false,
   }
 }
 
 function rotasTarefas(...extras: Rota[]): Rota[] {
   return [
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
     quando('GET', `${ROTA_TAREFAS}/${ID_TAREFA}`, () => respostaJson(tarefaExemplo({ id: ID_TAREFA, titulo: 'Confirmar buffet' }))),
     quando('GET', ROTA_TAREFAS, () => respostaJson(listaTarefas([]))),
     ...extras,
@@ -117,7 +117,7 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
     const { roteador } = await abrir(CAMINHO_NOVA_TAREFA)
     await wrapper!.get('[data-teste="campo-titulo"]').setValue('Enviar lista de padrinhos')
 
-    const primeira = roteador.push(CAMINHO_CASAMENTO)
+    const primeira = roteador.push(CAMINHO_EVENTO)
     await flushPromises()
     expect(dialogoAberto()).toBe(true)
     expect(roteador.currentRoute.value.name).toBe('tarefa-nova')
@@ -128,12 +128,12 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
     expect(roteador.currentRoute.value.name).toBe('tarefa-nova')
     expect((wrapper!.get('[data-teste="campo-titulo"]').element as HTMLInputElement).value).toBe('Enviar lista de padrinhos')
 
-    const segunda = roteador.push(CAMINHO_CASAMENTO)
+    const segunda = roteador.push(CAMINHO_EVENTO)
     await flushPromises()
     botaoDialogo('dialogo-confirmacao-confirmar').click()
     await segunda
     await flushPromises()
-    expect(roteador.currentRoute.value.name).toBe('casamento')
+    expect(roteador.currentRoute.value.name).toBe('evento')
     expect(useAlteracoesNaoSalvasStore().visivel).toBe(false)
   })
 
@@ -141,10 +141,10 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
     rotearFetch(fetchSimulado, ...rotasTarefas())
     const { roteador } = await abrir(CAMINHO_NOVA_TAREFA)
 
-    await roteador.push(CAMINHO_CASAMENTO)
+    await roteador.push(CAMINHO_EVENTO)
     await flushPromises()
 
-    expect(roteador.currentRoute.value.name).toBe('casamento')
+    expect(roteador.currentRoute.value.name).toBe('evento')
     expect(dialogoAberto()).toBe(false)
   })
 
@@ -181,7 +181,7 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
     await flushPromises()
     expect(roteador.currentRoute.value.name).toBe('tarefa-nova')
 
-    const navegacao = roteador.push(CAMINHO_CASAMENTO)
+    const navegacao = roteador.push(CAMINHO_EVENTO)
     await flushPromises()
 
     expect(dialogoAberto()).toBe(true)
@@ -196,9 +196,9 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
     const { roteador } = await abrir(CAMINHO_EDITAR_TAREFA)
     expect((wrapper!.get('[data-teste="campo-titulo"]').element as HTMLInputElement).value).toBe('Confirmar buffet')
 
-    await roteador.push(CAMINHO_CASAMENTO)
+    await roteador.push(CAMINHO_EVENTO)
     await flushPromises()
-    expect(roteador.currentRoute.value.name).toBe('casamento')
+    expect(roteador.currentRoute.value.name).toBe('evento')
     expect(dialogoAberto()).toBe(false)
 
     await roteador.push(CAMINHO_EDITAR_TAREFA)
@@ -209,13 +209,13 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
       .find((opcao) => opcao.text() === 'Cancelada')!
     await cancelada.trigger('click')
 
-    const navegacao = roteador.push(CAMINHO_CASAMENTO)
+    const navegacao = roteador.push(CAMINHO_EVENTO)
     await flushPromises()
     expect(dialogoAberto()).toBe(true)
     botaoDialogo('dialogo-confirmacao-confirmar').click()
     await navegacao
     await flushPromises()
-    expect(roteador.currentRoute.value.name).toBe('casamento')
+    expect(roteador.currentRoute.value.name).toBe('evento')
   })
 
   it('[SEGURANÇA] sair da conta com alterações pendentes leva à tela de entrada sem diálogo', async () => {
@@ -248,7 +248,7 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
 describe('Proteção de alterações não salvas — formulário de convite', () => {
   function rotasConvite(): Rota[] {
     return [
-      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', `${ROTA_CONVITES}/${ID_CONVITE}`, () => respostaJson(convite())),
       quando('GET', ROTA_CONVITES, () => respostaJson(listaConvites())),
     ]
@@ -256,22 +256,22 @@ describe('Proteção de alterações não salvas — formulário de convite', ()
 
   it('[COMPONENTE] edição carregada com telefone formatado não gera falso positivo', async () => {
     rotearFetch(fetchSimulado, ...rotasConvite())
-    const { roteador } = await abrir(`/casamentos/${ID_CASAMENTO}/convidados/${ID_CONVITE}/editar`)
+    const { roteador } = await abrir(`/eventos/${ID_EVENTO}/convidados/${ID_CONVITE}/editar`)
     expect((wrapper!.get('[data-teste="campo-nome-convite"]').element as HTMLInputElement).value).toBe('Família Souza')
 
-    await roteador.push(CAMINHO_CASAMENTO)
+    await roteador.push(CAMINHO_EVENTO)
     await flushPromises()
 
-    expect(roteador.currentRoute.value.name).toBe('casamento')
+    expect(roteador.currentRoute.value.name).toBe('evento')
     expect(dialogoAberto()).toBe(false)
   })
 
   it('[COMPONENTE] adicionar uma pessoa ao convite novo conta como alteração', async () => {
     rotearFetch(fetchSimulado, ...rotasConvite())
-    const { roteador } = await abrir(`/casamentos/${ID_CASAMENTO}/convidados/novo`)
+    const { roteador } = await abrir(`/eventos/${ID_EVENTO}/convidados/novo`)
 
     await wrapper!.get('[data-teste="adicionar-item"]').trigger('click')
-    const navegacao = roteador.push(CAMINHO_CASAMENTO)
+    const navegacao = roteador.push(CAMINHO_EVENTO)
     await flushPromises()
 
     expect(dialogoAberto()).toBe(true)

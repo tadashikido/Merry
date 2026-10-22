@@ -7,34 +7,34 @@ const NOTA_INTERNA = 'Pagar saldo de R$ 4.000 em espécie'
 const TELEFONE_BUFFET = '(11) 98765-4321'
 
 async function montarDiaDeHoje(api: ClienteApi) {
-  const casamento = await api.criarCasamento({ data: hojeEmSaoPaulo(), horario: '16:30' })
+  const evento = await api.criarEvento({ data: hojeEmSaoPaulo(), horario: '16:30' })
   const nomeBuffet = `Buffet Sabor ${Date.now()}`
   const fornecedor = await api.criarFornecedor(nomeBuffet, 'Buffet', TELEFONE_BUFFET)
-  const vinculo = await api.vincularFornecedor(casamento.id, fornecedor.id)
+  const vinculo = await api.vincularFornecedor(evento.id, fornecedor.id)
   const minuto = minutoAgoraEmSaoPaulo()
 
-  await api.criarItemCronograma(casamento.id, { ...posicaoNoRoteiro(minuto - 300), duracaoMinutos: 60, atividade: 'Montagem do salão' })
-  await api.criarItemCronograma(casamento.id, {
+  await api.criarItemCronograma(evento.id, { ...posicaoNoRoteiro(minuto - 300), duracaoMinutos: 60, atividade: 'Montagem do salão' })
+  await api.criarItemCronograma(evento.id, {
     ...posicaoNoRoteiro(minuto - 30),
     duracaoMinutos: 120,
     atividade: 'Serviço do buffet',
     responsavel: 'Fernanda',
-    fornecedorCasamentoId: vinculo.id,
+    fornecedorEventoId: vinculo.id,
     instrucoes: 'Entrada pela rua lateral.',
     notasInternas: NOTA_INTERNA,
   })
-  await api.criarItemCronograma(casamento.id, { ...posicaoNoRoteiro(minuto + 150), duracaoMinutos: 60, atividade: 'Corte do bolo', responsavel: 'Ana' })
-  await api.criarItemCronograma(casamento.id, { ...posicaoNoRoteiro(minuto + 240), duracaoMinutos: 60, atividade: 'Pista de dança' })
+  await api.criarItemCronograma(evento.id, { ...posicaoNoRoteiro(minuto + 150), duracaoMinutos: 60, atividade: 'Corte do bolo', responsavel: 'Ana' })
+  await api.criarItemCronograma(evento.id, { ...posicaoNoRoteiro(minuto + 240), duracaoMinutos: 60, atividade: 'Pista de dança' })
 
-  return { casamento, vinculo, nomeBuffet }
+  return { evento, vinculo, nomeBuffet }
 }
 
 test.describe('Grande Dia — agora / próximo', () => {
   test('a cerimonialista no celular vê o agora e o próximo, liga com um toque, marca como feito e desfaz', async ({ paginaAssessoria: page, api }) => {
     await page.setViewportSize({ width: 390, height: 844 })
-    const { casamento } = await montarDiaDeHoje(api)
+    const { evento } = await montarDiaDeHoje(api)
 
-    await page.goto(`/casamentos/${casamento.id}/grande-dia`)
+    await page.goto(`/eventos/${evento.id}/grande-dia`)
 
     const agora = page.getByRole('region', { name: 'Agora', exact: true })
     await expect(agora).toContainText('Serviço do buffet')
@@ -58,12 +58,12 @@ test.describe('Grande Dia — agora / próximo', () => {
     await expect(page.getByText('Serviço do buffet marcada como feita.')).toBeVisible()
     await expect(page.getByTestId('painel-nada-agora')).toBeVisible()
     await expect(page.getByTestId('grande-dia-feitos')).toContainText('Feitos (1)')
-    expect((await api.situacoesGrandeDia(casamento.id))['Serviço do buffet']).toBe('Feito')
+    expect((await api.situacoesGrandeDia(evento.id))['Serviço do buffet']).toBe('Feito')
 
     await page.getByRole('button', { name: 'Desfazer' }).click()
     await expect(page.getByText('Serviço do buffet voltou para o roteiro.')).toBeVisible()
     await expect(agora).toContainText('Serviço do buffet')
-    expect((await api.situacoesGrandeDia(casamento.id))['Serviço do buffet']).toBe('Agora')
+    expect((await api.situacoesGrandeDia(evento.id))['Serviço do buffet']).toBe('Agora')
 
     await page.getByRole('button', { name: 'Marcar “Montagem do salão” como feito' }).click()
     await expect(page.getByText('Montagem do salão marcada como feita.')).toBeVisible()
@@ -71,9 +71,9 @@ test.describe('Grande Dia — agora / próximo', () => {
   })
 
   test('o link público do fornecedor mostra o mesmo agora / próximo, só com os itens dele e sem ações', async ({ api, browser }) => {
-    const { casamento, vinculo, nomeBuffet } = await montarDiaDeHoje(api)
-    const token = await api.gerarLinkCronograma(casamento.id, { tipo: 'Fornecedor', fornecedorCasamentoId: vinculo.id })
-    const geral = await api.gerarLinkCronograma(casamento.id, { tipo: 'Geral' })
+    const { evento, vinculo, nomeBuffet } = await montarDiaDeHoje(api)
+    const token = await api.gerarLinkCronograma(evento.id, { tipo: 'Fornecedor', fornecedorEventoId: vinculo.id })
+    const geral = await api.gerarLinkCronograma(evento.id, { tipo: 'Geral' })
 
     const contexto = await browser.newContext({ viewport: { width: 390, height: 844 } })
     const publica = await contexto.newPage()
@@ -94,28 +94,28 @@ test.describe('Grande Dia — agora / próximo', () => {
     await contexto.close()
   })
 
-  test('o casal acompanha o grande dia em leitura, com contatos e sem marcar', async ({ api, browser, baseURL }) => {
-    const { casamento } = await montarDiaDeHoje(api)
-    const emailCasal = emailUnico('casal')
-    const senhaCasal = senhaValida()
-    await api.convidarCasal(casamento.id, casamento.nomePrimeiraPessoa, emailCasal)
-    const link = await aguardarLinkNoEmail(emailCasal, /http:\/\/localhost:\d+\/acesso-casal#token=[A-Za-z0-9_-]+/)
+  test('os anfitriões acompanham o grande dia em leitura, com contatos e sem marcar', async ({ api, browser, baseURL }) => {
+    const { evento } = await montarDiaDeHoje(api)
+    const emailAnfitriao = emailUnico('anfitriao')
+    const senhaAnfitriao = senhaValida()
+    await api.convidarAnfitriao(evento.id, evento.nomePrimeiraPessoa, emailAnfitriao)
+    const link = await aguardarLinkNoEmail(emailAnfitriao, /http:\/\/localhost:\d+\/acesso-anfitriao#token=[A-Za-z0-9_-]+/)
 
     const contexto = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 } })
-    const casal = await contexto.newPage()
-    await casal.goto(caminhoRelativo(link))
-    await casal.locator('#aceite-senha').fill(senhaCasal)
-    await casal.locator('#aceite-confirmacao').fill(senhaCasal)
-    await casal.getByRole('button', { name: 'Criar senha e entrar' }).click()
-    await expect(casal).toHaveURL(new RegExp(`/casamentos/${casamento.id}$`))
+    const anfitriao = await contexto.newPage()
+    await anfitriao.goto(caminhoRelativo(link))
+    await anfitriao.locator('#aceite-senha').fill(senhaAnfitriao)
+    await anfitriao.locator('#aceite-confirmacao').fill(senhaAnfitriao)
+    await anfitriao.getByRole('button', { name: 'Criar senha e entrar' }).click()
+    await expect(anfitriao).toHaveURL(new RegExp(`/eventos/${evento.id}$`))
 
-    await casal.goto(`/casamentos/${casamento.id}/grande-dia`)
-    const agora = casal.getByRole('region', { name: 'Agora', exact: true })
+    await anfitriao.goto(`/eventos/${evento.id}/grande-dia`)
+    const agora = anfitriao.getByRole('region', { name: 'Agora', exact: true })
     await expect(agora).toContainText('Serviço do buffet')
     await expect(agora.getByRole('link', { name: /Ligar para Buffet Sabor/ })).toBeVisible()
-    await expect(casal.getByText(NOTA_INTERNA)).toHaveCount(0)
-    await expect(casal.getByRole('button', { name: /como feito/ })).toHaveCount(0)
-    await expect(casal.getByRole('button', { name: 'Reabrir' })).toHaveCount(0)
+    await expect(anfitriao.getByText(NOTA_INTERNA)).toHaveCount(0)
+    await expect(anfitriao.getByRole('button', { name: /como feito/ })).toHaveCount(0)
+    await expect(anfitriao.getByRole('button', { name: 'Reabrir' })).toHaveCount(0)
     await contexto.close()
   })
 })

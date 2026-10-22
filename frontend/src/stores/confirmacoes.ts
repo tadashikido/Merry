@@ -3,48 +3,48 @@ import { defineStore } from 'pinia'
 
 import { requisitar } from '@/servicos/clienteHttp'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
-import { ROTA_CASAMENTOS } from '@/stores/casamentos'
+import { ROTA_EVENTOS } from '@/stores/eventos'
 import { interpretarFalhaConvidados, type FalhaConvidados, type ResultadoConvidados } from '@/stores/convidados'
 import type { CobrancaRsvpDto, ExportacaoBuffetDto, FormatoExportacaoBuffet, PainelConfirmacoesDto } from '@/tipos/confirmacoes'
 
-export function rotaPainelConfirmacoes(casamentoId: string): string {
-  return `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/painel-confirmacoes`
+export function rotaPainelConfirmacoes(eventoId: string): string {
+  return `${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/painel-confirmacoes`
 }
 
-export function rotaExportacaoBuffet(casamentoId: string, formato: FormatoExportacaoBuffet): string {
-  return `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/exportacao-buffet?formato=${formato}`
+export function rotaExportacaoBuffet(eventoId: string, formato: FormatoExportacaoBuffet): string {
+  return `${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/exportacao-buffet?formato=${formato}`
 }
 
-export function rotaCobrancaRsvp(casamentoId: string, conviteId: string): string {
-  return `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/convites/${encodeURIComponent(conviteId)}/cobranca`
+export function rotaCobrancaRsvp(eventoId: string, conviteId: string): string {
+  return `${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/convites/${encodeURIComponent(conviteId)}/cobranca`
 }
 
 export const useConfirmacoesStore = defineStore('confirmacoes', () => {
-  const casamentoId = ref<string | null>(null)
+  const eventoId = ref<string | null>(null)
   const painel = ref<PainelConfirmacoesDto | null>(null)
   const carregando = ref(false)
   const falha = ref<FalhaConvidados | null>(null)
 
   async function carregar(id: string): Promise<void> {
-    if (casamentoId.value !== id) {
+    if (eventoId.value !== id) {
       painel.value = null
     }
-    casamentoId.value = id
+    eventoId.value = id
     carregando.value = true
     falha.value = null
 
     try {
       const resposta = await requisitar<PainelConfirmacoesDto>(rotaPainelConfirmacoes(id))
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         painel.value = resposta
       }
     } catch (erro) {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         painel.value = null
         falha.value = interpretarFalhaConvidados(erro)
       }
     } finally {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         carregando.value = false
       }
     }
@@ -69,7 +69,7 @@ export const useConfirmacoesStore = defineStore('confirmacoes', () => {
   }
 
   function atualizarCobranca(id: string, cobranca: CobrancaRsvpDto) {
-    if (casamentoId.value !== id || !painel.value) {
+    if (eventoId.value !== id || !painel.value) {
       return
     }
     painel.value = {
@@ -83,7 +83,7 @@ export const useConfirmacoesStore = defineStore('confirmacoes', () => {
   }
 
   function limpar() {
-    casamentoId.value = null
+    eventoId.value = null
     painel.value = null
     carregando.value = false
     falha.value = null
@@ -99,5 +99,5 @@ export const useConfirmacoesStore = defineStore('confirmacoes', () => {
     },
   )
 
-  return { casamentoId, painel, carregando, falha, carregar, exportar, registrarCobranca, limpar }
+  return { eventoId, painel, carregando, falha, carregar, exportar, registrarCobranca, limpar }
 })

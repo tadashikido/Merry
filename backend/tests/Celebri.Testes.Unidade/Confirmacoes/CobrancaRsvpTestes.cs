@@ -11,9 +11,9 @@ public class CobrancaRsvpTestes
     private static readonly DateOnly Hoje = new(2027, 5, 7);
     private static readonly DateOnly DepoisDoPrazo = new(2027, 5, 13);
 
-    private static Convite Enviado(Guid casamentoId, string nome = "Família Souza")
+    private static Convite Enviado(Guid eventoId, string nome = "Família Souza")
     {
-        var convite = Convite.Criar(casamentoId, Dados(nome, null, 0, Pessoa("Carla"), Pessoa("Pedro")), Agora);
+        var convite = Convite.Criar(eventoId, Dados(nome, null, 0, Pessoa("Carla"), Pessoa("Pedro")), Agora);
         convite.MarcarEnviado(Agora);
         return convite;
     }
@@ -77,10 +77,10 @@ public class CobrancaRsvpTestes
     [Fact]
     public void Calcular_ConviteEnviadoComLinkEPrazoAberto_DeveSerCobravelSemCobranca()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
-        var convite = Enviado(casamento.Id);
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
+        var convite = Enviado(evento.Id);
 
-        var painel = CalculadoraPainelConfirmacoes.Calcular(casamento, [convite], Hoje, new HashSet<Guid> { convite.Id });
+        var painel = CalculadoraPainelConfirmacoes.Calcular(evento, [convite], Hoje, new HashSet<Guid> { convite.Id });
 
         var pendente = Assert.Single(painel.Pendentes);
         Assert.True(pendente.Cobravel);
@@ -91,11 +91,11 @@ public class CobrancaRsvpTestes
     [Fact]
     public void Calcular_DeveDevolverUltimaCobrancaEQuantidade()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
-        var convite = Enviado(casamento.Id);
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
+        var convite = Enviado(evento.Id);
         convite.RegistrarCobranca(Agora);
 
-        var painel = CalculadoraPainelConfirmacoes.Calcular(casamento, [convite], Hoje, new HashSet<Guid> { convite.Id });
+        var painel = CalculadoraPainelConfirmacoes.Calcular(evento, [convite], Hoje, new HashSet<Guid> { convite.Id });
 
         var pendente = Assert.Single(painel.Pendentes);
         Assert.Equal(Agora, pendente.UltimaCobrancaEm);
@@ -105,10 +105,10 @@ public class CobrancaRsvpTestes
     [Fact]
     public void Calcular_SemLinkAtivo_NaoDeveSerCobravel()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
-        var convite = Enviado(casamento.Id);
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
+        var convite = Enviado(evento.Id);
 
-        var painel = CalculadoraPainelConfirmacoes.Calcular(casamento, [convite], Hoje, new HashSet<Guid>());
+        var painel = CalculadoraPainelConfirmacoes.Calcular(evento, [convite], Hoje, new HashSet<Guid>());
 
         Assert.False(Assert.Single(painel.Pendentes).Cobravel);
     }
@@ -116,10 +116,10 @@ public class CobrancaRsvpTestes
     [Fact]
     public void Calcular_NaoEnviado_NaoDeveSerCobravelMesmoComLink()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
-        var convite = Convite.Criar(casamento.Id, Dados(), Agora);
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
+        var convite = Convite.Criar(evento.Id, Dados(), Agora);
 
-        var painel = CalculadoraPainelConfirmacoes.Calcular(casamento, [convite], Hoje, new HashSet<Guid> { convite.Id });
+        var painel = CalculadoraPainelConfirmacoes.Calcular(evento, [convite], Hoje, new HashSet<Guid> { convite.Id });
 
         Assert.False(Assert.Single(painel.Pendentes).Cobravel);
     }
@@ -127,23 +127,23 @@ public class CobrancaRsvpTestes
     [Fact]
     public void Calcular_PrazoEncerrado_NenhumPendenteDeveSerCobravel()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
-        var convite = Enviado(casamento.Id);
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
+        var convite = Enviado(evento.Id);
 
-        var painel = CalculadoraPainelConfirmacoes.Calcular(casamento, [convite], DepoisDoPrazo, new HashSet<Guid> { convite.Id });
+        var painel = CalculadoraPainelConfirmacoes.Calcular(evento, [convite], DepoisDoPrazo, new HashSet<Guid> { convite.Id });
 
         Assert.False(painel.Prazo.AceitaRespostas);
         Assert.False(Assert.Single(painel.Pendentes).Cobravel);
     }
 
     [Fact]
-    public void Calcular_CasamentoArquivado_NenhumPendenteDeveSerCobravel()
+    public void Calcular_EventoArquivado_NenhumPendenteDeveSerCobravel()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
-        var convite = Enviado(casamento.Id);
-        casamento.Arquivar(Agora);
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
+        var convite = Enviado(evento.Id);
+        evento.Arquivar(Agora);
 
-        var painel = CalculadoraPainelConfirmacoes.Calcular(casamento, [convite], Hoje, new HashSet<Guid> { convite.Id });
+        var painel = CalculadoraPainelConfirmacoes.Calcular(evento, [convite], Hoje, new HashSet<Guid> { convite.Id });
 
         Assert.False(Assert.Single(painel.Pendentes).Cobravel);
     }
@@ -151,10 +151,10 @@ public class CobrancaRsvpTestes
     [Fact]
     public void Calcular_SobrecargaSemLinks_DeveManterContratoAnteriorSemCobraveis()
     {
-        var casamento = CalculadoraPainelConfirmacoesTestes.Casamento();
-        var convite = Enviado(casamento.Id);
+        var evento = CalculadoraPainelConfirmacoesTestes.NovoEvento();
+        var convite = Enviado(evento.Id);
 
-        var painel = CalculadoraPainelConfirmacoes.Calcular(casamento, [convite], Hoje);
+        var painel = CalculadoraPainelConfirmacoes.Calcular(evento, [convite], Hoje);
 
         Assert.False(Assert.Single(painel.Pendentes).Cobravel);
     }

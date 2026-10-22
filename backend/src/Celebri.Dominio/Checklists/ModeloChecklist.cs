@@ -69,7 +69,7 @@ public class ModeloChecklist : IPertenceOrganizacao
     public IReadOnlyList<ItemModeloChecklist> ItensOrdenados()
     {
         return _itens
-            .OrderByDescending(item => item.DiasAntesDoCasamento)
+            .OrderByDescending(item => item.DiasAntesDoEvento)
             .ThenBy(item => item.Titulo, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(item => item.CriadoEm)
             .ToList();

@@ -5,7 +5,7 @@ namespace Celebri.Testes.Unidade.Cronogramas;
 public class RegrasCronogramaTestes
 {
     private static readonly DateTimeOffset Agora = new(2027, 3, 10, 12, 0, 0, TimeSpan.Zero);
-    private static readonly Guid CasamentoId = Guid.NewGuid();
+    private static readonly Guid EventoId = Guid.NewGuid();
 
     private static ItemCronograma Item(
         int hora,
@@ -14,10 +14,10 @@ public class RegrasCronogramaTestes
         string? responsavel = null,
         Guid? fornecedor = null,
         string atividade = "Atividade",
-        DiaCronograma dia = DiaCronograma.DiaDoCasamento)
+        DiaCronograma dia = DiaCronograma.DiaDoEvento)
     {
         return ItemCronograma.Criar(
-            CasamentoId,
+            EventoId,
             new DadosItemCronograma(dia, new TimeOnly(hora, minuto), duracao, atividade, null, responsavel, fornecedor, null, null),
             null,
             Agora);

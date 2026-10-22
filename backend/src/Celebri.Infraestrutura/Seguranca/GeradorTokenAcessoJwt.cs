@@ -56,9 +56,9 @@ public class GeradorTokenAcessoJwt : IGeradorTokenAcesso
             new(ClaimsAutenticacao.IdentificadorToken, Guid.NewGuid().ToString()),
         };
 
-        if (usuario.CasamentoId is { } casamentoId)
+        if (usuario.EventoId is { } eventoId)
         {
-            claims.Add(new Claim(ClaimsAutenticacao.CasamentoId, casamentoId.ToString()));
+            claims.Add(new Claim(ClaimsAutenticacao.EventoId, eventoId.ToString()));
         }
 
         return claims;

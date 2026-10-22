@@ -1,7 +1,7 @@
 import type { RouteLocationRaw } from 'vue-router'
 
 import type { NomeIcone } from '@/design/icones'
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 
 export interface ItemRail {
   rotulo: string
@@ -11,11 +11,11 @@ export interface ItemRail {
   prefixosAdicionais?: string[]
 }
 
-export type GrupoModuloCasamento = 'planejar' | 'pessoas' | 'dinheiroDocumentos' | 'execucao'
+export type GrupoModuloEvento = 'planejar' | 'pessoas' | 'dinheiroDocumentos' | 'execucao'
 
-export interface ModuloCasamento {
+export interface ModuloEvento {
   chave: string
-  grupo: GrupoModuloCasamento
+  grupo: GrupoModuloEvento
   rotulo: string
   icone: NomeIcone
   rota: string
@@ -27,7 +27,7 @@ export interface IndicadorModulo {
   rotuloAcessivel: string
 }
 
-export interface ItemNavegacaoCasamento {
+export interface ItemNavegacaoEvento {
   chave: string
   rotulo: string
   icone: NomeIcone
@@ -36,20 +36,20 @@ export interface ItemNavegacaoCasamento {
   indicador?: IndicadorModulo
 }
 
-export interface GrupoNavegacaoCasamento {
-  chave: GrupoModuloCasamento
+export interface GrupoNavegacaoEvento {
+  chave: GrupoModuloEvento
   rotulo: string
-  itens: ItemNavegacaoCasamento[]
+  itens: ItemNavegacaoEvento[]
 }
 
-export interface ContextoCasamento {
+export interface ContextoEvento {
   nomePrimeiraPessoa: string
   nomeSegundaPessoa: string
   data: DataCalendario
   diasRestantes: number
 }
 
-export type ContextoVisual = 'assessoria' | 'casal'
+export type ContextoVisual = 'assessoria' | 'anfitriao'
 
 export interface NivelTrilha {
   chave: string
@@ -57,7 +57,7 @@ export interface NivelTrilha {
   rota: RouteLocationRaw
 }
 
-export interface OpcaoSeletorCasamento {
+export interface OpcaoSeletorEvento {
   id: string
   nomePrimeiraPessoa: string
   nomeSegundaPessoa: string

@@ -2,7 +2,7 @@ import { TEXTOS_CSV_BUFFET } from '@/textos/confirmacoes'
 import { ROTULOS_TIPO_RESTRICAO } from '@/textos/dadosSensiveis'
 import type { ExportacaoBuffetDto, PessoaBuffetDto } from '@/tipos/confirmacoes'
 import { gerarCsv } from '@/utilitarios/csv'
-import { formatarDataCalendario, formatarDataHora, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarDataCalendario, formatarDataHora, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 
 type Celula = string | number
 
@@ -17,13 +17,13 @@ export function descreverRestricoes(pessoa: Pick<PessoaBuffetDto, 'tipos' | 'out
 }
 
 export function linhasCsvBuffet(exportacao: ExportacaoBuffetDto): Celula[][] {
-  const { casamento, confirmados, restricoes } = exportacao
+  const { evento, confirmados, restricoes } = exportacao
   const largura = TEXTOS_CSV_BUFFET.cabecalhoLista.length
   const linhas: Celula[][] = [
-    [TEXTOS_CSV_BUFFET.casamento, formatarNomesCasal(casamento.nomePrimeiraPessoa, casamento.nomeSegundaPessoa)],
-    [TEXTOS_CSV_BUFFET.data, formatarDataCalendario(casamento.data)],
-    [TEXTOS_CSV_BUFFET.horario, casamento.horario ?? ''],
-    [TEXTOS_CSV_BUFFET.local, casamento.localRecepcao ?? ''],
+    [TEXTOS_CSV_BUFFET.evento, formatarNomesAnfitrioes(evento.nomePrimeiraPessoa, evento.nomeSegundaPessoa)],
+    [TEXTOS_CSV_BUFFET.data, formatarDataCalendario(evento.data)],
+    [TEXTOS_CSV_BUFFET.horario, evento.horario ?? ''],
+    [TEXTOS_CSV_BUFFET.local, evento.localRecepcao ?? ''],
     [TEXTOS_CSV_BUFFET.geradoEm, formatarDataHora(exportacao.geradoEm)],
     [TEXTOS_CSV_BUFFET.aviso],
     [],
@@ -68,9 +68,9 @@ function segmento(texto: string): string {
     .slice(0, TAMANHO_MAXIMO_SEGMENTO)
 }
 
-export function nomeArquivoBuffet(exportacao: Pick<ExportacaoBuffetDto, 'casamento'>): string {
-  const { nomePrimeiraPessoa, nomeSegundaPessoa, data } = exportacao.casamento
-  const casal = [segmento(nomePrimeiraPessoa), segmento(nomeSegundaPessoa)].filter(Boolean).join('-e-')
+export function nomeArquivoBuffet(exportacao: Pick<ExportacaoBuffetDto, 'evento'>): string {
+  const { nomePrimeiraPessoa, nomeSegundaPessoa, data } = exportacao.evento
+  const anfitriao = [segmento(nomePrimeiraPessoa), segmento(nomeSegundaPessoa)].filter(Boolean).join('-e-')
   const dataSegura = /^\d{4}-\d{2}-\d{2}$/.test(data) ? data : 'sem-data'
-  return `buffet-${casal || 'casamento'}-${dataSegura}.csv`
+  return `buffet-${anfitriao || 'evento'}-${dataSegura}.csv`
 }

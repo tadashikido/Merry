@@ -2,7 +2,7 @@ namespace Celebri.Aplicacao.Tarefas;
 
 public sealed record TarefaPendenteDto(
     Guid Id,
-    Guid CasamentoId,
+    Guid EventoId,
     string NomePrimeiraPessoa,
     string NomeSegundaPessoa,
     string Titulo,

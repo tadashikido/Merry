@@ -1,6 +1,6 @@
 import { expect, type APIRequestContext, type APIResponse } from '@playwright/test'
 
-import { dataFutura, novoCasal, type DadosAssessoria, type DadosCasal } from './dados'
+import { dataFutura, novoAnfitriao, type DadosAssessoria, type DadosAnfitriao } from './dados'
 
 const CABECALHO_AJAX = { 'X-Requested-With': 'XMLHttpRequest' }
 
@@ -9,7 +9,7 @@ export interface Sessao {
   usuario: { id: string; nome: string; email: string; papel: string }
 }
 
-export interface CasamentoCriado extends DadosCasal {
+export interface EventoCriado extends DadosAnfitriao {
   id: string
   data: string
 }
@@ -44,22 +44,22 @@ export interface ConviteCriado {
 }
 
 export type CategoriaFornecedor = 'Buffet' | 'Fotografia' | 'Musica' | 'Decoracao' | 'Outros'
-export type StatusFornecedorCasamento = 'Cotacao' | 'EmNegociacao' | 'Contratado' | 'Cancelado'
+export type StatusFornecedorEvento = 'Cotacao' | 'EmNegociacao' | 'Contratado' | 'Cancelado'
 
 export interface ItemCronogramaE2e {
   inicio: string
   atividade: string
-  dia?: 'Vespera' | 'DiaDoCasamento' | 'DiaSeguinte'
+  dia?: 'Vespera' | 'DiaDoEvento' | 'DiaSeguinte'
   duracaoMinutos?: number | null
   local?: string | null
   responsavel?: string | null
-  fornecedorCasamentoId?: string | null
+  fornecedorEventoId?: string | null
   instrucoes?: string | null
   notasInternas?: string | null
 }
 
 export interface LinksCronogramaE2e {
-  destinos: { tipo: string; fornecedorCasamentoId: string | null; rotulo: string | null; link: { id: string; token: string | null } | null }[]
+  destinos: { tipo: string; fornecedorEventoId: string | null; rotulo: string | null; link: { id: string; token: string | null } | null }[]
 }
 
 async function exigirSucesso(resposta: APIResponse, operacao: string): Promise<void> {
@@ -95,15 +95,15 @@ export class ClienteApi {
     return (texto ? JSON.parse(texto) : {}) as T
   }
 
-  async criarCasamento(dados: Partial<CasamentoCriado> & { horario?: string; localCerimonia?: string } = {}): Promise<CasamentoCriado> {
-    const casal = { ...novoCasal(), ...dados }
+  async criarEvento(dados: Partial<EventoCriado> & { horario?: string; localCerimonia?: string } = {}): Promise<EventoCriado> {
+    const anfitriao = { ...novoAnfitriao(), ...dados }
     const data = dados.data ?? dataFutura(180)
     const criado = await this.enviar<{ id: string }>(
       'post',
-      '/api/casamentos',
+      '/api/eventos',
       {
-        nomePrimeiraPessoa: casal.nomePrimeiraPessoa,
-        nomeSegundaPessoa: casal.nomeSegundaPessoa,
+        nomePrimeiraPessoa: anfitriao.nomePrimeiraPessoa,
+        nomeSegundaPessoa: anfitriao.nomeSegundaPessoa,
         data,
         horario: dados.horario ?? '16:30',
         localCerimonia: dados.localCerimonia ?? 'Capela Santa Luzia',
@@ -111,15 +111,15 @@ export class ClienteApi {
         convidadosEstimados: 120,
         observacoes: null,
       },
-      'Criação do casamento',
+      'Criação do evento',
     )
-    return { id: criado.id, data, nomePrimeiraPessoa: casal.nomePrimeiraPessoa, nomeSegundaPessoa: casal.nomeSegundaPessoa }
+    return { id: criado.id, data, nomePrimeiraPessoa: anfitriao.nomePrimeiraPessoa, nomeSegundaPessoa: anfitriao.nomeSegundaPessoa }
   }
 
-  async criarConvite(casamentoId: string, pessoas: PessoaConvite[], opcoes: { nome?: string; grupo?: string; limiteAcompanhantes?: number } = {}): Promise<ConviteCriado> {
+  async criarConvite(eventoId: string, pessoas: PessoaConvite[], opcoes: { nome?: string; grupo?: string; limiteAcompanhantes?: number } = {}): Promise<ConviteCriado> {
     return this.enviar<ConviteCriado>(
       'post',
-      `/api/casamentos/${casamentoId}/convites`,
+      `/api/eventos/${eventoId}/convites`,
       {
         nome: opcoes.nome ?? null,
         grupo: opcoes.grupo ?? null,
@@ -137,10 +137,10 @@ export class ClienteApi {
     )
   }
 
-  async gerarLinkRsvp(casamentoId: string, conviteId: string): Promise<string> {
+  async gerarLinkRsvp(eventoId: string, conviteId: string): Promise<string> {
     const resposta = await this.enviar<{ token: string }>(
       'post',
-      `/api/casamentos/${casamentoId}/convites/${conviteId}/link-rsvp`,
+      `/api/eventos/${eventoId}/convites/${conviteId}/link-rsvp`,
       {},
       'Geração do link RSVP',
     )
@@ -166,14 +166,14 @@ export class ClienteApi {
   }
 
   async vincularFornecedor(
-    casamentoId: string,
+    eventoId: string,
     fornecedorId: string,
-    status: StatusFornecedorCasamento = 'Contratado',
+    status: StatusFornecedorEvento = 'Contratado',
     valorContratado: number | null = 6000,
   ): Promise<{ id: string }> {
     return this.enviar<{ id: string }>(
       'post',
-      `/api/casamentos/${casamentoId}/fornecedores`,
+      `/api/eventos/${eventoId}/fornecedores`,
       {
         fornecedorId,
         servico: 'Cobertura completa',
@@ -186,16 +186,16 @@ export class ClienteApi {
     )
   }
 
-  async criarItemCronograma(casamentoId: string, item: ItemCronogramaE2e): Promise<{ id: string }> {
+  async criarItemCronograma(eventoId: string, item: ItemCronogramaE2e): Promise<{ id: string }> {
     return this.enviar<{ id: string }>(
       'post',
-      `/api/casamentos/${casamentoId}/cronograma`,
+      `/api/eventos/${eventoId}/cronograma`,
       {
-        dia: 'DiaDoCasamento',
+        dia: 'DiaDoEvento',
         duracaoMinutos: 60,
         local: null,
         responsavel: null,
-        fornecedorCasamentoId: null,
+        fornecedorEventoId: null,
         instrucoes: null,
         notasInternas: null,
         ...item,
@@ -204,48 +204,48 @@ export class ClienteApi {
     )
   }
 
-  async atualizarItemCronograma(casamentoId: string, itemId: string, item: ItemCronogramaE2e): Promise<void> {
+  async atualizarItemCronograma(eventoId: string, itemId: string, item: ItemCronogramaE2e): Promise<void> {
     await this.enviar(
       'put',
-      `/api/casamentos/${casamentoId}/cronograma/${itemId}`,
-      { dia: 'DiaDoCasamento', duracaoMinutos: 60, local: null, responsavel: null, fornecedorCasamentoId: null, instrucoes: null, notasInternas: null, ...item },
+      `/api/eventos/${eventoId}/cronograma/${itemId}`,
+      { dia: 'DiaDoEvento', duracaoMinutos: 60, local: null, responsavel: null, fornecedorEventoId: null, instrucoes: null, notasInternas: null, ...item },
       'Atualização do item do cronograma',
     )
   }
 
-  async listarLinksCronograma(casamentoId: string): Promise<LinksCronogramaE2e> {
-    const resposta = await this.request.get(`/api/casamentos/${casamentoId}/cronograma/links`, { headers: this.cabecalhos() })
+  async listarLinksCronograma(eventoId: string): Promise<LinksCronogramaE2e> {
+    const resposta = await this.request.get(`/api/eventos/${eventoId}/cronograma/links`, { headers: this.cabecalhos() })
     await exigirSucesso(resposta, 'Listagem dos links do cronograma')
     return (await resposta.json()) as LinksCronogramaE2e
   }
 
-  async gerarLinkCronograma(casamentoId: string, corpo: { tipo: 'Geral' | 'Fornecedor' | 'Responsavel'; fornecedorCasamentoId?: string }): Promise<string> {
-    const link = await this.enviar<{ token: string }>('post', `/api/casamentos/${casamentoId}/cronograma/links`, corpo, 'Geração do link do cronograma')
+  async gerarLinkCronograma(eventoId: string, corpo: { tipo: 'Geral' | 'Fornecedor' | 'Responsavel'; fornecedorEventoId?: string }): Promise<string> {
+    const link = await this.enviar<{ token: string }>('post', `/api/eventos/${eventoId}/cronograma/links`, corpo, 'Geração do link do cronograma')
     return link.token
   }
 
-  async situacoesGrandeDia(casamentoId: string): Promise<Record<string, string>> {
-    const resposta = await this.request.get(`/api/casamentos/${casamentoId}/grande-dia`, { headers: this.cabecalhos() })
+  async situacoesGrandeDia(eventoId: string): Promise<Record<string, string>> {
+    const resposta = await this.request.get(`/api/eventos/${eventoId}/grande-dia`, { headers: this.cabecalhos() })
     await exigirSucesso(resposta, 'Consulta do Grande Dia')
     const dados = (await resposta.json()) as { itens: { atividade: string; situacao: string }[] }
     return Object.fromEntries(dados.itens.map((item) => [item.atividade, item.situacao]))
   }
 
-  async criarMesa(casamentoId: string, mesa: { numero: number; nome?: string | null; capacidade: number; especial?: boolean }): Promise<MesaE2e> {
+  async criarMesa(eventoId: string, mesa: { numero: number; nome?: string | null; capacidade: number; especial?: boolean }): Promise<MesaE2e> {
     return this.enviar<MesaE2e>(
       'post',
-      `/api/casamentos/${casamentoId}/mesas`,
+      `/api/eventos/${eventoId}/mesas`,
       { numero: mesa.numero, nome: mesa.nome ?? null, capacidade: mesa.capacidade, especial: mesa.especial ?? false },
       'Criação da mesa',
     )
   }
 
-  async sentarNaMesa(casamentoId: string, mesaId: string, convidadosIds: string[]): Promise<MapaMesasE2e> {
-    return this.enviar<MapaMesasE2e>('post', `/api/casamentos/${casamentoId}/mesas/${mesaId}/pessoas`, { convidadosIds }, 'Atribuição de mesa')
+  async sentarNaMesa(eventoId: string, mesaId: string, convidadosIds: string[]): Promise<MapaMesasE2e> {
+    return this.enviar<MapaMesasE2e>('post', `/api/eventos/${eventoId}/mesas/${mesaId}/pessoas`, { convidadosIds }, 'Atribuição de mesa')
   }
 
-  async mapaMesas(casamentoId: string): Promise<MapaMesasE2e> {
-    const resposta = await this.request.get(`/api/casamentos/${casamentoId}/mesas`, { headers: this.cabecalhos() })
+  async mapaMesas(eventoId: string): Promise<MapaMesasE2e> {
+    const resposta = await this.request.get(`/api/eventos/${eventoId}/mesas`, { headers: this.cabecalhos() })
     await exigirSucesso(resposta, 'Consulta do mapa de mesas')
     return (await resposta.json()) as MapaMesasE2e
   }
@@ -255,7 +255,7 @@ export class ClienteApi {
     await exigirSucesso(resposta, 'Resposta do RSVP público')
   }
 
-  async convidarCasal(casamentoId: string, nome: string, email: string): Promise<void> {
-    await this.enviar('post', `/api/casamentos/${casamentoId}/acessos-casal`, { nome, email }, 'Convite de acesso do casal')
+  async convidarAnfitriao(eventoId: string, nome: string, email: string): Promise<void> {
+    await this.enviar('post', `/api/eventos/${eventoId}/acessos-anfitriao`, { nome, email }, 'Convite de acesso dos anfitriões')
   }
 }

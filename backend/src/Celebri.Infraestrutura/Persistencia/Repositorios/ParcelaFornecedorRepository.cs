@@ -7,28 +7,28 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class ParcelaFornecedorRepository : IParcelaFornecedorRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public ParcelaFornecedorRepository(CasamentoDbContext contexto)
+    public ParcelaFornecedorRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }
 
-    public async Task<IReadOnlyList<ParcelaFornecedor>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<IReadOnlyList<ParcelaFornecedor>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
         return await _contexto.ParcelasFornecedor
             .AsNoTracking()
-            .Where(parcela => parcela.CasamentoId == casamentoId)
+            .Where(parcela => parcela.EventoId == eventoId)
             .ToListAsync(cancelamento);
     }
 
     public async Task<IReadOnlyList<ParcelaFornecedor>> ListarPorVinculoAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid vinculoId,
         CancellationToken cancelamento)
     {
         return await _contexto.ParcelasFornecedor
-            .Where(parcela => parcela.CasamentoId == casamentoId && parcela.FornecedorCasamentoId == vinculoId)
+            .Where(parcela => parcela.EventoId == eventoId && parcela.FornecedorEventoId == vinculoId)
             .ToListAsync(cancelamento);
     }
 
@@ -42,23 +42,23 @@ public class ParcelaFornecedorRepository : IParcelaFornecedorRepository
 
         return await _contexto.ParcelasFornecedor
             .AsNoTracking()
-            .Where(parcela => ids.Contains(parcela.FornecedorCasamentoId))
+            .Where(parcela => ids.Contains(parcela.FornecedorEventoId))
             .ToListAsync(cancelamento);
     }
 
-    public Task<ParcelaFornecedor?> ObterAsync(Guid casamentoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento)
+    public Task<ParcelaFornecedor?> ObterAsync(Guid eventoId, Guid vinculoId, Guid parcelaId, CancellationToken cancelamento)
     {
         return _contexto.ParcelasFornecedor.FirstOrDefaultAsync(
-            parcela => parcela.CasamentoId == casamentoId
-                && parcela.FornecedorCasamentoId == vinculoId
+            parcela => parcela.EventoId == eventoId
+                && parcela.FornecedorEventoId == vinculoId
                 && parcela.Id == parcelaId,
             cancelamento);
     }
 
-    public async Task<TotaisParcelasVinculo> ObterTotaisPorVinculoAsync(Guid casamentoId, Guid vinculoId, CancellationToken cancelamento)
+    public async Task<TotaisParcelasVinculo> ObterTotaisPorVinculoAsync(Guid eventoId, Guid vinculoId, CancellationToken cancelamento)
     {
         var consulta = _contexto.ParcelasFornecedor
-            .Where(parcela => parcela.CasamentoId == casamentoId && parcela.FornecedorCasamentoId == vinculoId);
+            .Where(parcela => parcela.EventoId == eventoId && parcela.FornecedorEventoId == vinculoId);
 
         var quantidade = await consulta.CountAsync(cancelamento);
         var soma = quantidade == 0 ? 0m : await consulta.SumAsync(parcela => parcela.Valor, cancelamento);
@@ -67,7 +67,7 @@ public class ParcelaFornecedorRepository : IParcelaFornecedorRepository
     }
 
     public async Task<AlertasParcelas> ListarAlertasAsync(
-        Guid? casamentoId,
+        Guid? eventoId,
         DateOnly hoje,
         int limitePorGrupo,
         CancellationToken cancelamento)
@@ -76,18 +76,18 @@ public class ParcelaFornecedorRepository : IParcelaFornecedorRepository
 
         var pendentes =
             from parcela in _contexto.ParcelasFornecedor
-            join vinculo in _contexto.FornecedoresCasamento on parcela.FornecedorCasamentoId equals vinculo.Id
-            join casamento in _contexto.Casamentos on parcela.CasamentoId equals casamento.Id
+            join vinculo in _contexto.FornecedoresEvento on parcela.FornecedorEventoId equals vinculo.Id
+            join evento in _contexto.Eventos on parcela.EventoId equals evento.Id
             join fornecedor in _contexto.Fornecedores on vinculo.FornecedorId equals fornecedor.Id
             where parcela.Status == StatusParcela.Pendente
                 && parcela.Vencimento <= limiteJanela
-                && vinculo.Status == StatusFornecedorCasamento.Contratado
-                && casamento.ArquivadoEm == null
-            select new { Parcela = parcela, Casamento = casamento, Fornecedor = fornecedor };
+                && vinculo.Status == StatusFornecedorEvento.Contratado
+                && evento.ArquivadoEm == null
+            select new { Parcela = parcela, Evento = evento, Fornecedor = fornecedor };
 
-        if (casamentoId is { } id)
+        if (eventoId is { } id)
         {
-            pendentes = pendentes.Where(item => item.Parcela.CasamentoId == id);
+            pendentes = pendentes.Where(item => item.Parcela.EventoId == id);
         }
 
         var vencidas = pendentes.Where(item => item.Parcela.Vencimento < hoje);
@@ -97,9 +97,9 @@ public class ParcelaFornecedorRepository : IParcelaFornecedorRepository
         var valorVencidas = totalVencidas == 0 ? 0m : await vencidas.SumAsync(item => item.Parcela.Valor, cancelamento);
         var totalProximas = await proximas.CountAsync(cancelamento);
         var valorProximas = totalProximas == 0 ? 0m : await proximas.SumAsync(item => item.Parcela.Valor, cancelamento);
-        var casamentosComVencidas = totalVencidas == 0
+        var eventosComVencidas = totalVencidas == 0
             ? 0
-            : await vencidas.Select(item => item.Parcela.CasamentoId).Distinct().CountAsync(cancelamento);
+            : await vencidas.Select(item => item.Parcela.EventoId).Distinct().CountAsync(cancelamento);
 
         var itensVencidos = totalVencidas == 0
             ? []
@@ -111,8 +111,8 @@ public class ParcelaFornecedorRepository : IParcelaFornecedorRepository
                 .Take(limitePorGrupo)
                 .Select(item => new ParcelaAlerta(
                     item.Parcela,
-                    item.Casamento.NomePrimeiraPessoa,
-                    item.Casamento.NomeSegundaPessoa,
+                    item.Evento.NomePrimeiraPessoa,
+                    item.Evento.NomeSegundaPessoa,
                     item.Fornecedor.NomeEmpresa))
                 .ToListAsync(cancelamento);
 
@@ -126,8 +126,8 @@ public class ParcelaFornecedorRepository : IParcelaFornecedorRepository
                 .Take(limitePorGrupo)
                 .Select(item => new ParcelaAlerta(
                     item.Parcela,
-                    item.Casamento.NomePrimeiraPessoa,
-                    item.Casamento.NomeSegundaPessoa,
+                    item.Evento.NomePrimeiraPessoa,
+                    item.Evento.NomeSegundaPessoa,
                     item.Fornecedor.NomeEmpresa))
                 .ToListAsync(cancelamento);
 
@@ -136,7 +136,7 @@ public class ParcelaFornecedorRepository : IParcelaFornecedorRepository
             valorVencidas,
             totalProximas,
             valorProximas,
-            casamentosComVencidas,
+            eventosComVencidas,
             itensVencidos,
             itensProximos);
     }

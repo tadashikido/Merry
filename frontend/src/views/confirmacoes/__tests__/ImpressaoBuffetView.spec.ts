@@ -9,9 +9,9 @@ import { exportacaoExemplo } from '@/__tests__/auxiliaresConfirmacoes'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_FICHA_BUFFET } from '@/textos/confirmacoes'
-import { ID_CASAMENTO, RaizRotas, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
-const ROTA_IMPRESSAO = `/api/casamentos/${ID_CASAMENTO}/exportacao-buffet?formato=impressao`
+const ROTA_IMPRESSAO = `/api/eventos/${ID_EVENTO}/exportacao-buffet?formato=impressao`
 
 let fetchSimulado: ReturnType<typeof simularFetch>
 let wrapper: VueWrapper | undefined
@@ -30,13 +30,13 @@ afterEach(() => {
 })
 
 async function abrir() {
-  const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/confirmacoes/buffet`)
+  const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/confirmacoes/buffet`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
 }
 
 describe('ImpressaoBuffetView', { timeout: 20_000 }, () => {
-  it('[COMPONENTE] monta a ficha com casal, contagem, restrições e confirmados por convite', async () => {
+  it('[COMPONENTE] monta a ficha com anfitriões, contagem, restrições e confirmados por convite', async () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_IMPRESSAO, () => respostaJson(exportacaoExemplo())))
     await abrir()
 
@@ -84,7 +84,7 @@ describe('ImpressaoBuffetView', { timeout: 20_000 }, () => {
     await wrapper!.get('[data-teste="imprimir"]').trigger('click')
 
     expect(imprimir).toHaveBeenCalledTimes(1)
-    expect(wrapper!.get('[data-teste="voltar-painel"]').attributes('href')).toBe(`/casamentos/${ID_CASAMENTO}/confirmacoes`)
+    expect(wrapper!.get('[data-teste="voltar-painel"]').attributes('href')).toBe(`/eventos/${ID_EVENTO}/confirmacoes`)
   })
 
   it('[COMPONENTE] sem confirmados e com registros ilegíveis mostra avisos', async () => {
@@ -114,7 +114,7 @@ describe('ImpressaoBuffetView', { timeout: 20_000 }, () => {
     await abrir()
 
     expect(wrapper!.find('[data-teste="ficha-buffet"]').exists()).toBe(false)
-    expect(wrapper!.text()).toContain('Casamento não encontrado')
+    expect(wrapper!.text()).toContain('Evento não encontrado')
     expect(wrapper!.get('[data-teste="imprimir"]').attributes('disabled')).toBeDefined()
   })
 

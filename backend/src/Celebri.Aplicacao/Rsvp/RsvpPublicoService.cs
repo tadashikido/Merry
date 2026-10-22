@@ -1,13 +1,13 @@
 using Celebri.Aplicacao.Autenticacao.Portas;
 using Celebri.Aplicacao.Calendario;
-using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.DadosSensiveis;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Rsvp;
@@ -18,11 +18,11 @@ namespace Celebri.Aplicacao.Rsvp;
 public class RsvpPublicoService : IRsvpPublicoService
 {
     private readonly IAcessoRsvpRepository _acessoRepository;
-    private readonly ICasamentoRepository _casamentoRepository;
+    private readonly IEventoRepository _eventoRepository;
     private readonly IConviteRepository _conviteRepository;
     private readonly EscopoIsolamentoRsvp _escopo;
     private readonly IGeradorTokenOpaco _geradorToken;
-    private readonly VerificadorCasamentoConvidados _verificador;
+    private readonly VerificadorEventoConvidados _verificador;
     private readonly IUnidadeTrabalho _unidadeTrabalho;
     private readonly ICalendarioLocal _calendario;
     private readonly TimeProvider _relogio;
@@ -32,7 +32,7 @@ public class RsvpPublicoService : IRsvpPublicoService
 
     public RsvpPublicoService(
         IAcessoRsvpRepository acessoRepository,
-        ICasamentoRepository casamentoRepository,
+        IEventoRepository eventoRepository,
         IConviteRepository conviteRepository,
         EscopoIsolamentoRsvp escopo,
         IGeradorTokenOpaco geradorToken,
@@ -46,11 +46,11 @@ public class RsvpPublicoService : IRsvpPublicoService
         ArgumentNullException.ThrowIfNull(opcoesRetencao);
 
         _acessoRepository = acessoRepository;
-        _casamentoRepository = casamentoRepository;
+        _eventoRepository = eventoRepository;
         _conviteRepository = conviteRepository;
         _escopo = escopo;
         _geradorToken = geradorToken;
-        _verificador = new VerificadorCasamentoConvidados(casamentoRepository, conviteRepository);
+        _verificador = new VerificadorEventoConvidados(eventoRepository, conviteRepository);
         _unidadeTrabalho = unidadeTrabalho;
         _calendario = calendario;
         _relogio = relogio;
@@ -63,8 +63,8 @@ public class RsvpPublicoService : IRsvpPublicoService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var (casamento, convite, organizacaoId) = await ResolverAsync(request.Token, cancelamento);
-        var preVisualizacao = VisualizacaoDaEquipe(organizacaoId, casamento.Id);
+        var (evento, convite, organizacaoId) = await ResolverAsync(request.Token, cancelamento);
+        var preVisualizacao = VisualizacaoDaEquipe(organizacaoId, evento.Id);
 
         if (!preVisualizacao && convite.MarcarVisualizado(_relogio.GetUtcNow()))
         {
@@ -74,26 +74,26 @@ public class RsvpPublicoService : IRsvpPublicoService
             }
             catch (ConcorrenciaException)
             {
-                return ParaDto(casamento, convite, preVisualizacao);
+                return ParaDto(evento, convite, preVisualizacao);
             }
         }
 
-        return ParaDto(casamento, convite, preVisualizacao);
+        return ParaDto(evento, convite, preVisualizacao);
     }
 
     public async Task<RsvpPublicoDto> ResponderAsync(ResponderRsvpRequest request, CancellationToken cancelamento)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var (casamento, convite, organizacaoId) = await ResolverAsync(request.Token, cancelamento);
+        var (evento, convite, organizacaoId) = await ResolverAsync(request.Token, cancelamento);
 
-        if (!casamento.AceitaRespostaRsvp(_calendario.Hoje()))
+        if (!evento.AceitaRespostaRsvp(_calendario.Hoje()))
         {
             throw new RegraNegocioException(MensagensRsvp.PrazoEncerrado);
         }
 
         var acompanhantes = request.ParaAcompanhantes();
-        await _verificador.GarantirLimiteAsync(casamento.Id, acompanhantes.Count, convite.QuantidadeAcompanhantes(), cancelamento);
+        await _verificador.GarantirLimiteAsync(evento.Id, acompanhantes.Count, convite.QuantidadeAcompanhantes(), cancelamento);
 
         var agora = _relogio.GetUtcNow();
         convite.RegistrarRespostaRsvp(
@@ -104,20 +104,20 @@ public class RsvpPublicoService : IRsvpPublicoService
             agora);
         await _unidadeTrabalho.SalvarAsync(cancelamento);
 
-        return ParaDto(casamento, convite, VisualizacaoDaEquipe(organizacaoId, casamento.Id));
+        return ParaDto(evento, convite, VisualizacaoDaEquipe(organizacaoId, evento.Id));
     }
 
-    private bool VisualizacaoDaEquipe(Guid organizacaoId, Guid casamentoId)
+    private bool VisualizacaoDaEquipe(Guid organizacaoId, Guid eventoId)
     {
         if (!_usuarioAtual.Autenticado || _usuarioAtual.OrganizacaoId != organizacaoId)
         {
             return false;
         }
 
-        return _usuarioAtual.EhAssessoria() || _usuarioAtual.EhCasalDoCasamento(casamentoId);
+        return _usuarioAtual.EhAssessoria() || _usuarioAtual.EhAnfitriaoDoEvento(eventoId);
     }
 
-    private async Task<(CasamentoAssessorado Casamento, Convite Convite, Guid OrganizacaoId)> ResolverAsync(string? token, CancellationToken cancelamento)
+    private async Task<(Evento Evento, Convite Convite, Guid OrganizacaoId)> ResolverAsync(string? token, CancellationToken cancelamento)
     {
         if (!FormatoTokenRsvp.Valido(token))
         {
@@ -129,30 +129,30 @@ public class RsvpPublicoService : IRsvpPublicoService
 
         _escopo.Estabelecer(acesso.OrganizacaoId, acesso.ConviteId);
 
-        var casamento = await _casamentoRepository.ObterPorIdAsync(acesso.CasamentoId, cancelamento)
+        var evento = await _eventoRepository.ObterPorIdAsync(acesso.EventoId, cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensRsvp.LinkInvalido);
-        var convite = await _conviteRepository.ObterPorIdAsync(casamento.Id, acesso.ConviteId, cancelamento)
+        var convite = await _conviteRepository.ObterPorIdAsync(evento.Id, acesso.ConviteId, cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensRsvp.LinkInvalido);
 
-        return (casamento, convite, acesso.OrganizacaoId);
+        return (evento, convite, acesso.OrganizacaoId);
     }
 
-    private RsvpPublicoDto ParaDto(CasamentoAssessorado casamento, Convite convite, bool preVisualizacao)
+    private RsvpPublicoDto ParaDto(Evento evento, Convite convite, bool preVisualizacao)
     {
         var pessoas = convite.ConvidadosOrdenados();
 
         return new RsvpPublicoDto(
-            new CasamentoRsvpDto(
-                casamento.NomePrimeiraPessoa,
-                casamento.NomeSegundaPessoa,
-                casamento.Data,
-                CasamentoService.FormatarHorario(casamento.Horario),
-                casamento.LocalCerimonia,
-                casamento.LocalRecepcao),
+            new EventoRsvpDto(
+                evento.NomePrimeiraPessoa,
+                evento.NomeSegundaPessoa,
+                evento.Data,
+                EventoService.FormatarHorario(evento.Horario),
+                evento.LocalCerimonia,
+                evento.LocalRecepcao),
             convite.Nome,
             convite.LimiteAcompanhantes,
-            casamento.DataLimiteRsvpEfetiva(),
-            casamento.AceitaRespostaRsvp(_calendario.Hoje()),
+            evento.DataLimiteRsvpEfetiva(),
+            evento.AceitaRespostaRsvp(_calendario.Hoje()),
             convite.RespondidoEm,
             pessoas
                 .Where(pessoa => !pessoa.Acompanhante)
@@ -167,7 +167,7 @@ public class RsvpPublicoService : IRsvpPublicoService
                 .Where(pessoa => pessoa.Acompanhante)
                 .Select(pessoa => new AcompanhanteRsvpDto(pessoa.Id, pessoa.Nome, pessoa.FaixaEtaria.ToString(), pessoa.PossuiRestricaoAlimentar))
                 .ToList(),
-            new PrivacidadeRsvpDto(TermoPrivacidadeRsvp.VersaoVigente, _opcoesRetencao.DiasAposCasamento),
+            new PrivacidadeRsvpDto(TermoPrivacidadeRsvp.VersaoVigente, _opcoesRetencao.DiasAposEvento),
             preVisualizacao);
     }
 }

@@ -1,10 +1,10 @@
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 import type { FaixaEtaria, RespostaRsvp } from '@/tipos/convidados'
 import type { ConsentimentoRsvpRequest, PrivacidadeRsvpDto, RestricaoAlimentarRequest } from '@/tipos/dadosSensiveis'
 
 export type EscolhaPresencaRsvp = Extract<RespostaRsvp, 'Confirmado' | 'Recusado'>
 
-export interface CasamentoRsvpDto {
+export interface EventoRsvpDto {
   nomePrimeiraPessoa: string
   nomeSegundaPessoa: string
   data: DataCalendario
@@ -29,7 +29,7 @@ export interface AcompanhanteRsvpDto {
 }
 
 export interface RsvpPublicoDto {
-  casamento: CasamentoRsvpDto
+  evento: EventoRsvpDto
   nomeConvite: string
   limiteAcompanhantes: number
   dataLimiteResposta: DataCalendario

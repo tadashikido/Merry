@@ -7,13 +7,13 @@ public static class ModelosEmail
 {
     public const string AssuntoRedefinicaoSenha = "Redefinição de senha — " + Marca.Nome;
 
-    public static string AssuntoConviteAcessoCasal(string nomesCasal) => $"Convite para acompanhar o casamento de {nomesCasal}";
+    public static string AssuntoConviteAcessoAnfitriao(string nomesAnfitrioes) => $"Convite para acompanhar o evento de {nomesAnfitrioes}";
 
-    public static MensagemEmail ConviteAcessoCasal(
+    public static MensagemEmail ConviteAcessoAnfitriao(
         string nome,
         string email,
         string link,
-        string nomesCasal,
+        string nomesAnfitrioes,
         string organizacao,
         int validadeDias)
     {
@@ -23,7 +23,7 @@ public static class ModelosEmail
             "\n",
             $"Olá, {nome}.",
             string.Empty,
-            $"{organizacao} convidou você para acompanhar a lista de convidados do casamento de {nomesCasal}.",
+            $"{organizacao} convidou você para acompanhar a lista de convidados do evento de {nomesAnfitrioes}.",
             $"Crie sua senha pelo link abaixo em até {validade}:",
             link,
             string.Empty,
@@ -32,12 +32,12 @@ public static class ModelosEmail
         var html = HtmlEncoder.Default;
         var corpoHtml = string.Concat(
             $"<p>Olá, {html.Encode(nome)}.</p>",
-            $"<p>{html.Encode(organizacao)} convidou você para acompanhar a lista de convidados do casamento de {html.Encode(nomesCasal)}.</p>",
+            $"<p>{html.Encode(organizacao)} convidou você para acompanhar a lista de convidados do evento de {html.Encode(nomesAnfitrioes)}.</p>",
             $"<p>Crie sua senha pelo link abaixo em até {html.Encode(validade)}:</p>",
             $"<p><a href=\"{html.Encode(link)}\">Aceitar convite</a></p>",
             "<p>Não esperava este convite? Ignore este e-mail; ninguém entra sem a senha.</p>");
 
-        return new MensagemEmail(email, nome, AssuntoConviteAcessoCasal(nomesCasal), texto, corpoHtml);
+        return new MensagemEmail(email, nome, AssuntoConviteAcessoAnfitriao(nomesAnfitrioes), texto, corpoHtml);
     }
 
     public static MensagemEmail RedefinicaoSenha(string nome, string email, string link, int validadeMinutos)

@@ -8,7 +8,7 @@ type Celula = string | number
 
 const PREFIXO_BUFFET = 'buffet-'
 
-export interface CasamentoArquivo {
+export interface EventoArquivo {
   nomePrimeiraPessoa: string
   nomeSegundaPessoa: string
   data: string
@@ -50,6 +50,6 @@ export function gerarCsvMesas(mapa: MapaMesasDto): string {
   return gerarCsv(CABECALHO_CSV_MESAS, linhasCsvMesas(mapa))
 }
 
-export function nomeArquivoMesas(casamento: CasamentoArquivo): string {
-  return `mesas-${nomeArquivoBuffet({ casamento: { ...casamento, horario: null, localRecepcao: null } }).slice(PREFIXO_BUFFET.length)}`
+export function nomeArquivoMesas(evento: EventoArquivo): string {
+  return `mesas-${nomeArquivoBuffet({ evento: { ...evento, horario: null, localRecepcao: null } }).slice(PREFIXO_BUFFET.length)}`
 }

@@ -6,30 +6,30 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class ItemCronogramaRepository : IItemCronogramaRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public ItemCronogramaRepository(CasamentoDbContext contexto)
+    public ItemCronogramaRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }
 
-    public async Task<IReadOnlyList<ItemCronograma>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<IReadOnlyList<ItemCronograma>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
         return await _contexto.ItensCronograma
             .AsNoTracking()
-            .Where(item => item.CasamentoId == casamentoId)
+            .Where(item => item.EventoId == eventoId)
             .ToListAsync(cancelamento);
     }
 
-    public Task<ItemCronograma?> ObterPorIdAsync(Guid casamentoId, Guid itemId, CancellationToken cancelamento)
+    public Task<ItemCronograma?> ObterPorIdAsync(Guid eventoId, Guid itemId, CancellationToken cancelamento)
     {
         return _contexto.ItensCronograma
-            .FirstOrDefaultAsync(item => item.CasamentoId == casamentoId && item.Id == itemId, cancelamento);
+            .FirstOrDefaultAsync(item => item.EventoId == eventoId && item.Id == itemId, cancelamento);
     }
 
-    public Task<int> ContarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<int> ContarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        return _contexto.ItensCronograma.CountAsync(item => item.CasamentoId == casamentoId, cancelamento);
+        return _contexto.ItensCronograma.CountAsync(item => item.EventoId == eventoId, cancelamento);
     }
 
     public void Adicionar(ItemCronograma item)

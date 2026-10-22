@@ -39,35 +39,35 @@ test.describe('Fornecedores e financeiro', () => {
     await expect(page.getByRole('link', { name: empresa, exact: true })).toHaveCount(0)
   })
 
-  test('vincula fornecedor contratado ao casamento e remove', async ({ paginaAssessoria: page, api }) => {
-    const casamento = await api.criarCasamento()
+  test('vincula fornecedor contratado ao evento e remove', async ({ paginaAssessoria: page, api }) => {
+    const evento = await api.criarEvento()
     const empresa = nomeUnico('Som e Luz')
     await api.criarFornecedor(empresa, 'Musica')
-    await page.goto(`/casamentos/${casamento.id}/fornecedores`)
+    await page.goto(`/eventos/${evento.id}/fornecedores`)
 
     await page.getByRole('button', { name: 'Adicionar fornecedor' }).click()
     await escolherOpcao(page, page.getByRole('combobox').first(), empresa)
     await page.getByLabel('Serviço').fill('DJ e iluminação de pista')
     await page.getByRole('button', { name: 'Contratado' }).click()
     await page.getByRole('spinbutton', { name: 'Valor contratado' }).pressSequentially('8500')
-    await page.getByRole('button', { name: 'Adicionar ao casamento' }).click()
+    await page.getByRole('button', { name: 'Adicionar ao evento' }).click()
 
-    await page.goto(`/casamentos/${casamento.id}/fornecedores`)
+    await page.goto(`/eventos/${evento.id}/fornecedores`)
     await expect(page.getByRole('link', { name: empresa, exact: true })).toBeVisible()
     await expect(page.getByRole('region', { name: 'Orçamento' })).toContainText('R$ 8.500,00')
 
     await page.getByRole('button', { name: `Mais ações para ${empresa}` }).click()
-    await page.getByRole('menuitem', { name: 'Remover do casamento' }).click()
+    await page.getByRole('menuitem', { name: 'Remover do evento' }).click()
     await dialogo(page).getByRole('button', { name: 'Remover' }).click()
     await expect(page.getByRole('link', { name: empresa, exact: true })).toHaveCount(0)
   })
 
   test('gera parcelas e registra o pagamento de uma delas', async ({ paginaAssessoria: page, api }) => {
-    const casamento = await api.criarCasamento()
+    const evento = await api.criarEvento()
     const empresa = nomeUnico('Foto Arte')
     const fornecedor = await api.criarFornecedor(empresa)
-    await api.vincularFornecedor(casamento.id, fornecedor.id, 'Contratado', 6000)
-    await page.goto(`/casamentos/${casamento.id}/financeiro`)
+    await api.vincularFornecedor(evento.id, fornecedor.id, 'Contratado', 6000)
+    await page.goto(`/eventos/${evento.id}/financeiro`)
 
     const regiaoFornecedor = page.getByRole('region', { name: empresa })
     await regiaoFornecedor.getByRole('button', { name: 'Gerar parcelas' }).click()

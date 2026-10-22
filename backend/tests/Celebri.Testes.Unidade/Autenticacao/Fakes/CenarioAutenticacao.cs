@@ -13,7 +13,7 @@ public class CenarioAutenticacao
     public CenarioAutenticacao()
     {
         Relogio = new RelogioFixo(new DateTimeOffset(2026, 9, 28, 12, 0, 0, TimeSpan.Zero));
-        Opcoes = Options.Create(new OpcoesAutenticacao { UrlFrontend = "https://app.casamento.teste/" });
+        Opcoes = Options.Create(new OpcoesAutenticacao { UrlFrontend = "https://app.evento.teste/" });
         var opcoesJwt = Options.Create(new OpcoesJwt { ChaveAssinatura = ChaveJwt });
 
         Autenticacao = new AutenticacaoService(

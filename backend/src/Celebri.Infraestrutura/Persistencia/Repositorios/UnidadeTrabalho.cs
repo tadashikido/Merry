@@ -1,6 +1,6 @@
 using Celebri.Aplicacao.Autenticacao;
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.AcessosCasal;
+using Celebri.Dominio.AcessosAnfitriao;
 using Celebri.Dominio.Checklists;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Excecoes;
@@ -22,9 +22,9 @@ public class UnidadeTrabalho : IUnidadeTrabalho
     public const string CodigoViolacaoRestricao = "23514";
     public const string MensagemConcorrencia = "O registro foi alterado por outra operação.";
 
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public UnidadeTrabalho(CasamentoDbContext contexto)
+    public UnidadeTrabalho(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }
@@ -114,15 +114,15 @@ public class UnidadeTrabalho : IUnidadeTrabalho
         catch (DbUpdateException excecao) when (excecao.InnerException is PostgresException
         {
             SqlState: CodigoViolacaoUnicidade,
-            ConstraintName: AcessoCasalConfiguration.IndiceEmailNaoRevogado,
+            ConstraintName: AcessoAnfitriaoConfiguration.IndiceEmailNaoRevogado,
         })
         {
-            throw new RegraNegocioException(MensagensAcessoCasal.EmailJaConvidado);
+            throw new RegraNegocioException(MensagensAcessoAnfitriao.EmailJaConvidado);
         }
         catch (DbUpdateException excecao) when (excecao.InnerException is PostgresException
         {
             SqlState: CodigoViolacaoUnicidade,
-            ConstraintName: TarefaCasamentoConfiguration.IndiceOrigemModeloUnica,
+            ConstraintName: TarefaEventoConfiguration.IndiceOrigemModeloUnica,
         })
         {
             throw new ConcorrenciaException(MensagensChecklist.AplicacaoConcorrente, excecao);
@@ -146,18 +146,18 @@ public class UnidadeTrabalho : IUnidadeTrabalho
         catch (DbUpdateException excecao) when (excecao.InnerException is PostgresException
         {
             SqlState: CodigoViolacaoUnicidade,
-            ConstraintName: FornecedorCasamentoConfiguration.IndiceFornecedorUnico,
+            ConstraintName: FornecedorEventoConfiguration.IndiceFornecedorUnico,
         })
         {
-            throw new RegraNegocioException(MensagensFornecedoresCasamento.JaVinculado, FornecedorCasamento.CampoFornecedorId);
+            throw new RegraNegocioException(MensagensFornecedoresEvento.JaVinculado, FornecedorEvento.CampoFornecedorId);
         }
         catch (DbUpdateException excecao) when (excecao.InnerException is PostgresException
         {
             SqlState: CodigoViolacaoChaveEstrangeira,
-            ConstraintName: FornecedorCasamentoConfiguration.ChaveEstrangeiraFornecedor,
+            ConstraintName: FornecedorEventoConfiguration.ChaveEstrangeiraFornecedor,
         })
         {
-            throw new RegraNegocioException(MensagensFornecedores.ParticipouDeCasamentos);
+            throw new RegraNegocioException(MensagensFornecedores.ParticipouDeEventos);
         }
         catch (DbUpdateException excecao) when (excecao.InnerException is PostgresException
         {

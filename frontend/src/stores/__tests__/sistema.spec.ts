@@ -33,13 +33,13 @@ describe('useSistemaStore', () => {
   })
 
   it('[UNITÁRIO] carrega as informações do sistema pelo endpoint correto', async () => {
-    requisitarSimulado.mockResolvedValue({ nome: 'Casamento', versao: '0.1.0' })
+    requisitarSimulado.mockResolvedValue({ nome: 'Evento', versao: '0.1.0' })
     const store = useSistemaStore()
 
     await store.carregarInformacoes()
 
     expect(requisitarSimulado).toHaveBeenCalledWith('/api/sistema/informacoes')
-    expect(store.informacoes).toEqual({ nome: 'Casamento', versao: '0.1.0' })
+    expect(store.informacoes).toEqual({ nome: 'Evento', versao: '0.1.0' })
     expect(store.situacao).toBe('conectado')
     expect(store.carregando).toBe(false)
   })
@@ -53,7 +53,7 @@ describe('useSistemaStore', () => {
 
     expect(store.carregando).toBe(true)
     expect(store.situacao).toBe('carregando')
-    resolver({ nome: 'Casamento', versao: '0.1.0' })
+    resolver({ nome: 'Evento', versao: '0.1.0' })
     await carregamento
     expect(store.situacao).toBe('conectado')
   })
@@ -90,7 +90,7 @@ describe('useSistemaStore', () => {
 
   it('[UNITÁRIO] limpa erro anterior ao tentar novamente com sucesso', async () => {
     requisitarSimulado.mockRejectedValueOnce(new ErroApi(MENSAGEM_FALHA_CONEXAO, 0, null))
-    requisitarSimulado.mockResolvedValueOnce({ nome: 'Casamento', versao: '0.1.0' })
+    requisitarSimulado.mockResolvedValueOnce({ nome: 'Evento', versao: '0.1.0' })
     const store = useSistemaStore()
 
     await store.carregarInformacoes()

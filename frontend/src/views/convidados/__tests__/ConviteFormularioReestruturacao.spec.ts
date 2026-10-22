@@ -8,13 +8,13 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
 import type { ConviteDto, ListaConvitesDto } from '@/tipos/convidados'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const ID_CONVITE = '33333333-3333-4333-8333-333333333333'
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_CONVITES = `${ROTA_CASAMENTO}/convites`
-const CAMINHO_NOVO = `/casamentos/${ID_CASAMENTO}/convidados/novo`
-const CAMINHO_EDICAO = `/casamentos/${ID_CASAMENTO}/convidados/${ID_CONVITE}/editar`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_CONVITES = `${ROTA_EVENTO}/convites`
+const CAMINHO_NOVO = `/eventos/${ID_EVENTO}/convidados/novo`
+const CAMINHO_EDICAO = `/eventos/${ID_EVENTO}/convidados/${ID_CONVITE}/editar`
 
 function convite(): ConviteDto {
   return {
@@ -46,13 +46,13 @@ function lista(): ListaConvitesDto {
       recusados: { adultos: 0, criancas: 0, total: 0 },
     },
     convidadosEstimados: 150,
-    casamentoArquivado: false,
+    eventoArquivado: false,
   }
 }
 
 function rotasPadrao() {
   return [
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
     quando('GET', ROTA_CONVITES, () => respostaJson(lista())),
   ]
 }

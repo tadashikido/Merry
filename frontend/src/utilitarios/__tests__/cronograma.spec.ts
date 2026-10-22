@@ -64,7 +64,7 @@ describe('utilitários do cronograma', () => {
 
     expect(grupos.map((grupo) => [grupo.dia, grupo.data, grupo.itens.map((item) => item.id)])).toEqual([
       ['Vespera', '2027-05-14', ['b']],
-      ['DiaDoCasamento', '2027-05-15', ['c']],
+      ['DiaDoEvento', '2027-05-15', ['c']],
       ['DiaSeguinte', '2027-05-16', ['a']],
     ])
     expect(agruparPorDia([])).toEqual([])
@@ -73,8 +73,8 @@ describe('utilitários do cronograma', () => {
   it('[UNITÁRIO] textos de conflito não repetem o mesmo item com dois motivos', () => {
     const item = itemCronograma({
       conflitos: [
-        { itemId: 'x', atividade: 'Retoque', inicio: '17:00', dia: 'DiaDoCasamento', motivo: 'Responsavel' },
-        { itemId: 'x', atividade: 'Retoque', inicio: '17:00', dia: 'DiaDoCasamento', motivo: 'Fornecedor' },
+        { itemId: 'x', atividade: 'Retoque', inicio: '17:00', dia: 'DiaDoEvento', motivo: 'Responsavel' },
+        { itemId: 'x', atividade: 'Retoque', inicio: '17:00', dia: 'DiaDoEvento', motivo: 'Fornecedor' },
       ],
     })
 

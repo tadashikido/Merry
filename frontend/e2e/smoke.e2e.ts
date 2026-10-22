@@ -50,9 +50,9 @@ test.describe('Smoke', () => {
   test('[SEGURANÇA] rota protegida sem sessão redireciona preservando o destino', async ({ page }) => {
     await simularVisitanteSemSessao(page)
 
-    await page.goto('/casamentos')
+    await page.goto('/eventos')
 
-    await expect(page).toHaveURL(/\/entrar\?destino=(\/|%2F)casamentos$/)
+    await expect(page).toHaveURL(/\/entrar\?destino=(\/|%2F)eventos$/)
     await expect(page.getByRole('button', { name: 'Entrar' })).toBeVisible()
   })
 })

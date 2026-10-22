@@ -2,7 +2,7 @@ using Celebri.Aplicacao.Cronogramas;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Fornecedores;
@@ -13,26 +13,26 @@ public class AplicacaoModeloCronogramaService : IAplicacaoModeloCronogramaServic
 {
     public const string CampoHorarioCerimonia = "horario";
 
-    private readonly ICasamentoRepository _casamentoRepository;
+    private readonly IEventoRepository _eventoRepository;
     private readonly IModeloCronogramaRepository _modeloRepository;
     private readonly IItemCronogramaRepository _itemRepository;
     private readonly IAplicacaoModeloCronogramaRepository _aplicacaoRepository;
-    private readonly IFornecedorCasamentoRepository _vinculoRepository;
+    private readonly IFornecedorEventoRepository _vinculoRepository;
     private readonly IUnidadeTrabalho _unidadeTrabalho;
     private readonly TimeProvider _relogio;
     private readonly IUsuarioAtual _usuarioAtual;
 
     public AplicacaoModeloCronogramaService(
-        ICasamentoRepository casamentoRepository,
+        IEventoRepository eventoRepository,
         IModeloCronogramaRepository modeloRepository,
         IItemCronogramaRepository itemRepository,
         IAplicacaoModeloCronogramaRepository aplicacaoRepository,
-        IFornecedorCasamentoRepository vinculoRepository,
+        IFornecedorEventoRepository vinculoRepository,
         IUnidadeTrabalho unidadeTrabalho,
         TimeProvider relogio,
         IUsuarioAtual usuarioAtual)
     {
-        _casamentoRepository = casamentoRepository;
+        _eventoRepository = eventoRepository;
         _modeloRepository = modeloRepository;
         _itemRepository = itemRepository;
         _aplicacaoRepository = aplicacaoRepository;
@@ -42,24 +42,24 @@ public class AplicacaoModeloCronogramaService : IAplicacaoModeloCronogramaServic
         _usuarioAtual = usuarioAtual;
     }
 
-    public async Task<AplicacaoModeloCronogramaDto> PreverAsync(Guid casamentoId, Guid modeloId, CancellationToken cancelamento)
+    public async Task<AplicacaoModeloCronogramaDto> PreverAsync(Guid eventoId, Guid modeloId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
-        var plano = await PlanejarAsync(casamento, modeloId, cancelamento);
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
+        var plano = await PlanejarAsync(evento, modeloId, cancelamento);
         return plano.ParaDto(plano.Pendentes.Count);
     }
 
     public async Task<AplicacaoModeloCronogramaDto> AplicarAsync(
-        Guid casamentoId,
+        Guid eventoId,
         AplicarModeloCronogramaRequest request,
         CancellationToken cancelamento)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         var modeloId = request.ModeloId ?? throw new RegraNegocioException(MensagensModeloCronograma.ModeloObrigatorio);
-        var casamento = await ObterCasamentoEditavelAsync(casamentoId, cancelamento);
-        var cerimonia = ExigirHorarioCerimonia(casamento);
-        var plano = await PlanejarAsync(casamento, modeloId, cancelamento);
+        var evento = await ObterEventoEditavelAsync(eventoId, cancelamento);
+        var cerimonia = ExigirHorarioCerimonia(evento);
+        var plano = await PlanejarAsync(evento, modeloId, cancelamento);
 
         if (plano.ExcedeLimite)
         {
@@ -68,7 +68,7 @@ public class AplicacaoModeloCronogramaService : IAplicacaoModeloCronogramaServic
         }
 
         var itens = GeradorItensCronograma.Gerar(
-            casamento,
+            evento,
             cerimonia,
             plano.Pendentes,
             plano.VinculoPorCategoria,
@@ -88,24 +88,24 @@ public class AplicacaoModeloCronogramaService : IAplicacaoModeloCronogramaServic
         return plano.ParaDto(itens.Count);
     }
 
-    public async Task<RecalculoHorariosDto> ConsultarRecalculoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<RecalculoHorariosDto> ConsultarRecalculoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
 
-        if (casamento.Horario is null)
+        if (evento.Horario is null)
         {
             return new RecalculoHorariosDto(0);
         }
 
-        var ancorados = await _aplicacaoRepository.ListarAncoradosAsync(casamento.Id, rastrear: false, cancelamento);
-        return new RecalculoHorariosDto(ancorados.Count(item => item.HorarioDesatualizado(casamento.Horario)));
+        var ancorados = await _aplicacaoRepository.ListarAncoradosAsync(evento.Id, rastrear: false, cancelamento);
+        return new RecalculoHorariosDto(ancorados.Count(item => item.HorarioDesatualizado(evento.Horario)));
     }
 
-    public async Task<RecalculoHorariosDto> RecalcularAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<RecalculoHorariosDto> RecalcularAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoEditavelAsync(casamentoId, cancelamento);
-        var cerimonia = ExigirHorarioCerimonia(casamento);
-        var ancorados = await _aplicacaoRepository.ListarAncoradosAsync(casamento.Id, rastrear: true, cancelamento);
+        var evento = await ObterEventoEditavelAsync(eventoId, cancelamento);
+        var cerimonia = ExigirHorarioCerimonia(evento);
+        var ancorados = await _aplicacaoRepository.ListarAncoradosAsync(evento.Id, rastrear: true, cancelamento);
         var agora = _relogio.GetUtcNow();
         var recalculados = ancorados.Count(item => item.RecalcularPelaCerimonia(cerimonia, agora));
 
@@ -117,56 +117,56 @@ public class AplicacaoModeloCronogramaService : IAplicacaoModeloCronogramaServic
         return new RecalculoHorariosDto(recalculados);
     }
 
-    private async Task<PlanoAplicacao> PlanejarAsync(CasamentoAssessorado casamento, Guid modeloId, CancellationToken cancelamento)
+    private async Task<PlanoAplicacao> PlanejarAsync(Evento evento, Guid modeloId, CancellationToken cancelamento)
     {
         var modelo = await _modeloRepository.ObterComItensAsync(modeloId, cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensModeloCronograma.ModeloNaoEncontrado);
 
         var itens = modelo.ItensOrdenados();
         var aplicadas = await _aplicacaoRepository.ListarOrigensAplicadasAsync(
-            casamento.Id,
+            evento.Id,
             itens.Select(item => item.Id).ToList(),
             cancelamento);
         var pendentes = GeradorItensCronograma.ItensPendentes(itens, aplicadas);
-        var existentes = await _itemRepository.ContarPorCasamentoAsync(casamento.Id, cancelamento);
-        var vinculos = await _vinculoRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento);
+        var existentes = await _itemRepository.ContarPorEventoAsync(evento.Id, cancelamento);
+        var vinculos = await _vinculoRepository.ListarPorEventoAsync(evento.Id, cancelamento);
         var vinculoPorCategoria = GeradorItensCronograma.VinculoUnicoPorCategoria(
             vinculos
                 .Where(vinculo => !vinculo.Vinculo.Cancelado)
                 .Select(vinculo => (vinculo.Vinculo.Id, vinculo.Fornecedor.Categoria)));
 
         return new PlanoAplicacao(
-            casamento.Horario,
+            evento.Horario,
             itens.Count,
             pendentes,
             itens.Count - pendentes.Count,
             existentes,
-            existentes + pendentes.Count > ItemCronograma.LimitePorCasamento,
+            existentes + pendentes.Count > ItemCronograma.LimitePorEvento,
             vinculoPorCategoria);
     }
 
-    private static TimeOnly ExigirHorarioCerimonia(CasamentoAssessorado casamento)
+    private static TimeOnly ExigirHorarioCerimonia(Evento evento)
     {
-        return casamento.Horario
+        return evento.Horario
             ?? throw new RegraNegocioException(MensagensModeloCronograma.HorarioCerimoniaObrigatorio, CampoHorarioCerimonia);
     }
 
-    private async Task<CasamentoAssessorado> ObterCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    private async Task<Evento> ObterEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        return await _casamentoRepository.ObterPorIdAsync(casamentoId, cancelamento)
-            ?? throw new RecursoNaoEncontradoException(MensagensCasamento.NaoEncontrado);
+        return await _eventoRepository.ObterPorIdAsync(eventoId, cancelamento)
+            ?? throw new RecursoNaoEncontradoException(MensagensEvento.NaoEncontrado);
     }
 
-    private async Task<CasamentoAssessorado> ObterCasamentoEditavelAsync(Guid casamentoId, CancellationToken cancelamento)
+    private async Task<Evento> ObterEventoEditavelAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var casamento = await ObterCasamentoAsync(casamentoId, cancelamento);
+        var evento = await ObterEventoAsync(eventoId, cancelamento);
 
-        if (casamento.Arquivado)
+        if (evento.Arquivado)
         {
-            throw new RegraNegocioException(MensagensCasamento.ArquivadoSemEdicao);
+            throw new RegraNegocioException(MensagensEvento.ArquivadoSemEdicao);
         }
 
-        return casamento;
+        return evento;
     }
 
     private sealed record PlanoAplicacao(

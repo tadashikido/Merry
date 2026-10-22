@@ -2,7 +2,7 @@ import type { ExportacaoBuffetDto, PainelConfirmacoesDto } from '@/tipos/confirm
 
 export function exportacaoExemplo(dados: Partial<ExportacaoBuffetDto> = {}): ExportacaoBuffetDto {
   return {
-    casamento: {
+    evento: {
       nomePrimeiraPessoa: 'Ana Beatriz',
       nomeSegundaPessoa: 'Bruno',
       data: '2027-05-22',
@@ -53,7 +53,7 @@ export function painelExemplo(dados: Partial<PainelConfirmacoesDto> = {}): Paine
     },
     convidadosEstimados: 150,
     prazo: { dataLimite: '2027-05-12', diasRestantes: 5, aceitaRespostas: true },
-    casamentoArquivado: false,
+    eventoArquivado: false,
     pendentes: [
       {
         conviteId: '33333333-3333-4333-8333-333333333333',

@@ -3,20 +3,20 @@ import { computed, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import LayoutPainel from './LayoutPainel.vue'
-import { ITENS_RAIL_ASSESSORIA, itensRailCasal } from './menuPainel'
-import { gruposNavegacaoCasamento } from './modulosCasamento'
-import type { ContextoCasamento, IndicadorModulo, ModuloCasamento, NivelTrilha, OpcaoSeletorCasamento } from './tipos'
-import { CHAVE_TRILHA, destinoTrocaCasamento, montarTrilha } from './trilha'
+import { ITENS_RAIL_ASSESSORIA, itensRailAnfitriao } from './menuPainel'
+import { gruposNavegacaoEvento } from './modulosEvento'
+import type { ContextoEvento, IndicadorModulo, ModuloEvento, NivelTrilha, OpcaoSeletorEvento } from './tipos'
+import { CHAVE_TRILHA, destinoTrocaEvento, montarTrilha } from './trilha'
 import ResumoUsuario from '@/componentes/base/ResumoUsuario.vue'
 import { somenteAssessoria } from '@/router/guardaAutenticacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
-import { useCasamentosStore } from '@/stores/casamentos'
-import { TEXTOS_AREA_CASAL } from '@/textos/acessoCasal'
+import { useEventosStore } from '@/stores/eventos'
+import { TEXTOS_AREA_ANFITRIAO } from '@/textos/acessoAnfitriao'
 import { TEXTOS_CHECKLIST } from '@/textos/checklist'
-import { formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 
 const store = useAutenticacaoStore()
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const rota = useRoute()
 const roteador = useRouter()
 const saindo = ref(false)
@@ -24,28 +24,28 @@ const saindo = ref(false)
 const nomeUsuario = computed(() => store.usuario?.nome ?? '')
 const nomeOrganizacao = computed(() => {
   const organizacao = store.usuario?.organizacao.nome ?? ''
-  return store.ehCasal ? TEXTOS_AREA_CASAL.rodape(organizacao) : organizacao
+  return store.ehAnfitriao ? TEXTOS_AREA_ANFITRIAO.rodape(organizacao) : organizacao
 })
 const itensRail = computed(() =>
-  store.ehCasal && store.casamentoDoCasal ? itensRailCasal(store.casamentoDoCasal) : ITENS_RAIL_ASSESSORIA,
+  store.ehAnfitriao && store.eventoDoAnfitriao ? itensRailAnfitriao(store.eventoDoAnfitriao) : ITENS_RAIL_ASSESSORIA,
 )
 
-const casamentoId = computed(() => {
+const eventoId = computed(() => {
   const id = rota.params.id
-  return typeof id === 'string' && rota.path.startsWith('/casamentos/') ? id : null
+  return typeof id === 'string' && rota.path.startsWith('/eventos/') ? id : null
 })
 
-function podeAcessar(modulo: ModuloCasamento): boolean {
-  if (!store.ehCasal) {
+function podeAcessar(modulo: ModuloEvento): boolean {
+  if (!store.ehAnfitriao) {
     return true
   }
-  return !somenteAssessoria(roteador.resolve({ name: modulo.rota, params: { id: casamentoId.value ?? '' } }))
+  return !somenteAssessoria(roteador.resolve({ name: modulo.rota, params: { id: eventoId.value ?? '' } }))
 }
 
-const indicadoresCasamento = computed<Partial<Record<string, IndicadorModulo>>>(() => {
-  const atual = casamentos.atual
-  const percentual = atual && atual.id === casamentoId.value ? atual.percentualChecklist : null
-  if (store.ehCasal || percentual === null || percentual === undefined) {
+const indicadoresEvento = computed<Partial<Record<string, IndicadorModulo>>>(() => {
+  const atual = eventos.atual
+  const percentual = atual && atual.id === eventoId.value ? atual.percentualChecklist : null
+  if (store.ehAnfitriao || percentual === null || percentual === undefined) {
     return {}
   }
   return {
@@ -56,80 +56,80 @@ const indicadoresCasamento = computed<Partial<Record<string, IndicadorModulo>>>(
   }
 })
 
-const gruposCasamento = computed(() =>
-  casamentoId.value
-    ? gruposNavegacaoCasamento(
-        casamentoId.value,
+const gruposEvento = computed(() =>
+  eventoId.value
+    ? gruposNavegacaoEvento(
+        eventoId.value,
         typeof rota.name === 'string' ? rota.name : null,
         podeAcessar,
         undefined,
-        indicadoresCasamento.value,
+        indicadoresEvento.value,
       )
     : null,
 )
 
-const contextoCasamento = computed<ContextoCasamento | null>(() => {
-  const atual = casamentos.atual
-  return atual && atual.id === casamentoId.value ? atual : null
+const contextoEvento = computed<ContextoEvento | null>(() => {
+  const atual = eventos.atual
+  return atual && atual.id === eventoId.value ? atual : null
 })
 
 const nomeRotaAtual = computed(() => (typeof rota.name === 'string' ? rota.name : null))
 
 const trilha = computed<NivelTrilha[]>(() => {
-  const atual = contextoCasamento.value
+  const atual = contextoEvento.value
   return montarTrilha(
     nomeRotaAtual.value,
     rota.params,
     (nome) => roteador.getRoutes().find((registro) => registro.name === nome),
     {
-      ehCasal: store.ehCasal,
-      rotuloCasamento: atual ? formatarNomesCasal(atual.nomePrimeiraPessoa, atual.nomeSegundaPessoa) : null,
+      ehAnfitriao: store.ehAnfitriao,
+      rotuloEvento: atual ? formatarNomesAnfitrioes(atual.nomePrimeiraPessoa, atual.nomeSegundaPessoa) : null,
     },
   )
 })
 
 provide(CHAVE_TRILHA, trilha)
 
-const exibeSeletor = computed(() => !store.ehCasal && casamentoId.value !== null)
+const exibeSeletor = computed(() => !store.ehAnfitriao && eventoId.value !== null)
 
-const opcoesSeletor = computed<OpcaoSeletorCasamento[] | null>(() =>
+const opcoesSeletor = computed<OpcaoSeletorEvento[] | null>(() =>
   exibeSeletor.value
-    ? casamentos.ativos.map((casamento) => ({
-        id: casamento.id,
-        nomePrimeiraPessoa: casamento.nomePrimeiraPessoa,
-        nomeSegundaPessoa: casamento.nomeSegundaPessoa,
-        rotulo: formatarNomesCasal(casamento.nomePrimeiraPessoa, casamento.nomeSegundaPessoa),
-        data: casamento.data,
-        diasRestantes: casamento.diasRestantes,
+    ? eventos.ativos.map((evento) => ({
+        id: evento.id,
+        nomePrimeiraPessoa: evento.nomePrimeiraPessoa,
+        nomeSegundaPessoa: evento.nomeSegundaPessoa,
+        rotulo: formatarNomesAnfitrioes(evento.nomePrimeiraPessoa, evento.nomeSegundaPessoa),
+        data: evento.data,
+        diasRestantes: evento.diasRestantes,
       }))
     : null,
 )
 
 watch(
-  casamentoId,
+  eventoId,
   (id) => {
-    if (id && casamentos.atual?.id !== id) {
-      void casamentos.obter(id)
+    if (id && eventos.atual?.id !== id) {
+      void eventos.obter(id)
     }
   },
   { immediate: true },
 )
 
 watch(
-  () => exibeSeletor.value && !casamentos.ativosCarregados,
+  () => exibeSeletor.value && !eventos.ativosCarregados,
   (precisaCarregar) => {
     if (precisaCarregar) {
-      void casamentos.garantirAtivos()
+      void eventos.garantirAtivos()
     }
   },
   { immediate: true },
 )
 
-function trocarCasamento(id: string) {
-  if (id === casamentoId.value) {
+function trocarEvento(id: string) {
+  if (id === eventoId.value) {
     return
   }
-  void roteador.push(destinoTrocaCasamento(nomeRotaAtual.value, id))
+  void roteador.push(destinoTrocaEvento(nomeRotaAtual.value, id))
 }
 
 async function sair() {
@@ -142,12 +142,12 @@ async function sair() {
 <template>
   <LayoutPainel
     :itens-rail="itensRail"
-    :grupos-casamento="gruposCasamento"
-    :contexto-casamento="contextoCasamento"
-    :contexto="store.ehCasal ? 'casal' : 'assessoria'"
-    :casamento-id="casamentoId"
+    :grupos-evento="gruposEvento"
+    :contexto-evento="contextoEvento"
+    :contexto="store.ehAnfitriao ? 'anfitriao' : 'assessoria'"
+    :evento-id="eventoId"
     :opcoes-seletor="opcoesSeletor"
-    @trocar-casamento="trocarCasamento"
+    @trocar-evento="trocarEvento"
   >
     <template #rodape-menu="{ variante }">
       <ResumoUsuario

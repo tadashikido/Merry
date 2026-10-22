@@ -23,21 +23,21 @@ public sealed class CifradorTokenCronograma : ICifradorTokenCronograma
             info: Encoding.UTF8.GetBytes(ContextoDerivacao));
     }
 
-    public string Cifrar(string token, Guid casamentoId)
+    public string Cifrar(string token, Guid eventoId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(token);
 
-        return CifraAesGcm.Cifrar(_chave, Encoding.UTF8.GetBytes(token), DadosAssociados(casamentoId));
+        return CifraAesGcm.Cifrar(_chave, Encoding.UTF8.GetBytes(token), DadosAssociados(eventoId));
     }
 
-    public string? Decifrar(string tokenCifrado, Guid casamentoId)
+    public string? Decifrar(string tokenCifrado, Guid eventoId)
     {
-        var texto = CifraAesGcm.Decifrar(_chave, tokenCifrado, DadosAssociados(casamentoId));
+        var texto = CifraAesGcm.Decifrar(_chave, tokenCifrado, DadosAssociados(eventoId));
         return texto is null ? null : Encoding.UTF8.GetString(texto);
     }
 
-    private static byte[] DadosAssociados(Guid casamentoId)
+    private static byte[] DadosAssociados(Guid eventoId)
     {
-        return [.. Encoding.UTF8.GetBytes(ContextoDerivacao), .. casamentoId.ToByteArray()];
+        return [.. Encoding.UTF8.GetBytes(ContextoDerivacao), .. eventoId.ToByteArray()];
     }
 }

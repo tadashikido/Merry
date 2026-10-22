@@ -55,17 +55,17 @@ public abstract class IsolamentoOrganizacaoTestesBase : IAsyncLifetime
         await Fabrica.DisposeAsync();
     }
 
-    protected CasamentoDbContext CriarContexto(OrganizacaoTeste organizacao)
+    protected CelebriDbContext CriarContexto(OrganizacaoTeste organizacao)
     {
         return CriarContexto(organizacao.OrganizacaoId);
     }
 
-    protected CasamentoDbContext CriarContexto(Guid? organizacaoId)
+    protected CelebriDbContext CriarContexto(Guid? organizacaoId)
     {
-        return new CasamentoDbContext(Fabrica.CriarOpcoesDbContext(), new ContextoIsolamentoFixo(organizacaoId));
+        return new CelebriDbContext(Fabrica.CriarOpcoesDbContext(), new ContextoIsolamentoFixo(organizacaoId));
     }
 
-    protected CasamentoDbContext CriarContextoSemOrganizacao()
+    protected CelebriDbContext CriarContextoSemOrganizacao()
     {
         return CriarContexto((Guid?)null);
     }

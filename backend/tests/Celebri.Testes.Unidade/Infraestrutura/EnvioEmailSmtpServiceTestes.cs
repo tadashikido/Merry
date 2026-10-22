@@ -12,7 +12,7 @@ public class EnvioEmailSmtpServiceTestes
     private static readonly MensagemEmail Mensagem = new(
         "marina@exemplo.com",
         "Marina",
-        "Convite para acompanhar o casamento de Marina & Pedro",
+        "Convite para acompanhar o evento de Marina & Pedro",
         "Olá, Marina.",
         "<p>Olá, Marina.</p>");
 

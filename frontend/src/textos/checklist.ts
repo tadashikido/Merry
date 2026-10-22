@@ -25,28 +25,28 @@ export const COMPLEMENTO_MARCO_CHECKLIST: Record<MarcoChecklist, string | null> 
   tresMeses: 'antes',
   trintaDias: 'antes',
   retaFinal: 'último mês',
-  noDia: 'do casamento',
-  depois: 'do casamento',
+  noDia: 'do evento',
+  depois: 'do evento',
   semPrazo: null,
 }
 
 export const ROTULOS_SENTIDO_PRAZO: Record<SentidoPrazo, string> = {
-  antes: 'antes do casamento',
-  depois: 'depois do casamento',
+  antes: 'antes do evento',
+  depois: 'depois do evento',
 }
 
 export const TEXTOS_MODELOS_CHECKLIST = {
   menu: 'Modelos',
   titulo: 'Modelos de checklist',
   tituloDocumento: 'Modelos de checklist',
-  subtitulo: 'Itens com prazo relativo à data do casamento.',
+  subtitulo: 'Itens com prazo relativo à data do evento.',
   novo: 'Novo modelo',
   sugerido: 'Sugerido',
   itens: (quantidade: number) => `${numero(quantidade)} ${plural(quantidade, 'item', 'itens')}`,
   listaRotulo: 'Modelos da assessoria',
   resumo: (quantidade: number) => `${numero(quantidade)} ${plural(quantidade, 'modelo', 'modelos')}`,
   vazioTitulo: 'Nenhum modelo ainda',
-  vazioTexto: 'Crie um modelo com os itens que se repetem em todo casamento.',
+  vazioTexto: 'Crie um modelo com os itens que se repetem em todo evento.',
   erroTitulo: 'Não foi possível abrir os modelos',
   erroTexto: 'Verifique sua conexão e tente de novo.',
   semAcesso: 'Só a assessoria gerencia modelos de checklist.',
@@ -59,13 +59,13 @@ export const TEXTOS_MODELOS_CHECKLIST = {
   acaoExcluir: 'Excluir',
   editar: 'Editar',
   confirmarExclusaoTexto: (itens: number) =>
-    `${itens > 0 ? `Os ${numero(itens)} ${plural(itens, 'item sai', 'itens saem')} do modelo. ` : ''}As tarefas já criadas nos casamentos continuam, mas deixam de contar no checklist.`,
+    `${itens > 0 ? `Os ${numero(itens)} ${plural(itens, 'item sai', 'itens saem')} do modelo. ` : ''}As tarefas já criadas nos eventos continuam, mas deixam de contar no checklist.`,
   formNovo: 'Novo modelo',
   formEditar: 'Editar modelo',
   formNovoDescricao: 'Dê um nome que a equipe reconheça. Os itens entram depois, no detalhe do modelo.',
   grupoModelo: 'Sobre o modelo',
   campoNome: 'Nome do modelo',
-  campoNomePlaceholder: 'Ex.: Casamento no campo',
+  campoNomePlaceholder: 'Ex.: Evento no campo',
   campoDescricao: 'Descrição',
   campoDescricaoDica: (atual: number, limite: number) => `Opcional. ${numero(atual)} de ${numero(limite)} caracteres.`,
   criar: 'Criar modelo',
@@ -81,17 +81,17 @@ export const TEXTOS_MODELOS_CHECKLIST = {
   regua: 'Itens por marco',
   adicionarItem: 'Adicionar item',
   itensVazioTitulo: 'Este modelo ainda não tem itens',
-  itensVazioTexto: 'Adicione o que precisa acontecer e quando, contando a partir da data do casamento.',
+  itensVazioTexto: 'Adicione o que precisa acontecer e quando, contando a partir da data do evento.',
   itemMaisAcoesAria: (titulo: string) => `Mais ações para ${titulo}`,
   itemEditar: 'Editar item',
   itemExcluir: 'Excluir',
-  itemConfirmarExclusaoTexto: 'As tarefas já criadas a partir deste item continuam nos casamentos, mas deixam de contar no checklist.',
+  itemConfirmarExclusaoTexto: 'As tarefas já criadas a partir deste item continuam nos eventos, mas deixam de contar no checklist.',
   itemToastExcluido: 'Item excluído.',
   resumoItens: (quantidade: number) => `${numero(quantidade)} ${plural(quantidade, 'item', 'itens')}`,
   resumoTitulo: 'Resumo do modelo',
   porMarcoTitulo: 'Por marco',
   porResponsavelTitulo: 'Quem faz',
-  notaAplicacao: 'Aplique este modelo pelo Checklist de cada casamento. Os prazos são contados a partir da data do casamento.',
+  notaAplicacao: 'Aplique este modelo pelo Checklist de cada evento. Os prazos são contados a partir da data do evento.',
 } as const
 
 export const TEXTOS_ITEM_MODELO = {
@@ -103,7 +103,7 @@ export const TEXTOS_ITEM_MODELO = {
   campoTituloPlaceholder: 'Ex.: Reservar o local da cerimônia',
   campoQuando: 'Quando',
   campoDias: 'Dias',
-  campoQuandoDica: 'Conte a partir da data do casamento. 180 dias ≈ 6 meses.',
+  campoQuandoDica: 'Conte a partir da data do evento. 180 dias ≈ 6 meses.',
   campoSentido: 'Antes ou depois',
   campoResponsavel: 'Quem faz',
   campoCategoria: 'Categoria',
@@ -123,7 +123,7 @@ export const TEXTOS_ITEM_MODELO = {
 export const TEXTOS_CHECKLIST = {
   titulo: 'Checklist',
   tituloDocumento: (nomes: string) => `Checklist · ${nomes}`,
-  subtitulo: 'Tarefas criadas a partir de modelos, com prazos pela data do casamento.',
+  subtitulo: 'Tarefas criadas a partir de modelos, com prazos pela data do evento.',
   progressoRotulo: 'Progresso do checklist',
   progressoTitulo: 'Progresso',
   porMarcoTitulo: 'Por marco',
@@ -136,8 +136,8 @@ export const TEXTOS_CHECKLIST = {
     `${percentual}% concluído, ${numero(concluidas)} de ${numero(consideradas)} tarefas`,
   indicadorNavegacao: (percentual: number) => `${percentual}%`,
   indicadorNavegacaoAria: (percentual: number) => `${percentual}% concluído`,
-  vazioTitulo: 'Este casamento ainda não tem checklist',
-  vazioTexto: 'Aplique um modelo para criar as tarefas com os prazos calculados pela data do casamento.',
+  vazioTitulo: 'Este evento ainda não tem checklist',
+  vazioTexto: 'Aplique um modelo para criar as tarefas com os prazos calculados pela data do evento.',
   aplicarTitulo: 'Aplicar modelo',
   aplicarOutroTitulo: 'Aplicar outro modelo',
   campoModelo: 'Modelo',
@@ -150,7 +150,7 @@ export const TEXTOS_CHECKLIST = {
     `${numero(quantidade)} ${plural(quantidade, 'nasce atrasada', 'nascem atrasadas')}, porque o prazo já passou.`,
   previaNada: 'Todas as tarefas deste modelo já estão no checklist.',
   previaLimite: (existentes: number, novas: number) =>
-    `Este casamento passaria de 500 tarefas (hoje tem ${numero(existentes)}, o modelo cria ${numero(novas)}). Exclua tarefas ou use um modelo menor.`,
+    `Este evento passaria de 500 tarefas (hoje tem ${numero(existentes)}, o modelo cria ${numero(novas)}). Exclua tarefas ou use um modelo menor.`,
   previaErro: 'Não foi possível calcular a prévia.',
   semModelos: 'Crie um modelo em Modelos para aplicar aqui.',
   irParaModelos: 'Abrir modelos',
@@ -158,9 +158,9 @@ export const TEXTOS_CHECKLIST = {
   toastAplicadoAtrasadas: (criadas: number, atrasadas: number) =>
     `${numero(criadas)} ${plural(criadas, 'tarefa criada', 'tarefas criadas')} no checklist. ${numero(atrasadas)} já ${plural(atrasadas, 'nasce atrasada', 'nascem atrasadas')}.`,
   prazosDesatualizados: (quantidade: number) =>
-    `${numero(quantidade)} ${plural(quantidade, 'prazo não acompanha', 'prazos não acompanham')} a data do casamento.`,
+    `${numero(quantidade)} ${plural(quantidade, 'prazo não acompanha', 'prazos não acompanham')} a data do evento.`,
   recalcular: 'Recalcular prazos',
-  arquivado: 'Este casamento está arquivado. Restaure para aplicar modelos ou recalcular prazos.',
+  arquivado: 'Este evento está arquivado. Restaure para aplicar modelos ou recalcular prazos.',
   verTarefas: 'Ver todas as tarefas',
   conflito: 'O checklist mudou em outra tela. Atualizamos a lista.',
   erroTitulo: 'Não foi possível abrir o checklist',
@@ -173,7 +173,7 @@ export const TEXTOS_CHECKLIST = {
   recalculoTexto: (data: string, quantidade: number) =>
     `A data mudou para ${data}. ${numero(quantidade)} ${plural(quantidade, 'tarefa do checklist ainda aberta terá', 'tarefas do checklist ainda abertas terão')} o prazo recalculado a partir da nova data. Tarefas concluídas não mudam.`,
   recalculoTextoSemData: (quantidade: number) =>
-    `${numero(quantidade)} ${plural(quantidade, 'tarefa do checklist ainda aberta terá', 'tarefas do checklist ainda abertas terão')} o prazo recalculado a partir da data do casamento. Tarefas concluídas não mudam.`,
+    `${numero(quantidade)} ${plural(quantidade, 'tarefa do checklist ainda aberta terá', 'tarefas do checklist ainda abertas terão')} o prazo recalculado a partir da data do evento. Tarefas concluídas não mudam.`,
   manterPrazos: 'Manter prazos',
   toastRecalculado: (quantidade: number) =>
     `${plural(quantidade, 'Prazo de', 'Prazos de')} ${numero(quantidade)} ${plural(quantidade, 'tarefa recalculado', 'tarefas recalculados')}.`,
@@ -182,7 +182,7 @@ export const TEXTOS_CHECKLIST = {
 
 export function descreverPrazoRelativo(dias: number): string {
   if (dias === 0) {
-    return 'No dia do casamento'
+    return 'No dia do evento'
   }
   const absoluto = Math.abs(dias)
   const unidade = `${numero(absoluto)} ${plural(absoluto, 'dia', 'dias')}`

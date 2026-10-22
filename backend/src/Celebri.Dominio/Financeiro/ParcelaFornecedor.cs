@@ -5,7 +5,7 @@ using Celebri.Dominio.Isolamento;
 
 namespace Celebri.Dominio.Financeiro;
 
-public class ParcelaFornecedor : IPertenceCasamento
+public class ParcelaFornecedor : IPertenceEvento
 {
     public const int LimitePorVinculo = 60;
     public const int JanelaAlertaDias = 7;
@@ -34,9 +34,9 @@ public class ParcelaFornecedor : IPertenceCasamento
 
     public Guid OrganizacaoId { get; private set; }
 
-    public Guid CasamentoId { get; private set; }
+    public Guid EventoId { get; private set; }
 
-    public Guid FornecedorCasamentoId { get; private set; }
+    public Guid FornecedorEventoId { get; private set; }
 
     public decimal Valor { get; private set; }
 
@@ -69,7 +69,7 @@ public class ParcelaFornecedor : IPertenceCasamento
     public bool PossuiComprovante => ComprovanteArquivoId is not null;
 
     public static ParcelaFornecedor Criar(
-        FornecedorCasamento vinculo,
+        FornecedorEvento vinculo,
         DadosParcela dados,
         Guid? criadoPorUsuarioId,
         DateTimeOffset agora)
@@ -80,8 +80,8 @@ public class ParcelaFornecedor : IPertenceCasamento
         var parcela = new ParcelaFornecedor
         {
             Id = Guid.NewGuid(),
-            CasamentoId = vinculo.CasamentoId,
-            FornecedorCasamentoId = vinculo.Id,
+            EventoId = vinculo.EventoId,
+            FornecedorEventoId = vinculo.Id,
             Status = StatusParcela.Pendente,
             CriadoPorUsuarioId = criadoPorUsuarioId,
             CriadoEm = agora,
@@ -91,7 +91,7 @@ public class ParcelaFornecedor : IPertenceCasamento
         return parcela;
     }
 
-    public static void GarantirVinculoAceitaParcelas(FornecedorCasamento vinculo)
+    public static void GarantirVinculoAceitaParcelas(FornecedorEvento vinculo)
     {
         ArgumentNullException.ThrowIfNull(vinculo);
 
@@ -100,7 +100,7 @@ public class ParcelaFornecedor : IPertenceCasamento
             throw new RegraNegocioException(MensagensFinanceiro.VinculoCancelado);
         }
 
-        if (vinculo.Status != StatusFornecedorCasamento.Contratado || vinculo.ValorContratado is null)
+        if (vinculo.Status != StatusFornecedorEvento.Contratado || vinculo.ValorContratado is null)
         {
             throw new RegraNegocioException(MensagensFinanceiro.VinculoNaoContratado);
         }

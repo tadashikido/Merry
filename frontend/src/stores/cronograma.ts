@@ -2,18 +2,18 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { requisitar } from '@/servicos/clienteHttp'
-import { interpretarFalhaCasamento, ROTA_CASAMENTOS, type FalhaCasamento, type ResultadoCasamento } from '@/stores/casamentos'
+import { interpretarFalhaEvento, ROTA_EVENTOS, type FalhaEvento, type ResultadoEvento } from '@/stores/eventos'
 import { useExclusoesAdiadasStore } from '@/stores/exclusoesAdiadas'
 import type { CronogramaDto, ItemCronogramaDto, SalvarItemCronogramaRequest } from '@/tipos/cronograma'
 import type { AplicacaoModeloCronogramaDto, RecalculoHorariosDto } from '@/tipos/modelosCronograma'
 
-export function caminhoCronograma(casamentoId: string, itemId?: string): string {
-  const base = `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/cronograma`
+export function caminhoCronograma(eventoId: string, itemId?: string): string {
+  const base = `${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/cronograma`
   return itemId ? `${base}/${encodeURIComponent(itemId)}` : base
 }
 
-export function escopoCronograma(casamentoId: string): string {
-  return `cronograma:${casamentoId}`
+export function escopoCronograma(eventoId: string): string {
+  return `cronograma:${eventoId}`
 }
 
 export function ocultarItens(cronograma: CronogramaDto, ids: Set<string>): CronogramaDto {
@@ -25,42 +25,42 @@ export function ocultarItens(cronograma: CronogramaDto, ids: Set<string>): Crono
 
 export const useCronogramaStore = defineStore('cronograma', () => {
   const exclusoes = useExclusoesAdiadasStore()
-  const casamentoId = ref<string | null>(null)
+  const eventoId = ref<string | null>(null)
   const cronograma = ref<CronogramaDto | null>(null)
   const carregando = ref(false)
-  const falha = ref<FalhaCasamento | null>(null)
+  const falha = ref<FalhaEvento | null>(null)
 
   async function buscar(id: string): Promise<void> {
     const resposta = await requisitar<CronogramaDto>(caminhoCronograma(id))
-    if (casamentoId.value === id) {
+    if (eventoId.value === id) {
       cronograma.value = ocultarItens(resposta, exclusoes.chavesPendentes(escopoCronograma(id)))
     }
   }
 
   async function carregar(id: string): Promise<void> {
-    if (casamentoId.value !== id) {
+    if (eventoId.value !== id) {
       cronograma.value = null
     }
-    casamentoId.value = id
+    eventoId.value = id
     carregando.value = true
     falha.value = null
 
     try {
       await buscar(id)
     } catch (erro) {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         cronograma.value = null
-        falha.value = interpretarFalhaCasamento(erro)
+        falha.value = interpretarFalhaEvento(erro)
       }
     } finally {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         carregando.value = false
       }
     }
   }
 
   async function recarregar(id: string): Promise<void> {
-    if (casamentoId.value !== id) {
+    if (eventoId.value !== id) {
       return
     }
     try {
@@ -74,14 +74,14 @@ export const useCronogramaStore = defineStore('cronograma', () => {
     return exclusoes.efetivarEscopo(escopoCronograma(id))
   }
 
-  async function criar(id: string, dados: SalvarItemCronogramaRequest): Promise<ResultadoCasamento<ItemCronogramaDto>> {
+  async function criar(id: string, dados: SalvarItemCronogramaRequest): Promise<ResultadoEvento<ItemCronogramaDto>> {
     await efetivarPendentes(id)
     try {
       const item = await requisitar<ItemCronogramaDto>(caminhoCronograma(id), { metodo: 'POST', corpo: dados })
       await recarregar(id)
       return { ok: true, valor: item }
     } catch (erro) {
-      return { ok: false, falha: interpretarFalhaCasamento(erro) }
+      return { ok: false, falha: interpretarFalhaEvento(erro) }
     }
   }
 
@@ -89,21 +89,21 @@ export const useCronogramaStore = defineStore('cronograma', () => {
     id: string,
     itemId: string,
     dados: SalvarItemCronogramaRequest,
-  ): Promise<ResultadoCasamento<ItemCronogramaDto>> {
+  ): Promise<ResultadoEvento<ItemCronogramaDto>> {
     await efetivarPendentes(id)
     try {
       const item = await requisitar<ItemCronogramaDto>(caminhoCronograma(id, itemId), { metodo: 'PUT', corpo: dados })
       await recarregar(id)
       return { ok: true, valor: item }
     } catch (erro) {
-      return { ok: false, falha: interpretarFalhaCasamento(erro) }
+      return { ok: false, falha: interpretarFalhaEvento(erro) }
     }
   }
 
-  async function remover(id: string, itemId: string): Promise<ResultadoCasamento<null>> {
+  async function remover(id: string, itemId: string): Promise<ResultadoEvento<null>> {
     try {
       await requisitar<void>(caminhoCronograma(id, itemId), { metodo: 'DELETE' })
-      if (casamentoId.value === id && cronograma.value) {
+      if (eventoId.value === id && cronograma.value) {
         cronograma.value = {
           ...cronograma.value,
           itens: cronograma.value.itens.filter((item) => item.id !== itemId),
@@ -112,20 +112,20 @@ export const useCronogramaStore = defineStore('cronograma', () => {
       await recarregar(id)
       return { ok: true, valor: null }
     } catch (erro) {
-      return { ok: false, falha: interpretarFalhaCasamento(erro) }
+      return { ok: false, falha: interpretarFalhaEvento(erro) }
     }
   }
 
-  async function executar<T>(acao: () => Promise<T>): Promise<ResultadoCasamento<T>> {
+  async function executar<T>(acao: () => Promise<T>): Promise<ResultadoEvento<T>> {
     try {
       return { ok: true, valor: await acao() }
     } catch (erro) {
-      return { ok: false, falha: interpretarFalhaCasamento(erro) }
+      return { ok: false, falha: interpretarFalhaEvento(erro) }
     }
   }
 
-  function removerComDesfazer(id: string, itemId: string, aoFalhar?: (falha: FalhaCasamento) => void) {
-    let falhaEfetivacao: FalhaCasamento | null = null
+  function removerComDesfazer(id: string, itemId: string, aoFalhar?: (falha: FalhaEvento) => void) {
+    let falhaEfetivacao: FalhaEvento | null = null
     exclusoes.agendar({
       escopo: escopoCronograma(id),
       chave: itemId,
@@ -143,7 +143,7 @@ export const useCronogramaStore = defineStore('cronograma', () => {
         }
       },
     })
-    if (casamentoId.value === id && cronograma.value) {
+    if (eventoId.value === id && cronograma.value) {
       cronograma.value = ocultarItens(cronograma.value, exclusoes.chavesPendentes(escopoCronograma(id)))
     }
   }
@@ -160,13 +160,13 @@ export const useCronogramaStore = defineStore('cronograma', () => {
     return exclusoes.efetivar(escopoCronograma(id), itemId)
   }
 
-  function previa(id: string, modeloId: string): Promise<ResultadoCasamento<AplicacaoModeloCronogramaDto>> {
+  function previa(id: string, modeloId: string): Promise<ResultadoEvento<AplicacaoModeloCronogramaDto>> {
     return executar(() =>
       requisitar<AplicacaoModeloCronogramaDto>(`${caminhoCronograma(id)}/previa?modeloId=${encodeURIComponent(modeloId)}`),
     )
   }
 
-  async function aplicar(id: string, modeloId: string): Promise<ResultadoCasamento<AplicacaoModeloCronogramaDto>> {
+  async function aplicar(id: string, modeloId: string): Promise<ResultadoEvento<AplicacaoModeloCronogramaDto>> {
     await efetivarPendentes(id)
     const resultado = await executar(() =>
       requisitar<AplicacaoModeloCronogramaDto>(`${caminhoCronograma(id)}/aplicacoes`, { metodo: 'POST', corpo: { modeloId } }),
@@ -177,11 +177,11 @@ export const useCronogramaStore = defineStore('cronograma', () => {
     return resultado
   }
 
-  function consultarRecalculo(id: string): Promise<ResultadoCasamento<RecalculoHorariosDto>> {
+  function consultarRecalculo(id: string): Promise<ResultadoEvento<RecalculoHorariosDto>> {
     return executar(() => requisitar<RecalculoHorariosDto>(`${caminhoCronograma(id)}/recalculo-horarios`))
   }
 
-  async function recalcular(id: string): Promise<ResultadoCasamento<RecalculoHorariosDto>> {
+  async function recalcular(id: string): Promise<ResultadoEvento<RecalculoHorariosDto>> {
     await efetivarPendentes(id)
     const resultado = await executar(() =>
       requisitar<RecalculoHorariosDto>(`${caminhoCronograma(id)}/recalculo-horarios`, { metodo: 'POST' }),
@@ -193,7 +193,7 @@ export const useCronogramaStore = defineStore('cronograma', () => {
   }
 
   return {
-    casamentoId,
+    eventoId,
     cronograma,
     carregando,
     falha,

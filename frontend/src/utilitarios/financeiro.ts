@@ -15,7 +15,7 @@ export const LIMITES_PARCELA = {
 } as const
 
 export const LIMITE_ALERTAS_ORGANIZACAO = 10
-export const LIMITE_ALERTAS_CASAMENTO = 5
+export const LIMITE_ALERTAS_EVENTO = 5
 
 export interface ParcelaGerada {
   numero: number

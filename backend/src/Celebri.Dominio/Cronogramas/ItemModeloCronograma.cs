@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Fornecedores;
@@ -58,29 +58,29 @@ public class ItemModeloCronograma : IPertenceOrganizacao
         return ItemCronograma.ForaDaJanela(horarioCerimonia, MinutosDesdeCerimonia);
     }
 
-    public string? ResolverLocal(CasamentoAssessorado casamento)
+    public string? ResolverLocal(Evento evento)
     {
-        ArgumentNullException.ThrowIfNull(casamento);
+        ArgumentNullException.ThrowIfNull(evento);
 
         return ReferenciaLocal switch
         {
-            ReferenciaLocalCronograma.Cerimonia => casamento.LocalCerimonia,
-            ReferenciaLocalCronograma.Recepcao => casamento.LocalRecepcao,
+            ReferenciaLocalCronograma.Cerimonia => evento.LocalCerimonia,
+            ReferenciaLocalCronograma.Recepcao => evento.LocalRecepcao,
             _ => Local,
         };
     }
 
-    public DadosItemCronograma ParaDadosItem(CasamentoAssessorado casamento, TimeOnly horarioCerimonia, Guid? fornecedorCasamentoId)
+    public DadosItemCronograma ParaDadosItem(Evento evento, TimeOnly horarioCerimonia, Guid? fornecedorEventoId)
     {
         var (dia, inicio) = ItemCronograma.DePosicao(PosicaoNaCerimonia(horarioCerimonia));
-        var local = ResolverLocal(casamento);
+        var local = ResolverLocal(evento);
 
         if (local is { Length: > ItemCronograma.TamanhoMaximoLocal })
         {
             local = local[..ItemCronograma.TamanhoMaximoLocal];
         }
 
-        return new DadosItemCronograma(dia, inicio, DuracaoMinutos, Atividade, local, Responsavel, fornecedorCasamentoId, Instrucoes, null);
+        return new DadosItemCronograma(dia, inicio, DuracaoMinutos, Atividade, local, Responsavel, fornecedorEventoId, Instrucoes, null);
     }
 
     internal static ItemModeloCronograma Criar(Guid modeloId, DadosItemModeloCronograma dados, DateTimeOffset agora)

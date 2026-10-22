@@ -4,7 +4,7 @@ import { TEXTOS_CHECKLIST, TEXTOS_ITEM_MODELO, TEXTOS_MODELOS_CHECKLIST, descrev
 import {
   agruparPorMarco,
   descricaoModelo,
-  diasAntesDoCasamento,
+  diasAntesDoEvento,
   diasComSentido,
   diasValidos,
   marcoPorDias,
@@ -31,13 +31,13 @@ describe('utilitários do checklist', () => {
     expect(marcoPorDias(dias)).toBe(marco)
   })
 
-  it('[UNITÁRIO] calcula a distância em dias de calendário até o casamento', () => {
-    expect(diasAntesDoCasamento('2027-12-12', '2026-12-12')).toBe(365)
-    expect(diasAntesDoCasamento('2027-12-12', '2027-12-12')).toBe(0)
-    expect(diasAntesDoCasamento('2027-12-12', '2027-12-27')).toBe(-15)
-    expect(diasAntesDoCasamento('2027-03-28', '2027-03-27')).toBe(1)
-    expect(diasAntesDoCasamento('2027-12-12', null)).toBeNull()
-    expect(diasAntesDoCasamento('2027-12-12', '12/12/2027')).toBeNull()
+  it('[UNITÁRIO] calcula a distância em dias de calendário até o evento', () => {
+    expect(diasAntesDoEvento('2027-12-12', '2026-12-12')).toBe(365)
+    expect(diasAntesDoEvento('2027-12-12', '2027-12-12')).toBe(0)
+    expect(diasAntesDoEvento('2027-12-12', '2027-12-27')).toBe(-15)
+    expect(diasAntesDoEvento('2027-03-28', '2027-03-27')).toBe(1)
+    expect(diasAntesDoEvento('2027-12-12', null)).toBeNull()
+    expect(diasAntesDoEvento('2027-12-12', '12/12/2027')).toBeNull()
   })
 
   it('[UNITÁRIO] agrupa na ordem dos marcos e omite marcos vazios', () => {
@@ -78,7 +78,7 @@ describe('utilitários do checklist', () => {
     expect(nomeModelo('')).toBeNull()
     expect(nomeModelo('  A  ')).toBe(TEXTOS_MODELOS_CHECKLIST.erroNomeTamanho)
     expect(nomeModelo('x'.repeat(81))).toBe(TEXTOS_MODELOS_CHECKLIST.erroNomeTamanho)
-    expect(nomeModelo('Casamento no campo')).toBeNull()
+    expect(nomeModelo('Evento no campo')).toBeNull()
     expect(descricaoModelo('d'.repeat(501))).toBe(TEXTOS_MODELOS_CHECKLIST.erroDescricaoTamanho)
     expect(descricaoModelo('d'.repeat(500))).toBeNull()
   })
@@ -86,7 +86,7 @@ describe('utilitários do checklist', () => {
   it('[UNITÁRIO] descreve prazos relativos e plurais em pt-BR', () => {
     expect(descreverPrazoRelativo(180)).toBe('180 dias antes')
     expect(descreverPrazoRelativo(1)).toBe('1 dia antes')
-    expect(descreverPrazoRelativo(0)).toBe('No dia do casamento')
+    expect(descreverPrazoRelativo(0)).toBe('No dia do evento')
     expect(descreverPrazoRelativo(-15)).toBe('15 dias depois')
     expect(descreverPrazoRelativo(1095)).toBe('1.095 dias antes')
     expect(TEXTOS_CHECKLIST.progresso(1, 1)).toBe('1 de 1 concluída')

@@ -3,13 +3,13 @@ using Celebri.Aplicacao.GrandeDia;
 namespace Celebri.Aplicacao.CronogramaPublico;
 
 public sealed record CronogramaPublicoDto(
-    CasamentoCronogramaPublicoDto Casamento,
+    EventoCronogramaPublicoDto Evento,
     FiltroCronogramaPublicoDto Filtro,
     IReadOnlyList<ItemCronogramaPublicoDto> Itens,
     DateOnly ValidoAte,
     MomentoGrandeDiaDto Momento);
 
-public sealed record CasamentoCronogramaPublicoDto(
+public sealed record EventoCronogramaPublicoDto(
     string NomePrimeiraPessoa,
     string NomeSegundaPessoa,
     DateOnly Data,

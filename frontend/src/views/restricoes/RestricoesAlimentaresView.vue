@@ -16,7 +16,7 @@ import type { ColunaListagem, ItemMenuAcoes, LinhaCardapio } from '@/componentes
 import DialogoRestricaoAlimentar from '@/componentes/convidados/DialogoRestricaoAlimentar.vue'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useConvidadosStore } from '@/stores/convidados'
 import { useRestricoesAlimentaresStore } from '@/stores/restricoesAlimentares'
 import { ROTULOS_RESPOSTA, VARIANTE_RESPOSTA } from '@/textos/convidados'
@@ -29,7 +29,7 @@ import type {
 } from '@/tipos/dadosSensiveis'
 import { contemTexto } from '@/utilitarios/busca'
 import { descreverTipos } from '@/utilitarios/dadosSensiveis'
-import { formatarData, formatarDataCalendario, formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarData, formatarDataCalendario, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 
 interface LinhaRestricao extends Record<string, unknown> {
   convidadoId: string
@@ -43,7 +43,7 @@ interface LinhaRestricao extends Record<string, unknown> {
 
 const props = defineProps<{ id: string }>()
 
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const convidados = useConvidadosStore()
 const store = useRestricoesAlimentaresStore()
 const notificacao = useNotificacao()
@@ -55,12 +55,12 @@ const pessoaEditada = ref<PessoaRestricaoAlimentarDto | null>(null)
 const salvando = ref(false)
 const erroDialogo = ref<string | null>(null)
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
-const relatorio = computed(() => (store.casamentoId === props.id ? store.relatorio : null))
-const falha = computed(() => (store.casamentoId === props.id ? store.falha : null))
+const relatorio = computed(() => (store.eventoId === props.id ? store.relatorio : null))
+const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
 const dadosExcluidos = computed(() => Boolean(relatorio.value?.dadosExcluidosEm) && (relatorio.value?.totalPessoas ?? 0) === 0)
 const podeRegistrar = computed(() => relatorio.value?.podeRegistrar ?? false)
 const semRestricoes = computed(() => relatorio.value?.totalPessoas === 0 && relatorio.value.registrosIlegiveis === 0)
@@ -122,7 +122,7 @@ const colunas: ColunaListagem<LinhaRestricao>[] = [
 ]
 
 const pessoasSelecionaveis = computed<PessoaSelecionavel[]>(() => {
-  const lista = convidados.casamentoId === props.id ? convidados.lista : null
+  const lista = convidados.eventoId === props.id ? convidados.lista : null
   const comRestricao = new Set((relatorio.value?.pessoas ?? []).map((pessoa) => pessoa.convidadoId))
   return (lista?.convites ?? [])
     .flatMap((convite) =>
@@ -159,7 +159,7 @@ watch(
   () => props.id,
   (id) => {
     busca.value = ''
-    void casamentos.obter(id)
+    void eventos.obter(id)
     void store.carregar(id)
   },
   { immediate: true },
@@ -179,7 +179,7 @@ function abrirRegistro() {
   pessoaEditada.value = null
   erroDialogo.value = null
   dialogoVisivel.value = true
-  if (convidados.casamentoId !== props.id || !convidados.lista) {
+  if (convidados.eventoId !== props.id || !convidados.lista) {
     void convidados.carregar(props.id)
   }
 }

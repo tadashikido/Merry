@@ -3,37 +3,37 @@ using Celebri.Dominio.Fornecedores;
 
 namespace Celebri.Testes.Unidade.Fornecedores;
 
-public sealed class RepositorioVinculosFornecedorMemoria : IFornecedorCasamentoRepository
+public sealed class RepositorioVinculosFornecedorMemoria : IFornecedorEventoRepository
 {
-    public List<FornecedorCasamento> Itens { get; } = [];
+    public List<FornecedorEvento> Itens { get; } = [];
 
     public Dictionary<Guid, Fornecedor> Fornecedores { get; } = [];
 
     public int MarcacoesAlteracao { get; private set; }
 
-    public Task<IReadOnlyList<VinculoFornecedor>> ListarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<IReadOnlyList<VinculoFornecedor>> ListarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
         IReadOnlyList<VinculoFornecedor> resultado = Itens
-            .Where(item => item.CasamentoId == casamentoId)
+            .Where(item => item.EventoId == eventoId)
             .Select(item => new VinculoFornecedor(item, Fornecedores[item.FornecedorId]))
             .ToList();
         return Task.FromResult(resultado);
     }
 
-    public Task<VinculoFornecedor?> ObterAsync(Guid casamentoId, Guid vinculoId, CancellationToken cancelamento)
+    public Task<VinculoFornecedor?> ObterAsync(Guid eventoId, Guid vinculoId, CancellationToken cancelamento)
     {
-        var vinculo = Itens.FirstOrDefault(item => item.CasamentoId == casamentoId && item.Id == vinculoId);
+        var vinculo = Itens.FirstOrDefault(item => item.EventoId == eventoId && item.Id == vinculoId);
         return Task.FromResult(vinculo is null ? null : new VinculoFornecedor(vinculo, Fornecedores[vinculo.FornecedorId]));
     }
 
-    public Task<int> ContarPorCasamentoAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<int> ContarPorEventoAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        return Task.FromResult(Itens.Count(item => item.CasamentoId == casamentoId));
+        return Task.FromResult(Itens.Count(item => item.EventoId == eventoId));
     }
 
-    public Task<IReadOnlyList<Guid>> ListarFornecedoresVinculadosAsync(Guid casamentoId, CancellationToken cancelamento)
+    public Task<IReadOnlyList<Guid>> ListarFornecedoresVinculadosAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        IReadOnlyList<Guid> resultado = Itens.Where(item => item.CasamentoId == casamentoId).Select(item => item.FornecedorId).ToList();
+        IReadOnlyList<Guid> resultado = Itens.Where(item => item.EventoId == eventoId).Select(item => item.FornecedorId).ToList();
         return Task.FromResult(resultado);
     }
 
@@ -48,17 +48,17 @@ public sealed class RepositorioVinculosFornecedorMemoria : IFornecedorCasamentoR
         return Task.FromResult(resultado);
     }
 
-    public void Adicionar(FornecedorCasamento vinculo)
+    public void Adicionar(FornecedorEvento vinculo)
     {
         Itens.Add(vinculo);
     }
 
-    public void Remover(FornecedorCasamento vinculo)
+    public void Remover(FornecedorEvento vinculo)
     {
         Itens.Remove(vinculo);
     }
 
-    public void MarcarAlterado(FornecedorCasamento vinculo)
+    public void MarcarAlterado(FornecedorEvento vinculo)
     {
         MarcacoesAlteracao++;
     }

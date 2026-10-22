@@ -7,7 +7,7 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_COBRANCA } from '@/textos/confirmacoes'
 import type { ConvitePendenteDto, PainelConfirmacoesDto } from '@/tipos/confirmacoes'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -17,12 +17,12 @@ vi.mock('@/composables/useNotificacao', () => ({
   DURACAO_TOAST_ERRO: 6000,
 }))
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_PAINEL = `${ROTA_CASAMENTO}/painel-confirmacoes`
-const ROTA_RESTRICOES = `${ROTA_CASAMENTO}/restricoes-alimentares`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_PAINEL = `${ROTA_EVENTO}/painel-confirmacoes`
+const ROTA_RESTRICOES = `${ROTA_EVENTO}/restricoes-alimentares`
 const ID_LIMA = '33333333-3333-4333-8333-333333333333'
 const ID_SOUZA = '44444444-4444-4444-8444-444444444444'
-const ROTA_LIMA = `${ROTA_CASAMENTO}/convites/${ID_LIMA}`
+const ROTA_LIMA = `${ROTA_EVENTO}/convites/${ID_LIMA}`
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
 
 function pendente(dados: Partial<ConvitePendenteDto> = {}): ConvitePendenteDto {
@@ -85,8 +85,8 @@ afterEach(() => {
 
 function rotas(painel: () => PainelConfirmacoesDto, arquivado = false) {
   return [
-    quando('GET', ROTA_CASAMENTO, () =>
-      respostaJson(casamentoCompleto({ arquivado, data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12', nomePrimeiraPessoa: 'Ana Beatriz', nomeSegundaPessoa: 'Bruno' })),
+    quando('GET', ROTA_EVENTO, () =>
+      respostaJson(eventoCompleto({ arquivado, data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12', nomePrimeiraPessoa: 'Ana Beatriz', nomeSegundaPessoa: 'Bruno' })),
     ),
     quando('GET', ROTA_PAINEL, () => respostaJson(painel())),
     quando('GET', ROTA_RESTRICOES, () => respostaJson({ totalPessoas: 0, totalConfirmados: 0, porTipo: [], outrasRestricoes: 0, necessidadesEspeciais: 0, pessoas: [], diasRetencao: 30, dataExclusaoPrevista: null, dadosExcluidosEm: null, registrosIlegiveis: 0, podeRegistrar: true })),
@@ -94,7 +94,7 @@ function rotas(painel: () => PainelConfirmacoesDto, arquivado = false) {
 }
 
 async function abrir() {
-  const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/confirmacoes`)
+  const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/confirmacoes`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
 }
@@ -301,10 +301,10 @@ describe('Cobrar pendentes', { timeout: 20_000 }, () => {
     expect(wrapper!.find('[data-teste="cobranca-prazo-encerrado"]').exists()).toBe(false)
   })
 
-  it('[COMPONENTE] casamento arquivado não oferece cobrança', async () => {
+  it('[COMPONENTE] evento arquivado não oferece cobrança', async () => {
     rotearFetch(
       fetchSimulado,
-      ...rotas(() => painelCobravel({ casamentoArquivado: true, prazo: { dataLimite: '2027-05-12', diasRestantes: 5, aceitaRespostas: false } }), true),
+      ...rotas(() => painelCobravel({ eventoArquivado: true, prazo: { dataLimite: '2027-05-12', diasRestantes: 5, aceitaRespostas: false } }), true),
     )
     await abrir()
 

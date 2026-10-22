@@ -33,7 +33,7 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
   return niveis.map((nivel, indice) => {
     const atual = indice === ultimo
     const dinamico = atual ? props.rotuloTrilha : props.rotulosTrilha[nivel.chave]
-    const reserva = atual ? props.titulo : ROTULOS_NAVEGACAO.casamentoGenerico
+    const reserva = atual ? props.titulo : ROTULOS_NAVEGACAO.eventoGenerico
     return {
       chave: nivel.chave,
       rotulo: dinamico || nivel.rotulo || reserva,

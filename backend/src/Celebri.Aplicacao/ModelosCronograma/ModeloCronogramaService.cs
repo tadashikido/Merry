@@ -2,7 +2,7 @@ using Celebri.Aplicacao.Cronogramas;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Excecoes;
 
@@ -12,9 +12,9 @@ public class ModeloCronogramaService : IModeloCronogramaService
 {
     private readonly IModeloCronogramaRepository _modeloRepository;
     private readonly IOrganizacaoRepository _organizacaoRepository;
-    private readonly ICasamentoRepository _casamentoRepository;
+    private readonly IEventoRepository _eventoRepository;
     private readonly IItemCronogramaRepository _itemCronogramaRepository;
-    private readonly IFornecedorCasamentoRepository _vinculoRepository;
+    private readonly IFornecedorEventoRepository _vinculoRepository;
     private readonly IUnidadeTrabalho _unidadeTrabalho;
     private readonly IContextoIsolamento _contextoIsolamento;
     private readonly TimeProvider _relogio;
@@ -22,16 +22,16 @@ public class ModeloCronogramaService : IModeloCronogramaService
     public ModeloCronogramaService(
         IModeloCronogramaRepository modeloRepository,
         IOrganizacaoRepository organizacaoRepository,
-        ICasamentoRepository casamentoRepository,
+        IEventoRepository eventoRepository,
         IItemCronogramaRepository itemCronogramaRepository,
-        IFornecedorCasamentoRepository vinculoRepository,
+        IFornecedorEventoRepository vinculoRepository,
         IUnidadeTrabalho unidadeTrabalho,
         IContextoIsolamento contextoIsolamento,
         TimeProvider relogio)
     {
         _modeloRepository = modeloRepository;
         _organizacaoRepository = organizacaoRepository;
-        _casamentoRepository = casamentoRepository;
+        _eventoRepository = eventoRepository;
         _itemCronogramaRepository = itemCronogramaRepository;
         _vinculoRepository = vinculoRepository;
         _unidadeTrabalho = unidadeTrabalho;
@@ -78,22 +78,22 @@ public class ModeloCronogramaService : IModeloCronogramaService
         return ParaDto(modelo);
     }
 
-    public async Task<ModeloCronogramaDto> CriarDoCasamentoAsync(
-        Guid casamentoId,
+    public async Task<ModeloCronogramaDto> CriarDoEventoAsync(
+        Guid eventoId,
         SalvarModeloCronogramaRequest request,
         CancellationToken cancelamento)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var casamento = await _casamentoRepository.ObterPorIdAsync(casamentoId, cancelamento)
-            ?? throw new RecursoNaoEncontradoException(MensagensCasamento.NaoEncontrado);
+        var evento = await _eventoRepository.ObterPorIdAsync(eventoId, cancelamento)
+            ?? throw new RecursoNaoEncontradoException(MensagensEvento.NaoEncontrado);
 
-        if (casamento.Horario is null)
+        if (evento.Horario is null)
         {
             throw new RegraNegocioException(MensagensModeloCronograma.HorarioCerimoniaObrigatorio, AplicacaoModeloCronogramaService.CampoHorarioCerimonia);
         }
 
-        var itens = await _itemCronogramaRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento);
+        var itens = await _itemCronogramaRepository.ListarPorEventoAsync(evento.Id, cancelamento);
 
         if (itens.Count == 0)
         {
@@ -102,13 +102,13 @@ public class ModeloCronogramaService : IModeloCronogramaService
 
         await GarantirPodeCriarAsync(request.Nome, cancelamento);
 
-        var vinculos = await _vinculoRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento);
+        var vinculos = await _vinculoRepository.ListarPorEventoAsync(evento.Id, cancelamento);
         var categorias = vinculos.ToDictionary(vinculo => vinculo.Vinculo.Id, vinculo => vinculo.Fornecedor.Categoria);
 
         var modelo = ModeloCronograma.CriarDeCronograma(
             request.Nome,
             request.Descricao,
-            casamento,
+            evento,
             itens,
             categorias,
             _relogio.GetUtcNow());

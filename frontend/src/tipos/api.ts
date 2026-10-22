@@ -18,7 +18,7 @@ export interface OrganizacaoResumoDto {
   nome: string
 }
 
-export type PapelUsuario = 'Dono' | 'Casal'
+export type PapelUsuario = 'Dono' | 'Anfitriao'
 
 export interface UsuarioAutenticadoDto {
   id: string
@@ -26,7 +26,7 @@ export interface UsuarioAutenticadoDto {
   email: string
   papel: PapelUsuario | string
   organizacao: OrganizacaoResumoDto
-  casamentoId?: string | null
+  eventoId?: string | null
 }
 
 export interface SessaoDto {

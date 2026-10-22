@@ -3,7 +3,7 @@ using Celebri.Dominio.Cronogramas;
 namespace Celebri.Aplicacao.GrandeDia;
 
 public sealed record GrandeDiaDto(
-    Guid CasamentoId,
+    Guid EventoId,
     string NomePrimeiraPessoa,
     string NomeSegundaPessoa,
     DateOnly Data,
@@ -15,7 +15,7 @@ public sealed record GrandeDiaDto(
     MomentoGrandeDiaDto Momento,
     IReadOnlyList<ItemGrandeDiaDto> Itens);
 
-public sealed record MomentoGrandeDiaDto(DateTime Agora, string Fase, int DiasParaOCasamento)
+public sealed record MomentoGrandeDiaDto(DateTime Agora, string Fase, int DiasParaOEvento)
 {
     public static MomentoGrandeDiaDto De(RetratoGrandeDia retrato, DateTime agoraLocal)
     {
@@ -30,7 +30,7 @@ public sealed record MomentoGrandeDiaDto(DateTime Agora, string Fase, int DiasPa
             agoraLocal.Second,
             DateTimeKind.Unspecified);
 
-        return new MomentoGrandeDiaDto(agora, retrato.Fase.ToString(), retrato.DiasParaOCasamento);
+        return new MomentoGrandeDiaDto(agora, retrato.Fase.ToString(), retrato.DiasParaOEvento);
     }
 }
 

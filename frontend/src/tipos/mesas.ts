@@ -48,7 +48,7 @@ export interface MapaMesasDto {
   pessoas: PessoaMesaDto[]
   avisosSaida: AvisoSaidaMesaDto[]
   totais: TotaisMesasDto
-  casamentoArquivado: boolean
+  eventoArquivado: boolean
 }
 
 export interface SalvarMesaRequest {

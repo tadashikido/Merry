@@ -1,6 +1,6 @@
 export const NOMES_ICONES = [
   'dashboard',
-  'casamento',
+  'evento',
   'convidados',
   'confirmacoes',
   'restricao',

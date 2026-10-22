@@ -16,9 +16,9 @@ async function capturar(page: import('@playwright/test').Page, nome: string) {
 test.describe('Mesas em lista', () => {
   test('a cerimonialista cria mesas, senta o convite inteiro, respeita a capacidade, vê a saída por recusa e exporta', async ({ paginaAssessoria: page, api }) => {
     await page.setViewportSize({ width: 1280, height: 900 })
-    const casamento = await api.criarCasamento()
+    const evento = await api.criarEvento()
     const souza = await api.criarConvite(
-      casamento.id,
+      evento.id,
       [
         { nome: 'Carla Souza', email: 'carla@e2e.teste', resposta: 'Confirmado' },
         { nome: 'Pedro Souza', faixaEtaria: 'Crianca', resposta: 'Confirmado' },
@@ -27,12 +27,12 @@ test.describe('Mesas em lista', () => {
       ],
       { nome: 'Família Souza', grupo: 'Família da noiva' },
     )
-    const rui = await api.criarConvite(casamento.id, [{ nome: 'Rui Fontes', resposta: 'Confirmado' }], { grupo: 'Amigos do trabalho' })
-    await api.criarConvite(casamento.id, [{ nome: '@Primo Zeca', resposta: 'Confirmado' }])
-    await api.criarConvite(casamento.id, [{ nome: 'Marcos Pendente' }])
-    const padrinhos = await api.criarMesa(casamento.id, { numero: 2, nome: 'Padrinhos', capacidade: 8 })
+    const rui = await api.criarConvite(evento.id, [{ nome: 'Rui Fontes', resposta: 'Confirmado' }], { grupo: 'Amigos do trabalho' })
+    await api.criarConvite(evento.id, [{ nome: '@Primo Zeca', resposta: 'Confirmado' }])
+    await api.criarConvite(evento.id, [{ nome: 'Marcos Pendente' }])
+    const padrinhos = await api.criarMesa(evento.id, { numero: 2, nome: 'Padrinhos', capacidade: 8 })
 
-    await page.goto(`/casamentos/${casamento.id}/mesas`)
+    await page.goto(`/eventos/${evento.id}/mesas`)
     await expect(page.getByRole('heading', { name: 'Mesas', level: 1 })).toBeVisible()
     await expect(page.getByTestId('contagem-sem-mesa')).toContainText('6')
     await expect(page.getByTestId('coluna-sem-mesa')).not.toContainText('Marcos Pendente')
@@ -75,7 +75,7 @@ test.describe('Mesas em lista', () => {
     await sentar.getByRole('button', { name: 'Sentar aqui' }).click()
     await expect(page.getByText('1 pessoa sentada na Mesa 2 · Padrinhos.')).toBeVisible()
 
-    const token = await api.gerarLinkRsvp(casamento.id, rui.id)
+    const token = await api.gerarLinkRsvp(evento.id, rui.id)
     await api.responderRsvp(token, [{ id: rui.convidados[0]!.id, resposta: 'Recusado' }])
     await page.reload()
     const aviso = page.getByTestId('aviso-saida')
@@ -86,7 +86,7 @@ test.describe('Mesas em lista', () => {
     await capturar(page, 'mesas-aviso-saida')
     await aviso.getByRole('button', { name: 'Entendi' }).click()
     await expect(page.getByTestId('aviso-saida')).toHaveCount(0)
-    expect((await api.mapaMesas(casamento.id)).avisosSaida).toHaveLength(0)
+    expect((await api.mapaMesas(evento.id)).avisosSaida).toHaveLength(0)
 
     await expect(page.locator('div.mesas').getByText(/restri/i)).toHaveCount(0)
     await expect(page.getByText('carla@e2e.teste')).toHaveCount(0)
@@ -113,24 +113,24 @@ test.describe('Mesas em lista', () => {
     await capturar(impressao, 'mesas-impressao')
     await impressao.close()
 
-    await page.goto(`/casamentos/${casamento.id}/convidados`)
+    await page.goto(`/eventos/${evento.id}/convidados`)
     await expect(page.getByRole('row', { name: /Família Souza/ }).getByTestId('mesa-pessoa').first()).toHaveText('Mesa 1 · Família da noiva')
     expect(souza.convidados).toHaveLength(4)
-    expect((await api.mapaMesas(casamento.id)).mesas.find((mesa) => mesa.id === padrinhos.id)?.ocupacao).toBe(0)
+    expect((await api.mapaMesas(evento.id)).mesas.find((mesa) => mesa.id === padrinhos.id)?.ocupacao).toBe(0)
   })
 
   test('no celular as pessoas e as mesas ficam em painéis, a barra de seleção fica ao alcance e não há rolagem horizontal', async ({ paginaAssessoria: page, api }) => {
     await page.setViewportSize({ width: 390, height: 844 })
-    const casamento = await api.criarCasamento()
-    await api.criarConvite(casamento.id, [{ nome: 'Tereza Andrade', resposta: 'Confirmado' }, { nome: 'Igor Andrade', resposta: 'Confirmado' }], {
+    const evento = await api.criarEvento()
+    await api.criarConvite(evento.id, [{ nome: 'Tereza Andrade', resposta: 'Confirmado' }, { nome: 'Igor Andrade', resposta: 'Confirmado' }], {
       nome: 'Família Andrade',
       grupo: 'Família do noivo',
     })
-    await api.criarConvite(casamento.id, [{ nome: 'Beatriz Sales', resposta: 'Confirmado' }], { grupo: 'Amigos da faculdade' })
-    await api.criarMesa(casamento.id, { numero: 1, nome: 'Mesa dos noivos', capacidade: 10, especial: true })
-    await api.criarMesa(casamento.id, { numero: 3, capacidade: 8 })
+    await api.criarConvite(evento.id, [{ nome: 'Beatriz Sales', resposta: 'Confirmado' }], { grupo: 'Amigos da faculdade' })
+    await api.criarMesa(evento.id, { numero: 1, nome: 'Mesa dos anfitriões', capacidade: 10, especial: true })
+    await api.criarMesa(evento.id, { numero: 3, capacidade: 8 })
 
-    await page.goto(`/casamentos/${casamento.id}/mesas`)
+    await page.goto(`/eventos/${evento.id}/mesas`)
     await expect(page.getByTestId('abas-mesas')).toBeVisible()
     await page.getByLabel('Grupo').click()
     await page.getByRole('option', { name: 'Família do noivo' }).click()
@@ -150,40 +150,40 @@ test.describe('Mesas em lista', () => {
     await expect(page.getByText('1 pessoa sentada na Mesa 3.')).toBeVisible()
 
     await page.getByTestId('abas-mesas').getByText(/^Mesas/).click()
-    const noivos = page.getByRole('region', { name: 'Mesa 1 · Mesa dos noivos' })
-    await expect(noivos).toBeVisible()
-    await expect(page.getByTestId('mesa').first()).toContainText('Mesa dos noivos')
+    const anfitrioes = page.getByRole('region', { name: 'Mesa 1 · Mesa dos anfitriões' })
+    await expect(anfitrioes).toBeVisible()
+    await expect(page.getByTestId('mesa').first()).toContainText('Mesa dos anfitriões')
     await expect(page.getByRole('region', { name: 'Mesa 3' })).toContainText('Beatriz Sales')
     expect(await page.evaluate('document.documentElement.scrollWidth <= window.innerWidth')).toBe(true)
     await capturar(page, 'mesas-celular-mesas')
   })
 
-  test('o casal organiza as mesas do próprio casamento sem ver dados de saúde', async ({ browser, baseURL, api }) => {
-    const casamento = await api.criarCasamento()
-    await api.criarConvite(casamento.id, [{ nome: 'Tia Lúcia', resposta: 'Confirmado' }])
-    await api.criarMesa(casamento.id, { numero: 4, nome: 'Tios', capacidade: 6 })
-    const emailCasal = emailUnico('casal')
-    const senhaCasal = senhaValida()
-    await api.convidarCasal(casamento.id, casamento.nomePrimeiraPessoa, emailCasal)
-    const link = await aguardarLinkNoEmail(emailCasal, /http:\/\/localhost:\d+\/acesso-casal#token=[A-Za-z0-9_-]+/)
+  test('os anfitriões organizam as mesas do próprio evento sem ver dados de saúde', async ({ browser, baseURL, api }) => {
+    const evento = await api.criarEvento()
+    await api.criarConvite(evento.id, [{ nome: 'Tia Lúcia', resposta: 'Confirmado' }])
+    await api.criarMesa(evento.id, { numero: 4, nome: 'Tios', capacidade: 6 })
+    const emailAnfitriao = emailUnico('anfitriao')
+    const senhaAnfitriao = senhaValida()
+    await api.convidarAnfitriao(evento.id, evento.nomePrimeiraPessoa, emailAnfitriao)
+    const link = await aguardarLinkNoEmail(emailAnfitriao, /http:\/\/localhost:\d+\/acesso-anfitriao#token=[A-Za-z0-9_-]+/)
 
-    const contextoCasal = await browser.newContext({ baseURL, viewport: { width: 1280, height: 900 } })
-    const casal = await contextoCasal.newPage()
-    await casal.goto(caminhoRelativo(link))
-    await casal.locator('#aceite-senha').fill(senhaCasal)
-    await casal.locator('#aceite-confirmacao').fill(senhaCasal)
-    await casal.getByRole('button', { name: 'Criar senha e entrar' }).click()
-    await expect(casal).toHaveURL(new RegExp(`/casamentos/${casamento.id}$`))
+    const contextoAnfitriao = await browser.newContext({ baseURL, viewport: { width: 1280, height: 900 } })
+    const anfitriao = await contextoAnfitriao.newPage()
+    await anfitriao.goto(caminhoRelativo(link))
+    await anfitriao.locator('#aceite-senha').fill(senhaAnfitriao)
+    await anfitriao.locator('#aceite-confirmacao').fill(senhaAnfitriao)
+    await anfitriao.getByRole('button', { name: 'Criar senha e entrar' }).click()
+    await expect(anfitriao).toHaveURL(new RegExp(`/eventos/${evento.id}$`))
 
-    await casal.getByRole('link', { name: 'Mesas' }).first().click()
-    await expect(casal).toHaveURL(new RegExp(`/casamentos/${casamento.id}/mesas$`))
-    await casal.getByTestId('coluna-sem-mesa').getByLabel('Tia Lúcia').check()
-    await casal.getByTestId('sentar-em').click()
-    await dialogo(casal).getByLabel('Mesa 4 · Tios').check()
-    await dialogo(casal).getByRole('button', { name: 'Sentar aqui' }).click()
-    await expect(casal.getByText('1 pessoa sentada na Mesa 4 · Tios.')).toBeVisible()
-    await expect(casal.locator('div.mesas').getByText(/restri/i)).toHaveCount(0)
-    expect((await api.mapaMesas(casamento.id)).totais.acomodados).toBe(1)
-    await contextoCasal.close()
+    await anfitriao.getByRole('link', { name: 'Mesas' }).first().click()
+    await expect(anfitriao).toHaveURL(new RegExp(`/eventos/${evento.id}/mesas$`))
+    await anfitriao.getByTestId('coluna-sem-mesa').getByLabel('Tia Lúcia').check()
+    await anfitriao.getByTestId('sentar-em').click()
+    await dialogo(anfitriao).getByLabel('Mesa 4 · Tios').check()
+    await dialogo(anfitriao).getByRole('button', { name: 'Sentar aqui' }).click()
+    await expect(anfitriao.getByText('1 pessoa sentada na Mesa 4 · Tios.')).toBeVisible()
+    await expect(anfitriao.locator('div.mesas').getByText(/restri/i)).toHaveCount(0)
+    expect((await api.mapaMesas(evento.id)).totais.acomodados).toBe(1)
+    await contextoAnfitriao.close()
   })
 })

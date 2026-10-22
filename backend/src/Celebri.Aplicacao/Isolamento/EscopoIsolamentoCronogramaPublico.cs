@@ -4,13 +4,13 @@ public sealed class EscopoIsolamentoCronogramaPublico
 {
     public Guid? OrganizacaoId { get; private set; }
 
-    public Guid? CasamentoId { get; private set; }
+    public Guid? EventoId { get; private set; }
 
-    public void Restringir(Guid organizacaoId, Guid casamentoId)
+    public void Restringir(Guid organizacaoId, Guid eventoId)
     {
-        if (organizacaoId == Guid.Empty || casamentoId == Guid.Empty)
+        if (organizacaoId == Guid.Empty || eventoId == Guid.Empty)
         {
-            throw new InvalidOperationException("O escopo do cronograma público exige organização e casamento válidos.");
+            throw new InvalidOperationException("O escopo do cronograma público exige organização e evento válidos.");
         }
 
         if (OrganizacaoId is not null)
@@ -19,6 +19,6 @@ public sealed class EscopoIsolamentoCronogramaPublico
         }
 
         OrganizacaoId = organizacaoId;
-        CasamentoId = casamentoId;
+        EventoId = eventoId;
     }
 }

@@ -11,8 +11,8 @@ using Celebri.Infraestrutura.Calendario;
 using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
-using ClienteAcessoCasal = Celebri.Testes.Integracao.AcessosCasal.ClienteAcessoCasal;
-using ClienteCasamentos = Celebri.Testes.Integracao.Casamentos.ClienteCasamentos;
+using ClienteAcessoAnfitriao = Celebri.Testes.Integracao.AcessosAnfitriao.ClienteAcessoAnfitriao;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 
 namespace Celebri.Testes.Integracao.Cronogramas;
 
@@ -38,14 +38,14 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
         }
     }
 
-    private static string Rota(Guid casamentoId)
+    private static string Rota(Guid eventoId)
     {
-        return $"/api/casamentos/{casamentoId}/grande-dia";
+        return $"/api/eventos/{eventoId}/grande-dia";
     }
 
-    private static string RotaConclusao(Guid casamentoId, Guid itemId)
+    private static string RotaConclusao(Guid eventoId, Guid itemId)
     {
-        return $"{Rota(casamentoId)}/itens/{itemId}/conclusao";
+        return $"{Rota(eventoId)}/itens/{itemId}/conclusao";
     }
 
     private static (string Dia, string Inicio) Posicao(int minutoAbsoluto)
@@ -66,11 +66,11 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
         return (await resposta.Content.ReadFromJsonAsync<GrandeDiaDto>(OpcoesJson))!;
     }
 
-    private async Task<HttpClient> CriarClienteCasalAsync(Guid casamentoId)
+    private async Task<HttpClient> CriarClienteAnfitriaoAsync(Guid eventoId)
     {
-        var email = ClienteAcessoCasal.EmailCasalUnico();
-        await ClienteAcessoCasal.ConvidarComSucessoAsync(OrganizacaoA.Cliente, casamentoId, email);
-        var aceite = await ClienteAcessoCasal.AceitarAsync(ClienteAnonimo, ClienteAcessoCasal.UltimoToken(Fabrica.Email, email));
+        var email = ClienteAcessoAnfitriao.EmailAnfitriaoUnico();
+        await ClienteAcessoAnfitriao.ConvidarComSucessoAsync(OrganizacaoA.Cliente, eventoId, email);
+        var aceite = await ClienteAcessoAnfitriao.AceitarAsync(ClienteAnonimo, ClienteAcessoAnfitriao.UltimoToken(Fabrica.Email, email));
         Assert.Equal(HttpStatusCode.OK, aceite.StatusCode);
         var sessao = (await aceite.Content.ReadFromJsonAsync<SessaoDto>())!;
         var cliente = Fabrica.CriarClienteHttps();
@@ -79,24 +79,24 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
         return cliente;
     }
 
-    private async Task<(Guid CasamentoId, Guid Agora, Guid Proximo, Guid Passado, Guid Buffet)> CriarDiaAsync(OrganizacaoTeste organizacao)
+    private async Task<(Guid EventoId, Guid Agora, Guid Proximo, Guid Passado, Guid Buffet)> CriarDiaAsync(OrganizacaoTeste organizacao)
     {
-        var hoje = ClienteCasamentos.HojeEmSaoPaulo().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var casamento = await ClienteCasamentos.CriarAsync(organizacao.Cliente, ClienteCasamentos.CorpoValido(data: hoje));
-        var buffet = await ClienteCronograma.CriarVinculoAsync(organizacao.Cliente, casamento.Id, $"Buffet Sabor {Guid.NewGuid():N}", "Contratado");
+        var hoje = ClienteEventos.HojeEmSaoPaulo().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var evento = await ClienteEventos.CriarAsync(organizacao.Cliente, ClienteEventos.CorpoValido(data: hoje));
+        var buffet = await ClienteCronograma.CriarVinculoAsync(organizacao.Cliente, evento.Id, $"Buffet Sabor {Guid.NewGuid():N}", "Contratado");
         var minuto = MinutoAgora();
 
         var (diaAgora, inicioAgora) = Posicao(minuto - 30);
-        var agora = await ClienteCronograma.CriarAsync(organizacao.Cliente, casamento.Id, ClienteCronograma.Corpo(
-            "Cerimônia", inicioAgora, 120, dia: diaAgora, fornecedorCasamentoId: buffet, notasInternas: NotaInterna));
+        var agora = await ClienteCronograma.CriarAsync(organizacao.Cliente, evento.Id, ClienteCronograma.Corpo(
+            "Cerimônia", inicioAgora, 120, dia: diaAgora, fornecedorEventoId: buffet, notasInternas: NotaInterna));
         var (diaProximo, inicioProximo) = Posicao(minuto + 150);
-        var proximo = await ClienteCronograma.CriarAsync(organizacao.Cliente, casamento.Id, ClienteCronograma.Corpo(
+        var proximo = await ClienteCronograma.CriarAsync(organizacao.Cliente, evento.Id, ClienteCronograma.Corpo(
             "Jantar", inicioProximo, 60, dia: diaProximo, notasInternas: NotaInterna));
         var (diaPassado, inicioPassado) = Posicao(minuto - 300);
-        var passado = await ClienteCronograma.CriarAsync(organizacao.Cliente, casamento.Id, ClienteCronograma.Corpo(
+        var passado = await ClienteCronograma.CriarAsync(organizacao.Cliente, evento.Id, ClienteCronograma.Corpo(
             "Montagem", inicioPassado, 60, dia: diaPassado, notasInternas: NotaInterna));
 
-        return (casamento.Id, agora.Id, proximo.Id, passado.Id, buffet);
+        return (evento.Id, agora.Id, proximo.Id, passado.Id, buffet);
     }
 
     [Fact]
@@ -104,12 +104,12 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
     {
         var cenario = await CriarDiaAsync(OrganizacaoA);
 
-        var resposta = await OrganizacaoA.Cliente.GetAsync(Rota(cenario.CasamentoId));
+        var resposta = await OrganizacaoA.Cliente.GetAsync(Rota(cenario.EventoId));
         var dto = await LerAsync(resposta);
 
         Assert.Contains("no-store", resposta.Headers.CacheControl?.ToString() ?? string.Empty, StringComparison.Ordinal);
         Assert.Equal("NoDia", dto.Momento.Fase);
-        Assert.Equal(0, dto.Momento.DiasParaOCasamento);
+        Assert.Equal(0, dto.Momento.DiasParaOEvento);
         Assert.False(dto.SomenteLeitura);
         Assert.Equal(["Montagem", "Cerimônia", "Jantar"], dto.Itens.Select(item => item.Atividade));
         var porId = dto.Itens.ToDictionary(item => item.Id);
@@ -126,7 +126,7 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
     {
         var cenario = await CriarDiaAsync(OrganizacaoA);
 
-        var concluido = await LerAsync(await OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.CasamentoId, cenario.Agora), null));
+        var concluido = await LerAsync(await OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.EventoId, cenario.Agora), null));
         var item = concluido.Itens.Single(atual => atual.Id == cenario.Agora);
         Assert.Equal("Feito", item.Situacao);
         Assert.Equal("Concluido", item.Status);
@@ -139,7 +139,7 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
             Assert.NotNull(registro.ConcluidoEm);
         }
 
-        var reaberto = await LerAsync(await OrganizacaoA.Cliente.DeleteAsync(RotaConclusao(cenario.CasamentoId, cenario.Agora)));
+        var reaberto = await LerAsync(await OrganizacaoA.Cliente.DeleteAsync(RotaConclusao(cenario.EventoId, cenario.Agora)));
         var itemReaberto = reaberto.Itens.Single(atual => atual.Id == cenario.Agora);
         Assert.Equal("Agora", itemReaberto.Situacao);
         Assert.Null(itemReaberto.ConcluidoEm);
@@ -158,9 +158,9 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
         segundoAparelho.DefaultRequestHeaders.Authorization = OrganizacaoA.Cliente.DefaultRequestHeaders.Authorization;
 
         var respostas = await Task.WhenAll(
-            OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.CasamentoId, cenario.Agora), null),
-            segundoAparelho.PutAsync(RotaConclusao(cenario.CasamentoId, cenario.Agora), null));
-        var repetida = await OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.CasamentoId, cenario.Agora), null);
+            OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.EventoId, cenario.Agora), null),
+            segundoAparelho.PutAsync(RotaConclusao(cenario.EventoId, cenario.Agora), null));
+        var repetida = await OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.EventoId, cenario.Agora), null);
 
         Assert.All(respostas, resposta => Assert.Equal(HttpStatusCode.OK, resposta.StatusCode));
         var dto = await LerAsync(repetida);
@@ -168,14 +168,14 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
     }
 
     [Fact]
-    public async Task Casal_DeveLerSemNotasESemPoderMarcar()
+    public async Task Anfitriao_DeveLerSemNotasESemPoderMarcar()
     {
         var cenario = await CriarDiaAsync(OrganizacaoA);
-        var casal = await CriarClienteCasalAsync(cenario.CasamentoId);
+        var anfitriao = await CriarClienteAnfitriaoAsync(cenario.EventoId);
 
-        var dto = await LerAsync(await casal.GetAsync(Rota(cenario.CasamentoId)));
-        var marcar = await casal.PutAsync(RotaConclusao(cenario.CasamentoId, cenario.Agora), null);
-        var reabrir = await casal.DeleteAsync(RotaConclusao(cenario.CasamentoId, cenario.Agora));
+        var dto = await LerAsync(await anfitriao.GetAsync(Rota(cenario.EventoId)));
+        var marcar = await anfitriao.PutAsync(RotaConclusao(cenario.EventoId, cenario.Agora), null);
+        var reabrir = await anfitriao.DeleteAsync(RotaConclusao(cenario.EventoId, cenario.Agora));
 
         Assert.True(dto.SomenteLeitura);
         Assert.All(dto.Itens, item => Assert.Null(item.NotasInternas));
@@ -189,8 +189,8 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
     {
         var cenario = await CriarDiaAsync(OrganizacaoA);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.GetAsync(Rota(cenario.CasamentoId))).StatusCode);
-        Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.PutAsync(RotaConclusao(cenario.CasamentoId, cenario.Agora), null)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.GetAsync(Rota(cenario.EventoId))).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.PutAsync(RotaConclusao(cenario.EventoId, cenario.Agora), null)).StatusCode);
     }
 
     [Fact]
@@ -199,22 +199,22 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
         var cenario = await CriarDiaAsync(OrganizacaoA);
         var outro = await CriarDiaAsync(OrganizacaoB);
 
-        Assert.Equal(HttpStatusCode.NotFound, (await OrganizacaoB.Cliente.GetAsync(Rota(cenario.CasamentoId))).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await OrganizacaoB.Cliente.PutAsync(RotaConclusao(cenario.CasamentoId, cenario.Agora), null)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await OrganizacaoB.Cliente.PutAsync(RotaConclusao(outro.CasamentoId, cenario.Agora), null)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await OrganizacaoB.Cliente.GetAsync(Rota(cenario.EventoId))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await OrganizacaoB.Cliente.PutAsync(RotaConclusao(cenario.EventoId, cenario.Agora), null)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await OrganizacaoB.Cliente.PutAsync(RotaConclusao(outro.EventoId, cenario.Agora), null)).StatusCode);
 
         await using var contexto = CriarContexto(OrganizacaoA);
         Assert.Equal(StatusItemCronograma.Previsto, (await contexto.ItensCronograma.SingleAsync(item => item.Id == cenario.Agora)).Status);
     }
 
     [Fact]
-    public async Task CasamentoArquivado_DeveRecusarMarcacaoCom422ESerSomenteLeitura()
+    public async Task EventoArquivado_DeveRecusarMarcacaoCom422ESerSomenteLeitura()
     {
         var cenario = await CriarDiaAsync(OrganizacaoA);
-        await OrganizacaoA.Cliente.PostAsync($"{ClienteCasamentos.Rota}/{cenario.CasamentoId}/arquivar", null);
+        await OrganizacaoA.Cliente.PostAsync($"{ClienteEventos.Rota}/{cenario.EventoId}/arquivar", null);
 
-        var marcar = await OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.CasamentoId, cenario.Agora), null);
-        var dto = await LerAsync(await OrganizacaoA.Cliente.GetAsync(Rota(cenario.CasamentoId)));
+        var marcar = await OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.EventoId, cenario.Agora), null);
+        var dto = await LerAsync(await OrganizacaoA.Cliente.GetAsync(Rota(cenario.EventoId)));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, marcar.StatusCode);
         Assert.True(dto.Arquivado);
@@ -224,14 +224,14 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
     [Fact]
     public async Task Consultar_AntesDoDia_DeveInformarFaseEDiasRestantes()
     {
-        var data = ClienteCasamentos.HojeEmSaoPaulo().AddDays(12).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente, ClienteCasamentos.CorpoValido(data: data));
-        await ClienteCronograma.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var data = ClienteEventos.HojeEmSaoPaulo().AddDays(12).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente, ClienteEventos.CorpoValido(data: data));
+        await ClienteCronograma.CriarAsync(OrganizacaoA.Cliente, evento.Id);
 
-        var dto = await LerAsync(await OrganizacaoA.Cliente.GetAsync(Rota(casamento.Id)));
+        var dto = await LerAsync(await OrganizacaoA.Cliente.GetAsync(Rota(evento.Id)));
 
         Assert.Equal("AntesDoDia", dto.Momento.Fase);
-        Assert.Equal(12, dto.Momento.DiasParaOCasamento);
+        Assert.Equal(12, dto.Momento.DiasParaOEvento);
         Assert.Equal("Depois", dto.Itens.Single().Situacao);
     }
 
@@ -239,8 +239,8 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
     public async Task ConsultaPublica_NoDia_DeveTrazerMomentoESituacoesSemContatosNemIds()
     {
         var cenario = await CriarDiaAsync(OrganizacaoA);
-        await OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.CasamentoId, cenario.Passado), null);
-        var link = await OrganizacaoA.Cliente.PostAsJsonAsync($"/api/casamentos/{cenario.CasamentoId}/cronograma/links", new { tipo = "Fornecedor", fornecedorCasamentoId = cenario.Buffet });
+        await OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.EventoId, cenario.Passado), null);
+        var link = await OrganizacaoA.Cliente.PostAsJsonAsync($"/api/eventos/{cenario.EventoId}/cronograma/links", new { tipo = "Fornecedor", fornecedorEventoId = cenario.Buffet });
         Assert.Equal(HttpStatusCode.OK, link.StatusCode);
         var token = (await link.Content.ReadFromJsonAsync<LinkCronogramaDto>())!.Token!;
 
@@ -251,7 +251,7 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
         foreach (var proibido in new[]
         {
             NotaInterna, "98765", "11987654321", "Marta", "telefone", "contato", "notasInternas",
-            cenario.CasamentoId.ToString(), cenario.Agora.ToString(), cenario.Buffet.ToString(),
+            cenario.EventoId.ToString(), cenario.Agora.ToString(), cenario.Buffet.ToString(),
         })
         {
             Assert.DoesNotContain(proibido, corpo, StringComparison.OrdinalIgnoreCase);
@@ -268,8 +268,8 @@ public sealed class GrandeDiaApiTestes : IsolamentoOrganizacaoTestesBase, IDispo
     public async Task ConsultaPublica_LinkGeral_DeveRefletirFeitosComInstante()
     {
         var cenario = await CriarDiaAsync(OrganizacaoA);
-        await OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.CasamentoId, cenario.Passado), null);
-        var link = await OrganizacaoA.Cliente.PostAsJsonAsync($"/api/casamentos/{cenario.CasamentoId}/cronograma/links", new { tipo = "Geral" });
+        await OrganizacaoA.Cliente.PutAsync(RotaConclusao(cenario.EventoId, cenario.Passado), null);
+        var link = await OrganizacaoA.Cliente.PostAsJsonAsync($"/api/eventos/{cenario.EventoId}/cronograma/links", new { tipo = "Geral" });
         var token = (await link.Content.ReadFromJsonAsync<LinkCronogramaDto>())!.Token!;
 
         var resposta = await ClienteAnonimo.PostAsJsonAsync("/api/cronograma-publico/consulta", new { token });

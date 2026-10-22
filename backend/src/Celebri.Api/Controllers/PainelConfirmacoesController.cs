@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}")]
+[Route("api/eventos/{eventoId:guid}")]
 [Produces("application/json")]
 [Authorize(Policy = PoliticasAutorizacao.ConsultarConvidados)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -24,9 +24,9 @@ public class PainelConfirmacoesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PainelConfirmacoesDto>> ObterPainel(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ActionResult<PainelConfirmacoesDto>> ObterPainel(Guid eventoId, CancellationToken cancelamento)
     {
-        return Ok(await _painelConfirmacoesService.ObterAsync(casamentoId, cancelamento));
+        return Ok(await _painelConfirmacoesService.ObterAsync(eventoId, cancelamento));
     }
 
     [HttpGet("exportacao-buffet")]
@@ -37,10 +37,10 @@ public class PainelConfirmacoesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ExportacaoBuffetDto>> ExportarBuffet(
-        Guid casamentoId,
+        Guid eventoId,
         [FromQuery] ExportarBuffetRequest request,
         CancellationToken cancelamento)
     {
-        return Ok(await _painelConfirmacoesService.ExportarBuffetAsync(casamentoId, request, cancelamento));
+        return Ok(await _painelConfirmacoesService.ExportarBuffetAsync(eventoId, request, cancelamento));
     }
 }

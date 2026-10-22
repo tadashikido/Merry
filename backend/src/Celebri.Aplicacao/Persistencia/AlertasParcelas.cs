@@ -5,6 +5,6 @@ public sealed record AlertasParcelas(
     decimal ValorVencidas,
     int TotalProximas,
     decimal ValorProximas,
-    int CasamentosComVencidas,
+    int EventosComVencidas,
     IReadOnlyList<ParcelaAlerta> Vencidas,
     IReadOnlyList<ParcelaAlerta> Proximas);

@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.DadosSensiveis;
 using Celebri.Dominio.Organizacoes;
@@ -10,7 +10,7 @@ namespace Celebri.Infraestrutura.Persistencia.Configuracoes;
 public class DadosSensiveisConvidadoConfiguration : IEntityTypeConfiguration<DadosSensiveisConvidado>
 {
     public const string Tabela = "dados_sensiveis_convidados";
-    public const string IndiceOrganizacaoCasamento = "ix_dados_sensiveis_convidados_organizacao_id_casamento_id";
+    public const string IndiceOrganizacaoEvento = "ix_dados_sensiveis_convidados_organizacao_id_evento_id";
     public const string RestricaoOrigem = "ck_dados_sensiveis_convidados_origem_consentimento";
     public const string RestricaoUsuarioRegistro = "ck_dados_sensiveis_convidados_registrado_por";
     public const string RestricaoExclusao = "ck_dados_sensiveis_convidados_exclusao";
@@ -30,7 +30,7 @@ public class DadosSensiveisConvidadoConfiguration : IEntityTypeConfiguration<Dad
 
         builder.HasKey(dados => dados.ConvidadoId);
         builder.Property(dados => dados.ConvidadoId).ValueGeneratedNever();
-        builder.Property(dados => dados.CasamentoId).IsRequired();
+        builder.Property(dados => dados.EventoId).IsRequired();
         builder.Property(dados => dados.ConteudoCifrado).HasMaxLength(DadosSensiveisConvidado.TamanhoMaximoConteudoCifrado);
         builder.Property(dados => dados.ConsentidoEm).IsRequired();
         builder.Property(dados => dados.VersaoTermo).HasMaxLength(DadosSensiveisConvidado.TamanhoMaximoVersaoTermo).IsRequired();
@@ -43,16 +43,16 @@ public class DadosSensiveisConvidadoConfiguration : IEntityTypeConfiguration<Dad
         builder.Property(dados => dados.ExcluidoEm);
         builder.Ignore(dados => dados.Vigente);
 
-        builder.HasIndex(dados => new { dados.OrganizacaoId, dados.CasamentoId }).HasDatabaseName(IndiceOrganizacaoCasamento);
+        builder.HasIndex(dados => new { dados.OrganizacaoId, dados.EventoId }).HasDatabaseName(IndiceOrganizacaoEvento);
 
         builder.HasOne<Convidado>()
             .WithOne(convidado => convidado.DadosSensiveis)
             .HasForeignKey<DadosSensiveisConvidado>(dados => dados.ConvidadoId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<CasamentoAssessorado>()
+        builder.HasOne<Evento>()
             .WithMany()
-            .HasForeignKey(dados => dados.CasamentoId)
+            .HasForeignKey(dados => dados.EventoId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Organizacao>()

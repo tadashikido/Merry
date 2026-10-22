@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Fornecedores;
@@ -9,9 +9,9 @@ public class ModeloCronogramaTestes
 {
     private static readonly DateTimeOffset Agora = new(2027, 3, 10, 12, 0, 0, TimeSpan.Zero);
 
-    private static CasamentoAssessorado Casamento(TimeOnly? horario, string? cerimonia = "Capela São José", string? recepcao = "Espaço Jardim")
+    private static Evento NovoEvento(TimeOnly? horario, string? cerimonia = "Capela São José", string? recepcao = "Espaço Jardim")
     {
-        return CasamentoAssessorado.Criar(new DadosCasamento("Ana", "João", new DateOnly(2027, 5, 15), horario, cerimonia, recepcao, null, null), Agora);
+        return Evento.Criar(new DadosEvento("Ana", "João", new DateOnly(2027, 5, 15), horario, cerimonia, recepcao, null, null), Agora);
     }
 
     private static DadosItemModeloCronograma Dados(
@@ -25,10 +25,10 @@ public class ModeloCronogramaTestes
         return new DadosItemModeloCronograma(minutos, duracao, atividade, referencia, local, "Assessoria", categoria, "Instruções");
     }
 
-    private static ItemCronograma ItemCasamento(Guid casamentoId, DiaCronograma dia, int hora, int minuto, string atividade, string? local = null, Guid? fornecedor = null)
+    private static ItemCronograma ItemEvento(Guid eventoId, DiaCronograma dia, int hora, int minuto, string atividade, string? local = null, Guid? fornecedor = null)
     {
         return ItemCronograma.Criar(
-            casamentoId,
+            eventoId,
             new DadosItemCronograma(dia, new TimeOnly(hora, minuto), 30, atividade, local, "Fernanda", fornecedor, "Instruções", "Nota interna"),
             null,
             Agora);
@@ -166,19 +166,19 @@ public class ModeloCronogramaTestes
     [Fact]
     public void CriarDeCronograma_DeveGuardarDistanciaLocaisCategoriaESemNotas()
     {
-        var casamento = Casamento(new TimeOnly(16, 30));
+        var evento = NovoEvento(new TimeOnly(16, 30));
         var vinculo = Guid.NewGuid();
         var itens = new[]
         {
-            ItemCasamento(casamento.Id, DiaCronograma.DiaDoCasamento, 16, 30, "Cerimônia", " capela  sao josé "),
-            ItemCasamento(casamento.Id, DiaCronograma.Vespera, 19, 0, "Ensaio", "Espaço Jardim"),
-            ItemCasamento(casamento.Id, DiaCronograma.DiaSeguinte, 1, 0, "Saída", "Hotel Fasano", vinculo),
+            ItemEvento(evento.Id, DiaCronograma.DiaDoEvento, 16, 30, "Cerimônia", " capela  sao josé "),
+            ItemEvento(evento.Id, DiaCronograma.Vespera, 19, 0, "Ensaio", "Espaço Jardim"),
+            ItemEvento(evento.Id, DiaCronograma.DiaSeguinte, 1, 0, "Saída", "Hotel Fasano", vinculo),
         };
 
         var modelo = ModeloCronograma.CriarDeCronograma(
             "Roteiro fazenda",
             null,
-            casamento,
+            evento,
             itens,
             new Dictionary<Guid, CategoriaFornecedor> { [vinculo] = CategoriaFornecedor.Transporte },
             Agora);
@@ -198,13 +198,13 @@ public class ModeloCronogramaTestes
     [Fact]
     public void CriarDeCronograma_SemHorario_DeveLancarComCampoHorario()
     {
-        var casamento = Casamento(null);
+        var evento = NovoEvento(null);
 
         var erro = Assert.Throws<RegraNegocioException>(() => ModeloCronograma.CriarDeCronograma(
             "Roteiro",
             null,
-            casamento,
-            [ItemCasamento(casamento.Id, DiaCronograma.DiaDoCasamento, 16, 0, "Cerimônia")],
+            evento,
+            [ItemEvento(evento.Id, DiaCronograma.DiaDoEvento, 16, 0, "Cerimônia")],
             new Dictionary<Guid, CategoriaFornecedor>(),
             Agora));
 
@@ -218,7 +218,7 @@ public class ModeloCronogramaTestes
         var erro = Assert.Throws<RegraNegocioException>(() => ModeloCronograma.CriarDeCronograma(
             "Roteiro",
             null,
-            Casamento(new TimeOnly(16, 0)),
+            NovoEvento(new TimeOnly(16, 0)),
             [],
             new Dictionary<Guid, CategoriaFornecedor>(),
             Agora));
@@ -230,9 +230,9 @@ public class ModeloCronogramaTestes
     public void Sugerido_DeveTerOsMomentosDoDiaSemConflitosNaReferencia()
     {
         var modelo = ModeloCronogramaSugerido.Criar(Agora);
-        var casamento = Casamento(modelo.HorarioReferencia);
+        var evento = NovoEvento(modelo.HorarioReferencia);
         var itens = modelo.ItensOrdenados()
-            .Select(item => ItemCronograma.Criar(casamento.Id, item.ParaDadosItem(casamento, modelo.HorarioReferencia, null), null, Agora))
+            .Select(item => ItemCronograma.Criar(evento.Id, item.ParaDadosItem(evento, modelo.HorarioReferencia, null), null, Agora))
             .ToList();
 
         Assert.True(modelo.Sugerido);

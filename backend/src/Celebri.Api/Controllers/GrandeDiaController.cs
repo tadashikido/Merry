@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}/grande-dia")]
+[Route("api/eventos/{eventoId:guid}/grande-dia")]
 [Produces("application/json")]
 [Authorize(Policy = PoliticasAutorizacao.ConsultarCronograma)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -24,9 +24,9 @@ public class GrandeDiaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<GrandeDiaDto>> Consultar(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ActionResult<GrandeDiaDto>> Consultar(Guid eventoId, CancellationToken cancelamento)
     {
-        return Ok(await _grandeDiaService.ConsultarAsync(casamentoId, cancelamento));
+        return Ok(await _grandeDiaService.ConsultarAsync(eventoId, cancelamento));
     }
 
     [HttpPut("itens/{itemId:guid}/conclusao")]
@@ -37,9 +37,9 @@ public class GrandeDiaController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<GrandeDiaDto>> Concluir(Guid casamentoId, Guid itemId, CancellationToken cancelamento)
+    public async Task<ActionResult<GrandeDiaDto>> Concluir(Guid eventoId, Guid itemId, CancellationToken cancelamento)
     {
-        return Ok(await _grandeDiaService.ConcluirItemAsync(casamentoId, itemId, cancelamento));
+        return Ok(await _grandeDiaService.ConcluirItemAsync(eventoId, itemId, cancelamento));
     }
 
     [HttpDelete("itens/{itemId:guid}/conclusao")]
@@ -50,8 +50,8 @@ public class GrandeDiaController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<GrandeDiaDto>> Reabrir(Guid casamentoId, Guid itemId, CancellationToken cancelamento)
+    public async Task<ActionResult<GrandeDiaDto>> Reabrir(Guid eventoId, Guid itemId, CancellationToken cancelamento)
     {
-        return Ok(await _grandeDiaService.ReabrirItemAsync(casamentoId, itemId, cancelamento));
+        return Ok(await _grandeDiaService.ReabrirItemAsync(eventoId, itemId, cancelamento));
     }
 }

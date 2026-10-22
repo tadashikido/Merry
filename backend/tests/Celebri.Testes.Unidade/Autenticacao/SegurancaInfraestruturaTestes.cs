@@ -61,12 +61,12 @@ public class SegurancaInfraestruturaTestes
     }
 
     [Theory]
-    [InlineData("https://app.casamento.com.br", true)]
+    [InlineData("https://app.evento.com.br", true)]
     [InlineData("http://localhost:5173", true)]
     [InlineData("", false)]
-    [InlineData("app.casamento.com.br", false)]
+    [InlineData("app.evento.com.br", false)]
     [InlineData("javascript:alert(1)", false)]
-    [InlineData("https://app.casamento.com.br/?x=1", false)]
+    [InlineData("https://app.evento.com.br/?x=1", false)]
     public void UrlFrontendValida_DeveAceitarSomenteUrlHttpAbsolutaSemQuery(string url, bool esperado)
     {
         Assert.Equal(esperado, ConfiguracaoInfraestrutura.UrlFrontendValida(url));

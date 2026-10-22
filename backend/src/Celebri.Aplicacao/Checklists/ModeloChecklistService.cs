@@ -180,7 +180,7 @@ public class ModeloChecklistService : IModeloChecklistService
             item.Descricao,
             item.Responsavel.ToString(),
             item.Categoria.ToString(),
-            item.DiasAntesDoCasamento);
+            item.DiasAntesDoEvento);
     }
 
     private async Task<ModeloChecklist> ObterModeloAsync(Guid modeloId, CancellationToken cancelamento)

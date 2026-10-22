@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
-using Celebri.Aplicacao.Casamentos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Testes.Integracao.Banco;
-using Celebri.Testes.Integracao.Casamentos;
+using Celebri.Testes.Integracao.Eventos;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,9 +35,9 @@ public sealed class DuplicacaoCronogramaApiTestes : IsolamentoOrganizacaoTestesB
 
     private async Task<(Guid OrigemId, Guid VinculoId)> MontarOrigemAsync()
     {
-        var origem = await ClienteCasamentos.CriarAsync(
+        var origem = await ClienteEventos.CriarAsync(
             OrganizacaoA.Cliente,
-            ClienteCasamentos.CorpoValido(horario: "16:00", localCerimonia: "Capela São José", localRecepcao: "Espaço Jardim"));
+            ClienteEventos.CorpoValido(horario: "16:00", localCerimonia: "Capela São José", localRecepcao: "Espaço Jardim"));
         var vinculo = await ClienteCronograma.CriarVinculoAsync(OrganizacaoA.Cliente, origem.Id, "Coral Harmonia");
         await ClienteCronograma.CriarAsync(
             OrganizacaoA.Cliente,
@@ -46,7 +46,7 @@ public sealed class DuplicacaoCronogramaApiTestes : IsolamentoOrganizacaoTestesB
         await ClienteCronograma.CriarAsync(
             OrganizacaoA.Cliente,
             origem.Id,
-            ClienteCronograma.Corpo("Cortejo", "16:30", 15, local: "capela são josé", fornecedorCasamentoId: vinculo));
+            ClienteCronograma.Corpo("Cortejo", "16:30", 15, local: "capela são josé", fornecedorEventoId: vinculo));
         await ClienteCronograma.CriarAsync(
             OrganizacaoA.Cliente,
             origem.Id,
@@ -59,7 +59,7 @@ public sealed class DuplicacaoCronogramaApiTestes : IsolamentoOrganizacaoTestesB
     {
         var (origemId, _) = await MontarOrigemAsync();
 
-        var previa = await OrganizacaoA.Cliente.GetFromJsonAsync<PreviaDuplicacaoDto>($"/api/casamentos/{origemId}/duplicacao/previa");
+        var previa = await OrganizacaoA.Cliente.GetFromJsonAsync<PreviaDuplicacaoDto>($"/api/eventos/{origemId}/duplicacao/previa");
 
         Assert.Equal(3, previa!.ItensCronograma);
     }
@@ -69,12 +69,12 @@ public sealed class DuplicacaoCronogramaApiTestes : IsolamentoOrganizacaoTestesB
     {
         var (origemId, vinculoOrigem) = await MontarOrigemAsync();
 
-        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync($"/api/casamentos/{origemId}/duplicacao", CorpoDuplicacao("17:00", copiarFornecedores: true));
+        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync($"/api/eventos/{origemId}/duplicacao", CorpoDuplicacao("17:00", copiarFornecedores: true));
 
         Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
-        var resultado = (await resposta.Content.ReadFromJsonAsync<DuplicacaoCasamentoDto>())!;
+        var resultado = (await resposta.Content.ReadFromJsonAsync<DuplicacaoEventoDto>())!;
         Assert.Equal(3, resultado.ItensCronogramaCopiados);
-        var cronograma = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, resultado.Casamento.Id);
+        var cronograma = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, resultado.Evento.Id);
         Assert.Equal(["Making of", "Cortejo", "Pista"], cronograma.Itens.Select(item => item.Atividade));
         Assert.Equal(["16:00", "17:30", "00:30"], cronograma.Itens.Select(item => item.Inicio));
         Assert.Equal("DiaSeguinte", cronograma.Itens[2].Dia);
@@ -84,12 +84,12 @@ public sealed class DuplicacaoCronogramaApiTestes : IsolamentoOrganizacaoTestesB
         Assert.All(cronograma.Itens, item => Assert.Equal("Previsto", item.Status));
         var fornecedor = cronograma.Itens[1].Fornecedor;
         Assert.NotNull(fornecedor);
-        Assert.NotEqual(vinculoOrigem, fornecedor!.FornecedorCasamentoId);
+        Assert.NotEqual(vinculoOrigem, fornecedor!.FornecedorEventoId);
         Assert.Equal("Coral Harmonia", fornecedor.NomeEmpresa);
 
         var origem = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, origemId);
         Assert.Equal("Pagamento em dinheiro.", origem.Itens[0].NotasInternas);
-        Assert.Equal(vinculoOrigem, origem.Itens[1].Fornecedor!.FornecedorCasamentoId);
+        Assert.Equal(vinculoOrigem, origem.Itens[1].Fornecedor!.FornecedorEventoId);
     }
 
     [Fact]
@@ -97,11 +97,11 @@ public sealed class DuplicacaoCronogramaApiTestes : IsolamentoOrganizacaoTestesB
     {
         var (origemId, _) = await MontarOrigemAsync();
 
-        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync($"/api/casamentos/{origemId}/duplicacao", CorpoDuplicacao(null, copiarFornecedores: false));
+        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync($"/api/eventos/{origemId}/duplicacao", CorpoDuplicacao(null, copiarFornecedores: false));
 
         Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
-        var resultado = (await resposta.Content.ReadFromJsonAsync<DuplicacaoCasamentoDto>())!;
-        var cronograma = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, resultado.Casamento.Id);
+        var resultado = (await resposta.Content.ReadFromJsonAsync<DuplicacaoEventoDto>())!;
+        var cronograma = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, resultado.Evento.Id);
         Assert.Equal(["15:00", "16:30", "23:30"], cronograma.Itens.Select(item => item.Inicio));
         Assert.All(cronograma.Itens, item => Assert.Null(item.Fornecedor));
         Assert.Null(cronograma.HorarioCerimonia);
@@ -113,13 +113,13 @@ public sealed class DuplicacaoCronogramaApiTestes : IsolamentoOrganizacaoTestesB
         var (origemId, _) = await MontarOrigemAsync();
 
         var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(
-            $"/api/casamentos/{origemId}/duplicacao",
+            $"/api/eventos/{origemId}/duplicacao",
             CorpoDuplicacao("17:00", copiarFornecedores: true, copiarCronograma: false));
 
-        var resultado = (await resposta.Content.ReadFromJsonAsync<DuplicacaoCasamentoDto>())!;
+        var resultado = (await resposta.Content.ReadFromJsonAsync<DuplicacaoEventoDto>())!;
         Assert.Equal(0, resultado.ItensCronogramaCopiados);
         await using var contexto = CriarContexto(OrganizacaoA);
-        Assert.Equal(0, await contexto.ItensCronograma.CountAsync(item => item.CasamentoId == resultado.Casamento.Id));
-        Assert.Equal(StatusItemCronograma.Previsto, (await contexto.ItensCronograma.FirstAsync(item => item.CasamentoId == origemId)).Status);
+        Assert.Equal(0, await contexto.ItensCronograma.CountAsync(item => item.EventoId == resultado.Evento.Id));
+        Assert.Equal(StatusItemCronograma.Previsto, (await contexto.ItensCronograma.FirstAsync(item => item.EventoId == origemId)).Status);
     }
 }

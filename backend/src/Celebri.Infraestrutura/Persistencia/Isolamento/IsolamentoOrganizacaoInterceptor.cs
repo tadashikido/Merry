@@ -30,9 +30,9 @@ public sealed class IsolamentoOrganizacaoInterceptor : SaveChangesInterceptor
             return;
         }
 
-        var casamentoDbContext = contexto as CasamentoDbContext;
-        var organizacaoAtual = casamentoDbContext?.OrganizacaoIdAtual;
-        var casamentosPermitidos = casamentoDbContext?.CasamentosPermitidos;
+        var celebriDbContext = contexto as CelebriDbContext;
+        var organizacaoAtual = celebriDbContext?.OrganizacaoIdAtual;
+        var eventosPermitidos = celebriDbContext?.EventosPermitidos;
 
         foreach (var entrada in contexto.ChangeTracker.Entries<IPertenceOrganizacao>())
         {
@@ -42,7 +42,7 @@ public sealed class IsolamentoOrganizacaoInterceptor : SaveChangesInterceptor
             }
 
             ValidarEntrada(entrada, organizacaoAtual);
-            ValidarCasamento(entrada, casamentosPermitidos);
+            ValidarEvento(entrada, eventosPermitidos);
         }
     }
 
@@ -79,17 +79,17 @@ public sealed class IsolamentoOrganizacaoInterceptor : SaveChangesInterceptor
         }
     }
 
-    private static void ValidarCasamento(EntityEntry<IPertenceOrganizacao> entrada, IReadOnlyCollection<Guid>? casamentosPermitidos)
+    private static void ValidarEvento(EntityEntry<IPertenceOrganizacao> entrada, IReadOnlyCollection<Guid>? eventosPermitidos)
     {
-        if (casamentosPermitidos is null)
+        if (eventosPermitidos is null)
         {
             return;
         }
 
         var nomePropriedade = entrada.Entity switch
         {
-            IPertenceCasamento => CasamentoDbContext.PropriedadeCasamento,
-            IRaizCasamento => CasamentoDbContext.PropriedadeRaizCasamento,
+            IPertenceEvento => CelebriDbContext.PropriedadeEvento,
+            IRaizEvento => CelebriDbContext.PropriedadeRaizEvento,
             _ => null,
         };
 
@@ -99,8 +99,8 @@ public sealed class IsolamentoOrganizacaoInterceptor : SaveChangesInterceptor
         }
 
         var propriedade = entrada.Property<Guid>(nomePropriedade);
-        var permitido = casamentosPermitidos.Contains(propriedade.CurrentValue)
-            && (entrada.State == EntityState.Added || casamentosPermitidos.Contains(propriedade.OriginalValue));
+        var permitido = eventosPermitidos.Contains(propriedade.CurrentValue)
+            && (entrada.State == EntityState.Added || eventosPermitidos.Contains(propriedade.OriginalValue));
 
         if (!permitido)
         {

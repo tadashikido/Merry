@@ -2,50 +2,50 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { requisitar } from '@/servicos/clienteHttp'
-import { interpretarFalhaCasamento, ROTA_CASAMENTOS, type FalhaCasamento } from '@/stores/casamentos'
-import type { ProximosPassosCasamentoDto } from '@/tipos/proximosPassos'
+import { interpretarFalhaEvento, ROTA_EVENTOS, type FalhaEvento } from '@/stores/eventos'
+import type { ProximosPassosEventoDto } from '@/tipos/proximosPassos'
 
-export function caminhoProximosPassos(casamentoId: string): string {
-  return `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/proximos-passos`
+export function caminhoProximosPassos(eventoId: string): string {
+  return `${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/proximos-passos`
 }
 
 export const useProximosPassosStore = defineStore('proximosPassos', () => {
-  const casamentoId = ref<string | null>(null)
-  const passos = ref<ProximosPassosCasamentoDto | null>(null)
+  const eventoId = ref<string | null>(null)
+  const passos = ref<ProximosPassosEventoDto | null>(null)
   const carregando = ref(false)
-  const falha = ref<FalhaCasamento | null>(null)
+  const falha = ref<FalhaEvento | null>(null)
 
   async function carregar(id: string): Promise<void> {
-    if (casamentoId.value !== id) {
+    if (eventoId.value !== id) {
       passos.value = null
     }
-    casamentoId.value = id
+    eventoId.value = id
     carregando.value = true
     falha.value = null
 
     try {
-      const resposta = await requisitar<ProximosPassosCasamentoDto>(caminhoProximosPassos(id))
-      if (casamentoId.value === id) {
+      const resposta = await requisitar<ProximosPassosEventoDto>(caminhoProximosPassos(id))
+      if (eventoId.value === id) {
         passos.value = resposta
       }
     } catch (erro) {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         passos.value = null
-        falha.value = interpretarFalhaCasamento(erro)
+        falha.value = interpretarFalhaEvento(erro)
       }
     } finally {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         carregando.value = false
       }
     }
   }
 
   function limpar() {
-    casamentoId.value = null
+    eventoId.value = null
     passos.value = null
     carregando.value = false
     falha.value = null
   }
 
-  return { casamentoId, passos, carregando, falha, carregar, limpar }
+  return { eventoId, passos, carregando, falha, carregar, limpar }
 })

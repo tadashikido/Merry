@@ -1,6 +1,6 @@
 using Celebri.Aplicacao.Arquivos;
 using Celebri.Aplicacao.Financeiro;
-using Celebri.Aplicacao.FornecedoresCasamento;
+using Celebri.Aplicacao.FornecedoresEvento;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Financeiro;
@@ -13,12 +13,12 @@ public class ParcelaFornecedorTestes
     private static readonly DateTimeOffset Agora = new(2026, 9, 30, 15, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly Hoje = new(2026, 9, 30);
 
-    public static FornecedorCasamento Vinculo(StatusFornecedorCasamento status = StatusFornecedorCasamento.Contratado, decimal? contratado = 10_000m)
+    public static FornecedorEvento Vinculo(StatusFornecedorEvento status = StatusFornecedorEvento.Contratado, decimal? contratado = 10_000m)
     {
-        return FornecedorCasamento.Criar(
+        return FornecedorEvento.Criar(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            new DadosFornecedorCasamento("Jantar", 9_000m, contratado, status, null),
+            new DadosFornecedorEvento("Jantar", 9_000m, contratado, status, null),
             null,
             Agora);
     }
@@ -29,23 +29,23 @@ public class ParcelaFornecedorTestes
     }
 
     [Fact]
-    public void Criar_EmVinculoContratado_DeveNascerPendenteHerdandoCasamentoEVinculo()
+    public void Criar_EmVinculoContratado_DeveNascerPendenteHerdandoEventoEVinculo()
     {
         var vinculo = Vinculo();
 
         var parcela = ParcelaFornecedor.Criar(vinculo, new DadosParcela(1_500.50m, Hoje, "  Sinal  "), null, Agora);
 
-        Assert.Equal(vinculo.CasamentoId, parcela.CasamentoId);
-        Assert.Equal(vinculo.Id, parcela.FornecedorCasamentoId);
+        Assert.Equal(vinculo.EventoId, parcela.EventoId);
+        Assert.Equal(vinculo.Id, parcela.FornecedorEventoId);
         Assert.Equal(StatusParcela.Pendente, parcela.Status);
         Assert.Equal("Sinal", parcela.Observacao);
         Assert.Equal(Guid.Empty, parcela.OrganizacaoId);
     }
 
     [Theory]
-    [InlineData(StatusFornecedorCasamento.Cotacao)]
-    [InlineData(StatusFornecedorCasamento.EmNegociacao)]
-    public void Criar_EmVinculoNaoContratado_DeveRecusar(StatusFornecedorCasamento status)
+    [InlineData(StatusFornecedorEvento.Cotacao)]
+    [InlineData(StatusFornecedorEvento.EmNegociacao)]
+    public void Criar_EmVinculoNaoContratado_DeveRecusar(StatusFornecedorEvento status)
     {
         var excecao = Assert.Throws<RegraNegocioException>(
             () => ParcelaFornecedor.Criar(Vinculo(status, null), new DadosParcela(10m, Hoje, null), null, Agora));
@@ -57,7 +57,7 @@ public class ParcelaFornecedorTestes
     public void Criar_EmVinculoCancelado_DeveRecusarComoHistorico()
     {
         var excecao = Assert.Throws<RegraNegocioException>(
-            () => ParcelaFornecedor.Criar(Vinculo(StatusFornecedorCasamento.Cancelado, 100m), new DadosParcela(10m, Hoje, null), null, Agora));
+            () => ParcelaFornecedor.Criar(Vinculo(StatusFornecedorEvento.Cancelado, 100m), new DadosParcela(10m, Hoje, null), null, Agora));
 
         Assert.Equal(MensagensFinanceiro.VinculoCancelado, excecao.Message);
     }
@@ -190,17 +190,17 @@ public class ParcelaFornecedorTestes
         var vinculo = Vinculo();
 
         var status = Assert.Throws<RegraNegocioException>(() => vinculo.GarantirCompativelComParcelas(
-            new DadosFornecedorCasamento(null, null, 10_000m, StatusFornecedorCasamento.EmNegociacao, null), 2, 3_000m));
+            new DadosFornecedorEvento(null, null, 10_000m, StatusFornecedorEvento.EmNegociacao, null), 2, 3_000m));
         var valor = Assert.Throws<RegraNegocioException>(() => vinculo.GarantirCompativelComParcelas(
-            new DadosFornecedorCasamento(null, null, 2_999.99m, StatusFornecedorCasamento.Contratado, null), 2, 3_000m));
+            new DadosFornecedorEvento(null, null, 2_999.99m, StatusFornecedorEvento.Contratado, null), 2, 3_000m));
 
-        Assert.Equal(FornecedorCasamento.CampoStatus, status.Campo);
-        Assert.Equal(FornecedorCasamento.CampoValorContratado, valor.Campo);
+        Assert.Equal(FornecedorEvento.CampoStatus, status.Campo);
+        Assert.Equal(FornecedorEvento.CampoValorContratado, valor.Campo);
         Assert.Contains("R$ 3.000,00", valor.Message);
         vinculo.GarantirCompativelComParcelas(
-            new DadosFornecedorCasamento(null, null, 10_000m, StatusFornecedorCasamento.Cancelado, null), 2, 3_000m);
+            new DadosFornecedorEvento(null, null, 10_000m, StatusFornecedorEvento.Cancelado, null), 2, 3_000m);
         vinculo.GarantirCompativelComParcelas(
-            new DadosFornecedorCasamento(null, null, null, StatusFornecedorCasamento.Cotacao, null), 0, 0m);
+            new DadosFornecedorEvento(null, null, null, StatusFornecedorEvento.Cotacao, null), 0, 0m);
     }
 }
 
@@ -291,14 +291,14 @@ public class CalculadoraResumoPagamentosTestes
     private static readonly DateTimeOffset Agora = new(2026, 9, 30, 15, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly Hoje = new(2026, 9, 30);
 
-    private static VinculoFornecedor Item(CategoriaFornecedor categoria, decimal contratado, StatusFornecedorCasamento status = StatusFornecedorCasamento.Contratado)
+    private static VinculoFornecedor Item(CategoriaFornecedor categoria, decimal contratado, StatusFornecedorEvento status = StatusFornecedorEvento.Contratado)
     {
         var fornecedor = Fornecedor.Criar(new DadosFornecedor(categoria, $"Fornecedor {categoria}", null, "11987654321", null, null, null, null), Agora);
-        var vinculo = FornecedorCasamento.Criar(Guid.NewGuid(), fornecedor.Id, new DadosFornecedorCasamento(null, contratado, contratado, status, null), null, Agora);
+        var vinculo = FornecedorEvento.Criar(Guid.NewGuid(), fornecedor.Id, new DadosFornecedorEvento(null, contratado, contratado, status, null), null, Agora);
         return new VinculoFornecedor(vinculo, fornecedor);
     }
 
-    private static ParcelaFornecedor Parcela(FornecedorCasamento vinculo, decimal valor, DateOnly vencimento, bool paga = false)
+    private static ParcelaFornecedor Parcela(FornecedorEvento vinculo, decimal valor, DateOnly vencimento, bool paga = false)
     {
         var parcela = ParcelaFornecedor.Criar(vinculo, new DadosParcela(valor, vencimento, null), null, Agora);
         if (paga)
@@ -350,7 +350,7 @@ public class CalculadoraResumoPagamentosTestes
             Parcela(cancelado.Vinculo, 300m, Hoje.AddDays(-5), paga: true),
             Parcela(cancelado.Vinculo, 200m, Hoje.AddDays(-5)),
         };
-        cancelado.Vinculo.Atualizar(new DadosFornecedorCasamento(null, 1_000m, 1_000m, StatusFornecedorCasamento.Cancelado, null), Agora);
+        cancelado.Vinculo.Atualizar(new DadosFornecedorEvento(null, 1_000m, 1_000m, StatusFornecedorEvento.Cancelado, null), Agora);
 
         var resumo = CalculadoraResumoOrcamento.Calcular([ativo, cancelado], parcelas, Hoje);
 

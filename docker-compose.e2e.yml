@@ -9,7 +9,7 @@ services:
       LimitesRequisicao__renovar__Limite: "10000"
       LimitesRequisicao__importacao__Limite: "10000"
       LimitesRequisicao__rsvp__Limite: "10000"
-      LimitesRequisicao__acesso-casal__Limite: "10000"
+      LimitesRequisicao__acesso-anfitriao__Limite: "10000"
       LimitesRequisicao__contrato__Limite: "10000"
       LimitesRequisicao__comprovante__Limite: "10000"
       LimitesRequisicao__cronograma-publico__Limite: "10000"

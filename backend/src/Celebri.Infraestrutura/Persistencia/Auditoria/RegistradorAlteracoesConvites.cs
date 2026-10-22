@@ -5,13 +5,13 @@ namespace Celebri.Infraestrutura.Persistencia.Auditoria;
 
 public static class RegistradorAlteracoesConvites
 {
-    public static IReadOnlyList<RegistroAlteracaoConvite> Registrar(CasamentoDbContext contexto, DateTimeOffset agora)
+    public static IReadOnlyList<RegistroAlteracaoConvite> Registrar(CelebriDbContext contexto, DateTimeOffset agora)
     {
         ArgumentNullException.ThrowIfNull(contexto);
 
         contexto.ChangeTracker.DetectChanges();
 
-        var alteracoes = new Dictionary<Guid, (Guid OrganizacaoId, Guid CasamentoId, AcaoAlteracaoConvite Acao)>();
+        var alteracoes = new Dictionary<Guid, (Guid OrganizacaoId, Guid EventoId, AcaoAlteracaoConvite Acao)>();
 
         foreach (var entrada in contexto.ChangeTracker.Entries<Convite>())
         {
@@ -25,7 +25,7 @@ public static class RegistradorAlteracoesConvites
 
             if (acao is { } acaoConvite)
             {
-                alteracoes[entrada.Entity.Id] = (entrada.Entity.OrganizacaoId, entrada.Entity.CasamentoId, acaoConvite);
+                alteracoes[entrada.Entity.Id] = (entrada.Entity.OrganizacaoId, entrada.Entity.EventoId, acaoConvite);
             }
         }
 
@@ -39,7 +39,7 @@ public static class RegistradorAlteracoesConvites
             var convidado = entrada.Entity;
             if (!alteracoes.ContainsKey(convidado.ConviteId))
             {
-                alteracoes[convidado.ConviteId] = (convidado.OrganizacaoId, convidado.CasamentoId, AcaoAlteracaoConvite.Alteracao);
+                alteracoes[convidado.ConviteId] = (convidado.OrganizacaoId, convidado.EventoId, AcaoAlteracaoConvite.Alteracao);
             }
         }
 
@@ -52,7 +52,7 @@ public static class RegistradorAlteracoesConvites
         var registros = alteracoes
             .Select(alteracao => RegistroAlteracaoConvite.Registrar(
                 alteracao.Value.OrganizacaoId,
-                alteracao.Value.CasamentoId,
+                alteracao.Value.EventoId,
                 alteracao.Key,
                 alteracao.Value.Acao,
                 autor?.UsuarioId,

@@ -13,8 +13,8 @@ describe('montarUrl', () => {
   })
 
   it('[UNITÁRIO] junta base e caminho removendo barras duplicadas', () => {
-    expect(montarUrl('/api/saude', 'https://api.casamento.com.br/')).toBe('https://api.casamento.com.br/api/saude')
-    expect(montarUrl('api/saude', 'https://api.casamento.com.br//')).toBe('https://api.casamento.com.br/api/saude')
+    expect(montarUrl('/api/saude', 'https://api.evento.com.br/')).toBe('https://api.evento.com.br/api/saude')
+    expect(montarUrl('api/saude', 'https://api.evento.com.br//')).toBe('https://api.evento.com.br/api/saude')
   })
 })
 
@@ -31,11 +31,11 @@ describe('requisitar', () => {
   })
 
   it('[UNITÁRIO] retorna o corpo JSON em caso de sucesso', async () => {
-    fetchSimulado.mockResolvedValue(respostaJson({ nome: 'Casamento', versao: '0.1.0' }))
+    fetchSimulado.mockResolvedValue(respostaJson({ nome: 'Evento', versao: '0.1.0' }))
 
     const resultado = await requisitar<{ nome: string; versao: string }>('/api/sistema/informacoes')
 
-    expect(resultado).toEqual({ nome: 'Casamento', versao: '0.1.0' })
+    expect(resultado).toEqual({ nome: 'Evento', versao: '0.1.0' })
     const [url, opcoes] = fetchSimulado.mock.calls[0] ?? []
     expect(url).toBe('/api/sistema/informacoes')
     expect(opcoes?.method).toBe('GET')

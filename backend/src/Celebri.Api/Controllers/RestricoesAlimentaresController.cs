@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}")]
+[Route("api/eventos/{eventoId:guid}")]
 [Produces("application/json")]
 [Authorize(Policy = PoliticasAutorizacao.ConsultarConvidados)]
 [Authorize(Policy = PoliticasAutorizacao.ConsultarRestricoesAlimentares)]
@@ -25,9 +25,9 @@ public class RestricoesAlimentaresController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<RelatorioRestricoesAlimentaresDto>> ObterRelatorio(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ActionResult<RelatorioRestricoesAlimentaresDto>> ObterRelatorio(Guid eventoId, CancellationToken cancelamento)
     {
-        return Ok(await _restricaoAlimentarService.ObterRelatorioAsync(casamentoId, cancelamento));
+        return Ok(await _restricaoAlimentarService.ObterRelatorioAsync(eventoId, cancelamento));
     }
 
     [HttpPut("convites/{conviteId:guid}/convidados/{convidadoId:guid}/restricao-alimentar")]
@@ -40,13 +40,13 @@ public class RestricoesAlimentaresController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<RestricaoAlimentarDto>> Salvar(
-        Guid casamentoId,
+        Guid eventoId,
         Guid conviteId,
         Guid convidadoId,
         SalvarRestricaoAlimentarRequest request,
         CancellationToken cancelamento)
     {
-        return Ok(await _restricaoAlimentarService.SalvarAsync(casamentoId, conviteId, convidadoId, request, cancelamento));
+        return Ok(await _restricaoAlimentarService.SalvarAsync(eventoId, conviteId, convidadoId, request, cancelamento));
     }
 
     [HttpDelete("convites/{conviteId:guid}/convidados/{convidadoId:guid}/restricao-alimentar")]
@@ -57,9 +57,9 @@ public class RestricoesAlimentaresController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> Remover(Guid casamentoId, Guid conviteId, Guid convidadoId, CancellationToken cancelamento)
+    public async Task<IActionResult> Remover(Guid eventoId, Guid conviteId, Guid convidadoId, CancellationToken cancelamento)
     {
-        await _restricaoAlimentarService.RemoverAsync(casamentoId, conviteId, convidadoId, cancelamento);
+        await _restricaoAlimentarService.RemoverAsync(eventoId, conviteId, convidadoId, cancelamento);
         return NoContent();
     }
 }

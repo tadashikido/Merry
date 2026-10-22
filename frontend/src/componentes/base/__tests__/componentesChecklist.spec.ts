@@ -6,8 +6,8 @@ import { defineComponent, h } from 'vue'
 import ItemModeloChecklist from '@/componentes/base/ItemModeloChecklist.vue'
 import ProgressoChecklist from '@/componentes/base/ProgressoChecklist.vue'
 import ReguaMarcos from '@/componentes/base/ReguaMarcos.vue'
-import NavegacaoCasamento from '@/layouts/NavegacaoCasamento.vue'
-import { gruposNavegacaoCasamento } from '@/layouts/modulosCasamento'
+import NavegacaoEvento from '@/layouts/NavegacaoEvento.vue'
+import { gruposNavegacaoEvento } from '@/layouts/modulosEvento'
 
 const Vazia = defineComponent({ render: () => h('div') })
 const ID = '11111111-1111-4111-8111-111111111111'
@@ -91,36 +91,36 @@ describe('ItemModeloChecklist', () => {
   })
 })
 
-describe('NavegacaoCasamento com indicador', () => {
+describe('NavegacaoEvento com indicador', () => {
   it('[COMPONENTE] mostra o percentual do checklist com texto acessível', async () => {
     const roteador = createRouter({
       history: createMemoryHistory(),
       routes: [
-        { path: '/casamentos/:id', name: 'casamento', component: Vazia },
-        { path: '/casamentos/:id/tarefas', name: 'casamento-tarefas', component: Vazia },
-        { path: '/casamentos/:id/checklist', name: 'casamento-checklist', component: Vazia },
-        { path: '/casamentos/:id/cronograma', name: 'casamento-cronograma', component: Vazia },
-        { path: '/casamentos/:id/fornecedores', name: 'casamento-fornecedores', component: Vazia },
-        { path: '/casamentos/:id/convidados', name: 'casamento-convidados', component: Vazia },
-        { path: '/casamentos/:id/confirmacoes', name: 'painel-confirmacoes', component: Vazia },
-        { path: '/casamentos/:id/restricoes-alimentares', name: 'restricoes-alimentares', component: Vazia },
-        { path: '/casamentos/:id/mesas', name: 'casamento-mesas', component: Vazia },
-        { path: '/casamentos/:id/financeiro', name: 'casamento-financeiro', component: Vazia },
-        { path: '/casamentos/:id/grande-dia', name: 'casamento-grande-dia', component: Vazia },
+        { path: '/eventos/:id', name: 'evento', component: Vazia },
+        { path: '/eventos/:id/tarefas', name: 'evento-tarefas', component: Vazia },
+        { path: '/eventos/:id/checklist', name: 'evento-checklist', component: Vazia },
+        { path: '/eventos/:id/cronograma', name: 'evento-cronograma', component: Vazia },
+        { path: '/eventos/:id/fornecedores', name: 'evento-fornecedores', component: Vazia },
+        { path: '/eventos/:id/convidados', name: 'evento-convidados', component: Vazia },
+        { path: '/eventos/:id/confirmacoes', name: 'painel-confirmacoes', component: Vazia },
+        { path: '/eventos/:id/restricoes-alimentares', name: 'restricoes-alimentares', component: Vazia },
+        { path: '/eventos/:id/mesas', name: 'evento-mesas', component: Vazia },
+        { path: '/eventos/:id/financeiro', name: 'evento-financeiro', component: Vazia },
+        { path: '/eventos/:id/grande-dia', name: 'evento-grande-dia', component: Vazia },
       ],
     })
-    await roteador.push(`/casamentos/${ID}/checklist`)
+    await roteador.push(`/eventos/${ID}/checklist`)
     await roteador.isReady()
-    const grupos = gruposNavegacaoCasamento(ID, 'casamento-checklist', () => true, undefined, {
+    const grupos = gruposNavegacaoEvento(ID, 'evento-checklist', () => true, undefined, {
       checklist: { texto: '80%', rotuloAcessivel: '80% concluído' },
     })
 
-    montado = mount(NavegacaoCasamento, {
-      props: { casamento: null, grupos },
+    montado = mount(NavegacaoEvento, {
+      props: { evento: null, grupos },
       global: { plugins: [roteador] },
     })
 
-    const itens = montado.findAll('[data-teste="item-casamento"]')
+    const itens = montado.findAll('[data-teste="item-evento"]')
     const checklist = itens.find((item) => item.text().startsWith('Checklist'))!
     expect(checklist.attributes('aria-current')).toBe('page')
     expect(checklist.get('[data-teste="indicador-modulo"]').text()).toContain('80%')

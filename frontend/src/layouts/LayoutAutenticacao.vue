@@ -76,7 +76,7 @@ const ID_TITULO = 'autenticacao-titulo'
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--p-cor-fundo-casal);
+  background: var(--p-cor-fundo-anfitriao);
 }
 
 .layout-autenticacao--demonstracao {

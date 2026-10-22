@@ -5,7 +5,7 @@ public sealed record AlertasPagamentosDto(
     decimal ValorVencidas,
     int TotalProximas,
     decimal ValorProximas,
-    int CasamentosComVencidas,
+    int EventosComVencidas,
     DateOnly Hoje,
     IReadOnlyList<ParcelaAlertaDto> Vencidas,
     IReadOnlyList<ParcelaAlertaDto> Proximas);

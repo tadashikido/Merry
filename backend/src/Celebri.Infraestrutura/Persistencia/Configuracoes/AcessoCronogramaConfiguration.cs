@@ -1,4 +1,4 @@
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Fornecedores;
 using Celebri.Dominio.Organizacoes;
@@ -22,20 +22,20 @@ public class AcessoCronogramaConfiguration : IEntityTypeConfiguration<AcessoCron
             tabela.HasCheckConstraint(RestricaoTipo, $"tipo IN ({ConviteConfiguration.ValoresPermitidos<TipoAcessoCronograma>()})");
             tabela.HasCheckConstraint(
                 RestricaoDestino,
-                $"(tipo = '{nameof(TipoAcessoCronograma.Geral)}' AND fornecedor_casamento_id IS NULL AND responsavel_chave IS NULL)"
-                + $" OR (tipo = '{nameof(TipoAcessoCronograma.Fornecedor)}' AND fornecedor_casamento_id IS NOT NULL AND responsavel_chave IS NULL)"
-                + $" OR (tipo = '{nameof(TipoAcessoCronograma.Responsavel)}' AND fornecedor_casamento_id IS NULL AND responsavel_chave IS NOT NULL)");
+                $"(tipo = '{nameof(TipoAcessoCronograma.Geral)}' AND fornecedor_evento_id IS NULL AND responsavel_chave IS NULL)"
+                + $" OR (tipo = '{nameof(TipoAcessoCronograma.Fornecedor)}' AND fornecedor_evento_id IS NOT NULL AND responsavel_chave IS NULL)"
+                + $" OR (tipo = '{nameof(TipoAcessoCronograma.Responsavel)}' AND fornecedor_evento_id IS NULL AND responsavel_chave IS NOT NULL)");
         });
 
         builder.HasKey(acesso => acesso.Id);
         builder.Property(acesso => acesso.Id).ValueGeneratedNever();
         builder.Property(acesso => acesso.OrganizacaoId).IsRequired();
-        builder.Property(acesso => acesso.CasamentoId).IsRequired();
+        builder.Property(acesso => acesso.EventoId).IsRequired();
         builder.Property(acesso => acesso.Tipo)
             .HasConversion<string>()
             .HasMaxLength(ConviteConfiguration.TamanhoMaximoEnum)
             .IsRequired();
-        builder.Property(acesso => acesso.FornecedorCasamentoId);
+        builder.Property(acesso => acesso.FornecedorEventoId);
         builder.Property(acesso => acesso.ResponsavelChave).HasMaxLength(ItemCronograma.TamanhoMaximoResponsavel);
         builder.Property(acesso => acesso.TokenHash).HasMaxLength(AcessoCronograma.TamanhoHash).IsFixedLength().IsRequired();
         builder.Property(acesso => acesso.TokenCifrado).HasMaxLength(AcessoCronograma.TamanhoMaximoTokenCifrado).IsRequired();
@@ -43,21 +43,21 @@ public class AcessoCronogramaConfiguration : IEntityTypeConfiguration<AcessoCron
         builder.Ignore(acesso => acesso.Destino);
 
         builder.HasIndex(acesso => acesso.TokenHash).IsUnique().HasDatabaseName(IndiceTokenHash);
-        builder.HasIndex(acesso => new { acesso.CasamentoId, acesso.Tipo, acesso.FornecedorCasamentoId, acesso.ResponsavelChave })
+        builder.HasIndex(acesso => new { acesso.EventoId, acesso.Tipo, acesso.FornecedorEventoId, acesso.ResponsavelChave })
             .IsUnique()
             .AreNullsDistinct(false)
             .HasDatabaseName(IndiceDestino);
         builder.HasIndex(acesso => acesso.OrganizacaoId);
-        builder.HasIndex(acesso => acesso.FornecedorCasamentoId);
+        builder.HasIndex(acesso => acesso.FornecedorEventoId);
 
-        builder.HasOne<CasamentoAssessorado>()
+        builder.HasOne<Evento>()
             .WithMany()
-            .HasForeignKey(acesso => acesso.CasamentoId)
+            .HasForeignKey(acesso => acesso.EventoId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<FornecedorCasamento>()
+        builder.HasOne<FornecedorEvento>()
             .WithMany()
-            .HasForeignKey(acesso => acesso.FornecedorCasamentoId)
+            .HasForeignKey(acesso => acesso.FornecedorEventoId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne<Organizacao>()

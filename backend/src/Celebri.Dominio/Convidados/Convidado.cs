@@ -5,7 +5,7 @@ using Celebri.Dominio.Mesas;
 
 namespace Celebri.Dominio.Convidados;
 
-public class Convidado : IPertenceCasamento
+public class Convidado : IPertenceEvento
 {
     public const int TamanhoMinimoNome = 2;
     public const int TamanhoMaximoNome = 120;
@@ -19,7 +19,7 @@ public class Convidado : IPertenceCasamento
 
     public Guid OrganizacaoId { get; private set; }
 
-    public Guid CasamentoId { get; private set; }
+    public Guid EventoId { get; private set; }
 
     public Guid ConviteId { get; private set; }
 
@@ -51,12 +51,12 @@ public class Convidado : IPertenceCasamento
 
     public bool PossuiRestricaoAlimentar => DadosSensiveis?.Vigente == true;
 
-    internal static Convidado Criar(Guid casamentoId, Guid conviteId, DadosConvidado dadosNormalizados, int ordem, DateTimeOffset agora)
+    internal static Convidado Criar(Guid eventoId, Guid conviteId, DadosConvidado dadosNormalizados, int ordem, DateTimeOffset agora)
     {
         var convidado = new Convidado
         {
             Id = Guid.NewGuid(),
-            CasamentoId = casamentoId,
+            EventoId = eventoId,
             ConviteId = conviteId,
             CriadoEm = agora,
         };
@@ -70,12 +70,12 @@ public class Convidado : IPertenceCasamento
         Aplicar(dadosNormalizados, ordem, agora);
     }
 
-    internal static Convidado CriarAcompanhante(Guid casamentoId, Guid conviteId, string nome, FaixaEtaria faixaEtaria, int ordem, DateTimeOffset agora)
+    internal static Convidado CriarAcompanhante(Guid eventoId, Guid conviteId, string nome, FaixaEtaria faixaEtaria, int ordem, DateTimeOffset agora)
     {
         return new Convidado
         {
             Id = Guid.NewGuid(),
-            CasamentoId = casamentoId,
+            EventoId = eventoId,
             ConviteId = conviteId,
             Nome = nome,
             FaixaEtaria = faixaEtaria,
@@ -169,7 +169,7 @@ public class Convidado : IPertenceCasamento
 
                 if (DadosSensiveis is null)
                 {
-                    DadosSensiveis = DadosSensiveisConvidado.Criar(Id, CasamentoId, cifra, consentimento, agora);
+                    DadosSensiveis = DadosSensiveisConvidado.Criar(Id, EventoId, cifra, consentimento, agora);
                 }
                 else
                 {

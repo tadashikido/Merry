@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Celebri.Api.Controllers;
 
 [ApiController]
-[Route("api/casamentos/{casamentoId:guid}/cronograma/links")]
+[Route("api/eventos/{eventoId:guid}/cronograma/links")]
 [Produces("application/json")]
 [Authorize(Policy = PoliticasAutorizacao.GerenciarCronograma)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -24,9 +24,9 @@ public class LinksCronogramaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<LinksCronogramaDto>> Listar(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<ActionResult<LinksCronogramaDto>> Listar(Guid eventoId, CancellationToken cancelamento)
     {
-        return Ok(await _linkCronogramaService.ListarAsync(casamentoId, cancelamento));
+        return Ok(await _linkCronogramaService.ListarAsync(eventoId, cancelamento));
     }
 
     [HttpPost]
@@ -38,11 +38,11 @@ public class LinksCronogramaController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<LinkCronogramaDto>> Gerar(
-        Guid casamentoId,
+        Guid eventoId,
         GerarLinkCronogramaRequest request,
         CancellationToken cancelamento)
     {
-        return Ok(await _linkCronogramaService.GerarAsync(casamentoId, request, cancelamento));
+        return Ok(await _linkCronogramaService.GerarAsync(eventoId, request, cancelamento));
     }
 
     [HttpPost("{linkId:guid}/regenerar")]
@@ -52,9 +52,9 @@ public class LinksCronogramaController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<LinkCronogramaDto>> Regenerar(Guid casamentoId, Guid linkId, CancellationToken cancelamento)
+    public async Task<ActionResult<LinkCronogramaDto>> Regenerar(Guid eventoId, Guid linkId, CancellationToken cancelamento)
     {
-        return Ok(await _linkCronogramaService.RegenerarAsync(casamentoId, linkId, cancelamento));
+        return Ok(await _linkCronogramaService.RegenerarAsync(eventoId, linkId, cancelamento));
     }
 
     [HttpDelete("{linkId:guid}")]
@@ -62,9 +62,9 @@ public class LinksCronogramaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Revogar(Guid casamentoId, Guid linkId, CancellationToken cancelamento)
+    public async Task<IActionResult> Revogar(Guid eventoId, Guid linkId, CancellationToken cancelamento)
     {
-        await _linkCronogramaService.RevogarAsync(casamentoId, linkId, cancelamento);
+        await _linkCronogramaService.RevogarAsync(eventoId, linkId, cancelamento);
         return NoContent();
     }
 }

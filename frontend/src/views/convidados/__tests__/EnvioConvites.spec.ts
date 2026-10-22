@@ -7,7 +7,7 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_PREVIA_RSVP } from '@/textos/confirmacoes'
 import { TEXTOS_ENVIO_CONVITE } from '@/textos/rsvp'
 import type { ConviteDto, ListaConvitesDto, TotaisConvidadosDto } from '@/tipos/convidados'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, chamadas, quando, rotearFetch } from '@/views/casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -22,8 +22,8 @@ function notificado(texto: string): boolean {
 }
 
 const ID_CONVITE = '33333333-3333-4333-8333-333333333333'
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_CONVITES = `${ROTA_CASAMENTO}/convites`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_CONVITES = `${ROTA_EVENTO}/convites`
 const ROTA_CONVITE = `${ROTA_CONVITES}/${ID_CONVITE}`
 const ROTA_LINK = `${ROTA_CONVITE}/link-rsvp`
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
@@ -58,7 +58,7 @@ function convite(dados: Partial<ConviteDto> = {}): ConviteDto {
 }
 
 function lista(dados: Partial<ConviteDto> = {}, arquivado = false): ListaConvitesDto {
-  return { convites: [convite(dados)], totais: TOTAIS, convidadosEstimados: null, casamentoArquivado: arquivado }
+  return { convites: [convite(dados)], totais: TOTAIS, convidadosEstimados: null, eventoArquivado: arquivado }
 }
 
 let fetchSimulado: ReturnType<typeof simularFetch>
@@ -94,14 +94,14 @@ afterEach(() => {
 })
 
 async function abrir() {
-  const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/convidados`)
+  const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/convidados`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
 }
 
 function rotas(listaConvites = lista(), arquivado = false) {
   return [
-    quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto({ arquivado, data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' }))),
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ arquivado, data: '2027-05-22', dataLimiteRsvpEfetiva: '2027-05-12' }))),
     quando('GET', ROTA_CONVITES, () => respostaJson(listaConvites)),
   ]
 }
@@ -230,7 +230,7 @@ describe('ConvidadosView — envio de convites', { timeout: 20_000 }, () => {
     expect(notificado(TEXTOS_ENVIO_CONVITE.linkRegenerado)).toBe(true)
   })
 
-  it('[COMPONENTE] casamento arquivado só permite copiar, consultando o link sem gerar', async () => {
+  it('[COMPONENTE] evento arquivado só permite copiar, consultando o link sem gerar', async () => {
     rotearFetch(fetchSimulado, ...rotas(lista({}, true), true), quando('GET', ROTA_LINK, () => respostaJson({ token: TOKEN, geradoEm: '2026-09-29T12:00:00Z' })))
     await abrir()
 

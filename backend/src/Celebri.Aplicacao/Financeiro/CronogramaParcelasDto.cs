@@ -1,7 +1,7 @@
 namespace Celebri.Aplicacao.Financeiro;
 
 public sealed record CronogramaParcelasDto(
-    Guid FornecedorCasamentoId,
+    Guid FornecedorEventoId,
     decimal ValorContratado,
     decimal Parcelado,
     decimal Pago,

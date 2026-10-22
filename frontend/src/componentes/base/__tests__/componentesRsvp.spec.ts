@@ -24,7 +24,7 @@ afterEach(() => {
 })
 
 describe('CabecalhoConvite', () => {
-  it('[COMPONENTE] mostra casal com “e” acessível, data por extenso, horário e locais', () => {
+  it('[COMPONENTE] mostra anfitriões com “e” acessível, data por extenso, horário e locais', () => {
     wrapper = mount(CabecalhoConvite, {
       props: { primeiro: 'Ana', segundo: 'Bruno', data: '2027-05-22', horario: '16:30', localCerimonia: 'Igreja', localRecepcao: null },
       global,
@@ -47,7 +47,7 @@ describe('CabecalhoConvite', () => {
     })
 
     expect(wrapper.get('.cabecalho-convite__aneis').attributes('aria-hidden')).toBe('true')
-    expect(wrapper.get('.cabecalho-convite__frase').text()).toBe('Com alegria, convidamos você para celebrar o nosso casamento')
+    expect(wrapper.get('.cabecalho-convite__frase').text()).toBe('Com alegria, convidamos você para celebrar o nosso evento')
     const numerica = wrapper.get('.cabecalho-convite__data-numerica')
     expect(numerica.text()).toBe('12 . 12 . 2026')
     expect(numerica.attributes('aria-hidden')).toBe('true')

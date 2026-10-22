@@ -18,22 +18,22 @@ import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
 import { TEXTOS_ENVIO_CONVITE } from '@/textos/rsvp'
 import type { SessaoDto } from '@/tipos/api'
 import type { ConviteDto, ListaConvitesDto } from '@/tipos/convidados'
-import { ID_CASAMENTO, RaizRotas, casamentoCompleto, quando, type Rota } from '../../casamentos/__tests__/auxiliaresCasamentos'
+import { ID_EVENTO, RaizRotas, eventoCompleto, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
 
-const ROTA_CASAMENTO = `/api/casamentos/${ID_CASAMENTO}`
-const ROTA_CONVITES = `${ROTA_CASAMENTO}/convites`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
+const ROTA_CONVITES = `${ROTA_EVENTO}/convites`
 const NOME_LONGO = 'Família Albuquerque de Vasconcellos e Orleans e Bragança Figueiredo Junqueira'
 
-const SESSAO_CASAL: SessaoDto = {
-  tokenAcesso: 'token-casal',
+const SESSAO_ANFITRIAO: SessaoDto = {
+  tokenAcesso: 'token-anfitriao',
   expiraEm: '2026-09-28T12:15:00Z',
   usuario: {
-    id: 'u-casal',
+    id: 'u-anfitriao',
     nome: 'Lívia Moraes',
     email: 'livia@exemplo.com',
-    papel: 'Casal',
+    papel: 'Anfitriao',
     organizacao: { id: 'o1', nome: 'Albuquerque Assessoria' },
-    casamentoId: ID_CASAMENTO,
+    eventoId: ID_EVENTO,
   },
 }
 
@@ -68,7 +68,7 @@ function lista(dados: Partial<ListaConvitesDto> = {}): ListaConvitesDto {
       recusados: { adultos: 0, criancas: 0, total: 0 },
     },
     convidadosEstimados: 150,
-    casamentoArquivado: false,
+    eventoArquivado: false,
     ...dados,
   }
 }
@@ -114,8 +114,8 @@ afterEach(() => {
 })
 
 async function abrir(sessao: SessaoDto = SESSAO_EXEMPLO, rotaConvites: Rota = quando('GET', ROTA_CONVITES, () => respostaJson(lista()))) {
-  rotear(fetchSimulado, sessao, quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())), rotaConvites)
-  const montagem = await prepararAplicacao(`/casamentos/${ID_CASAMENTO}/convidados`)
+  rotear(fetchSimulado, sessao, quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())), rotaConvites)
+  const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/convidados`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
   return wrapper
@@ -150,8 +150,8 @@ describe('ConvidadosView — reestruturação da fundação', { timeout: 20_000 
     expect(atalhos.find('[data-teste="abrir-restricoes"]').exists()).toBe(true)
   })
 
-  it('[SEGURANÇA] perfil casal não vê o atalho de restrições alimentares', async () => {
-    const tela = await abrir(SESSAO_CASAL)
+  it('[SEGURANÇA] perfil anfitriões não veem o atalho de restrições alimentares', async () => {
+    const tela = await abrir(SESSAO_ANFITRIAO)
 
     const atalhos = tela.get('[data-teste="atalhos-convidados"]')
     expect(atalhos.find('[data-teste="abrir-mesas"]').exists()).toBe(true)

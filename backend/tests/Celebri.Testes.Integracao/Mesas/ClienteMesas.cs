@@ -8,29 +8,29 @@ namespace Celebri.Testes.Integracao.Mesas;
 
 public static class ClienteMesas
 {
-    public static string Rota(Guid casamentoId)
+    public static string Rota(Guid eventoId)
     {
-        return $"/api/casamentos/{casamentoId}/mesas";
+        return $"/api/eventos/{eventoId}/mesas";
     }
 
-    public static string Rota(Guid casamentoId, Guid mesaId)
+    public static string Rota(Guid eventoId, Guid mesaId)
     {
-        return $"{Rota(casamentoId)}/{mesaId}";
+        return $"{Rota(eventoId)}/{mesaId}";
     }
 
-    public static string RotaPessoas(Guid casamentoId, Guid mesaId)
+    public static string RotaPessoas(Guid eventoId, Guid mesaId)
     {
-        return $"{Rota(casamentoId, mesaId)}/pessoas";
+        return $"{Rota(eventoId, mesaId)}/pessoas";
     }
 
-    public static string RotaRetirada(Guid casamentoId)
+    public static string RotaRetirada(Guid eventoId)
     {
-        return $"{Rota(casamentoId)}/retirada";
+        return $"{Rota(eventoId)}/retirada";
     }
 
-    public static string RotaDispensa(Guid casamentoId)
+    public static string RotaDispensa(Guid eventoId)
     {
-        return $"{Rota(casamentoId)}/avisos-saida/dispensa";
+        return $"{Rota(eventoId)}/avisos-saida/dispensa";
     }
 
     public static object Corpo(int? numero = 1, string? nome = "Padrinhos", int? capacidade = 8, bool? especial = false)
@@ -43,37 +43,37 @@ public static class ClienteMesas
         return new { convidadosIds };
     }
 
-    public static async Task<MesaDto> CriarAsync(HttpClient cliente, Guid casamentoId, int numero = 1, int capacidade = 8, string? nome = null, bool especial = false)
+    public static async Task<MesaDto> CriarAsync(HttpClient cliente, Guid eventoId, int numero = 1, int capacidade = 8, string? nome = null, bool especial = false)
     {
-        var resposta = await cliente.PostAsJsonAsync(Rota(casamentoId), Corpo(numero, nome, capacidade, especial));
+        var resposta = await cliente.PostAsJsonAsync(Rota(eventoId), Corpo(numero, nome, capacidade, especial));
         Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<MesaDto>())!;
     }
 
-    public static async Task<MapaMesasDto> MapaAsync(HttpClient cliente, Guid casamentoId)
+    public static async Task<MapaMesasDto> MapaAsync(HttpClient cliente, Guid eventoId)
     {
-        var resposta = await cliente.GetAsync(Rota(casamentoId));
+        var resposta = await cliente.GetAsync(Rota(eventoId));
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<MapaMesasDto>())!;
     }
 
-    public static Task<HttpResponseMessage> SentarAsync(HttpClient cliente, Guid casamentoId, Guid mesaId, params Guid[] convidadosIds)
+    public static Task<HttpResponseMessage> SentarAsync(HttpClient cliente, Guid eventoId, Guid mesaId, params Guid[] convidadosIds)
     {
-        return cliente.PostAsJsonAsync(RotaPessoas(casamentoId, mesaId), Pessoas(convidadosIds));
+        return cliente.PostAsJsonAsync(RotaPessoas(eventoId, mesaId), Pessoas(convidadosIds));
     }
 
-    public static async Task<MapaMesasDto> SentarComSucessoAsync(HttpClient cliente, Guid casamentoId, Guid mesaId, params Guid[] convidadosIds)
+    public static async Task<MapaMesasDto> SentarComSucessoAsync(HttpClient cliente, Guid eventoId, Guid mesaId, params Guid[] convidadosIds)
     {
-        var resposta = await SentarAsync(cliente, casamentoId, mesaId, convidadosIds);
+        var resposta = await SentarAsync(cliente, eventoId, mesaId, convidadosIds);
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         return (await resposta.Content.ReadFromJsonAsync<MapaMesasDto>())!;
     }
 
-    public static async Task<ConviteDto> CriarConviteConfirmadoAsync(HttpClient cliente, Guid casamentoId, string nome, params string[] pessoas)
+    public static async Task<ConviteDto> CriarConviteConfirmadoAsync(HttpClient cliente, Guid eventoId, string nome, params string[] pessoas)
     {
         var convidados = pessoas
             .Select(pessoa => ClienteConvites.Pessoa(pessoa, null, null, "Adulto", "Confirmado"))
             .ToArray();
-        return await ClienteConvites.CriarAsync(cliente, casamentoId, ClienteConvites.CorpoValido(nome, "Família da noiva", 0, convidados));
+        return await ClienteConvites.CriarAsync(cliente, eventoId, ClienteConvites.CorpoValido(nome, "Família da noiva", 0, convidados));
     }
 }

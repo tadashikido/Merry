@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 import { requisitar } from '@/servicos/clienteHttp'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
-import { interpretarFalhaCasamento, ROTA_CASAMENTOS, type FalhaCasamento } from '@/stores/casamentos'
+import { interpretarFalhaEvento, ROTA_EVENTOS, type FalhaEvento } from '@/stores/eventos'
 import { useExclusoesAdiadasStore } from '@/stores/exclusoesAdiadas'
 import type {
   ConviteDto,
@@ -16,7 +16,7 @@ import type {
 } from '@/tipos/convidados'
 import type { LinkRsvpDto } from '@/tipos/rsvp'
 
-export type FalhaConvidados = FalhaCasamento
+export type FalhaConvidados = FalhaEvento
 
 export type ResultadoConvidados<T> = { ok: true; valor: T } | { ok: false; falha: FalhaConvidados }
 
@@ -29,7 +29,7 @@ export function normalizarChaveCampo(chave: string): string {
 }
 
 export function interpretarFalhaConvidados(falha: unknown): FalhaConvidados {
-  const interpretada = interpretarFalhaCasamento(falha)
+  const interpretada = interpretarFalhaEvento(falha)
   const errosCampos: Record<string, string> = {}
   for (const [chave, mensagem] of Object.entries(interpretada.errosCampos)) {
     errosCampos[normalizarChaveCampo(chave)] = mensagem
@@ -37,13 +37,13 @@ export function interpretarFalhaConvidados(falha: unknown): FalhaConvidados {
   return { ...interpretada, errosCampos }
 }
 
-export function rotaConvites(casamentoId: string, conviteId?: string): string {
-  const base = `${ROTA_CASAMENTOS}/${encodeURIComponent(casamentoId)}/convites`
+export function rotaConvites(eventoId: string, conviteId?: string): string {
+  const base = `${ROTA_EVENTOS}/${encodeURIComponent(eventoId)}/convites`
   return conviteId ? `${base}/${encodeURIComponent(conviteId)}` : base
 }
 
-export function escopoConvites(casamentoId: string): string {
-  return `convites:${casamentoId}`
+export function escopoConvites(eventoId: string): string {
+  return `convites:${eventoId}`
 }
 
 function descontarFaixa(totais: TotaisPorFaixaDto, adultos: number, criancas: number): TotaisPorFaixaDto {
@@ -75,38 +75,38 @@ export function descontarConvite(totais: TotaisConvidadosDto, convite: ConviteDt
 
 export const useConvidadosStore = defineStore('convidados', () => {
   const exclusoes = useExclusoesAdiadasStore()
-  const casamentoId = ref<string | null>(null)
+  const eventoId = ref<string | null>(null)
   const lista = ref<ListaConvitesDto | null>(null)
   const carregando = ref(false)
   const falha = ref<FalhaConvidados | null>(null)
 
   const convitesOcultos = new Map<string, ConviteDto>()
 
-  const casamentoIdTotais = ref<string | null>(null)
+  const eventoIdTotais = ref<string | null>(null)
   const totais = ref<TotaisConvidadosDto | null>(null)
   const carregandoTotais = ref(false)
   const falhaTotais = ref<FalhaConvidados | null>(null)
 
   async function carregar(id: string): Promise<void> {
-    if (casamentoId.value !== id) {
+    if (eventoId.value !== id) {
       lista.value = null
     }
-    casamentoId.value = id
+    eventoId.value = id
     carregando.value = true
     falha.value = null
 
     try {
       const resposta = await requisitar<ListaConvitesDto>(rotaConvites(id))
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         lista.value = ocultarPendentes(id, resposta)
       }
     } catch (erro) {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         lista.value = null
         falha.value = interpretarFalhaConvidados(erro)
       }
     } finally {
-      if (casamentoId.value === id) {
+      if (eventoId.value === id) {
         carregando.value = false
       }
     }
@@ -133,25 +133,25 @@ export const useConvidadosStore = defineStore('convidados', () => {
   }
 
   async function carregarTotais(id: string): Promise<void> {
-    if (casamentoIdTotais.value !== id) {
+    if (eventoIdTotais.value !== id) {
       totais.value = null
     }
-    casamentoIdTotais.value = id
+    eventoIdTotais.value = id
     carregandoTotais.value = true
     falhaTotais.value = null
 
     try {
       const resposta = await requisitar<TotaisConvidadosDto>(`${rotaConvites(id)}/totais`)
-      if (casamentoIdTotais.value === id) {
+      if (eventoIdTotais.value === id) {
         totais.value = descontarOcultos(id, resposta)
       }
     } catch (erro) {
-      if (casamentoIdTotais.value === id) {
+      if (eventoIdTotais.value === id) {
         totais.value = null
         falhaTotais.value = interpretarFalhaConvidados(erro)
       }
     } finally {
-      if (casamentoIdTotais.value === id) {
+      if (eventoIdTotais.value === id) {
         carregandoTotais.value = false
       }
     }
@@ -166,9 +166,9 @@ export const useConvidadosStore = defineStore('convidados', () => {
   }
 
   function aposAlteracao(id: string) {
-    if (casamentoIdTotais.value === id) {
+    if (eventoIdTotais.value === id) {
       totais.value = null
-      casamentoIdTotais.value = null
+      eventoIdTotais.value = null
     }
   }
 
@@ -197,7 +197,7 @@ export const useConvidadosStore = defineStore('convidados', () => {
   }
 
   async function recarregarSeAtual(id: string): Promise<void> {
-    if (casamentoId.value === id) {
+    if (eventoId.value === id) {
       await carregar(id)
     }
   }
@@ -225,14 +225,14 @@ export const useConvidadosStore = defineStore('convidados', () => {
         }
       },
     })
-    const convite = casamentoId.value === id ? lista.value?.convites.find((atual) => atual.id === conviteId) : undefined
+    const convite = eventoId.value === id ? lista.value?.convites.find((atual) => atual.id === conviteId) : undefined
     if (convite) {
       convitesOcultos.set(conviteId, convite)
-      if (casamentoIdTotais.value === id && totais.value) {
+      if (eventoIdTotais.value === id && totais.value) {
         totais.value = descontarConvite(totais.value, convite)
       }
     }
-    if (casamentoId.value === id && lista.value) {
+    if (eventoId.value === id && lista.value) {
       lista.value = ocultarPendentes(id, lista.value)
     }
   }
@@ -247,7 +247,7 @@ export const useConvidadosStore = defineStore('convidados', () => {
   }
 
   async function recarregarTotaisSeAtuais(id: string): Promise<void> {
-    if (casamentoIdTotais.value === id) {
+    if (eventoIdTotais.value === id) {
       await carregarTotais(id)
     }
   }
@@ -257,7 +257,7 @@ export const useConvidadosStore = defineStore('convidados', () => {
   }
 
   function substituirConvite(id: string, convite: ConviteDto) {
-    if (casamentoId.value !== id || !lista.value) {
+    if (eventoId.value !== id || !lista.value) {
       return
     }
     lista.value = {
@@ -310,11 +310,11 @@ export const useConvidadosStore = defineStore('convidados', () => {
 
   function limpar() {
     convitesOcultos.clear()
-    casamentoId.value = null
+    eventoId.value = null
     lista.value = null
     carregando.value = false
     falha.value = null
-    casamentoIdTotais.value = null
+    eventoIdTotais.value = null
     totais.value = null
     carregandoTotais.value = false
     falhaTotais.value = null
@@ -331,11 +331,11 @@ export const useConvidadosStore = defineStore('convidados', () => {
   )
 
   return {
-    casamentoId,
+    eventoId,
     lista,
     carregando,
     falha,
-    casamentoIdTotais,
+    eventoIdTotais,
     totais,
     carregandoTotais,
     falhaTotais,

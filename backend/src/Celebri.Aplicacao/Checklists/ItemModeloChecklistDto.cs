@@ -6,4 +6,4 @@ public sealed record ItemModeloChecklistDto(
     string? Descricao,
     string Responsavel,
     string Categoria,
-    int DiasAntesDoCasamento);
+    int DiasAntesDoEvento);

@@ -5,6 +5,6 @@ public sealed record AplicacaoModeloChecklistDto(
     int TarefasCriadas,
     int JaAplicadas,
     int NascemAtrasadas,
-    int TarefasNoCasamento,
+    int TarefasNoEvento,
     bool ExcedeLimite,
     ProgressoChecklistDto Progresso);

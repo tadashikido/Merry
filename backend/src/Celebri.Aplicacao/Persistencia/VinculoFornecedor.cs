@@ -2,4 +2,4 @@ using Celebri.Dominio.Fornecedores;
 
 namespace Celebri.Aplicacao.Persistencia;
 
-public sealed record VinculoFornecedor(FornecedorCasamento Vinculo, Fornecedor Fornecedor);
+public sealed record VinculoFornecedor(FornecedorEvento Vinculo, Fornecedor Fornecedor);

@@ -2,17 +2,17 @@ namespace Celebri.Aplicacao.Cronogramas;
 
 public interface ICronogramaService
 {
-    Task<CronogramaDto> ListarAsync(Guid casamentoId, CancellationToken cancelamento);
+    Task<CronogramaDto> ListarAsync(Guid eventoId, CancellationToken cancelamento);
 
-    Task<ItemCronogramaDto> ObterAsync(Guid casamentoId, Guid itemId, CancellationToken cancelamento);
+    Task<ItemCronogramaDto> ObterAsync(Guid eventoId, Guid itemId, CancellationToken cancelamento);
 
-    Task<ItemCronogramaDto> CriarAsync(Guid casamentoId, SalvarItemCronogramaRequest request, CancellationToken cancelamento);
+    Task<ItemCronogramaDto> CriarAsync(Guid eventoId, SalvarItemCronogramaRequest request, CancellationToken cancelamento);
 
     Task<ItemCronogramaDto> AtualizarAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid itemId,
         SalvarItemCronogramaRequest request,
         CancellationToken cancelamento);
 
-    Task RemoverAsync(Guid casamentoId, Guid itemId, CancellationToken cancelamento);
+    Task RemoverAsync(Guid eventoId, Guid itemId, CancellationToken cancelamento);
 }

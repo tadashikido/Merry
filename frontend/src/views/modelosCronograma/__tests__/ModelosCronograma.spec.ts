@@ -16,7 +16,7 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import { TEXTOS_ITEM_MODELO_CRONOGRAMA, TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
-import { RaizRotas, chamadas, quando, rotearFetch } from '../../casamentos/__tests__/auxiliaresCasamentos'
+import { RaizRotas, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -253,7 +253,7 @@ describe('ModeloCronogramaView', () => {
     expect(lateral.get('[data-teste="total-itens-modelo"]').text()).toBe('3 itens')
     expect(lateral.get('[data-teste="apoio-referencia"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00'))
     expect(lateral.get('[data-teste="resumo-dia-Vespera"]').text()).toContain('1 item, das 19:00 às 20:00')
-    expect(lateral.get('[data-teste="resumo-dia-DiaDoCasamento"]').text()).toContain('2 itens, das 10:00 às 17:00')
+    expect(lateral.get('[data-teste="resumo-dia-DiaDoEvento"]').text()).toContain('2 itens, das 10:00 às 17:00')
     expect(lateral.find('[data-teste="resumo-dia-DiaSeguinte"]').exists()).toBe(false)
     expect(lateral.get('[data-teste="resumo-referencia"]').text()).toBe('16:00')
     expect(lateral.get('[data-teste="resumo-comeca"]').text()).toBe('21 h antes da cerimônia')
@@ -271,7 +271,7 @@ describe('ModeloCronogramaView', () => {
     expect(listas[0]!.attributes('aria-labelledby')).toBe('grupo-modelo-Vespera')
     expect(wrapper.get('#grupo-modelo-Vespera').text()).toBe('Véspera')
     expect(listas[1]!.findAll('[data-teste="linha-cronograma"]')).toHaveLength(2)
-    expect(wrapper.get('[data-teste="grupo-modelo-DiaDoCasamento"]').classes()).toEqual(
+    expect(wrapper.get('[data-teste="grupo-modelo-DiaDoEvento"]').classes()).toEqual(
       expect.arrayContaining(['pilha', 'pilha--grupo']),
     )
   })
@@ -293,7 +293,7 @@ describe('ModeloCronogramaView', () => {
 
     const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
 
-    expect(wrapper.get('[data-teste="resumo-dia-DiaDoCasamento"]').text()).toContain('2 itens, das 10:00 às 02:00 do dia seguinte')
+    expect(wrapper.get('[data-teste="resumo-dia-DiaDoEvento"]').text()).toContain('2 itens, das 10:00 às 02:00 do dia seguinte')
     expect(wrapper.get('[data-teste="resumo-comeca"]').text()).toBe('6 h antes da cerimônia')
     expect(wrapper.get('[data-teste="resumo-termina"]').text()).toBe('10 h depois da cerimônia')
     expect(wrapper.findAll('[data-teste="linha-cronograma-termino"]')[1]!.text()).toBe('02:00+1')

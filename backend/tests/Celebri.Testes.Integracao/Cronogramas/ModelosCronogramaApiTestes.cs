@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using Celebri.Aplicacao.ModelosCronograma;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Testes.Integracao.Banco;
-using Celebri.Testes.Integracao.Casamentos;
+using Celebri.Testes.Integracao.Eventos;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -77,7 +77,7 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
 
         var item = await CriarItemAsync(OrganizacaoA.Cliente, modelo.Id, CorpoItem(minutos: -90, duracaoMinutos: 600));
         Assert.Equal(-90, item.MinutosDesdeCerimonia);
-        Assert.Equal("DiaDoCasamento", item.Dia);
+        Assert.Equal("DiaDoEvento", item.Dia);
         Assert.Equal("15:30", item.Inicio);
         Assert.Equal("01:30", item.Termino);
         Assert.True(item.TerminaEmOutroDia);
@@ -135,21 +135,21 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task Aplicar_DeveCalcularHorariosPelaCerimoniaESerIdempotente()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
         var sugerido = await SugeridoAsync(OrganizacaoA.Cliente);
 
-        var previa = await PreverAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id);
+        var previa = await PreverAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
         Assert.Equal(sugerido.Itens.Count, previa.ItensCriados);
         Assert.False(previa.SemHorarioCerimonia);
         Assert.Equal("16:30", previa.HorarioCerimonia);
         Assert.Equal(new ItemPrevistoCronogramaDto("Vespera", "19:30", "Ensaio da cerimônia"), previa.PrimeiroItem);
         Assert.Equal("DiaSeguinte", previa.UltimoItem!.Dia);
-        Assert.Empty((await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, casamento.Id)).Itens);
+        Assert.Empty((await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, evento.Id)).Itens);
 
-        var aplicacao = await AplicarComSucessoAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id);
+        var aplicacao = await AplicarComSucessoAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
         Assert.Equal(sugerido.Itens.Count, aplicacao.ItensCriados);
 
-        var cronograma = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var cronograma = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.Equal(sugerido.Itens.Count, cronograma.Itens.Count);
         var cerimonia = Assert.Single(cronograma.Itens, item => item.Atividade == "Cerimônia");
         Assert.Equal("16:30", cerimonia.Inicio);
@@ -158,16 +158,16 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.Equal("10:30", Assert.Single(cronograma.Itens, item => item.Atividade == "Making of da noiva").Inicio);
         Assert.Equal(0, cronograma.HorariosDesatualizados);
 
-        var reprevia = await PreverAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id);
+        var reprevia = await PreverAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
         Assert.Equal(0, reprevia.ItensCriados);
         Assert.Equal(sugerido.Itens.Count, reprevia.JaAplicados);
-        Assert.Equal(0, (await AplicarComSucessoAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id)).ItensCriados);
+        Assert.Equal(0, (await AplicarComSucessoAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id)).ItensCriados);
 
-        Assert.Equal(HttpStatusCode.NoContent, (await OrganizacaoA.Cliente.DeleteAsync(ClienteCronograma.Rota(casamento.Id, cerimonia.Id))).StatusCode);
-        Assert.Equal(1, (await AplicarComSucessoAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id)).ItensCriados);
+        Assert.Equal(HttpStatusCode.NoContent, (await OrganizacaoA.Cliente.DeleteAsync(ClienteCronograma.Rota(evento.Id, cerimonia.Id))).StatusCode);
+        Assert.Equal(1, (await AplicarComSucessoAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id)).ItensCriados);
 
         await using var contexto = CriarContexto(OrganizacaoA);
-        var itens = await contexto.ItensCronograma.AsNoTracking().Where(item => item.CasamentoId == casamento.Id).ToListAsync();
+        var itens = await contexto.ItensCronograma.AsNoTracking().Where(item => item.EventoId == evento.Id).ToListAsync();
         Assert.Equal(sugerido.Itens.Count, itens.Count);
         Assert.All(itens, item => Assert.NotNull(item.OrigemModeloItemId));
         Assert.All(itens, item => Assert.NotNull(item.MinutosRelativosCerimonia));
@@ -177,48 +177,48 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task AplicacaoConcorrente_NaoDeveDuplicarItens()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
         var sugerido = await SugeridoAsync(OrganizacaoA.Cliente);
 
-        var respostas = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => AplicarAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id)));
+        var respostas = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => AplicarAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id)));
 
         Assert.All(respostas, resposta => Assert.Contains(resposta.StatusCode, new[] { HttpStatusCode.OK, HttpStatusCode.Conflict }));
-        Assert.Equal(sugerido.Itens.Count, (await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, casamento.Id)).Itens.Count);
+        Assert.Equal(sugerido.Itens.Count, (await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, evento.Id)).Itens.Count);
     }
 
     [Fact]
     public async Task SemHorarioDaCerimonia_PreviaSinalizaEAplicarOuSalvarRespondem422ComCampoHorario()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente, ClienteCasamentos.CorpoValido(horario: null));
-        await ClienteCronograma.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente, ClienteEventos.CorpoValido(horario: null));
+        await ClienteCronograma.CriarAsync(OrganizacaoA.Cliente, evento.Id);
         var sugerido = await SugeridoAsync(OrganizacaoA.Cliente);
 
-        var previa = await PreverAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id);
+        var previa = await PreverAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
         Assert.True(previa.SemHorarioCerimonia);
         Assert.Null(previa.PrimeiroItem);
 
-        var aplicar = await AplicarAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id);
+        var aplicar = await AplicarAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, aplicar.StatusCode);
         Assert.Equal("horario", await CampoAsync(aplicar));
 
-        var salvar = await OrganizacaoA.Cliente.PostAsJsonAsync(RotaSalvarComoModelo(casamento.Id), new { nome = "Sem horário" });
+        var salvar = await OrganizacaoA.Cliente.PostAsJsonAsync(RotaSalvarComoModelo(evento.Id), new { nome = "Sem horário" });
         Assert.Equal(HttpStatusCode.UnprocessableEntity, salvar.StatusCode);
         Assert.Equal("horario", await CampoAsync(salvar));
 
-        var recalcular = await OrganizacaoA.Cliente.PostAsync(RotaRecalculo(casamento.Id), null);
+        var recalcular = await OrganizacaoA.Cliente.PostAsync(RotaRecalculo(evento.Id), null);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, recalcular.StatusCode);
-        Assert.Single((await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, casamento.Id)).Itens);
+        Assert.Single((await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, evento.Id)).Itens);
     }
 
     [Fact]
     public async Task Aplicar_AcimaDoLimiteDe200_DeveSerTudoOuNada()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
         await using (var contexto = CriarContexto(OrganizacaoA))
         {
             contexto.ItensCronograma.AddRange(Enumerable.Range(0, 190).Select(indice => ItemCronograma.Criar(
-                casamento.Id,
-                new DadosItemCronograma(DiaCronograma.DiaDoCasamento, new TimeOnly(indice % 24, indice % 60), null, $"Item {indice}", null, null, null, null, null),
+                evento.Id,
+                new DadosItemCronograma(DiaCronograma.DiaDoEvento, new TimeOnly(indice % 24, indice % 60), null, $"Item {indice}", null, null, null, null, null),
                 null,
                 DateTimeOffset.UtcNow)));
             await contexto.SaveChangesAsync();
@@ -226,37 +226,37 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
 
         var sugerido = await SugeridoAsync(OrganizacaoA.Cliente);
 
-        var previa = await PreverAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id);
+        var previa = await PreverAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
         Assert.True(previa.ExcedeLimite);
         Assert.Equal(190, previa.ItensNoCronograma);
 
-        var resposta = await AplicarAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id);
+        var resposta = await AplicarAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         Assert.Equal(
             MensagensModeloCronograma.LimiteItensCronograma(190, sugerido.Itens.Count),
             (await resposta.Content.ReadFromJsonAsync<ProblemDetails>())!.Detail);
-        Assert.Equal(190, (await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, casamento.Id)).Itens.Count);
+        Assert.Equal(190, (await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, evento.Id)).Itens.Count);
     }
 
     [Fact]
     public async Task Aplicar_DevePreencherFornecedorSoComUmUnicoVinculoDaCategoria()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var fotografia = await VincularFornecedorAsync(OrganizacaoA.Cliente, casamento.Id, "Estúdio Luz", "Fotografia");
-        await VincularFornecedorAsync(OrganizacaoA.Cliente, casamento.Id, "Banda Aurora", "Musica");
-        await VincularFornecedorAsync(OrganizacaoA.Cliente, casamento.Id, "DJ Noite", "Musica");
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var fotografia = await VincularFornecedorAsync(OrganizacaoA.Cliente, evento.Id, "Estúdio Luz", "Fotografia");
+        await VincularFornecedorAsync(OrganizacaoA.Cliente, evento.Id, "Banda Aurora", "Musica");
+        await VincularFornecedorAsync(OrganizacaoA.Cliente, evento.Id, "DJ Noite", "Musica");
         var sugerido = await SugeridoAsync(OrganizacaoA.Cliente);
         var deFotografia = sugerido.Itens.Count(item => item.CategoriaFornecedor == "Fotografia");
 
-        var previa = await PreverAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id);
+        var previa = await PreverAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
         Assert.Equal(deFotografia, previa.FornecedoresPreenchidos);
 
-        await AplicarComSucessoAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id);
+        await AplicarComSucessoAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
 
-        var cronograma = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var cronograma = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         var comFornecedor = cronograma.Itens.Where(item => item.Fornecedor is not null).ToList();
         Assert.Equal(deFotografia, comFornecedor.Count);
-        Assert.All(comFornecedor, item => Assert.Equal(fotografia, item.Fornecedor!.FornecedorCasamentoId));
+        Assert.All(comFornecedor, item => Assert.Equal(fotografia, item.Fornecedor!.FornecedorEventoId));
         Assert.All(
             cronograma.Itens.Where(item => item.Atividade.Contains("banda", StringComparison.OrdinalIgnoreCase)),
             item => Assert.Null(item.Fornecedor));
@@ -265,58 +265,58 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
     [Fact]
     public async Task MudarHorarioDaCerimonia_DeveOferecerRecalculoExplicitoPreservandoAjustesManuais()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente, ClienteCasamentos.CorpoValido(horario: "16:00"));
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente, ClienteEventos.CorpoValido(horario: "16:00"));
         var sugerido = await SugeridoAsync(OrganizacaoA.Cliente);
-        await AplicarComSucessoAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id);
+        await AplicarComSucessoAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id);
         var manual = await ClienteCronograma.CriarAsync(
             OrganizacaoA.Cliente,
-            casamento.Id,
+            evento.Id,
             ClienteCronograma.Corpo("Chegada do celebrante", inicio: "15:00", responsavel: "Padre"));
-        var fotos = Assert.Single((await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, casamento.Id)).Itens, item => item.Atividade == "Fotos com família e padrinhos");
+        var fotos = Assert.Single((await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, evento.Id)).Itens, item => item.Atividade == "Fotos com família e padrinhos");
         Assert.Equal("17:30", fotos.Inicio);
 
         var ajuste = await OrganizacaoA.Cliente.PutAsJsonAsync(
-            ClienteCronograma.Rota(casamento.Id, fotos.Id),
+            ClienteCronograma.Rota(evento.Id, fotos.Id),
             ClienteCronograma.Corpo(fotos.Atividade, inicio: "17:45", duracaoMinutos: 30, responsavel: "Fotografia"));
         Assert.Equal(HttpStatusCode.OK, ajuste.StatusCode);
-        Assert.Equal(0, (await OrganizacaoA.Cliente.GetFromJsonAsync<RecalculoHorariosDto>(RotaRecalculo(casamento.Id)))!.Itens);
+        Assert.Equal(0, (await OrganizacaoA.Cliente.GetFromJsonAsync<RecalculoHorariosDto>(RotaRecalculo(evento.Id)))!.Itens);
 
         var edicao = await OrganizacaoA.Cliente.PutAsJsonAsync(
-            $"{ClienteCasamentos.Rota}/{casamento.Id}",
-            ClienteCasamentos.CorpoValido(horario: "17:00"));
+            $"{ClienteEventos.Rota}/{evento.Id}",
+            ClienteEventos.CorpoValido(horario: "17:00"));
         Assert.Equal(HttpStatusCode.OK, edicao.StatusCode);
 
-        var consulta = (await OrganizacaoA.Cliente.GetFromJsonAsync<RecalculoHorariosDto>(RotaRecalculo(casamento.Id)))!;
+        var consulta = (await OrganizacaoA.Cliente.GetFromJsonAsync<RecalculoHorariosDto>(RotaRecalculo(evento.Id)))!;
         Assert.Equal(sugerido.Itens.Count, consulta.Itens);
-        var antes = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var antes = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.Equal(sugerido.Itens.Count, antes.HorariosDesatualizados);
         Assert.Equal("16:00", Assert.Single(antes.Itens, item => item.Atividade == "Cerimônia").Inicio);
 
-        var recalculo = await OrganizacaoA.Cliente.PostAsync(RotaRecalculo(casamento.Id), null);
+        var recalculo = await OrganizacaoA.Cliente.PostAsync(RotaRecalculo(evento.Id), null);
         Assert.Equal(HttpStatusCode.OK, recalculo.StatusCode);
         Assert.Equal(sugerido.Itens.Count, (await recalculo.Content.ReadFromJsonAsync<RecalculoHorariosDto>())!.Itens);
 
-        var depois = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var depois = await ClienteCronograma.ListarAsync(OrganizacaoA.Cliente, evento.Id);
         Assert.Equal(0, depois.HorariosDesatualizados);
         Assert.Equal("17:00", Assert.Single(depois.Itens, item => item.Atividade == "Cerimônia").Inicio);
         Assert.Equal("18:45", Assert.Single(depois.Itens, item => item.Id == fotos.Id).Inicio);
         Assert.Equal("15:00", Assert.Single(depois.Itens, item => item.Id == manual.Id).Inicio);
         Assert.Equal("DiaSeguinte", Assert.Single(depois.Itens, item => item.Atividade == "Encerramento e saída dos noivos").Dia);
-        Assert.Equal(0, (await OrganizacaoA.Cliente.GetFromJsonAsync<RecalculoHorariosDto>(RotaRecalculo(casamento.Id)))!.Itens);
+        Assert.Equal(0, (await OrganizacaoA.Cliente.GetFromJsonAsync<RecalculoHorariosDto>(RotaRecalculo(evento.Id)))!.Itens);
     }
 
     [Fact]
     public async Task SalvarComoModelo_DeveGuardarDistanciaCategoriaLocaisSemNotas()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        var vinculo = await VincularFornecedorAsync(OrganizacaoA.Cliente, casamento.Id, "Estúdio Luz", "Fotografia");
-        await ClienteCronograma.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        var vinculo = await VincularFornecedorAsync(OrganizacaoA.Cliente, evento.Id, "Estúdio Luz", "Fotografia");
+        await ClienteCronograma.CriarAsync(OrganizacaoA.Cliente, evento.Id);
         await ClienteCronograma.CriarAsync(
             OrganizacaoA.Cliente,
-            casamento.Id,
-            ClienteCronograma.Corpo("Fotos externas", inicio: "18:00", local: "Mirante", fornecedorCasamentoId: vinculo, notasInternas: "Segredo"));
+            evento.Id,
+            ClienteCronograma.Corpo("Fotos externas", inicio: "18:00", local: "Mirante", fornecedorEventoId: vinculo, notasInternas: "Segredo"));
 
-        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(RotaSalvarComoModelo(casamento.Id), new { nome = "Roteiro da Ana", descricao = "Base" });
+        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(RotaSalvarComoModelo(evento.Id), new { nome = "Roteiro da Ana", descricao = "Base" });
 
         Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
         Assert.NotNull(resposta.Headers.Location);
@@ -332,34 +332,34 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.DoesNotContain("Segredo", await resposta.Content.ReadAsStringAsync(), StringComparison.Ordinal);
         Assert.DoesNotContain("Estúdio Luz", await resposta.Content.ReadAsStringAsync(), StringComparison.Ordinal);
 
-        var vazio = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
+        var vazio = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
         var semItens = await OrganizacaoA.Cliente.PostAsJsonAsync(RotaSalvarComoModelo(vazio.Id), new { nome = "Vazio" });
         Assert.Equal(HttpStatusCode.UnprocessableEntity, semItens.StatusCode);
     }
 
     [Fact]
-    public async Task CasamentoArquivado_AplicarERecalcularRespondem422MasSalvarComoModeloFunciona()
+    public async Task EventoArquivado_AplicarERecalcularRespondem422MasSalvarComoModeloFunciona()
     {
-        var casamento = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente);
-        await ClienteCronograma.CriarAsync(OrganizacaoA.Cliente, casamento.Id);
+        var evento = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente);
+        await ClienteCronograma.CriarAsync(OrganizacaoA.Cliente, evento.Id);
         var sugerido = await SugeridoAsync(OrganizacaoA.Cliente);
-        Assert.Equal(HttpStatusCode.OK, (await OrganizacaoA.Cliente.PostAsync($"{ClienteCasamentos.Rota}/{casamento.Id}/arquivar", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await OrganizacaoA.Cliente.PostAsync($"{ClienteEventos.Rota}/{evento.Id}/arquivar", null)).StatusCode);
 
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await AplicarAsync(OrganizacaoA.Cliente, casamento.Id, sugerido.Id)).StatusCode);
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await OrganizacaoA.Cliente.PostAsync(RotaRecalculo(casamento.Id), null)).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await AplicarAsync(OrganizacaoA.Cliente, evento.Id, sugerido.Id)).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await OrganizacaoA.Cliente.PostAsync(RotaRecalculo(evento.Id), null)).StatusCode);
         Assert.Equal(
             HttpStatusCode.Created,
-            (await OrganizacaoA.Cliente.PostAsJsonAsync(RotaSalvarComoModelo(casamento.Id), new { nome = "Do arquivado" })).StatusCode);
+            (await OrganizacaoA.Cliente.PostAsJsonAsync(RotaSalvarComoModelo(evento.Id), new { nome = "Do arquivado" })).StatusCode);
     }
 
     [Fact]
     public async Task Duplicacao_DevePreservarAncoraDosItensAplicados()
     {
-        var origem = await ClienteCasamentos.CriarAsync(OrganizacaoA.Cliente, ClienteCasamentos.CorpoValido(horario: "16:00"));
+        var origem = await ClienteEventos.CriarAsync(OrganizacaoA.Cliente, ClienteEventos.CorpoValido(horario: "16:00"));
         var sugerido = await SugeridoAsync(OrganizacaoA.Cliente);
         await AplicarComSucessoAsync(OrganizacaoA.Cliente, origem.Id, sugerido.Id);
 
-        var duplicacao = await OrganizacaoA.Cliente.PostAsJsonAsync($"{ClienteCasamentos.Rota}/{origem.Id}/duplicacao", new
+        var duplicacao = await OrganizacaoA.Cliente.PostAsJsonAsync($"{ClienteEventos.Rota}/{origem.Id}/duplicacao", new
         {
             nomePrimeiraPessoa = "Carla",
             nomeSegundaPessoa = "Diego",
@@ -374,7 +374,7 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.True(duplicacao.IsSuccessStatusCode, await duplicacao.Content.ReadAsStringAsync());
 
         await using var contexto = CriarContexto(OrganizacaoA);
-        var copias = await contexto.ItensCronograma.AsNoTracking().Where(item => item.CasamentoId != origem.Id).ToListAsync();
+        var copias = await contexto.ItensCronograma.AsNoTracking().Where(item => item.EventoId != origem.Id).ToListAsync();
         Assert.Equal(sugerido.Itens.Count, copias.Count);
         Assert.All(copias, item => Assert.NotNull(item.MinutosRelativosCerimonia));
         Assert.All(copias, item => Assert.NotNull(item.OrigemModeloItemId));

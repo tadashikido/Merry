@@ -10,11 +10,11 @@ import SelectButton from 'primevue/selectbutton'
 import LayoutPainel from '@/layouts/LayoutPainel.vue'
 import LayoutPublico from '@/layouts/LayoutPublico.vue'
 import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
-import NavegacaoCasamento from '@/layouts/NavegacaoCasamento.vue'
+import NavegacaoEvento from '@/layouts/NavegacaoEvento.vue'
 import RailNavegacao from '@/layouts/RailNavegacao.vue'
 import { ITENS_RAIL_ASSESSORIA } from '@/layouts/menuPainel'
-import { gruposNavegacaoCasamento } from '@/layouts/modulosCasamento'
-import type { ContextoCasamento, ItemRail } from '@/layouts/tipos'
+import { gruposNavegacaoEvento } from '@/layouts/modulosEvento'
+import type { ContextoEvento, ItemRail } from '@/layouts/tipos'
 import EstadoPrimeiroAcesso from '@/componentes/base/EstadoPrimeiroAcesso.vue'
 import { NOMES_ICONES } from '@/design/icones'
 import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
@@ -35,7 +35,7 @@ import CampoSenha from '@/componentes/base/CampoSenha.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import IndicadorAbertura from '@/componentes/base/IndicadorAbertura.vue'
 import ResumoUsuario from '@/componentes/base/ResumoUsuario.vue'
-import NomesCasal from '@/componentes/base/NomesCasal.vue'
+import NomesAnfitrioes from '@/componentes/base/NomesAnfitrioes.vue'
 import ContagemRegressiva from '@/componentes/base/ContagemRegressiva.vue'
 import ListaDetalhes from '@/componentes/base/ListaDetalhes.vue'
 import ResumoContagem from '@/componentes/base/ResumoContagem.vue'
@@ -69,7 +69,7 @@ import LinhaCronograma from '@/componentes/base/LinhaCronograma.vue'
 import AtalhosPreenchimento from '@/componentes/base/AtalhosPreenchimento.vue'
 import { TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import ListaNaoCopiado from '@/componentes/base/ListaNaoCopiado.vue'
-import { TEXTOS_DUPLICACAO_CASAMENTO } from '@/textos/duplicacaoCasamento'
+import { TEXTOS_DUPLICACAO_EVENTO } from '@/textos/duplicacaoEvento'
 import {
   COMPLEMENTO_MARCO_CHECKLIST,
   ROTULOS_MARCO_CHECKLIST,
@@ -80,7 +80,7 @@ import {
 import type { ItemModeloChecklistDto } from '@/tipos/checklist'
 import { agruparPorMarco } from '@/utilitarios/checklist'
 import { badgeTarefa, metadadosTarefa } from '@/utilitarios/tarefas'
-import { ROTULOS_SITUACAO_ACESSO, TEXTOS_ACESSO_CASAL } from '@/textos/acessoCasal'
+import { ROTULOS_SITUACAO_ACESSO, TEXTOS_ACESSO_ANFITRIAO } from '@/textos/acessoAnfitriao'
 import LayoutImpressao from '@/layouts/LayoutImpressao.vue'
 import { TEXTOS_CONFIRMACOES, TEXTOS_FICHA_BUFFET } from '@/textos/confirmacoes'
 import { segmentosEnvio } from '@/utilitarios/painelConfirmacoes'
@@ -129,10 +129,10 @@ import BlocoAlertasPagamentos from '@/componentes/base/BlocoAlertasPagamentos.vu
 import LinhaHoje from '@/componentes/base/LinhaHoje.vue'
 import LinhaParcela from '@/componentes/base/LinhaParcela.vue'
 import AnexoContrato from '@/componentes/base/AnexoContrato.vue'
-import LinhaFornecedorCasamento from '@/componentes/base/LinhaFornecedorCasamento.vue'
+import LinhaFornecedorEvento from '@/componentes/base/LinhaFornecedorEvento.vue'
 import ResumoOrcamento from '@/componentes/base/ResumoOrcamento.vue'
-import { TEXTOS_CONTRATO } from '@/textos/fornecedoresCasamento'
-import { calcularResumoLocal } from '@/utilitarios/fornecedoresCasamento'
+import { TEXTOS_CONTRATO } from '@/textos/fornecedoresEvento'
+import { calcularResumoLocal } from '@/utilitarios/fornecedoresEvento'
 import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
 import AbasSecao from '@/componentes/base/AbasSecao.vue'
 import CabecalhoOperacao from '@/componentes/base/CabecalhoOperacao.vue'
@@ -153,14 +153,14 @@ import type { ItemPainelGrandeDia } from '@/tipos/grandeDia'
 import { ABAS_MODELOS } from '@/layouts/abasModelos'
 import { TEXTOS_ABAS_MODELOS } from '@/textos/modelosCronograma'
 import { complementoResumoConvidados, itensResumoConvidados } from '@/utilitarios/resumoConvidados'
-import { ROTULOS_FASE, TEXTOS_CASAMENTOS, VARIANTE_FASE } from '@/textos/casamentos'
+import { ROTULOS_FASE, TEXTOS_EVENTOS, VARIANTE_FASE } from '@/textos/eventos'
 
 const resumoOrcamentoDemonstracao = calcularResumoLocal(VINCULOS_DEMONSTRACAO)
 const contratoDemonstracao = VINCULOS_DEMONSTRACAO[0]?.contrato ?? null
 
 const tarefasDemonstracao = ref<TarefaDto[]>(TAREFAS_DEMONSTRACAO.map((tarefa) => ({ ...tarefa })))
 
-const tarefasCasalDemonstracao = TAREFAS_DEMONSTRACAO.filter((tarefa) => tarefa.responsavel === 'Casal')
+const tarefasAnfitriaoDemonstracao = TAREFAS_DEMONSTRACAO.filter((tarefa) => tarefa.responsavel === 'Anfitriao')
 
 function alternarTarefaDemonstracao(tarefa: TarefaDto) {
   const concluir = tarefa.status !== 'Concluida'
@@ -178,30 +178,30 @@ const itensRail: ItemRail[] = [
   { rotulo: 'Style guide', icone: 'paleta', rota: { name: 'style-guide' }, prefixoAtivo: '/style-guide' },
 ]
 
-const casamentoDemonstracao: ContextoCasamento = {
+const eventoDemonstracao: ContextoEvento = {
   nomePrimeiraPessoa: 'Ana',
   nomeSegundaPessoa: 'João',
   data: '2026-12-12',
   diasRestantes: 75,
 }
 const ID_DEMONSTRACAO = '00000000-0000-4000-8000-000000000000'
-const gruposDemonstracao = gruposNavegacaoCasamento(ID_DEMONSTRACAO, 'casamento-convidados', () => true, undefined, {
+const gruposDemonstracao = gruposNavegacaoEvento(ID_DEMONSTRACAO, 'evento-convidados', () => true, undefined, {
   checklist: { texto: TEXTOS_CHECKLIST.indicadorNavegacao(80), rotuloAcessivel: TEXTOS_CHECKLIST.indicadorNavegacaoAria(80) },
 })
-const gruposCasalDemonstracao = gruposNavegacaoCasamento(
+const gruposAnfitriaoDemonstracao = gruposNavegacaoEvento(
   ID_DEMONSTRACAO,
-  'casamento',
+  'evento',
   (modulo) => modulo.chave !== 'restricoes' && modulo.chave !== 'checklist',
 )
 const itensModeloDemonstracao: ItemModeloChecklistDto[] = [
-  { id: 'm1', titulo: 'Reservar local da cerimônia e da recepção', descricao: null, responsavel: 'Assessoria', categoria: 'Cerimonia', diasAntesDoCasamento: 365 },
-  { id: 'm2', titulo: 'Contratar buffet', descricao: 'Pedir três orçamentos com cardápio e serviço de bebidas.', responsavel: 'Assessoria', categoria: 'Fornecedores', diasAntesDoCasamento: 365 },
-  { id: 'm3', titulo: 'Escolher os trajes do casal', descricao: null, responsavel: 'Casal', categoria: 'TrajesBeleza', diasAntesDoCasamento: 180 },
-  { id: 'm4', titulo: 'Dar entrada na habilitação do casamento civil', descricao: null, responsavel: 'Casal', categoria: 'Documentos', diasAntesDoCasamento: 90 },
-  { id: 'm5', titulo: 'Enviar o número final de convidados ao buffet', descricao: null, responsavel: 'Assessoria', categoria: 'Recepcao', diasAntesDoCasamento: 30 },
-  { id: 'm6', titulo: 'Enviar fotos para o álbum', descricao: null, responsavel: 'Assessoria', categoria: 'Geral', diasAntesDoCasamento: -15 },
+  { id: 'm1', titulo: 'Reservar local da cerimônia e da recepção', descricao: null, responsavel: 'Assessoria', categoria: 'Cerimonia', diasAntesDoEvento: 365 },
+  { id: 'm2', titulo: 'Contratar buffet', descricao: 'Pedir três orçamentos com cardápio e serviço de bebidas.', responsavel: 'Assessoria', categoria: 'Fornecedores', diasAntesDoEvento: 365 },
+  { id: 'm3', titulo: 'Escolher os trajes dos anfitriões', descricao: null, responsavel: 'Anfitriao', categoria: 'TrajesBeleza', diasAntesDoEvento: 180 },
+  { id: 'm4', titulo: 'Contratar o espaço do evento', descricao: null, responsavel: 'Anfitriao', categoria: 'Documentos', diasAntesDoEvento: 90 },
+  { id: 'm5', titulo: 'Enviar o número final de convidados ao buffet', descricao: null, responsavel: 'Assessoria', categoria: 'Recepcao', diasAntesDoEvento: 30 },
+  { id: 'm6', titulo: 'Enviar fotos para o álbum', descricao: null, responsavel: 'Assessoria', categoria: 'Geral', diasAntesDoEvento: -15 },
 ]
-const gruposModeloDemonstracao = agruparPorMarco(itensModeloDemonstracao, (item) => item.diasAntesDoCasamento)
+const gruposModeloDemonstracao = agruparPorMarco(itensModeloDemonstracao, (item) => item.diasAntesDoEvento)
 const marcosModeloDemonstracao: MarcoRegua[] = gruposModeloDemonstracao.map((grupo, indice) => ({
   chave: grupo.marco,
   rotulo: ROTULOS_MARCO_CHECKLIST[grupo.marco],
@@ -218,8 +218,8 @@ function metadadosModeloDemonstracao(item: ItemModeloChecklistDto): string[] {
     : [ROTULOS_RESPONSAVEL_TAREFA[item.responsavel], ROTULOS_CATEGORIA_TAREFA[item.categoria]]
 }
 const passosPrimeiroAcessoDemonstracao: PassoPrimeiroAcesso[] = [
-  { chave: 'dados', rotulo: 'Dados do casamento', concluido: true },
-  { chave: 'casal', rotulo: 'Convidar o casal', concluido: false },
+  { chave: 'dados', rotulo: 'Dados do evento', concluido: true },
+  { chave: 'anfitriao', rotulo: 'Convidar os anfitriões', concluido: false },
   { chave: 'checklist', rotulo: 'Checklist', concluido: false },
   { chave: 'convidados', rotulo: 'Convidados', concluido: false },
 ]
@@ -244,8 +244,8 @@ const segmentoDemonstracao = ref('Todos')
 const opcoesSegmentoDemonstracao = ['Todos', 'Confirmados', 'Pendentes']
 
 function mostrarToastComDesfazer() {
-  notificacao.sucesso('Casamento de Ana & João arquivado.', {
-    desfazer: () => notificacao.sucesso('Casamento de Ana & João restaurado.'),
+  notificacao.sucesso('Evento de Ana & João arquivado.', {
+    desfazer: () => notificacao.sucesso('Evento de Ana & João restaurado.'),
   })
 }
 
@@ -263,23 +263,23 @@ const secoes = [
   { id: 'estados', titulo: 'Os 8 estados' },
   { id: 'feedback', titulo: 'Confirmação e toast' },
   { id: 'autenticacao', titulo: 'Autenticação' },
-  { id: 'casamento', titulo: 'Casamento' },
+  { id: 'evento', titulo: 'Evento' },
   { id: 'convidados', titulo: 'Convidados' },
   { id: 'importacao', titulo: 'Importação' },
   { id: 'rsvp', titulo: 'Confirmação de presença' },
   { id: 'dados-sensiveis', titulo: 'Dados sensíveis' },
   { id: 'confirmacoes', titulo: 'Confirmações e buffet' },
   { id: 'mesas', titulo: 'Mesas' },
-  { id: 'acesso-casal', titulo: 'Acesso do casal' },
+  { id: 'acesso-anfitriao', titulo: 'Acesso dos anfitriões' },
   { id: 'tarefas', titulo: 'Tarefas' },
   { id: 'checklist', titulo: 'Checklist' },
   { id: 'fornecedores', titulo: 'Fornecedores' },
-  { id: 'fornecedores-casamento', titulo: 'Fornecedores do casamento' },
+  { id: 'fornecedores-evento', titulo: 'Fornecedores do evento' },
   { id: 'cronograma', titulo: 'Cronograma do dia' },
   { id: 'modelos-cronograma', titulo: 'Modelos de cronograma' },
   { id: 'cronograma-publico', titulo: 'Cronograma para a equipe' },
   { id: 'grande-dia', titulo: 'Grande Dia' },
-  { id: 'duplicacao', titulo: 'Duplicar casamento' },
+  { id: 'duplicacao', titulo: 'Duplicar evento' },
   { id: 'navegacao', titulo: 'Navegação e workspace' },
   { id: 'contextos', titulo: 'Dois contextos' },
   { id: 'layouts', titulo: 'Layouts' },
@@ -366,7 +366,7 @@ function repetirSeloDemonstracao() {
 function itemPainelDemonstracao(dados: Partial<ItemPainelGrandeDia>): ItemPainelGrandeDia {
   return {
     chave: dados.atividade ?? 'item',
-    dia: 'DiaDoCasamento',
+    dia: 'DiaDoEvento',
     inicio: '16:30',
     termino: null,
     terminaEmOutroDia: false,
@@ -400,7 +400,7 @@ const itensPainelDemonstracao: ItemPainelGrandeDia[] = [
   }),
   itemPainelDemonstracao({ inicio: '17:15', termino: '18:00', atividade: 'Fotos com a família', responsavel: 'Ana', fornecedor: 'Estúdio Luz', situacao: 'Proximo' }),
   itemPainelDemonstracao({ inicio: '18:00', atividade: 'Recepção', responsavel: 'Carlos', situacao: 'Depois' }),
-  itemPainelDemonstracao({ inicio: '18:30', atividade: 'Entrada dos noivos', situacao: 'Depois' }),
+  itemPainelDemonstracao({ inicio: '18:30', atividade: 'Entrada dos anfitriões', situacao: 'Depois' }),
 ]
 
 const nomesCores: Record<keyof typeof cores, string> = {
@@ -451,7 +451,7 @@ const nomesCores: Record<keyof typeof cores, string> = {
   toastErro: 'Toast · erro',
   toastInformacao: 'Toast · informação',
   toastAlerta: 'Toast · alerta',
-  fundoCasal: 'Fundo do casal',
+  fundoAnfitriao: 'Fundo dos anfitriões',
   fundoConvite: 'Fundo do convite',
   cartaoConvite: 'Cartão do convite',
   bordaConvite: 'Borda do convite',
@@ -503,7 +503,7 @@ const amostrasTipografia = [
   { nome: 'Subtítulo H2 · Jost 22/30 médio', tamanho: tipografia.tamanhos.secao, familia: 'subtitulo', texto: 'Lista de convidados' },
   { nome: 'Título de cartão · Jost 17 médio', tamanho: tipografia.tamanhos.titulo, familia: 'subtitulo', texto: 'Confirmar buffet para 460 pessoas' },
   { nome: 'Tagline · Jost 14 caixa alta 0.3em', tamanho: tipografia.tamanhos.tagline, familia: 'tagline', texto: 'Planejem o seu grande dia juntos' },
-  { nome: 'Interface · Jost 16/26', tamanho: tipografia.tamanhos.corpo, familia: 'interface', texto: 'O casal aprovou a decoração em 28/09.' },
+  { nome: 'Interface · Jost 16/26', tamanho: tipografia.tamanhos.corpo, familia: 'interface', texto: 'Os anfitriões aprovaram a decoração em 28/09.' },
   { nome: 'Controle · Jost 14', tamanho: tipografia.tamanhos.controle, familia: 'interface', texto: 'Adicionar convidado' },
   { nome: 'Rótulo · Jost 12 médio caixa alta 0.14em', tamanho: tipografia.tamanhos.rotulo, familia: 'rotulo', texto: 'Orçamento' },
   { nome: 'Destaque · Cormorant Garamond 22/32', tamanho: tipografia.tamanhos.secao, familia: 'serif', texto: 'Eventos que conectam as pessoas que importam.' },
@@ -536,7 +536,7 @@ const amostrasSombra = Object.entries(sombra).map(([chave, valor]) => ({ chave, 
 const amostrasBreakpoints = [
   { nome: 'Celular', faixa: `até ${breakpoints.tablet - 1} px`, comportamento: 'Barra clara com gaveta, margem de 16 px, listagem em cartões, ações em largura total e 48 px' },
   { nome: 'Tablet', faixa: `${breakpoints.tablet} a ${breakpoints.notebook - 1} px`, comportamento: 'Barra clara com gaveta, margem de 24 px, tabela sem colunas secundárias' },
-  { nome: 'Notebook', faixa: `${breakpoints.notebook} a ${breakpoints.desktop - 1} px`, comportamento: 'Rail de 72 px e, dentro de um casamento, navegação do casamento de 232 px' },
+  { nome: 'Notebook', faixa: `${breakpoints.notebook} a ${breakpoints.desktop - 1} px`, comportamento: 'Rail de 72 px e, dentro de um evento, navegação do evento de 232 px' },
   { nome: 'Desktop', faixa: `${breakpoints.desktop} a ${breakpoints.amplo - 1} px`, comportamento: 'Conteúdo ocupa a largura útil com margem de 40 px; grades em 3 ou 4 colunas' },
   { nome: 'Amplo', faixa: `a partir de ${breakpoints.amplo} px`, comportamento: 'Conteúdo limitado a 1536 px e centralizado, margens iguais dos dois lados' },
 ]
@@ -723,11 +723,11 @@ const regras = [
   'Toda tela consome apenas os tokens, layouts e componentes desta página. Cor, medida, sombra ou fonte literal em tela é proibido.',
   'Padrão novo exige evoluir o style guide antes de usar numa tela: o token ou componente entra aqui, com seus estados, e só depois vai para a tela.',
   'Toda tela deve invocar a skill frontend-design:frontend-design antes de ser desenhada e implementada.',
-  'Jost é a voz da marca e da interface: títulos em peso leve (nunca bold), rótulos e botões em peso médio. Cormorant Garamond entra em frases de destaque, títulos de convite e legendas; o “&” do casal é Cormorant itálico.',
+  'Jost é a voz da marca e da interface: títulos em peso leve (nunca bold), rótulos e botões em peso médio. Cormorant Garamond entra em frases de destaque, títulos de convite e legendas; o “&” dos anfitriões é Cormorant itálico.',
   'Azul-marinho é a cor da marca, do texto e da ação: botão primário cheio, link sublinhado, foco e item ativo (sobre o marinho suave). Marinho claro, marinho névoa e hairline são decorativos e nunca levam texto. Verde de sucesso marca concluído; informação usa azul-petróleo, nunca o marinho.',
   'Espaço só pelo ritmo: seção 64 px, bloco 40 px, cartão 24 px, grupo 16 px, campo 8 px. Use as primitivas .pilha, .grade e as larguras .pagina-ampla, .pagina-formulario e .pagina-leitura em vez de margens soltas.',
   'Listas e painéis usam a largura ampla e se espalham em grade; formulários usam a largura de formulário; texto corrido nunca passa da largura de leitura.',
-  'Navegação: rail global de 72 px com ícone e rótulo acessível; dentro de /casamentos/:id, a navegação do casamento de 232 px. Módulo novo entra em MODULOS_CASAMENTO (layouts/modulosCasamento.ts) com o seu grupo; grupo sem módulo e módulo que ainda não existe não aparecem.',
+  'Navegação: rail global de 72 px com ícone e rótulo acessível; dentro de /eventos/:id, a navegação do evento de 232 px. Módulo novo entra em MODULOS_EVENTO (layouts/modulosEvento.ts) com o seu grupo; grupo sem módulo e módulo que ainda não existe não aparecem.',
   'Uma única ação primária por área. Ações destrutivas nunca são primárias fora do diálogo de confirmação.',
   'Exclusão sempre passa pelo diálogo que nomeia o item, com foco inicial em Cancelar; o diálogo mostra Excluir em carregando, fecha ao terminar e emite o toast de sucesso ou de erro.',
   'Status nunca depende só da cor: o badge sempre tem cor, ícone e texto.',
@@ -736,8 +736,8 @@ const regras = [
   'Datas, horas e moeda só pelas funções de formatação (pt-BR, fuso de São Paulo).',
   'Mensagens em frases curtas, voz ativa, sem jargão técnico e sem desculpas; erro sempre indica o próximo passo.',
   'Telas de acesso (entrar, cadastro, recuperação de senha) usam o layout de autenticação: painel editorial escuro com a marca e o formulário numa superfície branca. Erros que não pertencem a um campo aparecem na mensagem de formulário.',
-  'Nomes do casal sempre pelo componente de nomes do casal, com o “&” em Cormorant itálico na cor de acento; o número grande da contagem regressiva aparece só no cabeçalho do casamento, nas demais telas a contagem é uma frase curta.',
-  'Data do casamento é data de calendário (AAAA-MM-DD): formate com as funções de data de calendário, nunca convertendo para Date com fuso.',
+  'Nomes dos anfitriões sempre pelo componente de nomes dos anfitriões, com o “&” em Cormorant itálico na cor de acento; o número grande da contagem regressiva aparece só no cabeçalho do evento, nas demais telas a contagem é uma frase curta.',
+  'Data do evento é data de calendário (AAAA-MM-DD): formate com as funções de data de calendário, nunca convertendo para Date com fuso.',
   'Totais de pessoas usam o resumo de contagem: número em Jost leve, rótulo no plural correto e detalhe com adultos e crianças; só um número em destaque (marinho) por resumo. Convites e acompanhantes vão no rodapé, nunca somados às pessoas.',
   'Listas que o usuário monta item a item (as pessoas de um convite) usam a lista repetível: blocos numerados, remover por bloco, adicionar no fim, limite visível e foco levado ao bloco novo.',
   'Campos de texto livre que costumam repetir valores (grupo do convite) usam o campo com sugestões: o usuário escolhe um valor existente ou digita um novo.',
@@ -828,7 +828,7 @@ const regras = [
         Cores e contraste
       </h2>
       <p class="guia__texto">
-        Branco puro predominante em fundos e superfícies, hairlines em cinza frio, azul-marinho Celebri para marca, texto, ação e foco, marinho névoa para seleção e fundos de contexto (casal, convite, entrada). Feedback com matiz própria e mais claro que o marinho: verde de sucesso, âmbar de alerta, vermelho de erro e azul-petróleo de informação.
+        Branco puro predominante em fundos e superfícies, hairlines em cinza frio, azul-marinho Celebri para marca, texto, ação e foco, marinho névoa para seleção e fundos de contexto (anfitriões, convite, entrada). Feedback com matiz própria e mais claro que o marinho: verde de sucesso, âmbar de alerta, vermelho de erro e azul-petróleo de informação.
       </p>
       <h3 class="guia__subtitulo">
         Cores oficiais da marca
@@ -1122,7 +1122,7 @@ const regras = [
           </div>
         </div>
         <p class="texto-destaque">
-          Organização, inspiração e tudo para o seu casamento em um só lugar.
+          Organização, inspiração e tudo para o seu evento em um só lugar.
         </p>
       </div>
     </section>
@@ -1407,7 +1407,7 @@ const regras = [
         :erro="estadoListagem === 'erro' ? 'Não foi possível carregar os convidados. Tente novamente em instantes.' : null"
         :filtros-ativos="filtroSituacao !== null"
         titulo-vazio="Nenhum convidado ainda"
-        descricao-vazio="Adicione o primeiro convidado ou importe a lista do casal."
+        descricao-vazio="Adicione o primeiro convidado ou importe a lista dos anfitriões."
         @limpar-filtros="filtroSituacao = null"
         @tentar-novamente="estadoListagem = 'dados'"
       >
@@ -1541,7 +1541,7 @@ const regras = [
           <span class="guia__rotulo-estado">08 · Primeiro acesso</span>
           <EstadoPrimeiroAcesso
             :titulo="`Boas-vindas ao ${NOME_PRODUTO}.`"
-            descricao="Vamos configurar seu primeiro casamento. Leva uns 5 minutos."
+            descricao="Vamos configurar seu primeiro evento. Leva uns 5 minutos."
             :passos="passosPrimeiroAcessoDemonstracao"
             rotulo-acao="Continuar"
             @continuar="notificacao.sucesso('Continuando a configuração.')"
@@ -1702,38 +1702,38 @@ const regras = [
     </section>
 
     <section
-      id="casamento"
+      id="evento"
       class="guia__secao"
-      aria-labelledby="titulo-casamento"
+      aria-labelledby="titulo-evento"
     >
       <h2
-        id="titulo-casamento"
+        id="titulo-evento"
         class="guia__titulo-secao"
       >
-        Casamento
+        Evento
       </h2>
 
       <h3 class="guia__subtitulo">
-        Nomes do casal
+        Nomes dos anfitriões
       </h3>
       <div class="guia__pilha-larga">
-        <NomesCasal
+        <NomesAnfitrioes
           primeiro="Ana Beatriz"
           segundo="Bruno"
         />
-        <NomesCasal
+        <NomesAnfitrioes
           primeiro="Ana Beatriz"
           segundo="Bruno"
           tamanho="cartao"
         />
         <p class="guia__titulo-exemplo">
-          <NomesCasal
+          <NomesAnfitrioes
             primeiro="Ana Beatriz"
             segundo="Bruno"
             tamanho="titulo"
           />
         </p>
-        <NomesCasal
+        <NomesAnfitrioes
           primeiro="Maria Eduarda Albuquerque de Vasconcelos Figueiredo"
           segundo="João Guilherme Cavalcanti de Albuquerque Nogueira"
           tamanho="cartao"
@@ -1741,7 +1741,7 @@ const regras = [
       </div>
 
       <h3 class="guia__subtitulo">
-        Fase do casamento
+        Fase do evento
       </h3>
       <div class="guia__linha">
         <BadgeStatus
@@ -1750,7 +1750,7 @@ const regras = [
           :texto="ROTULOS_FASE[fase]"
           :variante="VARIANTE_FASE[fase]"
         />
-        <BadgeStatus :texto="TEXTOS_CASAMENTOS.statusArquivado" />
+        <BadgeStatus :texto="TEXTOS_EVENTOS.statusArquivado" />
       </div>
 
       <h3 class="guia__subtitulo">
@@ -1786,7 +1786,7 @@ const regras = [
       </h3>
       <CabecalhoPagina titulo="Ana Beatriz & Bruno">
         <template #titulo>
-          <NomesCasal
+          <NomesAnfitrioes
             primeiro="Ana Beatriz"
             segundo="Bruno"
             tamanho="titulo"
@@ -1878,7 +1878,7 @@ const regras = [
           desabilitado
         >
           <template #default="{ item }">
-            <p>{{ item.nome }}: somente leitura, como num casamento arquivado.</p>
+            <p>{{ item.nome }}: somente leitura, como num evento arquivado.</p>
           </template>
         </ListaRepetivel>
       </div>
@@ -1891,7 +1891,7 @@ const regras = [
           v-slot="{ id: idEntrada, invalido, descritoPor }"
           rotulo="Grupo"
           id-campo="guia-grupo"
-          dica="Por exemplo: Família da noiva, Amigos do noivo."
+          dica="Por exemplo: Família, Amigos do trabalho."
         >
           <CampoSugestoes
             :id="idEntrada"
@@ -2039,14 +2039,14 @@ const regras = [
         Confirmação de presença
       </h2>
       <p class="guia__texto">
-        A página do convidado é o próprio convite: cartão branco sobre o marinho névoa com a inicial da marca, nomes do casal empilhados em Jost leve, o “&amp;” em Cormorant itálico e a data espaçada. Todo o resto é quieto, grande e direto. Use no layout público, variante convite.
+        A página do convidado é o próprio convite: cartão branco sobre o marinho névoa com a inicial da marca, nomes dos anfitriões empilhados em Jost leve, o “&amp;” em Cormorant itálico e a data espaçada. Todo o resto é quieto, grande e direto. Use no layout público, variante convite.
       </p>
 
       <h3 class="guia__subtitulo">
         Cabeçalho do convite
       </h3>
       <p class="guia__texto">
-        Completo no formulário (data por extenso, horário e locais); compacto depois do envio. O título da página é o casal, para dar confiança de que o link é legítimo.
+        Completo no formulário (data por extenso, horário e locais); compacto depois do envio. O título da página são os anfitriões, para dar confiança de que o link é legítimo.
       </p>
       <div
         class="guia__moldura guia__moldura--baixa"
@@ -2402,7 +2402,7 @@ const regras = [
         Linha de pessoa selecionável
       </h3>
       <p class="guia__texto">
-        Caixa de seleção com o nome como rótulo, apoio (grupo, convite ou “Estava na Mesa 3”) e marcas de criança e acompanhante. Selecionada em marinho suave com borda marinho. Sem caixa de seleção quando o casamento está arquivado. O slot “extra” recebe o aviso de convite dividido.
+        Caixa de seleção com o nome como rótulo, apoio (grupo, convite ou “Estava na Mesa 3”) e marcas de criança e acompanhante. Selecionada em marinho suave com borda marinho. Sem caixa de seleção quando o evento está arquivado. O slot “extra” recebe o aviso de convite dividido.
       </p>
       <ul class="guia__pilha-larga guia__lista-mesas">
         <li
@@ -2431,7 +2431,7 @@ const regras = [
         <li>
           <LinhaPessoaMesa
             nome="Marcos Lima"
-            apoio="Somente leitura (casamento arquivado)"
+            apoio="Somente leitura (evento arquivado)"
             :selecionavel="false"
           />
         </li>
@@ -2462,15 +2462,15 @@ const regras = [
     </section>
 
     <section
-      id="acesso-casal"
+      id="acesso-anfitriao"
       class="guia__secao"
-      aria-labelledby="titulo-acesso-casal-guia"
+      aria-labelledby="titulo-acesso-anfitriao-guia"
     >
       <h2
-        id="titulo-acesso-casal-guia"
+        id="titulo-acesso-anfitriao-guia"
         class="guia__titulo-secao"
       >
-        Acesso do casal
+        Acesso dos anfitriões
       </h2>
       <p class="guia__texto">
         Dois lugares à mesa, ligados pelo "&amp;" em Cormorant itálico: a estrutura mostra de relance quantos acessos restam (limite de 2). Use ParLugares com dois LugarAcesso. O lugar vazio tem borda tracejada sobre o fundo e uma única ação secundária; o formulário de convite abre dentro do próprio lugar. Situação sempre com texto (BadgeStatus) e data em números tabulares. Revogar fica no menu de ações e só é confirmado no diálogo com botão destrutivo.
@@ -2479,19 +2479,19 @@ const regras = [
         Estados do lugar
       </h3>
       <div class="guia__pilha-larga">
-        <ParLugares :rotulo="TEXTOS_ACESSO_CASAL.rotuloLista">
+        <ParLugares :rotulo="TEXTOS_ACESSO_ANFITRIAO.rotuloLista">
           <template #primeiro>
             <LugarAcesso
               situacao="ativo"
               titulo="Lívia Moraes"
               subtitulo="livia@exemplo.com"
               :rotulo-situacao="ROTULOS_SITUACAO_ACESSO.Ativo"
-              :detalhe="TEXTOS_ACESSO_CASAL.ativoDesde('05/10/2026')"
+              :detalhe="TEXTOS_ACESSO_ANFITRIAO.ativoDesde('05/10/2026')"
             >
               <template #acoes>
                 <MenuAcoes
-                  :itens="[{ chave: 'revogar', rotulo: TEXTOS_ACESSO_CASAL.revogar, icone: 'ie ie-usuario-menos', perigoso: true }]"
-                  :rotulo="TEXTOS_ACESSO_CASAL.acoesLugar('Lívia Moraes')"
+                  :itens="[{ chave: 'revogar', rotulo: TEXTOS_ACESSO_ANFITRIAO.revogar, icone: 'ie ie-usuario-menos', perigoso: true }]"
+                  :rotulo="TEXTOS_ACESSO_ANFITRIAO.acoesLugar('Lívia Moraes')"
                   @selecionar="dialogoRevogacaoVisivel = true"
                 />
               </template>
@@ -2500,12 +2500,12 @@ const regras = [
           <template #segundo>
             <LugarAcesso
               situacao="vazio"
-              :titulo="TEXTOS_ACESSO_CASAL.lugarVazio"
-              :subtitulo="TEXTOS_ACESSO_CASAL.lugarVazioApoio"
+              :titulo="TEXTOS_ACESSO_ANFITRIAO.lugarVazio"
+              :subtitulo="TEXTOS_ACESSO_ANFITRIAO.lugarVazioApoio"
             >
               <template #acoes>
                 <Button
-                  :label="TEXTOS_ACESSO_CASAL.convidar"
+                  :label="TEXTOS_ACESSO_ANFITRIAO.convidar"
                   icon="ie ie-usuario-mais"
                   severity="secondary"
                   outlined
@@ -2521,11 +2521,11 @@ const regras = [
               titulo="Rafael Souza"
               subtitulo="rafael@exemplo.com"
               :rotulo-situacao="ROTULOS_SITUACAO_ACESSO.Pendente"
-              :detalhe="TEXTOS_ACESSO_CASAL.expiraEm('12/10/2026')"
+              :detalhe="TEXTOS_ACESSO_ANFITRIAO.expiraEm('12/10/2026')"
             >
               <template #acoes>
                 <Button
-                  :label="TEXTOS_ACESSO_CASAL.reenviar"
+                  :label="TEXTOS_ACESSO_ANFITRIAO.reenviar"
                   icon="ie ie-enviar"
                   severity="secondary"
                   text
@@ -2539,11 +2539,11 @@ const regras = [
               titulo="Bruno Lima"
               subtitulo="bruno@exemplo.com"
               :rotulo-situacao="ROTULOS_SITUACAO_ACESSO.Expirado"
-              :detalhe="TEXTOS_ACESSO_CASAL.expirouEm('01/10/2026')"
+              :detalhe="TEXTOS_ACESSO_ANFITRIAO.expirouEm('01/10/2026')"
             >
               <template #acoes>
                 <Button
-                  :label="TEXTOS_ACESSO_CASAL.reenviar"
+                  :label="TEXTOS_ACESSO_ANFITRIAO.reenviar"
                   icon="ie ie-enviar"
                   severity="secondary"
                   outlined
@@ -2568,10 +2568,10 @@ const regras = [
       />
       <DialogoConfirmacao
         v-model:visivel="dialogoRevogacaoVisivel"
-        :titulo="TEXTOS_ACESSO_CASAL.revogarTitulo('Lívia Moraes')"
-        :mensagem="TEXTOS_ACESSO_CASAL.revogarMensagemAtivo('Lívia Moraes')"
-        :rotulo-confirmar="TEXTOS_ACESSO_CASAL.revogar"
-        :rotulo-cancelar="TEXTOS_ACESSO_CASAL.cancelar"
+        :titulo="TEXTOS_ACESSO_ANFITRIAO.revogarTitulo('Lívia Moraes')"
+        :mensagem="TEXTOS_ACESSO_ANFITRIAO.revogarMensagemAtivo('Lívia Moraes')"
+        :rotulo-confirmar="TEXTOS_ACESSO_ANFITRIAO.revogar"
+        :rotulo-cancelar="TEXTOS_ACESSO_ANFITRIAO.cancelar"
         perigoso
         @confirmar="dialogoRevogacaoVisivel = false"
       />
@@ -2586,10 +2586,10 @@ const regras = [
         id="titulo-navegacao"
         class="guia__titulo-secao"
       >
-        Navegação e workspace do casamento
+        Navegação e workspace do evento
       </h2>
       <p class="guia__texto">
-        O rail global (72 px) serve à carteira. Dentro de <code class="guia__codigo">/casamentos/:id</code>, surge a navegação do casamento (232 px) com o nome do casal, a data e a contagem, e os módulos agrupados em Planejar, Pessoas, Dinheiro &amp; documentos e Execução. Grupos sem módulo não aparecem. Um módulo novo é registrado em <code class="guia__codigo">MODULOS_CASAMENTO</code> (<code class="guia__codigo">layouts/modulosCasamento.ts</code>) com <code class="guia__codigo">grupo</code>, <code class="guia__codigo">rota</code> e <code class="guia__codigo">rotasRelacionadas</code>; o papel Casal só vê módulos cujas rotas não são <code class="guia__codigo">somenteAssessoria</code>.
+        O rail global (72 px) serve à carteira. Dentro de <code class="guia__codigo">/eventos/:id</code>, surge a navegação do evento (232 px) com o nome dos anfitriões, a data e a contagem, e os módulos agrupados em Planejar, Pessoas, Dinheiro &amp; documentos e Execução. Grupos sem módulo não aparecem. Um módulo novo é registrado em <code class="guia__codigo">MODULOS_EVENTO</code> (<code class="guia__codigo">layouts/modulosEvento.ts</code>) com <code class="guia__codigo">grupo</code>, <code class="guia__codigo">rota</code> e <code class="guia__codigo">rotasRelacionadas</code>; o papel Anfitrião só vê módulos cujas rotas não são <code class="guia__codigo">somenteAssessoria</code>.
       </p>
       <div
         class="guia__workspace"
@@ -2603,15 +2603,15 @@ const regras = [
           <RailNavegacao :itens="itensRail" />
         </div>
         <div class="guia__workspace-navegacao">
-          <NavegacaoCasamento
-            :casamento="casamentoDemonstracao"
+          <NavegacaoEvento
+            :evento="eventoDemonstracao"
             :grupos="gruposDemonstracao"
           />
         </div>
-        <div class="guia__workspace-navegacao guia__workspace-navegacao--casal">
-          <NavegacaoCasamento
-            :casamento="casamentoDemonstracao"
-            :grupos="gruposCasalDemonstracao"
+        <div class="guia__workspace-navegacao guia__workspace-navegacao--anfitriao">
+          <NavegacaoEvento
+            :evento="eventoDemonstracao"
+            :grupos="gruposAnfitriaoDemonstracao"
           />
         </div>
       </div>
@@ -2650,9 +2650,9 @@ const regras = [
             />
           </div>
         </div>
-        <div class="guia__contexto guia__contexto--casal">
-          <span class="guia__rotulo-estado">Casal</span>
-          <span class="guia__contexto-frase">Seu casamento está tomando forma.</span>
+        <div class="guia__contexto guia__contexto--anfitriao">
+          <span class="guia__rotulo-estado">Anfitriões</span>
+          <span class="guia__contexto-frase">Seu evento está tomando forma.</span>
           <span class="guia__texto">Mais ar, serifa editorial, uma decisão por vez.</span>
         </div>
       </div>
@@ -2744,14 +2744,14 @@ const regras = [
           </ItemTarefa>
         </ul>
         <h3 class="guia__subtitulo">
-          Visão do casal e somente leitura
+          Visão dos anfitriões e somente leitura
         </h3>
         <ul
           class="guia__lista-tarefas"
-          aria-label="Tarefas do casal"
+          aria-label="Tarefas dos anfitriões"
         >
           <ItemTarefa
-            v-for="tarefa in tarefasCasalDemonstracao"
+            v-for="tarefa in tarefasAnfitriaoDemonstracao"
             :key="tarefa.id"
             :titulo="tarefa.titulo"
             :metadados="metadadosTarefa(tarefa, true)"
@@ -2765,7 +2765,7 @@ const regras = [
           Pendências no dashboard
         </h3>
         <BlocoPendenciasTarefas :pendencias="PENDENCIAS_DEMONSTRACAO" />
-        <BlocoPendenciasTarefas :pendencias="{ totalAtrasadas: 0, totalEstaSemana: 0, casamentosComAtraso: 0, atrasadas: [], estaSemana: [] }" />
+        <BlocoPendenciasTarefas :pendencias="{ totalAtrasadas: 0, totalEstaSemana: 0, eventosComAtraso: 0, atrasadas: [], estaSemana: [] }" />
         <BlocoPendenciasTarefas
           :pendencias="null"
           com-erro
@@ -2785,7 +2785,7 @@ const regras = [
         Checklist
       </h2>
       <p class="guia__texto">
-        ReguaMarcos é o elemento memorável do checklist: agrupa itens pela distância até o dia do casamento (12 meses, 6 meses, 3 meses, 30 dias, reta final, no dia, depois). O número do marco usa a fonte de exibição em peso leve; o complemento e a contagem ficam em texto de apoio. Uma linha vertical liga os marcos em ordem; o nó do marco preenche em verde de sucesso quando todas as tarefas dele estão encerradas. No celular a régua empilha (rótulo acima da lista). Marcos sem itens não aparecem. A lista de cada marco usa ItemModeloChecklist (no modelo) ou ItemTarefa (no casamento).
+        ReguaMarcos é o elemento memorável do checklist: agrupa itens pela distância até o dia do evento (12 meses, 6 meses, 3 meses, 30 dias, reta final, no dia, depois). O número do marco usa a fonte de exibição em peso leve; o complemento e a contagem ficam em texto de apoio. Uma linha vertical liga os marcos em ordem; o nó do marco preenche em verde de sucesso quando todas as tarefas dele estão encerradas. No celular a régua empilha (rótulo acima da lista). Marcos sem itens não aparecem. A lista de cada marco usa ItemModeloChecklist (no modelo) ou ItemTarefa (no evento).
       </p>
       <h3 class="guia__subtitulo">
         Progresso do checklist
@@ -2825,7 +2825,7 @@ const regras = [
                 v-for="item in itensDoMarcoDemonstracao(marco.chave)"
                 :key="item.id"
                 :titulo="item.titulo"
-                :prazo-relativo="descreverPrazoRelativo(item.diasAntesDoCasamento)"
+                :prazo-relativo="descreverPrazoRelativo(item.diasAntesDoEvento)"
                 :metadados="metadadosModeloDemonstracao(item)"
                 :descricao="item.descricao"
               >
@@ -2846,7 +2846,7 @@ const regras = [
         </ReguaMarcos>
       </div>
       <p class="guia__texto">
-        Na navegação do casamento, o módulo Checklist mostra o percentual à direita do rótulo, em texto de apoio (marinho quando ativo), anunciado como "80% concluído". Veja a seção Navegação e workspace.
+        Na navegação do evento, o módulo Checklist mostra o percentual à direita do rótulo, em texto de apoio (marinho quando ativo), anunciado como "80% concluído". Veja a seção Navegação e workspace.
       </p>
     </section>
 
@@ -2948,31 +2948,31 @@ const regras = [
     </section>
 
     <section
-      id="fornecedores-casamento"
+      id="fornecedores-evento"
       class="guia__secao"
-      aria-labelledby="titulo-fornecedores-casamento-guia"
+      aria-labelledby="titulo-fornecedores-evento-guia"
     >
       <h2
-        id="titulo-fornecedores-casamento-guia"
+        id="titulo-fornecedores-evento-guia"
         class="guia__titulo-secao"
       >
-        Fornecedores do casamento
+        Fornecedores do evento
       </h2>
       <p class="guia__texto">
-        O módulo Fornecedores do casamento é o livro-caixa de quem vai fazer o quê e por quanto. O elemento memorável é o ResumoOrcamento: uma frase editorial com os dois totais em Jost leve ("R$ 25.900,00 contratados de R$ 43.300,00 orçados") e, por categoria, uma régua fina em que o trecho marinho é o contratado sobre o orçado e o trilho é o que ainda está em aberto. Quando o contratado passa do orçado, a régua fica cheia em âmbar e aparece o selo "acima do orçado" (cor + ícone + texto). É uma tabela acessível (legenda e cabeçalhos para leitor de tela); a régua é decorativa. Vínculos cancelados ficam fora do resumo.
+        O módulo Fornecedores do evento é o livro-caixa de quem vai fazer o quê e por quanto. O elemento memorável é o ResumoOrcamento: uma frase editorial com os dois totais em Jost leve ("R$ 25.900,00 contratados de R$ 43.300,00 orçados") e, por categoria, uma régua fina em que o trecho marinho é o contratado sobre o orçado e o trilho é o que ainda está em aberto. Quando o contratado passa do orçado, a régua fica cheia em âmbar e aparece o selo "acima do orçado" (cor + ícone + texto). É uma tabela acessível (legenda e cabeçalhos para leitor de tela); a régua é decorativa. Vínculos cancelados ficam fora do resumo.
       </p>
       <h3 class="guia__subtitulo">
         Resumo do orçamento
       </h3>
       <ResumoOrcamento :resumo="resumoOrcamentoDemonstracao" />
       <h3 class="guia__subtitulo">
-        Linhas de fornecedor do casamento (os quatro status)
+        Linhas de fornecedor do evento (os quatro status)
       </h3>
       <p class="guia__texto">
-        LinhaFornecedorCasamento: empresa e status na primeira linha, serviço em texto de apoio, valores orçado e contratado em algarismos tabulares, indicador "Contrato" quando há PDF anexado e canais de contato compactos. Status: Cotação (informação), Em negociação (alerta), Contratado (sucesso), Cancelado (neutro, com nome e valores em texto de apoio). O nome vira link para editar só para a assessoria; o casal vê o nome sem link e, no lugar do menu, "Baixar contrato".
+        LinhaFornecedorEvento: empresa e status na primeira linha, serviço em texto de apoio, valores orçado e contratado em algarismos tabulares, indicador "Contrato" quando há PDF anexado e canais de contato compactos. Status: Cotação (informação), Em negociação (alerta), Contratado (sucesso), Cancelado (neutro, com nome e valores em texto de apoio). O nome vira link para editar só para a assessoria; os anfitriões vê o nome sem link e, no lugar do menu, "Baixar contrato".
       </p>
       <ul class="guia__lista-fornecedores guia__painel-fornecedores">
-        <LinhaFornecedorCasamento
+        <LinhaFornecedorEvento
           v-for="vinculo in VINCULOS_DEMONSTRACAO"
           :key="vinculo.id"
           :nome-empresa="vinculo.fornecedor.nomeEmpresa"
@@ -2988,20 +2988,20 @@ const regras = [
             <MenuAcoes
               :itens="[
                 { chave: 'editar', rotulo: 'Editar', icone: 'ie ie-editar' },
-                { chave: 'remover', rotulo: 'Remover do casamento', icone: 'ie ie-excluir', perigoso: true },
+                { chave: 'remover', rotulo: 'Remover do evento', icone: 'ie ie-excluir', perigoso: true },
               ]"
               rotulo="Mais ações"
               :rotulo-acessivel="`Mais ações para ${vinculo.fornecedor.nomeEmpresa}`"
               somente-icone
             />
           </template>
-        </LinhaFornecedorCasamento>
+        </LinhaFornecedorEvento>
       </ul>
       <h3 class="guia__subtitulo">
         Contrato em PDF
       </h3>
       <p class="guia__texto">
-        AnexoContrato: sem anexo mostra a área de envio (PDF até 10 MB, validado pela assinatura do arquivo); com anexo mostra nome, tamanho e data com "Baixar", "Substituir" e "Remover contrato" (este sempre com confirmação destrutiva). O download é sempre um arquivo baixado, nunca aberto dentro do Celebri. Para o casal, só "Baixar".
+        AnexoContrato: sem anexo mostra a área de envio (PDF até 10 MB, validado pela assinatura do arquivo); com anexo mostra nome, tamanho e data com "Baixar", "Substituir" e "Remover contrato" (este sempre com confirmação destrutiva). O download é sempre um arquivo baixado, nunca aberto dentro do Celebri. Para os anfitriões, só "Baixar".
       </p>
       <div class="guia__pilha-larga">
         <AnexoContrato
@@ -3042,7 +3042,7 @@ const regras = [
         Cronograma do dia
       </h2>
       <p class="guia__texto">
-        O cronograma é lido em pé, no celular. LinhaCronograma desenha "o fio do dia": horário de início em Jost com algarismos tabulares numa coluna fixa, um fio marinho contínuo com um nó por item e o conteúdo à direita (atividade, distância da cerimônia, local, responsável, fornecedor, instruções em até duas linhas). O nó do item na hora da cerimônia vira um nó duplo em marinho claro, o único ornamento da tela; conflito de horário troca o nó por um anel âmbar e mostra um selo de alerta com texto. A lista é uma &lt;ol&gt; por dia, dentro de um painel com borda; para a assessoria a linha inteira é um botão que abre a edição, para o casal é texto com o horário lido por extenso. AtalhosPreenchimento oferece valores conhecidos (locais da cerimônia e da recepção) em pílulas com aria-pressed; a pílula do valor atual fica no marinho suave.
+        O cronograma é lido em pé, no celular. LinhaCronograma desenha "o fio do dia": horário de início em Jost com algarismos tabulares numa coluna fixa, um fio marinho contínuo com um nó por item e o conteúdo à direita (atividade, distância da cerimônia, local, responsável, fornecedor, instruções em até duas linhas). O nó do item na hora da cerimônia vira um nó duplo em marinho claro, o único ornamento da tela; conflito de horário troca o nó por um anel âmbar e mostra um selo de alerta com texto. A lista é uma &lt;ol&gt; por dia, dentro de um painel com borda; para a assessoria a linha inteira é um botão que abre a edição, para os anfitriões é texto com o horário lido por extenso. AtalhosPreenchimento oferece valores conhecidos (locais da cerimônia e da recepção) em pílulas com aria-pressed; a pílula do valor atual fica no marinho suave.
       </p>
       <h3 class="guia__subtitulo">
         Linha do cronograma (padrão, cerimônia, conflito, dia seguinte e somente leitura)
@@ -3115,7 +3115,7 @@ const regras = [
         Modelos de cronograma
       </h2>
       <p class="guia__texto">
-        A área Modelos reúne dois tipos de modelo em páginas irmãs. AbasSecao é a navegação entre elas: links reais (não abas de conteúdo), a aba da página atual em marinho suave com texto marinho e aria-current="page", alvo de 44 px (48 px no toque) e rolagem horizontal própria quando não cabe no celular. No modelo de cronograma, o roteiro usa a mesma LinhaCronograma do casamento, com os horários lidos na referência do modelo e a distância até a cerimônia ao lado; o nó da cerimônia com dois anéis é o pivô do roteiro.
+        A área Modelos reúne dois tipos de modelo em páginas irmãs. AbasSecao é a navegação entre elas: links reais (não abas de conteúdo), a aba da página atual em marinho suave com texto marinho e aria-current="page", alvo de 44 px (48 px no toque) e rolagem horizontal própria quando não cabe no celular. No modelo de cronograma, o roteiro usa a mesma LinhaCronograma do evento, com os horários lidos na referência do modelo e a distância até a cerimônia ao lado; o nó da cerimônia com dois anéis é o pivô do roteiro.
       </p>
       <h3 class="guia__subtitulo">
         Abas da seção
@@ -3165,7 +3165,7 @@ const regras = [
         Cronograma para a equipe
       </h2>
       <p class="guia__texto">
-        O link público do cronograma usa o modo operação do board Grande Dia: LayoutPublico com variante "operacao", fundo marinho profundo e texto marinho névoa. A variante remapeia os tokens de texto, superfície, borda e destaque para os tokens operacao-*, então os estados padrão (carregando, vazio, erro) e o botão secundário funcionam sobre o fundo escuro sem estilos próprios. CabecalhoOperacao traz os nomes do casal em Jost leve com o "&amp;" em Cormorant itálico, a data por extenso, o selo do filtro (equipe completa ou "seus horários") e os locais. ItemRoteiro é a linha somente leitura: horário de início grande com algarismos tabulares numa coluna fixa, término abaixo ("+1" quando passa da meia-noite), fio contínuo com nó cinza, nó duplo em marinho claro no horário da cerimônia, nó verde e selo "Feito" quando o item foi concluído, e instruções num bloco com filete em marinho claro. O cartão claro do board fica reservado ao "Agora" da visão interativa. LinhaDestinoLink é a linha da área de links da assessoria: destino, detalhe, situação (Link ativo, Sem link, Link indisponível) e as ações no slot.
+        O link público do cronograma usa o modo operação do board Grande Dia: LayoutPublico com variante "operacao", fundo marinho profundo e texto marinho névoa. A variante remapeia os tokens de texto, superfície, borda e destaque para os tokens operacao-*, então os estados padrão (carregando, vazio, erro) e o botão secundário funcionam sobre o fundo escuro sem estilos próprios. CabecalhoOperacao traz os nomes dos anfitriões em Jost leve com o "&amp;" em Cormorant itálico, a data por extenso, o selo do filtro (equipe completa ou "seus horários") e os locais. ItemRoteiro é a linha somente leitura: horário de início grande com algarismos tabulares numa coluna fixa, término abaixo ("+1" quando passa da meia-noite), fio contínuo com nó cinza, nó duplo em marinho claro no horário da cerimônia, nó verde e selo "Feito" quando o item foi concluído, e instruções num bloco com filete em marinho claro. O cartão claro do board fica reservado ao "Agora" da visão interativa. LinhaDestinoLink é a linha da área de links da assessoria: destino, detalhe, situação (Link ativo, Sem link, Link indisponível) e as ações no slot.
       </p>
       <h3 class="guia__subtitulo">
         Página pública (390 px)
@@ -3387,10 +3387,10 @@ const regras = [
         id="titulo-duplicacao-guia"
         class="guia__titulo-secao"
       >
-        Duplicar casamento
+        Duplicar evento
       </h2>
       <p class="guia__texto">
-        A tela Duplicar casamento separa o que vai para o casamento novo do que fica com o casal de origem. OpcaoCopia é uma linha inteira clicável com caixa de seleção nativa, a quantidade em número editorial (marinho quando marcada, texto de apoio quando desmarcada ou desabilitada), título e descrição ligada por aria-describedby; o número visual é oculto do leitor de tela, que ouve a quantidade por extenso junto ao título. As opções vivem juntas numa única lista com borda e divisórias, nunca como cartões soltos. ListaNaoCopiado nomeia o casal de origem ("Fica com Ana & João") e lista, em tom de apoio e com cadeado decorativo, os dados que nunca são copiados.
+        A tela Duplicar evento separa o que vai para o evento novo do que fica com os anfitriões de origem. OpcaoCopia é uma linha inteira clicável com caixa de seleção nativa, a quantidade em número editorial (marinho quando marcada, texto de apoio quando desmarcada ou desabilitada), título e descrição ligada por aria-describedby; o número visual é oculto do leitor de tela, que ouve a quantidade por extenso junto ao título. As opções vivem juntas numa única lista com borda e divisórias, nunca como cartões soltos. ListaNaoCopiado nomeia os anfitriões de origem ("Fica com Ana & João") e lista, em tom de apoio e com cadeado decorativo, os dados que nunca são copiados.
       </p>
       <h3 class="guia__subtitulo">
         Opções de cópia (marcada, desmarcada, desabilitada e carregando)
@@ -3399,43 +3399,43 @@ const regras = [
         <OpcaoCopia
           v-model="copiaTarefasDemonstracao"
           id-campo="guia-copia-tarefas"
-          :titulo="TEXTOS_DUPLICACAO_CASAMENTO.opcaoTarefasTitulo"
-          :descricao="TEXTOS_DUPLICACAO_CASAMENTO.opcaoTarefasDetalhe(26)"
-          :complemento="TEXTOS_DUPLICACAO_CASAMENTO.tarefasCanceladas(1)"
+          :titulo="TEXTOS_DUPLICACAO_EVENTO.opcaoTarefasTitulo"
+          :descricao="TEXTOS_DUPLICACAO_EVENTO.opcaoTarefasDetalhe(26)"
+          :complemento="TEXTOS_DUPLICACAO_EVENTO.tarefasCanceladas(1)"
           :quantidade="29"
-          :rotulo-quantidade="TEXTOS_DUPLICACAO_CASAMENTO.quantidadeTarefas(29)"
+          :rotulo-quantidade="TEXTOS_DUPLICACAO_EVENTO.quantidadeTarefas(29)"
         />
         <OpcaoCopia
           v-model="copiaFornecedoresDemonstracao"
           id-campo="guia-copia-fornecedores"
-          :titulo="TEXTOS_DUPLICACAO_CASAMENTO.opcaoFornecedoresTitulo"
-          :descricao="TEXTOS_DUPLICACAO_CASAMENTO.opcaoFornecedoresDetalhe"
-          :complemento="TEXTOS_DUPLICACAO_CASAMENTO.fornecedoresIgnorados(1)"
+          :titulo="TEXTOS_DUPLICACAO_EVENTO.opcaoFornecedoresTitulo"
+          :descricao="TEXTOS_DUPLICACAO_EVENTO.opcaoFornecedoresDetalhe"
+          :complemento="TEXTOS_DUPLICACAO_EVENTO.fornecedoresIgnorados(1)"
           :quantidade="3"
-          :rotulo-quantidade="TEXTOS_DUPLICACAO_CASAMENTO.quantidadeFornecedores(3)"
+          :rotulo-quantidade="TEXTOS_DUPLICACAO_EVENTO.quantidadeFornecedores(3)"
         />
         <OpcaoCopia
           v-model="copiaVaziaDemonstracao"
           id-campo="guia-copia-vazia"
-          :titulo="TEXTOS_DUPLICACAO_CASAMENTO.opcaoFornecedoresTitulo"
-          :descricao="TEXTOS_DUPLICACAO_CASAMENTO.opcaoFornecedoresVazia"
+          :titulo="TEXTOS_DUPLICACAO_EVENTO.opcaoFornecedoresTitulo"
+          :descricao="TEXTOS_DUPLICACAO_EVENTO.opcaoFornecedoresVazia"
           :quantidade="0"
           desabilitado
         />
         <OpcaoCopia
           v-model="copiaCarregandoDemonstracao"
           id-campo="guia-copia-carregando"
-          :titulo="TEXTOS_DUPLICACAO_CASAMENTO.opcaoTarefasTitulo"
-          :descricao="TEXTOS_DUPLICACAO_CASAMENTO.opcaoTarefasDetalhe(0)"
+          :titulo="TEXTOS_DUPLICACAO_EVENTO.opcaoTarefasTitulo"
+          :descricao="TEXTOS_DUPLICACAO_EVENTO.opcaoTarefasDetalhe(0)"
           :quantidade="null"
         />
       </ul>
       <h3 class="guia__subtitulo">
-        O que fica no casamento de origem
+        O que fica no evento de origem
       </h3>
       <ListaNaoCopiado
-        :titulo="TEXTOS_DUPLICACAO_CASAMENTO.ficaCom('Ana & João')"
-        :itens="TEXTOS_DUPLICACAO_CASAMENTO.ficaItens"
+        :titulo="TEXTOS_DUPLICACAO_EVENTO.ficaCom('Ana & João')"
+        :itens="TEXTOS_DUPLICACAO_EVENTO.ficaItens"
         id-titulo="guia-fica-com"
       />
     </section>
@@ -3532,7 +3532,7 @@ const regras = [
         Bloco de pagamentos (dashboard e visão geral)
       </h3>
       <p class="guia__texto">
-        BlocoAlertasPagamentos: números editoriais (vencidas em erro; próximos 7 dias) com quantidade e soma, e a lista das parcelas mais urgentes em LinhaParcela compacta; cada linha leva ao Financeiro do casamento. No dashboard mostra o casal e "em N casamentos"; na visão geral do casamento, o link "Ver financeiro". Estados: carregando, erro com "Tentar novamente" e o estado calmo quando está tudo em dia.
+        BlocoAlertasPagamentos: números editoriais (vencidas em erro; próximos 7 dias) com quantidade e soma, e a lista das parcelas mais urgentes em LinhaParcela compacta; cada linha leva ao Financeiro do evento. No dashboard mostra os anfitriões e "em N eventos"; na visão geral do evento, o link "Ver financeiro". Estados: carregando, erro com "Tentar novamente" e o estado calmo quando está tudo em dia.
       </p>
       <div class="guia__pilha-larga">
         <BlocoAlertasPagamentos
@@ -3541,7 +3541,7 @@ const regras = [
         />
         <BlocoAlertasPagamentos
           :alertas="ALERTAS_VAZIOS_DEMONSTRACAO"
-          contexto="casamento"
+          contexto="evento"
           :destino-financeiro="{ name: 'style-guide' }"
         />
         <BlocoAlertasPagamentos
@@ -3643,7 +3643,7 @@ const regras = [
 
 @media (min-width: 1024px) {
   .guia__fornecedores {
-    grid-template-columns: var(--p-dimensao-largura-navegacao-casamento) minmax(0, 1fr);
+    grid-template-columns: var(--p-dimensao-largura-navegacao-evento) minmax(0, 1fr);
     align-items: start;
   }
 }
@@ -3954,15 +3954,15 @@ const regras = [
 }
 
 .guia__workspace-navegacao {
-  width: var(--p-dimensao-largura-navegacao-casamento);
+  width: var(--p-dimensao-largura-navegacao-evento);
   padding: var(--p-espaco-6) var(--p-espaco-3);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
 }
 
-.guia__workspace-navegacao--casal {
-  background: var(--p-cor-fundo-casal);
+.guia__workspace-navegacao--anfitriao {
+  background: var(--p-cor-fundo-anfitriao);
   border-color: var(--p-cor-borda-publica);
 }
 
@@ -3982,7 +3982,7 @@ const regras = [
   border-radius: var(--p-raio-painel);
 }
 
-.guia__contexto--casal {
+.guia__contexto--anfitriao {
   background: var(--p-cor-assistente);
 }
 

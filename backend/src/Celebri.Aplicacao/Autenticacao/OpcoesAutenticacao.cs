@@ -10,7 +10,7 @@ public class OpcoesAutenticacao
 
     public int ValidadeTokenRedefinicaoMinutos { get; set; } = 60;
 
-    public int ValidadeConviteCasalDias { get; set; } = 7;
+    public int ValidadeConviteAnfitriaoDias { get; set; } = 7;
 
     public string UrlFrontend { get; set; } = string.Empty;
 }

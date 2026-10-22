@@ -6,9 +6,9 @@ namespace Celebri.Infraestrutura.Persistencia.Repositorios;
 
 public class UsuarioRepository : IUsuarioRepository
 {
-    private readonly CasamentoDbContext _contexto;
+    private readonly CelebriDbContext _contexto;
 
-    public UsuarioRepository(CasamentoDbContext contexto)
+    public UsuarioRepository(CelebriDbContext contexto)
     {
         _contexto = contexto;
     }

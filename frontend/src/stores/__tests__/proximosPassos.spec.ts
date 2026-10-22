@@ -4,14 +4,14 @@ import { createPinia, setActivePinia } from 'pinia'
 import { respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { caminhoProximosPassos, useProximosPassosStore } from '@/stores/proximosPassos'
-import type { ProximosPassosCasamentoDto } from '@/tipos/proximosPassos'
+import type { ProximosPassosEventoDto } from '@/tipos/proximosPassos'
 
 const ID = '11111111-1111-4111-8111-111111111111'
 const OUTRO = '22222222-2222-4222-8222-222222222222'
 
-function passos(dados: Partial<ProximosPassosCasamentoDto> = {}): ProximosPassosCasamentoDto {
+function passos(dados: Partial<ProximosPassosEventoDto> = {}): ProximosPassosEventoDto {
   return {
-    casalConvidado: false,
+    anfitriaoConvidado: false,
     checklistAplicado: false,
     convidadosCadastrados: false,
     convitesEnviados: false,
@@ -33,20 +33,20 @@ afterEach(() => {
 
 describe('useProximosPassosStore', () => {
   it('[UNITÁRIO] monta a rota codificando o identificador', () => {
-    expect(caminhoProximosPassos(ID)).toBe(`/api/casamentos/${ID}/proximos-passos`)
-    expect(caminhoProximosPassos('a/b')).toBe('/api/casamentos/a%2Fb/proximos-passos')
+    expect(caminhoProximosPassos(ID)).toBe(`/api/eventos/${ID}/proximos-passos`)
+    expect(caminhoProximosPassos('a/b')).toBe('/api/eventos/a%2Fb/proximos-passos')
   })
 
-  it('[UNITÁRIO] carrega os passos do casamento com uma única requisição', async () => {
+  it('[UNITÁRIO] carrega os passos do evento com uma única requisição', async () => {
     const store = useProximosPassosStore()
-    fetchSimulado.mockResolvedValueOnce(respostaJson(passos({ casalConvidado: true })))
+    fetchSimulado.mockResolvedValueOnce(respostaJson(passos({ anfitriaoConvidado: true })))
 
     await store.carregar(ID)
 
     expect(fetchSimulado).toHaveBeenCalledTimes(1)
-    expect(String(fetchSimulado.mock.calls[0]![0])).toBe(`/api/casamentos/${ID}/proximos-passos`)
-    expect(store.casamentoId).toBe(ID)
-    expect(store.passos?.casalConvidado).toBe(true)
+    expect(String(fetchSimulado.mock.calls[0]![0])).toBe(`/api/eventos/${ID}/proximos-passos`)
+    expect(store.eventoId).toBe(ID)
+    expect(store.passos?.anfitriaoConvidado).toBe(true)
     expect(store.carregando).toBe(false)
     expect(store.falha).toBeNull()
   })
@@ -82,7 +82,7 @@ describe('useProximosPassosStore', () => {
     expect(store.falha?.tipo).toBe('naoEncontrado')
   })
 
-  it('[UNITÁRIO] resposta atrasada de outro casamento não sobrescreve o atual', async () => {
+  it('[UNITÁRIO] resposta atrasada de outro evento não sobrescreve o atual', async () => {
     const store = useProximosPassosStore()
     let resolverPrimeira: (resposta: Response) => void = () => {}
     fetchSimulado
@@ -91,12 +91,12 @@ describe('useProximosPassosStore', () => {
 
     const primeira = store.carregar(ID)
     await store.carregar(OUTRO)
-    resolverPrimeira(respostaJson(passos({ casalConvidado: true })))
+    resolverPrimeira(respostaJson(passos({ anfitriaoConvidado: true })))
     await primeira
 
-    expect(store.casamentoId).toBe(OUTRO)
+    expect(store.eventoId).toBe(OUTRO)
     expect(store.passos?.convitesEnviados).toBe(true)
-    expect(store.passos?.casalConvidado).toBe(false)
+    expect(store.passos?.anfitriaoConvidado).toBe(false)
   })
 
   it('[UNITÁRIO] limpar zera o estado', async () => {
@@ -106,7 +106,7 @@ describe('useProximosPassosStore', () => {
 
     store.limpar()
 
-    expect(store.casamentoId).toBeNull()
+    expect(store.eventoId).toBeNull()
     expect(store.passos).toBeNull()
     expect(store.falha).toBeNull()
   })

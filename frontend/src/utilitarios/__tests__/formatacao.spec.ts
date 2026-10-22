@@ -63,7 +63,7 @@ describe('formatação pt-BR', () => {
     ['2026-12-12', '12 dez 2026'],
     ['2027-05-03', '03 mai 2027'],
     ['2026-09-30', '30 set 2026'],
-  ])('[UNITÁRIO] formata data de calendário curta da navegação do casamento: %s', (valor, esperado) => {
+  ])('[UNITÁRIO] formata data de calendário curta da navegação do evento: %s', (valor, esperado) => {
     expect(formatarDataCalendarioCurta(valor)).toBe(esperado)
   })
 

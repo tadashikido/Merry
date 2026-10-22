@@ -90,7 +90,7 @@ describe('importacaoConvidados', () => {
     ])
   })
 
-  it('[UNITÁRIO] detecta quando a importação passa do limite do casamento', () => {
+  it('[UNITÁRIO] detecta quando a importação passa do limite do evento', () => {
     const previa = previaExemplo()
     expect(ultrapassaLimite(previa)).toBe(false)
     previa.resumo.convidadosExistentes = 4998

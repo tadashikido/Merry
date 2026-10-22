@@ -7,7 +7,7 @@ public sealed record PainelConfirmacoesDto(
     TotaisConvidadosDto Pessoas,
     int? ConvidadosEstimados,
     PrazoRsvpDto Prazo,
-    bool CasamentoArquivado,
+    bool EventoArquivado,
     IReadOnlyList<ConvitePendenteDto> Pendentes,
     int PessoasComRestricaoAlimentar = 0);
 

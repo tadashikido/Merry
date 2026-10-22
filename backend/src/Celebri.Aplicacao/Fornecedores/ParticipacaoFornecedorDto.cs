@@ -1,9 +1,9 @@
 namespace Celebri.Aplicacao.Fornecedores;
 
 public sealed record ParticipacaoFornecedorDto(
-    Guid CasamentoId,
+    Guid EventoId,
     string NomePrimeiraPessoa,
     string NomeSegundaPessoa,
-    DateOnly DataCasamento,
-    bool CasamentoArquivado,
+    DateOnly DataEvento,
+    bool EventoArquivado,
     string Status);

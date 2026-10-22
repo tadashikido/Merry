@@ -1,4 +1,4 @@
-import type { DataCalendario } from '@/tipos/casamentos'
+import type { DataCalendario } from '@/tipos/eventos'
 import type { DiaCronograma } from '@/tipos/cronograma'
 import type {
   DistribuicaoPainel,
@@ -16,7 +16,7 @@ export const INTERVALO_RELOGIO_MS = 15_000
 export const LIMITE_DEPOIS = 3
 export const MINUTOS_POR_DIA = 1440
 
-const DESLOCAMENTO_DIA: Record<DiaCronograma, number> = { Vespera: -1, DiaDoCasamento: 0, DiaSeguinte: 1 }
+const DESLOCAMENTO_DIA: Record<DiaCronograma, number> = { Vespera: -1, DiaDoEvento: 0, DiaSeguinte: 1 }
 const PADRAO_MOMENTO = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
 const PADRAO_HORARIO = /^(\d{2}):(\d{2})/
 const MS_POR_DIA = 86_400_000
@@ -58,8 +58,8 @@ export function interpolarMomento(agoraServidor: string, recebidoEm: number, ago
   }
 }
 
-export function minutoAtualNoRoteiro(momento: MomentoInterpolado, dataCasamento: DataCalendario): number {
-  return (diaUtc(momento.data) - diaUtc(dataCasamento)) * MINUTOS_POR_DIA + momento.minutoDoDia
+export function minutoAtualNoRoteiro(momento: MomentoInterpolado, dataEvento: DataCalendario): number {
+  return (diaUtc(momento.data) - diaUtc(dataEvento)) * MINUTOS_POR_DIA + momento.minutoDoDia
 }
 
 export function minutoDoItem(item: Pick<ItemPainelGrandeDia, 'dia' | 'inicio'>): number {

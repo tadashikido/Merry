@@ -12,7 +12,7 @@ describe('exportacaoBuffet', () => {
     expect(csv.startsWith(MARCA_BOM)).toBe(true)
     expect(csv.endsWith('\r\n')).toBe(true)
     const linhas = csv.slice(1).split('\r\n')
-    expect(linhas[0]).toBe('Casamento;Ana Beatriz & Bruno;;;;')
+    expect(linhas[0]).toBe('Evento;Ana Beatriz & Bruno;;;;')
     expect(csv).toContain('Data;22/05/2027;;;;')
     expect(csv).toContain('Adultos confirmados;3;;;;')
     expect(csv).toContain('Crianças confirmadas;1;;;;')
@@ -50,7 +50,7 @@ describe('exportacaoBuffet', () => {
   it('[UNITÁRIO] sem horário, local e confirmados gera células vazias e só o cabeçalho da lista', () => {
     const csv = gerarCsvBuffet(
       exportacaoExemplo({
-        casamento: { nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bia', data: '2027-01-02', horario: null, localRecepcao: null },
+        evento: { nomePrimeiraPessoa: 'Ana', nomeSegundaPessoa: 'Bia', data: '2027-01-02', horario: null, localRecepcao: null },
         convites: [],
       }),
     )
@@ -67,7 +67,7 @@ describe('exportacaoBuffet', () => {
   it('[SEGURANÇA] nome do arquivo sem acentos nem caracteres perigosos', () => {
     expect(nomeArquivoBuffet(exportacaoExemplo())).toBe('buffet-ana-beatriz-e-bruno-2027-05-22.csv')
     expect(
-      nomeArquivoBuffet({ casamento: { nomePrimeiraPessoa: '../Zé', nomeSegundaPessoa: 'Ção/\\:*?', data: '../x', horario: null, localRecepcao: null } }),
+      nomeArquivoBuffet({ evento: { nomePrimeiraPessoa: '../Zé', nomeSegundaPessoa: 'Ção/\\:*?', data: '../x', horario: null, localRecepcao: null } }),
     ).toBe('buffet-ze-e-cao-sem-data.csv')
   })
 })

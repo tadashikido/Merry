@@ -14,7 +14,7 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
-import type { FalhaCasamento } from '@/stores/casamentos'
+import type { FalhaEvento } from '@/stores/eventos'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
 import type { SalvarModeloChecklistRequest } from '@/tipos/checklist'
@@ -33,7 +33,7 @@ const notificacao = useNotificacao()
 
 const edicao = computed(() => Boolean(props.modeloId))
 const carregando = ref(false)
-const falhaCarga = ref<FalhaCasamento | null>(null)
+const falhaCarga = ref<FalhaEvento | null>(null)
 const enviando = ref(false)
 const mensagemErro = ref<string | null>(null)
 const nomeCarregado = ref('')
@@ -84,7 +84,7 @@ function montarRequest(): SalvarModeloChecklistRequest {
   return { nome: formulario.valores.nome.trim(), descricao: descricao === '' ? null : descricao }
 }
 
-function tratarFalha(falha: FalhaCasamento) {
+function tratarFalha(falha: FalhaEvento) {
   const camposComErro = CAMPOS.filter((campo) => falha.errosCampos[campo])
   for (const campo of camposComErro) {
     formulario.erros[campo] = falha.errosCampos[campo]

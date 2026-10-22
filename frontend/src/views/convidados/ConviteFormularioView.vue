@@ -19,7 +19,7 @@ import { useAlteracoesNaoSalvas, useRastreioAlteracoes } from '@/composables/use
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
-import { useCasamentosStore } from '@/stores/casamentos'
+import { useEventosStore } from '@/stores/eventos'
 import { useConvidadosStore, type FalhaConvidados } from '@/stores/convidados'
 import { ROTULOS_FAIXA_ETARIA, ROTULOS_RESPOSTA, TEXTOS_CONVIDADOS } from '@/textos/convidados'
 import { ROTULOS_ACOES } from '@/textos/rotulos'
@@ -33,7 +33,7 @@ import {
 } from '@/tipos/convidados'
 import { listarGrupos } from '@/utilitarios/filtroConvidados'
 import { focarElemento } from '@/utilitarios/foco'
-import { formatarNomesCasal } from '@/utilitarios/formatacao'
+import { formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { formatarTelefone } from '@/utilitarios/telefone'
 import { obrigatorio } from '@/utilitarios/validacao'
 import {
@@ -59,7 +59,7 @@ type CampoPessoa = 'nome' | 'telefone' | 'email' | 'faixaEtaria' | 'resposta'
 
 const props = defineProps<{ id: string; conviteId?: string }>()
 
-const casamentos = useCasamentosStore()
+const eventos = useEventosStore()
 const store = useConvidadosStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
@@ -82,16 +82,16 @@ let sequencia = 0
 const rastreio = useRastreioAlteracoes(() => montarRequest())
 const { liberarSaida } = useAlteracoesNaoSalvas(rastreio.temAlteracoes)
 
-const casamento = computed(() => (casamentos.atual?.id === props.id ? casamentos.atual : null))
+const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
 const nomes = computed(() =>
-  casamento.value ? formatarNomesCasal(casamento.value.nomePrimeiraPessoa, casamento.value.nomeSegundaPessoa) : '',
+  evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
-const arquivado = computed(() => casamento.value?.arquivado === true)
+const arquivado = computed(() => evento.value?.arquivado === true)
 const titulo = computed(() => (edicao.value ? TEXTOS_CONVIDADOS.editarConviteTitulo : TEXTOS_CONVIDADOS.novoConviteTitulo))
 const somenteLeitura = computed(() => arquivado.value || bloqueadoPorPermissao.value)
 
 const sugestoesGrupo = computed(() => {
-  const convites = store.casamentoId === props.id ? (store.lista?.convites ?? []) : []
+  const convites = store.eventoId === props.id ? (store.lista?.convites ?? []) : []
   return listarGrupos(convites).grupos.map((grupo) => grupo.rotulo)
 })
 
@@ -250,10 +250,10 @@ async function carregarConvite() {
 onMounted(async () => {
   pessoas.value = [novaPessoa()]
   rastreio.fixarEstadoInicial()
-  if (casamentos.atual?.id !== props.id) {
-    void casamentos.obter(props.id)
+  if (eventos.atual?.id !== props.id) {
+    void eventos.obter(props.id)
   }
-  if (store.casamentoId !== props.id || !store.lista) {
+  if (store.eventoId !== props.id || !store.lista) {
     void store.carregar(props.id)
   }
   await carregarConvite()
@@ -308,7 +308,7 @@ function montarRequest(): SalvarConviteRequest {
 
 function voltarParaLista() {
   liberarSaida()
-  void roteador.push({ name: 'casamento-convidados', params: { id: props.id } })
+  void roteador.push({ name: 'evento-convidados', params: { id: props.id } })
 }
 
 function idDoErroApi(chave: string): string | null {
@@ -374,7 +374,7 @@ async function enviar() {
   if (resultado.ok) {
     liberarSaida()
     notificacao.sucesso(TEXTOS_CONVIDADOS.salvo(resultado.valor.nome))
-    await roteador.replace({ name: 'casamento-convidados', params: { id: props.id } })
+    await roteador.replace({ name: 'evento-convidados', params: { id: props.id } })
     return
   }
   await tratarFalha(resultado.falha)
@@ -385,20 +385,20 @@ function excluir() {
   if (!convite) {
     return
   }
-  const casamentoId = props.id
+  const eventoId = props.id
   confirmarExclusao({
     nomeItem: convite.nome,
     mensagem: TEXTOS_CONVIDADOS.confirmarExclusaoTexto(convite.convidados.length),
     aoConfirmar: async () => {
-      store.removerComDesfazer(casamentoId, convite.id, (falha) => {
+      store.removerComDesfazer(eventoId, convite.id, (falha) => {
         notificacao.erro(falha.tipo === 'semPermissao' ? TEXTOS_CONVIDADOS.semPermissao : TEXTOS_CONVIDADOS.erroExcluir(convite.nome))
       })
       liberarSaida()
-      await roteador.replace({ name: 'casamento-convidados', params: { id: casamentoId } })
+      await roteador.replace({ name: 'evento-convidados', params: { id: eventoId } })
     },
     desfazer: () =>
-      desfazerExclusao(() => store.desfazerRemocao(casamentoId, convite.id), TEXTOS_CONVIDADOS.restaurado(convite.nome)),
-    aoFecharAviso: () => store.concluirRemocao(casamentoId, convite.id),
+      desfazerExclusao(() => store.desfazerRemocao(eventoId, convite.id), TEXTOS_CONVIDADOS.restaurado(convite.nome)),
+    aoFecharAviso: () => store.concluirRemocao(eventoId, convite.id),
   })
 }
 </script>
@@ -434,7 +434,7 @@ function excluir() {
           />
           <RouterLink
             class="formulario-convite__voltar"
-            :to="{ name: 'casamento-convidados', params: { id } }"
+            :to="{ name: 'evento-convidados', params: { id } }"
             data-teste="voltar-convidados"
           >
             {{ TEXTOS_CONVIDADOS.voltarConvidados }}

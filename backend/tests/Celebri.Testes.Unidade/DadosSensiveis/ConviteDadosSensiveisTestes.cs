@@ -49,7 +49,7 @@ public class ConviteDadosSensiveisTestes
         Assert.Equal(Agora, lia.DadosSensiveis.ConsentidoEm);
         Assert.Equal("2026-09-29", lia.DadosSensiveis.VersaoTermo);
         Assert.Equal(OrigemConsentimento.Convidado, lia.DadosSensiveis.OrigemConsentimento);
-        Assert.Equal(convite.CasamentoId, lia.DadosSensiveis.CasamentoId);
+        Assert.Equal(convite.EventoId, lia.DadosSensiveis.EventoId);
         Assert.Equal(lia.Id, Assert.Single(_cifrados).ConvidadoId);
     }
 

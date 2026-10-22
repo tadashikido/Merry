@@ -25,7 +25,7 @@ const props = withDefaults(
     pagaEm?: string | null
     observacao?: string | null
     possuiComprovante?: boolean
-    nomesCasal?: string | null
+    nomesAnfitrioes?: string | null
     compacta?: boolean
     historico?: boolean
     destino?: RouteLocationRaw | null
@@ -35,7 +35,7 @@ const props = withDefaults(
     pagaEm: null,
     observacao: null,
     possuiComprovante: false,
-    nomesCasal: null,
+    nomesAnfitrioes: null,
     compacta: false,
     historico: false,
     destino: null,
@@ -53,7 +53,7 @@ const partesData = computed(() => {
 
 const descricao = computed(() => descreverSituacao(props, dataSemAno))
 const titulo = computed(() => TEXTOS_PARCELA.numero(props.nomeEmpresa, props.numero, props.total))
-const apoio = computed(() => [props.nomesCasal, props.observacao].filter((parte): parte is string => Boolean(parte)).join(' · '))
+const apoio = computed(() => [props.nomesAnfitrioes, props.observacao].filter((parte): parte is string => Boolean(parte)).join(' · '))
 const tom = computed(() => {
   if (props.historico) {
     return 'historico'

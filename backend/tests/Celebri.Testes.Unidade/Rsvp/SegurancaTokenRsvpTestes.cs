@@ -156,7 +156,7 @@ public class SegurancaTokenRsvpTestes
         var contexto = new ContextoIsolamentoRequisicao(
             new ContextoIsolamentoUsuarioAtual(new UsuarioFixo(true, organizacaoUsuario)),
             new EscopoIsolamentoRsvp(),
-            new EscopoIsolamentoAcessoCasal(),
+            new EscopoIsolamentoAcessoAnfitriao(),
             new EscopoIsolamentoSistema(),
             new EscopoIsolamentoCronogramaPublico());
 
@@ -169,7 +169,7 @@ public class SegurancaTokenRsvpTestes
         var contexto = new ContextoIsolamentoRequisicao(
             new ContextoIsolamentoUsuarioAtual(new UsuarioFixo(false, null)),
             new EscopoIsolamentoRsvp(),
-            new EscopoIsolamentoAcessoCasal(),
+            new EscopoIsolamentoAcessoAnfitriao(),
             new EscopoIsolamentoSistema(),
             new EscopoIsolamentoCronogramaPublico());
 
@@ -184,7 +184,7 @@ public class SegurancaTokenRsvpTestes
         var contexto = new ContextoIsolamentoRequisicao(
             new ContextoIsolamentoUsuarioAtual(new UsuarioFixo(true, Guid.NewGuid())),
             escopo,
-            new EscopoIsolamentoAcessoCasal(),
+            new EscopoIsolamentoAcessoAnfitriao(),
             new EscopoIsolamentoSistema(),
             new EscopoIsolamentoCronogramaPublico());
 
@@ -207,7 +207,7 @@ public class SegurancaTokenRsvpTestes
 
         public Guid? OrganizacaoId { get; }
 
-        public Guid? CasamentoId => null;
+        public Guid? EventoId => null;
 
         public string? Papel => Autenticado ? "Dono" : null;
     }

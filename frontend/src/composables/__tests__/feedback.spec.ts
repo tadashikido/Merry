@@ -154,10 +154,10 @@ describe('confirmação de exclusão e toast', () => {
     montado = wrapper
     const desfazer = vi.fn()
 
-    api.sucesso('Casamento de Ana & João arquivado.', { desfazer })
+    api.sucesso('Evento de Ana & João arquivado.', { desfazer })
     await flushPromises()
 
-    expect(document.body.textContent).toContain('Casamento de Ana & João arquivado.')
+    expect(document.body.textContent).toContain('Evento de Ana & João arquivado.')
     botao('toast-desfazer').click()
     await flushPromises()
 

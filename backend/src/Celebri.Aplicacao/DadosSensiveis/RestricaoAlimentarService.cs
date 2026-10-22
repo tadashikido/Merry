@@ -3,7 +3,7 @@ using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Casamentos;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.DadosSensiveis;
 using Celebri.Dominio.Excecoes;
@@ -16,7 +16,7 @@ public partial class RestricaoAlimentarService : IRestricaoAlimentarService
 {
     private readonly IConviteRepository _conviteRepository;
     private readonly IDadosSensiveisRepository _dadosSensiveisRepository;
-    private readonly VerificadorCasamentoConvidados _verificador;
+    private readonly VerificadorEventoConvidados _verificador;
     private readonly IUnidadeTrabalho _unidadeTrabalho;
     private readonly CifragemRestricaoAlimentar _cifragem;
     private readonly IUsuarioAtual _usuarioAtual;
@@ -26,7 +26,7 @@ public partial class RestricaoAlimentarService : IRestricaoAlimentarService
     private readonly ILogger<RestricaoAlimentarService> _logger;
 
     public RestricaoAlimentarService(
-        ICasamentoRepository casamentoRepository,
+        IEventoRepository eventoRepository,
         IConviteRepository conviteRepository,
         IDadosSensiveisRepository dadosSensiveisRepository,
         IUnidadeTrabalho unidadeTrabalho,
@@ -41,7 +41,7 @@ public partial class RestricaoAlimentarService : IRestricaoAlimentarService
 
         _conviteRepository = conviteRepository;
         _dadosSensiveisRepository = dadosSensiveisRepository;
-        _verificador = new VerificadorCasamentoConvidados(casamentoRepository, conviteRepository);
+        _verificador = new VerificadorEventoConvidados(eventoRepository, conviteRepository);
         _unidadeTrabalho = unidadeTrabalho;
         _cifragem = cifragem;
         _usuarioAtual = usuarioAtual;
@@ -51,10 +51,10 @@ public partial class RestricaoAlimentarService : IRestricaoAlimentarService
         _logger = logger;
     }
 
-    public async Task<RelatorioRestricoesAlimentaresDto> ObterRelatorioAsync(Guid casamentoId, CancellationToken cancelamento)
+    public async Task<RelatorioRestricoesAlimentaresDto> ObterRelatorioAsync(Guid eventoId, CancellationToken cancelamento)
     {
-        var casamento = await _verificador.ObterAsync(casamentoId, cancelamento);
-        var registros = await _dadosSensiveisRepository.ListarPorCasamentoAsync(casamento.Id, cancelamento);
+        var evento = await _verificador.ObterAsync(eventoId, cancelamento);
+        var registros = await _dadosSensiveisRepository.ListarPorEventoAsync(evento.Id, cancelamento);
 
         var pessoas = new List<PessoaRestricaoAlimentarDto>();
         var restricoesConfirmadas = new List<RestricaoAlimentar>();
@@ -102,7 +102,7 @@ public partial class RestricaoAlimentarService : IRestricaoAlimentarService
             .DefaultIfEmpty(null)
             .Max();
 
-        RegistrarConsulta(casamento.Id, _usuarioAtual.UsuarioId, pessoas.Count);
+        RegistrarConsulta(evento.Id, _usuarioAtual.UsuarioId, pessoas.Count);
 
         return new RelatorioRestricoesAlimentaresDto(
             pessoas.Count,
@@ -111,15 +111,15 @@ public partial class RestricaoAlimentarService : IRestricaoAlimentarService
             restricoesConfirmadas.Count(restricao => restricao.OutraRestricao is not null),
             restricoesConfirmadas.Count(restricao => restricao.NecessidadeEspecial is not null),
             pessoas.OrderBy(pessoa => pessoa.Nome, StringComparer.CurrentCultureIgnoreCase).ToList(),
-            _opcoesRetencao.DiasAposCasamento,
-            _opcoesRetencao.DataExclusao(casamento.Data),
+            _opcoesRetencao.DiasAposEvento,
+            _opcoesRetencao.DataExclusao(evento.Data),
             excluidosEm,
             ilegiveis,
-            PodeRegistrar(casamento));
+            PodeRegistrar(evento));
     }
 
     public async Task<RestricaoAlimentarDto> SalvarAsync(
-        Guid casamentoId,
+        Guid eventoId,
         Guid conviteId,
         Guid convidadoId,
         SalvarRestricaoAlimentarRequest request,
@@ -127,9 +127,9 @@ public partial class RestricaoAlimentarService : IRestricaoAlimentarService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var (casamento, convite) = await ObterPessoaAsync(casamentoId, conviteId, convidadoId, cancelamento);
+        var (evento, convite) = await ObterPessoaAsync(eventoId, conviteId, convidadoId, cancelamento);
 
-        if (_opcoesRetencao.RetencaoEncerrada(casamento.Data, _calendario.Hoje()))
+        if (_opcoesRetencao.RetencaoEncerrada(evento.Data, _calendario.Hoje()))
         {
             throw new RegraNegocioException(MensagensDadosSensiveis.RetencaoEncerrada);
         }
@@ -159,27 +159,27 @@ public partial class RestricaoAlimentarService : IRestricaoAlimentarService
             consentimento.ConsentidoEm);
     }
 
-    public async Task RemoverAsync(Guid casamentoId, Guid conviteId, Guid convidadoId, CancellationToken cancelamento)
+    public async Task RemoverAsync(Guid eventoId, Guid conviteId, Guid convidadoId, CancellationToken cancelamento)
     {
-        var (_, convite) = await ObterPessoaAsync(casamentoId, conviteId, convidadoId, cancelamento);
+        var (_, convite) = await ObterPessoaAsync(eventoId, conviteId, convidadoId, cancelamento);
 
         convite.RegistrarDadosSensiveis(convidadoId, AlteracaoDadosSensiveis.Remover, null, _cifragem.Cifrar, _relogio.GetUtcNow());
         await _unidadeTrabalho.SalvarAsync(cancelamento);
     }
 
-    private bool PodeRegistrar(CasamentoAssessorado casamento)
+    private bool PodeRegistrar(Evento evento)
     {
-        return !casamento.Arquivado && !_opcoesRetencao.RetencaoEncerrada(casamento.Data, _calendario.Hoje());
+        return !evento.Arquivado && !_opcoesRetencao.RetencaoEncerrada(evento.Data, _calendario.Hoje());
     }
 
-    private async Task<(CasamentoAssessorado Casamento, Convite Convite)> ObterPessoaAsync(
-        Guid casamentoId,
+    private async Task<(Evento Evento, Convite Convite)> ObterPessoaAsync(
+        Guid eventoId,
         Guid conviteId,
         Guid convidadoId,
         CancellationToken cancelamento)
     {
-        var casamento = await _verificador.ObterEditavelAsync(casamentoId, cancelamento);
-        var convite = await _conviteRepository.ObterPorIdAsync(casamento.Id, conviteId, cancelamento)
+        var evento = await _verificador.ObterEditavelAsync(eventoId, cancelamento);
+        var convite = await _conviteRepository.ObterPorIdAsync(evento.Id, conviteId, cancelamento)
             ?? throw new RecursoNaoEncontradoException(MensagensConvidados.ConviteNaoEncontrado);
 
         if (!convite.Convidados.Any(convidado => convidado.Id == convidadoId))
@@ -187,12 +187,12 @@ public partial class RestricaoAlimentarService : IRestricaoAlimentarService
             throw new RecursoNaoEncontradoException(MensagensDadosSensiveis.ConvidadoNaoEncontrado);
         }
 
-        return (casamento, convite);
+        return (evento, convite);
     }
 
     [LoggerMessage(
         EventId = 9101,
         Level = LogLevel.Information,
-        Message = "Relatório de restrições alimentares consultado: casamento {CasamentoId}, usuário {UsuarioId}, {Quantidade} pessoas listadas.")]
-    private partial void RegistrarConsulta(Guid casamentoId, Guid? usuarioId, int quantidade);
+        Message = "Relatório de restrições alimentares consultado: evento {EventoId}, usuário {UsuarioId}, {Quantidade} pessoas listadas.")]
+    private partial void RegistrarConsulta(Guid eventoId, Guid? usuarioId, int quantidade);
 }
