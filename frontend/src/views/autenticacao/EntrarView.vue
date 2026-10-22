@@ -115,6 +115,7 @@ function lembrarEmail() {
             :aria-invalid="invalido"
             :aria-describedby="descritoPor"
             :readonly="enviando"
+            @update:model-value="formulario.revalidarAoDigitar('email')"
             @blur="formulario.validarAoSair('email')"
           />
         </CampoFormulario>
@@ -141,6 +142,8 @@ function lembrarEmail() {
               :invalido="invalido"
               :descrito-por="descritoPor"
               autocomplete="current-password"
+              @update:model-value="formulario.revalidarAoDigitar('senha')"
+              @blur="formulario.validarAoSair('senha')"
             />
           </template>
         </CampoFormulario>

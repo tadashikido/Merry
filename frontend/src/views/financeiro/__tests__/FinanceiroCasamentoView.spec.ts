@@ -164,6 +164,43 @@ describe('FinanceiroCasamentoView — assessoria', () => {
     expect(notificacoes.sucesso).toHaveBeenLastCalledWith(TEXTOS_PARCELA.sucessoDesfeito)
   })
 
+  it('[COMPONENTE] data do pagamento só é validada no blur depois de confirmar e o erro some ao corrigir', async () => {
+    rotear(
+      fetchSimulado,
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CASAMENTO, () => respostaJson(casamentoCompleto())),
+      quando('GET', ROTA_FINANCEIRO, () => respostaJson(financeiroExemplo())),
+      quando('PUT', `${ROTA_PARCELAS}/vencida/pagamento`, () =>
+        respostaJson(parcelaExemplo({ id: 'vencida', numero: 2, totalParcelas: 4, situacao: 'Paga', pagaEm: HOJE_TESTE })),
+      ),
+    )
+    const { wrapper } = await abrir()
+    wrapper.getComponent({ name: 'MenuAcoes' }).vm.$emit('selecionar', 'pagar')
+    await flushPromises()
+    const campo = document.body.querySelector<HTMLInputElement>('[data-teste="campo-data-pagamento"]')!
+    const dialogo = () => document.body.querySelector('[data-teste="dialogo-pagamento"]')!.textContent ?? ''
+
+    campo.value = ''
+    campo.dispatchEvent(new Event('input'))
+    campo.dispatchEvent(new Event('blur'))
+    await flushPromises()
+    expect(dialogo()).not.toContain(TEXTOS_PARCELA.erroDataPagamento)
+
+    botaoDoDialogo(TEXTOS_PAGAMENTO.confirmar).click()
+    await flushPromises()
+    expect(dialogo()).toContain(TEXTOS_PARCELA.erroDataPagamento)
+    expect(chamadas(fetchSimulado, 'PUT', `${ROTA_PARCELAS}/vencida/pagamento`)).toHaveLength(0)
+
+    campo.value = HOJE_TESTE
+    campo.dispatchEvent(new Event('input'))
+    await flushPromises()
+    expect(dialogo()).not.toContain(TEXTOS_PARCELA.erroDataPagamento)
+
+    botaoDoDialogo(TEXTOS_PAGAMENTO.confirmar).click()
+    await flushPromises()
+    expect(chamadas(fetchSimulado, 'PUT', `${ROTA_PARCELAS}/vencida/pagamento`)).toHaveLength(1)
+  })
+
   it('[INTEGRAÇÃO] gera parcelas pela prévia com centavos na última', async () => {
     const semParcelas = financeiroExemplo({ fornecedores: [fornecedorFinanceiro()] })
     rotear(

@@ -139,6 +139,55 @@ describe('EntrarView', () => {
     expect(wrapper!.get('#entrar-email').attributes('aria-invalid')).toBe('false')
   })
 
+  it('[COMPONENTE] depois de tentar enviar, o erro do e-mail some ao digitar a correção, sem depender do blur', async () => {
+    await abrir()
+    await wrapper!.get('#entrar-email').setValue('renata@')
+    await wrapper!.get('#entrar-senha').setValue('senhaForte1')
+    await wrapper!.get('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper!.text()).toContain(MENSAGENS_VALIDACAO.email)
+
+    await wrapper!.get('#entrar-email').setValue('renata@exemplo.com')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+    expect(wrapper!.get('#entrar-email').attributes('aria-invalid')).toBe('false')
+  })
+
+  it('[COMPONENTE] depois de corrigir o e-mail, um único envio chama a API', async () => {
+    const { roteador } = await abrir()
+    await wrapper!.get('#entrar-email').setValue('renata@')
+    await wrapper!.get('#entrar-senha').setValue('senhaForte1')
+    await wrapper!.get('form').trigger('submit')
+    await flushPromises()
+    const chamadasAntes = fetchSimulado.mock.calls.length
+    fetchSimulado.mockResolvedValue(respostaJson(SESSAO_EXEMPLO))
+
+    await wrapper!.get('#entrar-email').setValue('renata@exemplo.com')
+    await wrapper!.get('form').trigger('submit')
+    await flushPromises()
+
+    expect(fetchSimulado.mock.calls.length).toBe(chamadasAntes + 1)
+    expect(roteador.currentRoute.value.name).toBe('inicio')
+  })
+
+  it('[COMPONENTE] depois de tentar enviar, o erro da senha some ao digitar e não aparece no blur antes do envio', async () => {
+    await abrir()
+    await wrapper!.get('#entrar-senha').trigger('blur')
+    await flushPromises()
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+
+    await wrapper!.get('#entrar-email').setValue('renata@exemplo.com')
+    await wrapper!.get('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper!.get('#entrar-senha').attributes('aria-invalid')).toBe('true')
+
+    await wrapper!.get('#entrar-senha').setValue('senhaForte1')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
+  })
+
   it('[COMPONENTE] coloca "Esqueci minha senha" na linha do rótulo Senha sem quebrar a associação do rótulo', async () => {
     await abrir()
 

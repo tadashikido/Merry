@@ -1311,7 +1311,8 @@ const regras = [
               :aria-invalid="campo.invalido"
               :aria-describedby="campo.descritoPor"
               aria-required="true"
-              @blur="formulario.validarCampo('nome')"
+              @update:model-value="formulario.revalidarAoDigitar('nome')"
+              @blur="formulario.validarAoSair('nome')"
             />
           </CampoFormulario>
           <CampoFormulario
@@ -1331,7 +1332,8 @@ const regras = [
               :aria-invalid="campo.invalido"
               :aria-describedby="campo.descritoPor"
               aria-required="true"
-              @blur="formulario.validarCampo('email')"
+              @update:model-value="formulario.revalidarAoDigitar('email')"
+              @blur="formulario.validarAoSair('email')"
             />
           </CampoFormulario>
           <CampoFormulario
@@ -1350,7 +1352,8 @@ const regras = [
               :invalid="campo.invalido"
               :aria-invalid="campo.invalido"
               :aria-describedby="campo.descritoPor"
-              @blur="formulario.validarCampo('observacao')"
+              @update:model-value="formulario.revalidarAoDigitar('observacao')"
+              @blur="formulario.validarAoSair('observacao')"
             />
           </CampoFormulario>
         </div>

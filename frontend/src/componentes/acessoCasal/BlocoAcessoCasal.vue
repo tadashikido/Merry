@@ -321,7 +321,8 @@ function alterarVisibilidadeDialogo(visivel: boolean) {
                 autocomplete="name"
                 maxlength="120"
                 fluid
-                @blur="formulario.validarCampo('nome')"
+                @update:model-value="formulario.revalidarAoDigitar('nome')"
+                @blur="formulario.validarAoSair('nome')"
               />
             </CampoFormulario>
             <CampoFormulario
@@ -343,7 +344,8 @@ function alterarVisibilidadeDialogo(visivel: boolean) {
                 autocomplete="email"
                 maxlength="254"
                 fluid
-                @blur="formulario.validarCampo('email')"
+                @update:model-value="formulario.revalidarAoDigitar('email')"
+                @blur="formulario.validarAoSair('email')"
               />
             </CampoFormulario>
             <div class="acesso-casal__acoes-formulario">

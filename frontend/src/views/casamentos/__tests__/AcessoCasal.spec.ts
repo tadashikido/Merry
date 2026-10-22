@@ -289,6 +289,46 @@ describe('bloco Acesso do casal (dona)', () => {
     expect(wrapper!.get('#acesso-casal-1-nome').attributes('aria-invalid')).toBe('true')
   })
 
+  it('[COMPONENTE] não mostra erro ao sair dos campos antes de enviar, para não deslocar as ações', async () => {
+    rotasDona(quando('GET', ROTA_ACESSOS, () => respostaJson([])))
+    await abrir(`/casamentos/${ID_CASAMENTO}`)
+
+    await wrapper!.findAll('[data-teste="convidar-casal"]')[0]!.trigger('click')
+    await flushPromises()
+    await wrapper!.get('#acesso-casal-0-nome').trigger('blur')
+    await wrapper!.get('#acesso-casal-0-email').setValue('livia@')
+    await wrapper!.get('#acesso-casal-0-email').trigger('blur')
+    await flushPromises()
+
+    expect(wrapper!.get('#acesso-casal-0-nome').attributes('aria-invalid')).toBe('false')
+    expect(wrapper!.get('#acesso-casal-0-email').attributes('aria-invalid')).toBe('false')
+  })
+
+  it('[COMPONENTE] depois de tentar enviar, o erro do e-mail some ao digitar e um único envio convida', async () => {
+    rotasDona(
+      quando('GET', ROTA_ACESSOS, () => respostaJson([])),
+      quando('POST', ROTA_ACESSOS, () => respostaJson(acesso(), 201)),
+    )
+    await abrir(`/casamentos/${ID_CASAMENTO}`)
+
+    await wrapper!.findAll('[data-teste="convidar-casal"]')[0]!.trigger('click')
+    await flushPromises()
+    await wrapper!.get('#acesso-casal-0-nome').setValue('Lívia Moraes')
+    await wrapper!.get('#acesso-casal-0-email').setValue('livia@')
+    await wrapper!.get('[data-teste="formulario-convite-casal"]').trigger('submit')
+    await flushPromises()
+    expect(wrapper!.get('#acesso-casal-0-email').attributes('aria-invalid')).toBe('true')
+
+    await wrapper!.get('#acesso-casal-0-email').setValue('livia@exemplo.com')
+    await flushPromises()
+    expect(wrapper!.get('#acesso-casal-0-email').attributes('aria-invalid')).toBe('false')
+
+    await wrapper!.get('[data-teste="formulario-convite-casal"]').trigger('submit')
+    await flushPromises()
+
+    expect(chamadas(fetchSimulado, 'POST', ROTA_ACESSOS)).toHaveLength(1)
+  })
+
   it('[COMPONENTE] mostra a recusa do servidor sob o campo de e-mail', async () => {
     rotasDona(
       quando('GET', ROTA_ACESSOS, () => respostaJson([])),

@@ -204,6 +204,23 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     expect(document.activeElement?.id).toBe('demo-nome')
   })
 
+  it('[COMPONENTE] demonstra a validação que não rouba o clique: nada no blur antes de enviar e erro some ao digitar depois', async () => {
+    wrapper = await montar()
+    const nome = wrapper.get('#demo-nome')
+
+    await nome.trigger('blur')
+    await flushPromises()
+    expect(nome.attributes('aria-invalid')).toBe('false')
+
+    await wrapper.get('#formulario form').trigger('submit')
+    await flushPromises()
+    expect(nome.attributes('aria-invalid')).toBe('true')
+
+    await nome.setValue('Renata Alves')
+    await flushPromises()
+    expect(nome.attributes('aria-invalid')).toBe('false')
+  })
+
   it('[COMPONENTE] alterna os estados da listagem de exemplo', async () => {
     wrapper = await montar()
 

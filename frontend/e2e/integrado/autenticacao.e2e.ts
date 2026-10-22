@@ -115,5 +115,18 @@ test.describe('Autenticação', () => {
       await page.getByRole('button', { name: 'Criar conta' }).click()
       await expect(page.getByText('Este e-mail já tem uma conta. Entre ou recupere a senha.').first()).toBeVisible({ timeout: 5_000 })
     })
+
+    test('corrigir o e-mail e clicar em "Entrar" envia as credenciais', async ({ page, request }) => {
+      const dados = novaAssessoria()
+      await cadastrarAssessoria(request, dados)
+      await page.goto('/entrar')
+      await page.locator('#entrar-email').fill('ana@')
+      await page.locator('#entrar-senha').fill(dados.senha)
+      await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+      await expect(page.getByText('Informe um e-mail válido, como nome@exemplo.com.')).toBeVisible()
+      await page.locator('#entrar-email').fill(dados.email)
+      await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+      await expect(page).toHaveURL(/\/$/, { timeout: 5_000 })
+    })
   })
 })

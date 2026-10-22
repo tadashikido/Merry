@@ -29,6 +29,7 @@ const store = useFinanceiroStore()
 const executando = ref(false)
 const pagaEm = ref('')
 const erroData = ref<string | null>(null)
+const tentouConfirmar = ref(false)
 const arquivo = ref<File | null>(null)
 const erroArquivo = ref<string | null>(null)
 const mensagem = ref<string | null>(null)
@@ -70,6 +71,7 @@ watch(
     }
     pagaEm.value = props.parcela?.pagaEm ?? props.hoje
     erroData.value = null
+    tentouConfirmar.value = false
     arquivo.value = null
     erroArquivo.value = null
     mensagem.value = null
@@ -88,8 +90,21 @@ async function selecionar(escolhido: File) {
   arquivo.value = escolhido
 }
 
+function validarDataAoSair() {
+  if (tentouConfirmar.value) {
+    erroData.value = regraData(pagaEm.value)
+  }
+}
+
+function revalidarDataAoDigitar() {
+  if (tentouConfirmar.value && erroData.value) {
+    erroData.value = regraData(pagaEm.value)
+  }
+}
+
 async function confirmar() {
   mensagem.value = null
+  tentouConfirmar.value = true
   erroData.value = regraData(pagaEm.value)
   if (erroData.value || !props.parcela) {
     return
@@ -164,7 +179,8 @@ async function confirmar() {
           :aria-describedby="descritoPor"
           :readonly="executando"
           data-teste="campo-data-pagamento"
-          @blur="erroData = regraData(pagaEm)"
+          @update:model-value="revalidarDataAoDigitar"
+          @blur="validarDataAoSair"
         />
       </CampoFormulario>
 
