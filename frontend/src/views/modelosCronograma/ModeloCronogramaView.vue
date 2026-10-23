@@ -10,13 +10,27 @@ import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
 import LinhaCronograma from '@/componentes/base/LinhaCronograma.vue'
+import ComoAplicarModelo from '@/componentes/modelos/ComoAplicarModelo.vue'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
 import { ROTULOS_DIA_CRONOGRAMA } from '@/textos/cronograma'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
-import { ROTULOS_LOCAL_MODELO, TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
+import {
+  TEXTOS_MODELOS_POR_TIPO,
+  abrirEventoDoModelo,
+  momentoDoModelo,
+  ondeApareceModelo,
+  rotuloSugeridoDoModelo,
+} from '@/textos/modelos'
+import { TEXTOS_MODELOS_CRONOGRAMA, referenciaHorarioModelo, rotuloLocalModelo } from '@/textos/modelosCronograma'
 import type { ItemModeloCronogramaDto } from '@/tipos/modelosCronograma'
-import { descreverRelativoCerimonia, resumirDias } from '@/utilitarios/cronograma'
-import { agruparItensModeloPorDia } from '@/utilitarios/modelosCronograma'
+import { descreverRelativoCerimonia, formatarDuracao, resumirDias } from '@/utilitarios/cronograma'
+import {
+  agruparItensModeloPorDia,
+  alcanceDoModelo,
+  equipeDoModelo,
+  posicoesNoMomento,
+  type PontoDoModelo,
+} from '@/utilitarios/modelosCronograma'
 
 const props = defineProps<{ modeloId: string }>()
 
@@ -27,6 +41,11 @@ const rota = useRoute()
 const modelo = computed(() => (store.atual?.id === props.modeloId ? store.atual : null))
 const falha = computed(() => (modelo.value ? null : store.falhaAtual))
 const grupos = computed(() => agruparItensModeloPorDia(modelo.value?.itens ?? []))
+const momento = computed(() => momentoDoModelo(modelo.value?.tipoEvento))
+const rotuloSugerido = computed(() => rotuloSugeridoDoModelo(modelo.value?.tipoEvento, TEXTOS_MODELOS_CRONOGRAMA.sugerido))
+const ondeAparece = computed(() =>
+  modelo.value ? ondeApareceModelo(modelo.value.tipoEvento, TEXTOS_MODELOS_CRONOGRAMA.recurso) : null,
+)
 
 const resumoDias = computed(() =>
   resumirDias(grupos.value).map((resumo) => ({
@@ -36,18 +55,28 @@ const resumoDias = computed(() =>
   })),
 )
 
-const extremos = computed(() => {
-  const itens = modelo.value?.itens ?? []
-  if (itens.length === 0) {
-    return null
-  }
-  const comeca = Math.min(...itens.map((item) => item.minutosDesdeCerimonia))
-  const termina = Math.max(...itens.map((item) => item.minutosDesdeCerimonia + (item.duracaoMinutos ?? 0)))
-  return {
-    comeca: descreverRelativoCerimonia(comeca) ?? '',
-    termina: descreverRelativoCerimonia(termina) ?? '',
-  }
-})
+const detalhePorDia = computed(() => new Map(resumoDias.value.map((resumo) => [resumo.dia, resumo.detalhe])))
+
+const alcance = computed(() =>
+  modelo.value ? alcanceDoModelo(modelo.value.itens, modelo.value.horarioReferencia) : null,
+)
+
+const posicoes = computed(() => posicoesNoMomento(modelo.value?.itens ?? []))
+
+const equipe = computed(() =>
+  equipeDoModelo(modelo.value?.itens ?? [], (categoria) => ROTULOS_CATEGORIA_FORNECEDOR[categoria]),
+)
+
+const temEquipe = computed(() => equipe.value.categorias.length > 0 || equipe.value.responsaveis.length > 0)
+
+const passosAplicar = computed(() =>
+  modelo.value
+    ? [
+        abrirEventoDoModelo(modelo.value.tipoEvento, 'Cronograma'),
+        ...TEXTOS_MODELOS_CRONOGRAMA.passosAplicar(modelo.value.nome, momento.value.contracaoDe),
+      ]
+    : [],
+)
 
 watch(
   () => props.modeloId,
@@ -83,8 +112,16 @@ watch(
   { immediate: true },
 )
 
+function horario(ponto: PontoDoModelo): string {
+  return TEXTOS_MODELOS_CRONOGRAMA.horarioNoDia(ROTULOS_DIA_CRONOGRAMA[ponto.dia], ponto.horario)
+}
+
+function relativo(minutos: number): string {
+  return descreverRelativoCerimonia(minutos, momento.value.contracaoDe) ?? ''
+}
+
 function local(item: ItemModeloCronogramaDto): string | null {
-  return item.referenciaLocal ? ROTULOS_LOCAL_MODELO[item.referenciaLocal] : item.local
+  return item.referenciaLocal ? rotuloLocalModelo(item.referenciaLocal, modelo.value?.tipoEvento) : item.local
 }
 
 function fornecedor(item: ItemModeloCronogramaDto): string | null {
@@ -92,7 +129,7 @@ function fornecedor(item: ItemModeloCronogramaDto): string | null {
 }
 
 function distancia(item: ItemModeloCronogramaDto): string {
-  return descreverRelativoCerimonia(item.minutosDesdeCerimonia) ?? ''
+  return relativo(item.minutosDesdeCerimonia)
 }
 
 function adicionarItem() {
@@ -143,12 +180,23 @@ function editarModelo() {
           >
             <BadgeStatus
               v-if="modelo.sugerido"
-              :texto="TEXTOS_MODELOS_CRONOGRAMA.sugerido"
+              :texto="rotuloSugerido"
               variante="informacao"
               icone="informacao"
             />
+            <span
+              v-else
+              class="modelo-cronograma__origem"
+              data-teste="origem-modelo"
+            >{{ TEXTOS_MODELOS_POR_TIPO.origemAssessoria }}</span>
             <span>{{ TEXTOS_MODELOS_CRONOGRAMA.itens(modelo.itens.length) }}</span>
-            <span data-teste="referencia-modelo">{{ TEXTOS_MODELOS_CRONOGRAMA.referencia(modelo.horarioReferencia) }}</span>
+            <span data-teste="referencia-modelo">{{ referenciaHorarioModelo(modelo.horarioReferencia, modelo.tipoEvento) }}</span>
+          </p>
+          <p
+            class="modelo-cronograma__onde"
+            data-teste="onde-aparece-modelo"
+          >
+            {{ ondeAparece }}
           </p>
         </template>
         <template
@@ -198,7 +246,7 @@ function editarModelo() {
           v-else-if="modelo && modelo.itens.length === 0"
           icone="cronograma"
           :titulo="TEXTOS_MODELOS_CRONOGRAMA.itensVazioTitulo"
-          :descricao="TEXTOS_MODELOS_CRONOGRAMA.itensVazioTexto"
+          :descricao="TEXTOS_MODELOS_CRONOGRAMA.itensVazioTextoPara(momento.contracaoDe)"
         >
           <template #acao>
             <Button
@@ -235,16 +283,110 @@ function editarModelo() {
                 >
                   {{ TEXTOS_MODELOS_CRONOGRAMA.itens(modelo.itens.length) }}
                 </p>
+                <dl
+                  v-if="alcance"
+                  class="modelo-cronograma__alcance"
+                  data-teste="alcance-modelo"
+                >
+                  <div>
+                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.rotuloComeca }}</dt>
+                    <dd>
+                      <span
+                        class="numeros-tabulares"
+                        data-teste="primeiro-horario-modelo"
+                      >{{ horario(alcance.comeca) }}</span>
+                      <span
+                        class="modelo-cronograma__apoio"
+                        data-teste="resumo-comeca"
+                      >{{ relativo(alcance.comeca.minutos) }}</span>
+                    </dd>
+                  </div>
+                  <div v-if="alcance.duracaoMinutos !== null">
+                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.rotuloTermina }}</dt>
+                    <dd>
+                      <span
+                        class="numeros-tabulares"
+                        data-teste="ultimo-horario-modelo"
+                      >{{ horario(alcance.termina) }}</span>
+                      <span
+                        class="modelo-cronograma__apoio"
+                        data-teste="resumo-termina"
+                      >{{ relativo(alcance.termina.minutos) }}</span>
+                    </dd>
+                  </div>
+                  <div v-if="alcance.duracaoMinutos !== null">
+                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.rotuloDuracao }}</dt>
+                    <dd
+                      class="numeros-tabulares"
+                      data-teste="duracao-modelo"
+                    >
+                      {{ TEXTOS_MODELOS_CRONOGRAMA.duracaoRoteiro(formatarDuracao(alcance.duracaoMinutos)) }}
+                    </dd>
+                  </div>
+                </dl>
                 <p
                   class="modelo-cronograma__nota texto-legenda"
                   data-teste="apoio-referencia"
                 >
-                  {{ TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia(modelo.horarioReferencia) }}
+                  {{ TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia(modelo.horarioReferencia, momento.artigo) }}
                 </p>
               </div>
 
               <div
                 class="modelo-cronograma__bloco pilha pilha--campo"
+                data-teste="resumo-cerimonia"
+              >
+                <h3
+                  id="titulo-momento-modelo"
+                  class="texto-rotulo"
+                >
+                  {{ TEXTOS_MODELOS_CRONOGRAMA.momentoTitulo(momento.relativoAoMomento) }}
+                </h3>
+                <dl
+                  class="modelo-cronograma__dados"
+                  aria-labelledby="titulo-momento-modelo"
+                >
+                  <div class="modelo-cronograma__dado">
+                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.rotuloMomento(momento.nome) }}</dt>
+                    <dd
+                      class="numeros-tabulares"
+                      data-teste="resumo-referencia"
+                    >
+                      {{ modelo.horarioReferencia }}
+                    </dd>
+                  </div>
+                  <div class="modelo-cronograma__dado">
+                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.rotuloAntes }}</dt>
+                    <dd
+                      class="numeros-tabulares"
+                      data-teste="resumo-antes"
+                    >
+                      {{ posicoes.antes }}
+                    </dd>
+                  </div>
+                  <div class="modelo-cronograma__dado">
+                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.rotuloNaHora }}</dt>
+                    <dd
+                      class="numeros-tabulares"
+                      data-teste="resumo-na-hora"
+                    >
+                      {{ posicoes.naHora }}
+                    </dd>
+                  </div>
+                  <div class="modelo-cronograma__dado">
+                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.rotuloDepois }}</dt>
+                    <dd
+                      class="numeros-tabulares"
+                      data-teste="resumo-depois"
+                    >
+                      {{ posicoes.depois }}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div
+                class="modelo-cronograma__bloco modelo-cronograma__bloco--por-dia pilha pilha--campo"
                 data-teste="resumo-por-dia"
               >
                 <h3
@@ -272,42 +414,50 @@ function editarModelo() {
               </div>
 
               <div
-                v-if="extremos"
+                v-if="temEquipe"
                 class="modelo-cronograma__bloco pilha pilha--campo"
-                data-teste="resumo-cerimonia"
+                data-teste="resumo-equipe"
               >
                 <h3
-                  id="titulo-cerimonia-modelo"
+                  id="titulo-equipe-modelo"
                   class="texto-rotulo"
                 >
-                  {{ TEXTOS_MODELOS_CRONOGRAMA.cerimoniaTitulo }}
+                  {{ TEXTOS_MODELOS_CRONOGRAMA.equipeTitulo }}
                 </h3>
                 <dl
                   class="modelo-cronograma__dados"
-                  aria-labelledby="titulo-cerimonia-modelo"
+                  aria-labelledby="titulo-equipe-modelo"
                 >
-                  <div class="modelo-cronograma__dado">
-                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.rotuloReferencia }}</dt>
-                    <dd
-                      class="numeros-tabulares"
-                      data-teste="resumo-referencia"
-                    >
-                      {{ modelo.horarioReferencia }}
+                  <div
+                    v-if="equipe.categorias.length > 0"
+                    class="modelo-cronograma__dado modelo-cronograma__dado--empilhado"
+                  >
+                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.equipeFornecedores }}</dt>
+                    <dd data-teste="equipe-fornecedores">
+                      {{
+                        equipe.categorias
+                          .map((grupo) => TEXTOS_MODELOS_CRONOGRAMA.equipeCategoria(ROTULOS_CATEGORIA_FORNECEDOR[grupo.categoria], grupo.quantidade))
+                          .join(', ')
+                      }}
                     </dd>
                   </div>
-                  <div class="modelo-cronograma__dado modelo-cronograma__dado--empilhado">
-                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.rotuloComeca }}</dt>
-                    <dd data-teste="resumo-comeca">
-                      {{ extremos.comeca }}
-                    </dd>
-                  </div>
-                  <div class="modelo-cronograma__dado modelo-cronograma__dado--empilhado">
-                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.rotuloTermina }}</dt>
-                    <dd data-teste="resumo-termina">
-                      {{ extremos.termina }}
+                  <div
+                    v-if="equipe.responsaveis.length > 0"
+                    class="modelo-cronograma__dado modelo-cronograma__dado--empilhado"
+                  >
+                    <dt>{{ TEXTOS_MODELOS_CRONOGRAMA.equipeResponsaveis }}</dt>
+                    <dd data-teste="equipe-responsaveis">
+                      {{ equipe.responsaveis.join(', ') }}
                     </dd>
                   </div>
                 </dl>
+                <p
+                  v-if="equipe.semNinguem > 0"
+                  class="modelo-cronograma__nota texto-legenda"
+                  data-teste="equipe-sem-ninguem"
+                >
+                  {{ TEXTOS_MODELOS_CRONOGRAMA.semNinguem(equipe.semNinguem) }}
+                </p>
               </div>
             </section>
 
@@ -335,7 +485,10 @@ function editarModelo() {
                 >
                   {{ ROTULOS_DIA_CRONOGRAMA[grupo.dia] }}
                 </h2>
-                <span class="modelo-cronograma__contagem texto-legenda">{{ TEXTOS_MODELOS_CRONOGRAMA.itens(grupo.itens.length) }}</span>
+                <span
+                  class="modelo-cronograma__contagem texto-legenda numeros-tabulares"
+                  :data-teste="`intervalo-grupo-${grupo.dia}`"
+                >{{ detalhePorDia.get(grupo.dia) }}</span>
               </div>
               <ol
                 class="modelo-cronograma__lista cartao"
@@ -362,6 +515,13 @@ function editarModelo() {
               </ol>
             </section>
           </div>
+
+          <ComoAplicarModelo
+            class="modelo-cronograma__aplicar"
+            :titulo="TEXTOS_MODELOS_POR_TIPO.comoAplicarTitulo"
+            :passos="passosAplicar"
+            :nota="TEXTOS_MODELOS_CRONOGRAMA.notaAplicar"
+          />
         </div>
       </div>
     </template>
@@ -370,7 +530,7 @@ function editarModelo() {
 
 <style scoped>
 .modelo-cronograma {
-  --modelo-cronograma-largura-lateral: 18rem;
+  --modelo-cronograma-largura-lateral: 20rem;
 
   container: modelo-cronograma / inline-size;
 }
@@ -383,7 +543,8 @@ function editarModelo() {
 }
 
 .modelo-cronograma__principal,
-.modelo-cronograma__lateral {
+.modelo-cronograma__lateral,
+.modelo-cronograma__aplicar {
   min-width: 0;
 }
 
@@ -397,6 +558,24 @@ function editarModelo() {
   align-items: center;
   gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
   margin: 0;
+  font-variant-numeric: lining-nums;
+}
+
+.modelo-cronograma__origem {
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-controle);
+  font-style: italic;
+  color: var(--p-cor-texto-secundario);
+}
+
+.modelo-cronograma__onde {
+  margin: var(--p-ritmo-campo) 0 0;
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-controle);
+  font-style: italic;
+  font-variant-numeric: lining-nums;
+  line-height: var(--p-fonte-entrelinha-leitura);
+  color: var(--p-cor-texto-secundario);
 }
 
 .modelo-cronograma__resumo {
@@ -412,12 +591,39 @@ function editarModelo() {
   margin: 0;
 }
 
+.modelo-cronograma__nota {
+  font-variant-numeric: lining-nums;
+}
+
 .modelo-cronograma__total {
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-texto);
+}
+
+.modelo-cronograma__alcance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-campo);
+  margin: 0;
+  font-size: var(--p-fonte-tamanho-controle);
+}
+
+.modelo-cronograma__alcance dt {
+  color: var(--p-cor-texto-secundario);
+}
+
+.modelo-cronograma__alcance dd {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  color: var(--p-cor-texto);
+}
+
+.modelo-cronograma__apoio {
+  color: var(--p-cor-texto-secundario);
 }
 
 .modelo-cronograma__bloco {
@@ -453,6 +659,7 @@ function editarModelo() {
 .modelo-cronograma__dado dd {
   margin: 0;
   color: var(--p-cor-texto-secundario);
+  overflow-wrap: anywhere;
 }
 
 .modelo-cronograma__voltar {
@@ -480,6 +687,7 @@ function editarModelo() {
 
 .modelo-cronograma__contagem {
   margin: 0;
+  font-variant-numeric: lining-nums;
 }
 
 .modelo-cronograma .modelo-cronograma__lista {
@@ -490,8 +698,8 @@ function editarModelo() {
 @container lateral-modelo-cronograma (min-width: 36rem) {
   .modelo-cronograma__resumo {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    column-gap: var(--p-ritmo-bloco);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--p-ritmo-bloco);
     align-items: start;
   }
 
@@ -501,23 +709,39 @@ function editarModelo() {
     border-top: 0;
     border-left: 1px solid var(--p-cor-divisoria);
   }
+
+  .modelo-cronograma__bloco:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@container modelo-cronograma (max-width: 35.99rem) {
+  .modelo-cronograma__bloco--por-dia {
+    display: none;
+  }
 }
 
 @container modelo-cronograma (min-width: 64rem) {
   .modelo-cronograma__corpo {
     grid-template-columns: minmax(0, 1fr) var(--modelo-cronograma-largura-lateral);
+    grid-template-rows: auto 1fr;
   }
 
   .modelo-cronograma__lateral {
     grid-column: 2;
     grid-row: 1;
-    position: sticky;
-    top: var(--p-ritmo-bloco);
+  }
+
+  .modelo-cronograma__aplicar {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
   }
 
   .modelo-cronograma__principal {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 1 / span 2;
   }
 }
 </style>

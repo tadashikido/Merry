@@ -5,11 +5,14 @@ import {
   REFERENCIA_QUALQUER_EVENTO,
   TEXTOS_MODELOS_POR_TIPO,
   abrirEventoDoModelo,
+  MOMENTO_QUALQUER_EVENTO,
   exemplosNomeModelo,
+  momentoDoModelo,
   ondeApareceModelo,
   referenciaDoModelo,
   rotuloSugeridoDoModelo,
 } from '@/textos/modelos'
+import { TEXTOS_MODELOS_CRONOGRAMA, rotuloLocalModelo } from '@/textos/modelosCronograma'
 import type { TipoEvento } from '@/tipos/eventos'
 
 const TIPO_DESCONHECIDO = 'Formatura' as unknown as TipoEvento
@@ -92,5 +95,40 @@ describe('textos de modelos por tipo', () => {
     expect(TEXTOS_MODELOS_POR_TIPO.edicaoNaoMudaAplicados('checklist')).toBe(
       'Mudar o nome ou a descrição não altera o checklist dos eventos que já aplicaram este modelo.',
     )
+  })
+
+  it.each([
+    ['Casamento', 'a cerimônia', 'da cerimônia', 'à cerimônia', 'Cerimônia', 'Local da cerimônia', 'Local da recepção'],
+    ['QuinzeAnos', 'a festa', 'da festa', 'à festa', 'Festa', 'Local da festa', 'Outro local'],
+    ['Aniversario', 'a festa', 'da festa', 'à festa', 'Festa', 'Local da festa', 'Outro local'],
+    ['Comemoracao', 'o evento', 'do evento', 'ao evento', 'Evento', 'Local do evento', 'Outro local'],
+    [null, 'o evento', 'do evento', 'ao evento', 'Evento', 'Local principal', 'Outro local'],
+    [TIPO_DESCONHECIDO, 'o evento', 'do evento', 'ao evento', 'Evento', 'Local principal', 'Outro local'],
+  ] as const)('[UNITÁRIO] momento e locais do modelo de cronograma para %s', (tipo, artigo, contracaoDe, relativo, rotulo, principal, secundario) => {
+    const momento = momentoDoModelo(tipo as TipoEvento | null)
+
+    expect(momento.artigo).toBe(artigo)
+    expect(momento.contracaoDe).toBe(contracaoDe)
+    expect(momento.relativoAoMomento).toBe(relativo)
+    expect(TEXTOS_MODELOS_CRONOGRAMA.rotuloMomento(momento.nome)).toBe(rotulo)
+    expect(TEXTOS_MODELOS_CRONOGRAMA.momentoTitulo(momento.relativoAoMomento)).toBe(`Em relação ${relativo}`)
+    expect(rotuloLocalModelo('Cerimonia', tipo as TipoEvento | null)).toBe(principal)
+    expect(rotuloLocalModelo('Recepcao', tipo as TipoEvento | null)).toBe(secundario)
+    expect(rotuloLocalModelo('Outro', tipo as TipoEvento | null)).toBe('Outro')
+  })
+
+  it('[UNITÁRIO] textos do detalhe de cronograma usam o momento sem cerimônia como padrão', () => {
+    expect(momentoDoModelo(undefined)).toEqual(MOMENTO_QUALQUER_EVENTO)
+    expect(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00')).toBe(
+      'Horários de exemplo, com o evento às 16:00. Ao aplicar, tudo acompanha o horário marcado no evento.',
+    )
+    expect(TEXTOS_MODELOS_CRONOGRAMA.itensVazioTextoPara('da festa')).toBe('Comece pela hora da festa e acrescente o que vem antes e depois.')
+    expect(TEXTOS_MODELOS_CRONOGRAMA.passosAplicar('Roteiro', 'da festa')).toEqual([
+      'Em Aplicar modelo, escolha “Roteiro”. A prévia mostra quantos itens entram e o primeiro e o último horário.',
+      'Os horários contam a partir do horário da festa marcado no evento. Se ele ainda não tiver, a tela pede para adicionar.',
+    ])
+    expect(abrirEventoDoModelo('Aniversario', 'Cronograma')).toBe('Abra um aniversário e entre em Cronograma.')
+    expect(TEXTOS_MODELOS_CRONOGRAMA.semNinguem(1)).toBe('1 item sem responsável nem fornecedor.')
+    expect(TEXTOS_MODELOS_CRONOGRAMA.duracaoRoteiro('32 h')).toBe('32 h de roteiro')
   })
 })

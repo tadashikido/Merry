@@ -58,6 +58,32 @@ export function referenciaDoModelo(tipo: TipoEvento | null | undefined): Referen
   return ehTipoEvento(tipo) ? vocabularioOuNeutro(tipo).referencia : REFERENCIA_QUALQUER_EVENTO
 }
 
+export interface MomentoModelo {
+  artigo: string
+  contracaoDe: string
+  relativoAoMomento: string
+  nome: string
+}
+
+export const MOMENTO_QUALQUER_EVENTO: MomentoModelo = {
+  artigo: 'o evento',
+  contracaoDe: 'do evento',
+  relativoAoMomento: 'ao evento',
+  nome: 'evento',
+}
+
+export function momentoDoModelo(tipo: TipoEvento | null | undefined): MomentoModelo {
+  if (!ehTipoEvento(tipo)) {
+    return MOMENTO_QUALQUER_EVENTO
+  }
+  const vocabulario = VOCABULARIO_TIPO_EVENTO[tipo]
+  return {
+    ...vocabulario.momento,
+    relativoAoMomento: vocabulario.referencia.relativoAoMomento,
+    nome: vocabulario.momentoPrincipal,
+  }
+}
+
 export function rotuloSugeridoDoModelo(tipo: TipoEvento | null | undefined, padrao: string): string {
   return ehTipoEvento(tipo) ? TEXTOS_MODELOS_POR_TIPO.sugeridoPara(VOCABULARIO_TIPO_EVENTO[tipo].contagem.singular) : padrao
 }

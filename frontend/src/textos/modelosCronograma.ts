@@ -1,7 +1,7 @@
 import type { DiaCronograma } from '@/tipos/cronograma'
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import type { OpcaoLocalModelo } from '@/tipos/modelosCronograma'
-import { VOCABULARIO_TIPO_EVENTO, vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { VOCABULARIO_TIPO_EVENTO, ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 
 function numero(valor: number): string {
   return valor.toLocaleString('pt-BR')
@@ -54,8 +54,8 @@ export const TEXTOS_MODELOS_CRONOGRAMA = {
   sugerido: 'Sugerido',
   itens: (quantidade: number) => contar(quantidade, 'item', 'itens'),
   referencia: (horario: string, momento = 'cerimônia') => `Referência: ${momento} às ${horario}`,
-  apoioReferencia: (horario: string) =>
-    `Horários com cerimônia às ${horario}. Ao aplicar, tudo acompanha o horário real.`,
+  apoioReferencia: (horario: string, artigoMomento = 'o evento') =>
+    `Horários de exemplo, com ${artigoMomento} às ${horario}. Ao aplicar, tudo acompanha o horário marcado no evento.`,
   resumo: (quantidade: number) => contar(quantidade, 'modelo', 'modelos'),
   vazioTitulo: 'Nenhum modelo de cronograma',
   vazioTexto:
@@ -104,16 +104,49 @@ export const TEXTOS_MODELOS_CRONOGRAMA = {
   fio: 'Roteiro do modelo',
   adicionarItem: 'Adicionar item',
   itensVazioTitulo: 'Este modelo ainda não tem itens.',
-  itensVazioTexto: 'Adicione o que acontece antes, durante e depois da cerimônia.',
+  itensVazioTextoPara: (contracaoMomento: string) =>
+    `Comece pela hora ${contracaoMomento} e acrescente o que vem antes e depois.`,
   rotuloLinha: (atividade: string, inicio: string, distancia: string) => `Editar ${atividade}, ${inicio}, ${distancia}`,
   resumoTitulo: 'Resumo do modelo',
   porDiaTitulo: 'Por dia',
-  cerimoniaTitulo: 'Em relação à cerimônia',
-  rotuloReferencia: 'Cerimônia',
+  momentoTitulo: (relativoAoMomento: string) => `Em relação ${relativoAoMomento}`,
+  rotuloMomento: (nome: string) => `${nome.charAt(0).toLocaleUpperCase('pt-BR')}${nome.slice(1)}`,
+  rotuloAntes: 'Antes',
+  rotuloNaHora: 'Na hora',
+  rotuloDepois: 'Depois',
   rotuloComeca: 'Começa',
   rotuloTermina: 'Termina',
+  rotuloDuracao: 'Duração',
+  duracaoRoteiro: (duracao: string) => `${duracao} de roteiro`,
+  horarioNoDia: (rotuloDia: string, horario: string) => `${rotuloDia}, ${horario}`,
   resumoDia: (quantidade: number, intervalo: string) => `${contar(quantidade, 'item', 'itens')}, ${intervalo}`,
+  equipeTitulo: 'Quem entra no roteiro',
+  equipeFornecedores: 'Fornecedores',
+  equipeResponsaveis: 'Responsáveis',
+  equipeCategoria: (rotulo: string, quantidade: number) => `${rotulo} (${numero(quantidade)})`,
+  semNinguem: (quantidade: number) =>
+    `${contar(quantidade, 'item', 'itens')} sem responsável nem fornecedor.`,
+  passosAplicar: (nome: string, contracaoMomento: string) => [
+    `Em Aplicar modelo, escolha “${nome}”. A prévia mostra quantos itens entram e o primeiro e o último horário.`,
+    `Os horários contam a partir do horário ${contracaoMomento} marcado no evento. Se ele ainda não tiver, a tela pede para adicionar.`,
+  ],
+  notaAplicar:
+    'Itens já aplicados não se repetem, o fornecedor entra pela categoria quando o evento tem só um dela, e editar o modelo não muda cronogramas já montados.',
 } as const
+
+const ROTULOS_LOCAL_SEM_TIPO: Record<OpcaoLocalModelo, string> = {
+  Cerimonia: 'Local principal',
+  Recepcao: 'Outro local',
+  Outro: 'Outro',
+}
+
+export function rotuloLocalModelo(opcao: OpcaoLocalModelo, tipo: TipoEvento | null | undefined): string {
+  if (!ehTipoEvento(tipo)) {
+    return ROTULOS_LOCAL_SEM_TIPO[opcao]
+  }
+  const locais = VOCABULARIO_TIPO_EVENTO[tipo].locais
+  return opcao === 'Cerimonia' ? locais.campoPrincipal : opcao === 'Recepcao' ? locais.campoSecundario : ROTULOS_LOCAL_SEM_TIPO.Outro
+}
 
 export function referenciaHorarioModelo(horario: string, tipo: TipoEvento | null | undefined): string {
   return TEXTOS_MODELOS_CRONOGRAMA.referencia(horario, vocabularioOuNeutro(tipo).momentoPrincipal)

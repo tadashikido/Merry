@@ -1,5 +1,6 @@
 import { TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
 import type { DiaCronograma } from '@/tipos/cronograma'
+import type { CategoriaFornecedor } from '@/tipos/fornecedores'
 import type { ItemModeloCronogramaDto, OpcaoLocalModelo } from '@/tipos/modelosCronograma'
 import { horarioParaMinutos, minutosParaHorario, MINUTOS_POR_DIA } from '@/utilitarios/cronograma'
 import type { RegraValidacao } from '@/utilitarios/validacao'
@@ -51,6 +52,95 @@ export function agruparItensModeloPorDia(itens: ItemModeloCronogramaDto[]): { di
   return dias
     .map((dia) => ({ dia, itens: itens.filter((item) => item.dia === dia) }))
     .filter((grupo) => grupo.itens.length > 0)
+}
+
+export interface PontoDoModelo {
+  minutos: number
+  dia: DiaCronograma
+  horario: string
+}
+
+export interface AlcanceDoModelo {
+  comeca: PontoDoModelo
+  termina: PontoDoModelo
+  duracaoMinutos: number | null
+}
+
+type ItemPosicionado = Pick<ItemModeloCronogramaDto, 'minutosDesdeCerimonia' | 'duracaoMinutos'>
+
+export function alcanceDoModelo(itens: ItemPosicionado[], referencia: string): AlcanceDoModelo | null {
+  if (itens.length === 0) {
+    return null
+  }
+  const comeca = Math.min(...itens.map((item) => item.minutosDesdeCerimonia))
+  const termina = Math.max(...itens.map((item) => item.minutosDesdeCerimonia + (item.duracaoMinutos ?? 0)))
+  const inicio = posicaoNaReferencia(comeca, referencia)
+  const fim = posicaoNaReferencia(termina, referencia)
+  if (!inicio || !fim) {
+    return null
+  }
+  return {
+    comeca: { minutos: comeca, dia: inicio.dia, horario: inicio.inicio },
+    termina: { minutos: termina, dia: fim.dia, horario: fim.inicio },
+    duracaoMinutos: termina > comeca ? termina - comeca : null,
+  }
+}
+
+export interface PosicoesNoMomento {
+  antes: number
+  naHora: number
+  depois: number
+}
+
+export function posicoesNoMomento(itens: Pick<ItemModeloCronogramaDto, 'minutosDesdeCerimonia'>[]): PosicoesNoMomento {
+  return {
+    antes: itens.filter((item) => item.minutosDesdeCerimonia < 0).length,
+    naHora: itens.filter((item) => item.minutosDesdeCerimonia === 0).length,
+    depois: itens.filter((item) => item.minutosDesdeCerimonia > 0).length,
+  }
+}
+
+export interface CategoriaNoModelo {
+  categoria: CategoriaFornecedor
+  quantidade: number
+}
+
+export interface EquipeDoModelo {
+  categorias: CategoriaNoModelo[]
+  responsaveis: string[]
+  semNinguem: number
+}
+
+export function equipeDoModelo(
+  itens: Pick<ItemModeloCronogramaDto, 'categoriaFornecedor' | 'responsavel'>[],
+  rotular: (categoria: CategoriaFornecedor) => string = (categoria) => categoria,
+): EquipeDoModelo {
+  const porCategoria = new Map<CategoriaFornecedor, number>()
+  const responsaveis = new Map<string, string>()
+  let semNinguem = 0
+  for (const item of itens) {
+    const responsavel = item.responsavel?.trim()
+    if (item.categoriaFornecedor) {
+      porCategoria.set(item.categoriaFornecedor, (porCategoria.get(item.categoriaFornecedor) ?? 0) + 1)
+    }
+    if (responsavel) {
+      const chave = responsavel.toLocaleLowerCase('pt-BR')
+      if (!responsaveis.has(chave)) {
+        responsaveis.set(chave, responsavel)
+      }
+    }
+    if (!responsavel && !item.categoriaFornecedor) {
+      semNinguem += 1
+    }
+  }
+  const categorias = [...porCategoria]
+    .map(([categoria, quantidade]) => ({ categoria, quantidade }))
+    .sort((a, b) => b.quantidade - a.quantidade || rotular(a.categoria).localeCompare(rotular(b.categoria), 'pt-BR'))
+  return {
+    categorias,
+    responsaveis: [...responsaveis.values()].sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    semNinguem,
+  }
 }
 
 export const regraNomeModeloCronograma: RegraValidacao = (valor) => {

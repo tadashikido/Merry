@@ -287,7 +287,7 @@ describe('ModeloCronogramaView', () => {
     const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
 
     expect(wrapper.get('h1').text()).toBe('Roteiro clássico')
-    expect(wrapper.get('[data-teste="apoio-referencia"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00'))
+    expect(wrapper.get('[data-teste="apoio-referencia"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00', 'a cerimônia'))
     expect(wrapper.find('[data-teste="grupo-modelo-Vespera"]').exists()).toBe(true)
     expect(wrapper.find('[data-teste="grupo-modelo-DiaSeguinte"]').exists()).toBe(false)
     const linhas = wrapper.findAll('[data-teste="linha-cronograma"]')
@@ -346,7 +346,7 @@ describe('ModeloCronogramaView', () => {
     expect(lateral.attributes('aria-labelledby')).toBe('titulo-resumo-modelo')
     expect(wrapper.get('#titulo-resumo-modelo').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.resumoTitulo)
     expect(lateral.get('[data-teste="total-itens-modelo"]').text()).toBe('3 itens')
-    expect(lateral.get('[data-teste="apoio-referencia"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00'))
+    expect(lateral.get('[data-teste="apoio-referencia"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00', 'a cerimônia'))
     expect(lateral.get('[data-teste="resumo-dia-Vespera"]').text()).toContain('1 item, das 19:00 às 20:00')
     expect(lateral.get('[data-teste="resumo-dia-DiaDoEvento"]').text()).toContain('2 itens, das 10:00 às 17:00')
     expect(lateral.find('[data-teste="resumo-dia-DiaSeguinte"]').exists()).toBe(false)
@@ -437,6 +437,138 @@ describe('ModeloCronogramaView', () => {
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')
     expect(fonte).toContain('class="modelo-cronograma pilha pilha--bloco"')
+  })
+
+  it('[UNITÁRIO] corpo do detalhe em grade de três filhos sem sticky, com Por dia oculto no estreito', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ModeloCronogramaView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(estilo).not.toContain('sticky')
+    expect(estilo).toContain('grid-row: 1 / span 2')
+    expect(estilo).toContain('@container modelo-cronograma (max-width: 35.99rem)')
+    expect(fonte.indexOf('data-teste="lateral-modelo"')).toBeLessThan(fonte.indexOf('modelo-cronograma__principal pilha'))
+    expect(fonte.indexOf('modelo-cronograma__principal pilha')).toBeLessThan(fonte.indexOf('<ComoAplicarModelo'))
+  })
+
+  const TIPO_DESCONHECIDO = 'Formatura' as unknown as TipoEvento
+
+  function modeloNeutro(tipoEvento: TipoEvento | null, sugerido = true) {
+    return modeloCronogramaCompleto({
+      tipoEvento,
+      sugerido,
+      horarioReferencia: '20:00',
+      itens: [
+        itemModeloCronograma({ id: 'a', minutosDesdeCerimonia: -120, inicio: '18:00', duracaoMinutos: 60, termino: '19:00', atividade: 'Recepção', referenciaLocal: 'Cerimonia', local: null, responsavel: 'Assessoria', categoriaFornecedor: null }),
+        itemModeloCronograma({ id: 'b', minutosDesdeCerimonia: 0, inicio: '20:00', duracaoMinutos: 30, termino: '20:30', atividade: 'Entrada', referenciaLocal: 'Recepcao', local: null, responsavel: null, categoriaFornecedor: 'Musica' }),
+        itemModeloCronograma({ id: 'd', minutosDesdeCerimonia: 120, inicio: '22:00', duracaoMinutos: null, termino: null, atividade: 'Brinde', referenciaLocal: null, local: 'Salão', responsavel: null, categoriaFornecedor: null }),
+      ],
+    })
+  }
+
+  it.each([
+    ['Casamento', 'Sugerido para casamento', 'cerimônia', 'da cerimônia', 'à cerimônia', 'Cerimônia', 'Local da cerimônia', 'Local da recepção', 'Abra um casamento e entre em Cronograma.', 'Na lista ao aplicar o cronograma de cada casamento.', /comemoração|festa/i],
+    ['QuinzeAnos', 'Sugerido para festa de 15 anos', 'festa', 'da festa', 'à festa', 'Festa', 'Local da festa', 'Outro local', 'Abra uma festa de 15 anos e entre em Cronograma.', 'Na lista ao aplicar o cronograma de cada festa de 15 anos.', /casamento|cerimônia|comemoração/i],
+    ['Aniversario', 'Sugerido para aniversário', 'festa', 'da festa', 'à festa', 'Festa', 'Local da festa', 'Outro local', 'Abra um aniversário e entre em Cronograma.', 'Na lista ao aplicar o cronograma de cada aniversário.', /casamento|cerimônia|comemoração/i],
+    ['Comemoracao', 'Sugerido para comemoração', 'evento', 'do evento', 'ao evento', 'Evento', 'Local do evento', 'Outro local', 'Abra uma comemoração e entre em Cronograma.', 'Na lista ao aplicar o cronograma de cada comemoração.', /casamento|cerimônia|festa/i],
+  ] as const)(
+    '[COMPONENTE] modelo de %s fala do momento principal do tipo no cabeçalho, linhas, resumo e passos',
+    async (tipo, selo, nome, contracao, relativo, rotulo, principal, secundario, passo, onde, proibido) => {
+      rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloNeutro(tipo))))
+
+      const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+      expect(wrapper.get('[data-teste="resumo-modelo"]').text()).toContain(selo)
+      expect(wrapper.get('[data-teste="referencia-modelo"]').text()).toBe(`Referência: ${nome} às 20:00`)
+      expect(wrapper.get('[data-teste="onde-aparece-modelo"]').text()).toBe(onde)
+      const linhas = wrapper.findAll('[data-teste="linha-cronograma"]')
+      expect(linhas[0]!.text()).toContain(`2 h antes ${contracao}`)
+      expect(linhas[0]!.text()).toContain(principal)
+      expect(linhas[1]!.text()).toContain(`Hora ${contracao}`)
+      expect(linhas[1]!.text()).toContain(secundario)
+      expect(linhas[1]!.get('[data-teste="linha-cronograma-conteudo"]').attributes('aria-label')).toBe(`Editar Entrada, 20:00, Hora ${contracao}`)
+      const momento = wrapper.get('[data-teste="resumo-cerimonia"]')
+      expect(momento.get('h3').text()).toBe(`Em relação ${relativo}`)
+      expect(momento.get('dt').text()).toBe(rotulo)
+      expect(wrapper.get('[data-teste="resumo-comeca"]').text()).toBe(`2 h antes ${contracao}`)
+      expect(wrapper.get('[data-teste="resumo-termina"]').text()).toBe(`2 h depois ${contracao}`)
+      expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(passo)
+      expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[2]!.text()).toContain(`horário ${contracao} marcado`)
+      expect(wrapper.get('main').text()).not.toMatch(proibido)
+    },
+  )
+
+  it.each([
+    ['sem tipo', null, 'Na lista ao aplicar o cronograma de qualquer evento.', 'Abra qualquer evento e entre em Cronograma.'],
+    ['de tipo desconhecido', TIPO_DESCONHECIDO, TEXTOS_MODELOS_POR_TIPO.notaOutros, 'Abra um evento desse tipo e entre em Cronograma.'],
+  ] as const)('[COMPONENTE] modelo %s usa "do evento", sem casamento, cerimônia nem comemoração', async (_rotulo, tipo, onde, passo) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloNeutro(tipo, false))))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    expect(wrapper.get('[data-teste="origem-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.origemAssessoria)
+    expect(wrapper.get('[data-teste="referencia-modelo"]').text()).toBe('Referência: evento às 20:00')
+    expect(wrapper.get('[data-teste="onde-aparece-modelo"]').text()).toBe(onde)
+    expect(wrapper.findAll('[data-teste="linha-cronograma"]')[0]!.text()).toContain('2 h antes do evento')
+    expect(wrapper.findAll('[data-teste="linha-cronograma"]')[0]!.text()).toContain('Local principal')
+    expect(wrapper.get('[data-teste="resumo-cerimonia"] h3').text()).toBe('Em relação ao evento')
+    expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(passo)
+    expect(wrapper.get('main').text()).not.toMatch(/casamento|cerimônia|comemoração/i)
+  })
+
+  it('[COMPONENTE] resumo traz começo e fim com dia, duração, posição no momento e quem entra no roteiro', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    const lateral = wrapper.get('[data-teste="lateral-modelo"]')
+    expect(lateral.get('[data-teste="primeiro-horario-modelo"]').text()).toBe('Véspera, 19:00')
+    expect(lateral.get('[data-teste="ultimo-horario-modelo"]').text()).toBe('Dia do evento, 17:00')
+    expect(lateral.get('[data-teste="duracao-modelo"]').text()).toBe('22 h de roteiro')
+    expect(lateral.get('[data-teste="resumo-antes"]').text()).toBe('2')
+    expect(lateral.get('[data-teste="resumo-na-hora"]').text()).toBe('1')
+    expect(lateral.get('[data-teste="resumo-depois"]').text()).toBe('0')
+    expect(lateral.get('[data-teste="equipe-fornecedores"]').text()).toBe('Beleza (1)')
+    expect(lateral.get('[data-teste="equipe-responsaveis"]').text()).toBe('Celebrante, Equipe de beleza')
+    expect(lateral.find('[data-teste="equipe-sem-ninguem"]').exists()).toBe(false)
+    expect(lateral.get('[data-teste="resumo-por-dia"]').classes()).toContain('modelo-cronograma__bloco--por-dia')
+    expect(wrapper.get('[data-teste="intervalo-grupo-DiaDoEvento"]').text()).toBe('2 itens, das 10:00 às 17:00')
+    expect(wrapper.get('[data-teste="nota-aplicar-modelo"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.notaAplicar)
+  })
+
+  it('[COMPONENTE] roteiro de um instante omite término e duração; sem responsável nem categoria omite quem entra', async () => {
+    const unico = itemModeloCronograma({ minutosDesdeCerimonia: 0, inicio: '16:00', duracaoMinutos: null, termino: null, responsavel: null, categoriaFornecedor: null })
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ itens: [unico] }))))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    expect(wrapper.get('[data-teste="primeiro-horario-modelo"]').text()).toBe('Dia do evento, 16:00')
+    expect(wrapper.get('[data-teste="resumo-comeca"]').text()).toBe('Hora da cerimônia')
+    expect(wrapper.find('[data-teste="resumo-termina"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="duracao-modelo"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="resumo-equipe"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] equipe avisa quantos itens estão sem responsável nem fornecedor', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloNeutro('QuinzeAnos'))))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    expect(wrapper.get('[data-teste="equipe-fornecedores"]').text()).toBe('Música, DJ e banda (1)')
+    expect(wrapper.get('[data-teste="equipe-sem-ninguem"]').text()).toBe('1 item sem responsável nem fornecedor.')
+  })
+
+  it.each([
+    ['QuinzeAnos', 'da festa'],
+    ['Casamento', 'da cerimônia'],
+    [null, 'do evento'],
+    [TIPO_DESCONHECIDO, 'do evento'],
+  ] as const)('[COMPONENTE] vazio de %s ensina pela hora do momento, sem lateral nem passos', async (tipo, contracao) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ tipoEvento: tipo, itens: [] }))))
+
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CRONOGRAMA.itensVazioTextoPara(contracao))
+    expect(wrapper.find('[data-teste="lateral-modelo"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="como-aplicar-modelo"]').exists()).toBe(false)
   })
 })
 
