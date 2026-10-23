@@ -8,6 +8,10 @@ function numero(valor: number): string {
   return valor.toLocaleString('pt-BR')
 }
 
+function maiuscula(texto: string): string {
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
+
 export const ROTULOS_MARCO_CHECKLIST: Record<MarcoChecklist, string> = {
   dozeMeses: '12 meses',
   seisMeses: '6 meses',
@@ -124,7 +128,6 @@ export const TEXTOS_CHECKLIST = {
   titulo: 'Checklist',
   tituloDocumento: (nomes: string) => `Checklist · ${nomes}`,
   subtitulo: 'Tarefas criadas a partir de modelos, com prazos pela data do evento.',
-  progressoRotulo: 'Progresso do checklist',
   progressoTitulo: 'Progresso',
   porMarcoTitulo: 'Por marco',
   progresso: (concluidas: number, consideradas: number) =>
@@ -136,8 +139,6 @@ export const TEXTOS_CHECKLIST = {
     `${percentual}% concluído, ${numero(concluidas)} de ${numero(consideradas)} tarefas`,
   indicadorNavegacao: (percentual: number) => `${percentual}%`,
   indicadorNavegacaoAria: (percentual: number) => `${percentual}% concluído`,
-  vazioTitulo: 'Este evento ainda não tem checklist',
-  vazioTexto: 'Aplique um modelo para criar as tarefas com os prazos calculados pela data do evento.',
   aplicarTitulo: 'Aplicar modelo',
   aplicarOutroTitulo: 'Aplicar outro modelo',
   campoModelo: 'Modelo',
@@ -178,6 +179,21 @@ export const TEXTOS_CHECKLIST = {
   toastRecalculado: (quantidade: number) =>
     `${plural(quantidade, 'Prazo de', 'Prazos de')} ${numero(quantidade)} ${plural(quantidade, 'tarefa recalculado', 'tarefas recalculados')}.`,
   erroRecalcular: 'Não foi possível recalcular os prazos. Tente de novo em Checklist.',
+  vazioTituloEvento: (artigo: string) => `${maiuscula(artigo)} ainda não tem checklist`,
+  vazioTextoEvento: (contracaoDe: string) =>
+    `Aplique um modelo para criar as tarefas com prazos contados a partir da data ${contracaoDe}.`,
+  aplicarPrimeiro: 'Aplicar checklist',
+  notaMarcos: (contracaoDe: string) => `Cada tarefa entra no marco do seu prazo, contado a partir da data ${contracaoDe}.`,
+  marcoAgora: 'Agora',
+  faltaNoMarco: (abertas: number, atrasadas: number) =>
+    `${plural(abertas, 'Falta', 'Faltam')} ${numero(abertas)}${atrasadas > 0 ? `, ${numero(atrasadas)} ${plural(atrasadas, 'atrasada', 'atrasadas')}` : ''}`,
+  detalheMarco: (concluidas: number, total: number, atrasadas: number) =>
+    `${numero(concluidas)} de ${numero(total)} ${plural(total, 'concluída', 'concluídas')}${atrasadas > 0 ? `, ${numero(atrasadas)} ${plural(atrasadas, 'atrasada', 'atrasadas')}` : ''}`,
+  sugestaoTextoSelecionado: (contracaoDe: string) =>
+    `O modelo selecionado cria estas tarefas, com prazos contados a partir da data ${contracaoDe}.`,
+  comoOrganizaTitulo: 'Como o checklist se organiza',
+  comoOrganizaTexto: (contracaoDe: string) =>
+    `As tarefas ficam em marcos pelo prazo, contados a partir da data ${contracaoDe}: 12 meses, 6 meses, 3 meses, 30 dias, reta final, no dia e depois.`,
 } as const
 
 export function descreverPrazoRelativo(dias: number): string {

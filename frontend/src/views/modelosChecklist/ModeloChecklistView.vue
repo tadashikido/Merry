@@ -249,7 +249,7 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
               </div>
 
               <div
-                class="modelo__bloco pilha pilha--campo"
+                class="modelo__bloco modelo__bloco--por-marco pilha pilha--campo"
                 data-teste="resumo-por-marco"
               >
                 <h3
@@ -456,6 +456,12 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
     padding-left: var(--p-ritmo-bloco);
     border-top: 0;
     border-left: 1px solid var(--p-cor-divisoria);
+  }
+}
+
+@container modelo (max-width: 35.99rem) {
+  .modelo__bloco--por-marco {
+    display: none;
   }
 }
 

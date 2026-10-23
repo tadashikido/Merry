@@ -125,6 +125,7 @@ export interface MarcoRegua {
   complemento?: string | null
   detalhe?: string | null
   concluido?: boolean
+  destaque?: string | null
 }
 
 export interface ItemIndiceCategorias<C extends string = string> {

@@ -24,7 +24,7 @@ function idTitulo(chave: string): string {
       v-for="marco in marcos"
       :key="marco.chave"
       class="regua__marco"
-      :class="{ 'regua__marco--concluido': marco.concluido }"
+      :class="{ 'regua__marco--concluido': marco.concluido, 'regua__marco--atual': Boolean(marco.destaque) }"
       :data-teste="`marco-${marco.chave}`"
     >
       <div class="regua__cabeca">
@@ -38,6 +38,11 @@ function idTitulo(chave: string): string {
             class="regua__complemento"
           >{{ marco.complemento }}</span>
         </h2>
+        <span
+          v-if="marco.destaque"
+          class="regua__destaque"
+          data-teste="regua-destaque"
+        >{{ marco.destaque }}</span>
         <span
           v-if="marco.detalhe"
           class="regua__detalhe numeros-tabulares"
@@ -60,6 +65,7 @@ function idTitulo(chave: string): string {
 
 <style scoped>
 .regua {
+  container: regua / inline-size;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -133,7 +139,19 @@ function idTitulo(chave: string): string {
   border-color: var(--p-cor-sucesso);
 }
 
-@media (min-width: 640px) {
+.regua__destaque {
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-controle);
+  font-style: italic;
+  color: var(--p-cor-acento-texto);
+}
+
+.regua__marco--atual .regua__no {
+  border-color: var(--p-cor-acento-texto);
+  box-shadow: 0 0 0 3px var(--p-cor-superficie), 0 0 0 4px var(--p-cor-acento-texto);
+}
+
+@container regua (min-width: 36rem) {
   .regua__marco {
     display: grid;
     grid-template-columns: 9rem minmax(0, 1fr);

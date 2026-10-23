@@ -10,6 +10,8 @@ import {
   ID_MODELO,
   aplicacaoExemplo,
   checklistExemplo,
+  itemModelo,
+  modeloCompleto,
   resumoModelo,
   tarefaChecklist,
 } from '@/__tests__/auxiliaresChecklist'
@@ -89,8 +91,8 @@ describe('ChecklistView', () => {
     const { wrapper } = await abrir()
 
     expect(wrapper.get('h1').text()).toBe(TEXTOS_CHECKLIST.titulo)
-    expect(wrapper.text()).toContain(TEXTOS_CHECKLIST.vazioTitulo)
-    expect(wrapper.text()).toContain('Sem checklist ainda')
+    expect(wrapper.text()).toContain('O casamento ainda não tem checklist')
+    expect(wrapper.get('[data-teste="aplicar-modelo"]').text()).toBe('Aplicar checklist')
     const previa = wrapper.get('[data-teste="previa-aplicacao"]')
     expect(previa.attributes('aria-live')).toBe('polite')
     expect(previa.text()).toContain('Vai criar 26 tarefas.')
@@ -318,7 +320,7 @@ describe('ChecklistView — reestruturação da fundação', () => {
     expect(wrapper.get('[data-teste="resumo-marco-trintaDias"]').classes()).not.toContain('checklist__marco--concluido')
   })
 
-  it('[COMPONENTE] sem checklist a lateral mostra o estado vazio e o painel de aplicar fica em cartão na coluna principal', async () => {
+  it('[COMPONENTE] sem checklist a lateral explica os marcos depois da coluna principal e o painel de aplicar fica em cartão', async () => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ data: DATA_EVENTO }))),
@@ -330,9 +332,15 @@ describe('ChecklistView — reestruturação da fundação', () => {
     const { wrapper } = await abrir()
 
     const lateral = wrapper.get('[data-teste="lateral-checklist"]')
-    expect(lateral.text()).toContain(TEXTOS_CHECKLIST.semChecklist)
+    expect(lateral.element.tagName).toBe('ASIDE')
+    expect(lateral.attributes('aria-labelledby')).toBe('titulo-como-organiza')
+    expect(lateral.get('#titulo-como-organiza').text()).toBe(TEXTOS_CHECKLIST.comoOrganizaTitulo)
+    expect(lateral.get('[data-teste="como-organiza"]').text()).toContain('a partir da data do casamento: 12 meses')
     expect(lateral.find('[data-teste="progresso-por-marco"]').exists()).toBe(false)
     expect(lateral.find('[data-teste="ver-tarefas"]').exists()).toBe(false)
+    const filhos = Array.from(wrapper.get('.checklist__corpo').element.children)
+    expect(filhos[0]?.classList.contains('checklist__principal')).toBe(true)
+    expect(filhos[1]?.getAttribute('data-teste')).toBe('lateral-checklist')
 
     const painel = wrapper.get('.checklist__principal [data-teste="painel-aplicar"]')
     expect(painel.classes()).toContain('cartao')
@@ -349,16 +357,138 @@ describe('ChecklistView — reestruturação da fundação', () => {
     expect(view).toContain('container: checklist / inline-size')
     expect(view).toContain('@container checklist (min-width: 64rem)')
     expect(view).toContain('position: sticky')
+    expect(view).not.toContain('@media')
+    expect(view).toContain('@container aplicar-modelo (min-width: 28rem)')
+    expect(view).toMatch(/@container checklist \(max-width: 35\.99rem\) \{\s*\.checklist__por-marco \{\s*display: none;/)
 
     const regua = estiloDe(lerFonte('componentes/base/ReguaMarcos.vue'))
     expect(regua).toMatch(/\.regua__marco--concluido \.regua__no \{\s*background: var\(--p-cor-sucesso\);\s*border-color: var\(--p-cor-sucesso\);/)
     expect(regua).not.toContain('--p-cor-primaria')
     expect(regua).toMatch(/\.regua__numero \{[^}]*font-weight: var\(--p-fonte-peso-leve\)/)
+    expect(regua).not.toContain('@media')
+    expect(regua).toContain('container: regua / inline-size')
+    expect(regua).toContain('@container regua (min-width: 36rem)')
+
+    const modelo = estiloDe(lerFonte('views/modelosChecklist/ModeloChecklistView.vue'))
+    expect(modelo).toMatch(/@container modelo \(max-width: 35\.99rem\) \{\s*\.modelo__bloco--por-marco \{\s*display: none;/)
 
     const progresso = estiloDe(lerFonte('componentes/base/ProgressoChecklist.vue'))
     expect(progresso).not.toContain('--p-cor-primaria')
     expect(progresso).toMatch(/\.progresso-checklist__percentual \{[^}]*color: var\(--p-cor-sucesso-texto\)/)
     expect(progresso).toMatch(/\.progresso-checklist__preenchimento \{[^}]*background: var\(--p-cor-sucesso\)/)
     expect(progresso).not.toMatch(/:\s*\d+px;/)
+  })
+})
+
+describe('ChecklistView — evoluída para eventos', () => {
+  const ROTA_MODELO = `${ROTA_MODELOS}/${ID_MODELO}`
+  const CASOS = [
+    { tipo: 'Casamento', artigo: 'o casamento', contracaoDe: 'do casamento', vazio: 'O casamento ainda não tem checklist' },
+    { tipo: 'QuinzeAnos', artigo: 'a festa de 15 anos', contracaoDe: 'da festa de 15 anos', vazio: 'A festa de 15 anos ainda não tem checklist' },
+    { tipo: 'Aniversario', artigo: 'o aniversário', contracaoDe: 'do aniversário', vazio: 'O aniversário ainda não tem checklist' },
+    { tipo: 'Comemoracao', artigo: 'a comemoração', contracaoDe: 'da comemoração', vazio: 'A comemoração ainda não tem checklist' },
+  ] as const
+
+  const NO_DIA = tarefaChecklist({ id: 'd', titulo: 'Receber convidados', prazo: DATA_EVENTO })
+  const ATRASADA = tarefaChecklist({ id: 'e', titulo: 'Fechar decoração', prazo: '2026-12-12', atrasada: true })
+
+  it.each(CASOS)('[COMPONENTE] $tipo: falta para o evento, nota dos marcos e complemento do dia usam o vocabulário', async (caso) => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ data: DATA_EVENTO, tipo: caso.tipo, diasRestantes: 42 }))),
+      quando('GET', ROTA_CHECKLIST, () => respostaJson(checklistExemplo([LOCAL, NO_DIA]))),
+      quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo({ tipoEvento: caso.tipo })])),
+    )
+
+    const { wrapper } = await abrir()
+
+    expect(wrapper.get('[data-teste="falta-para-evento"]').text()).toBe(`Faltam 42 dias para ${caso.artigo}.`)
+    expect(wrapper.get('[data-teste="nota-marcos"]').text()).toBe(
+      `Cada tarefa entra no marco do seu prazo, contado a partir da data ${caso.contracaoDe}.`,
+    )
+    expect(wrapper.get('[data-teste="marco-noDia"] h2').text()).toContain(caso.contracaoDe)
+    expect(wrapper.get('main').text()).not.toMatch(caso.tipo === 'Casamento' ? /casal/i : /casamento|casal/i)
+  })
+
+  it.each(CASOS)('[COMPONENTE] $tipo: estado vazio cita o evento e mostra as tarefas do modelo selecionado sem link', async (caso) => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ data: DATA_EVENTO, tipo: caso.tipo }))),
+      quando('GET', ROTA_CHECKLIST, () => respostaJson(checklistExemplo([]))),
+      quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo({ tipoEvento: caso.tipo })])),
+      quando('GET', ROTA_MODELO, () =>
+        respostaJson(
+          modeloCompleto([itemModelo(), itemModelo({ id: 'i2', titulo: 'Contratar fotografia', diasAntesDoEvento: 300 })], {
+            tipoEvento: caso.tipo,
+          }),
+        ),
+      ),
+      quando('GET', ROTA_PREVIA, () => respostaJson(aplicacaoExemplo())),
+    )
+
+    const { wrapper } = await abrir()
+
+    expect(wrapper.text()).toContain(caso.vazio)
+    expect(wrapper.text()).toContain(`com prazos contados a partir da data ${caso.contracaoDe}.`)
+    const sugestao = wrapper.get('[data-teste="lateral-checklist"] [data-teste="sugestao-tarefas-modelo"]')
+    expect(sugestao.text()).toContain(
+      `O modelo selecionado cria estas tarefas, com prazos contados a partir da data ${caso.contracaoDe}.`,
+    )
+    expect(sugestao.findAll('[data-teste="sugestao-item"]').map((item) => item.text())).toEqual([
+      'Reservar local da cerimônia e da recepção',
+      'Contratar fotografia',
+    ])
+    expect(sugestao.find('[data-teste="sugestao-aplicar"]').exists()).toBe(false)
+    expect(wrapper.get('[data-teste="aplicar-modelo"]').text()).toBe(TEXTOS_CHECKLIST.aplicarPrimeiro)
+  })
+
+  it('[COMPONENTE] por marco mostra o que falta com atrasadas e marca o marco atual como Agora na lateral e na régua', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ data: DATA_EVENTO, diasRestantes: 42 }))),
+      quando('GET', ROTA_CHECKLIST, () => respostaJson(checklistExemplo([LOCAL, BUFFET, ATRASADA, PROVA]))),
+      quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo()])),
+    )
+
+    const { wrapper } = await abrir()
+
+    const doze = wrapper.get('[data-teste="resumo-marco-dozeMeses"]')
+    expect(doze.get('dd').text()).toBe('1 de 3 concluídas')
+    expect(doze.get('[data-teste="falta-marco"]').text()).toBe('Faltam 2, 1 atrasada')
+    expect(doze.find('[data-teste="marco-agora"]').exists()).toBe(false)
+
+    const trinta = wrapper.get('[data-teste="resumo-marco-trintaDias"]')
+    expect(trinta.get('[data-teste="marco-agora"]').text()).toBe('Agora')
+    expect(trinta.find('[data-teste="falta-marco"]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-teste="marco-agora"]')).toHaveLength(1)
+
+    expect(wrapper.get('[data-teste="marco-trintaDias"]').classes()).toContain('regua__marco--atual')
+    expect(wrapper.get('[data-teste="marco-trintaDias"] [data-teste="regua-destaque"]').text()).toBe('Agora')
+    expect(wrapper.get('[data-teste="marco-dozeMeses"]').classes()).not.toContain('regua__marco--atual')
+    expect(wrapper.get('[data-teste="marco-dozeMeses"]').text()).toContain('1 de 3 concluídas, 1 atrasada')
+  })
+
+  it('[COMPONENTE] abrir Aplicar outro modelo leva o foco ao painel e Cancelar devolve ao botão; o progresso não repete rótulo', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ data: DATA_EVENTO }))),
+      quando('GET', ROTA_CHECKLIST, () => respostaJson(checklistExemplo([LOCAL, PROVA]))),
+      quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo()])),
+      quando('GET', ROTA_PREVIA, () => respostaJson(aplicacaoExemplo())),
+    )
+
+    const { wrapper } = await abrir()
+
+    expect(wrapper.get('.checklist__progresso').attributes('aria-label')).toBeUndefined()
+
+    await wrapper.get('[data-teste="abrir-aplicar"]').trigger('click')
+    await flushPromises()
+    const titulo = wrapper.get('#titulo-aplicar-modelo')
+    expect(titulo.attributes('tabindex')).toBe('-1')
+    expect(document.activeElement).toBe(titulo.element)
+
+    await wrapper.get('[data-teste="fechar-aplicar"]').trigger('click')
+    await flushPromises()
+    expect(document.activeElement).toBe(wrapper.get('[data-teste="abrir-aplicar"]').element)
   })
 })

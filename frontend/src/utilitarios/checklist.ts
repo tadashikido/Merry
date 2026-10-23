@@ -1,6 +1,8 @@
 import { TEXTOS_ITEM_MODELO, TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
 import { MARCOS_CHECKLIST, type GrupoMarco, type MarcoChecklist, type SentidoPrazo } from '@/tipos/checklist'
+import type { TarefaDto } from '@/tipos/tarefas'
 import type { RegraValidacao } from '@/utilitarios/validacao'
+import { tarefaAberta } from '@/utilitarios/tarefas'
 
 export const LIMITES_CHECKLIST = {
   nomeMinimo: 2,
@@ -98,3 +100,27 @@ export const nomeModelo: RegraValidacao = (valor) => {
 
 export const descricaoModelo: RegraValidacao = (valor) =>
   String(valor ?? '').trim().length > LIMITES_CHECKLIST.descricaoModeloMaximo ? TEXTOS_MODELOS_CHECKLIST.erroDescricaoTamanho : null
+
+export interface SituacaoMarco {
+  total: number
+  concluidas: number
+  abertas: number
+  atrasadas: number
+}
+
+export function situacaoDoMarco(tarefas: readonly Pick<TarefaDto, 'status' | 'atrasada'>[]): SituacaoMarco {
+  let concluidas = 0
+  let abertas = 0
+  let atrasadas = 0
+  for (const tarefa of tarefas) {
+    if (tarefa.status === 'Concluida') {
+      concluidas += 1
+    } else if (tarefaAberta(tarefa.status)) {
+      abertas += 1
+      if (tarefa.atrasada) {
+        atrasadas += 1
+      }
+    }
+  }
+  return { total: tarefas.length, concluidas, abertas, atrasadas }
+}

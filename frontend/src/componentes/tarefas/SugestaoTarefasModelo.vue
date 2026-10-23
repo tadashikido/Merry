@@ -11,7 +11,10 @@ import { modelosDoTipo } from '@/utilitarios/modelosPorTipo'
 
 const LIMITE_EXEMPLOS = 4
 
-const props = defineProps<{ eventoId: string; tipo: TipoEvento | null }>()
+const props = withDefaults(
+  defineProps<{ eventoId: string; tipo: TipoEvento | null; modeloId?: string | null; semAcao?: boolean; texto?: string | null }>(),
+  { modeloId: null, semAcao: false, texto: null },
+)
 
 const modelos = useModelosChecklistStore()
 
@@ -24,6 +27,9 @@ const principal = computed(() => {
     return null
   }
   const disponiveis = modelosDoTipo(modelos.lista, props.tipo)
+  if (props.modeloId) {
+    return disponiveis.find((modelo) => modelo.id === props.modeloId) ?? null
+  }
   return disponiveis.find((modelo) => modelo.sugerido) ?? disponiveis[0] ?? null
 })
 
@@ -68,6 +74,7 @@ onMounted(() => {
   <section
     v-if="visivel && principal && detalhe"
     class="sugestao-modelo cartao"
+    :class="{ 'sugestao-modelo--sem-acao': semAcao }"
     aria-labelledby="titulo-sugestao-tarefas"
     data-teste="sugestao-tarefas-modelo"
   >
@@ -80,7 +87,7 @@ onMounted(() => {
           {{ TEXTOS_TAREFAS.sugestaoTitulo }}
         </h2>
         <p class="sugestao-modelo__texto">
-          {{ TEXTOS_TAREFAS.sugestaoTexto(vocabulario.referencia.indefinido) }}
+          {{ texto ?? TEXTOS_TAREFAS.sugestaoTexto(vocabulario.referencia.indefinido) }}
         </p>
         <div class="sugestao-modelo__modelo">
           <p
@@ -120,6 +127,7 @@ onMounted(() => {
         </p>
       </div>
       <RouterLink
+        v-if="!semAcao"
         class="sugestao-modelo__aplicar"
         :to="{ name: 'evento-checklist', params: { id: eventoId } }"
         data-teste="sugestao-aplicar"
@@ -217,6 +225,12 @@ onMounted(() => {
   text-underline-offset: 0.2em;
 }
 
+.sugestao-modelo--sem-acao .sugestao-modelo__corpo {
+  grid-template-areas:
+    'introducao'
+    'exemplos';
+}
+
 @container sugestao-modelo (min-width: 36rem) {
   .sugestao-modelo__corpo {
     grid-template-areas:
@@ -225,6 +239,11 @@ onMounted(() => {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: auto 1fr;
     column-gap: var(--p-ritmo-bloco);
+  }
+
+  .sugestao-modelo--sem-acao .sugestao-modelo__corpo {
+    grid-template-areas: 'introducao exemplos';
+    grid-template-rows: auto;
   }
 
   .sugestao-modelo__exemplos {

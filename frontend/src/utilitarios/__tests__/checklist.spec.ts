@@ -8,6 +8,7 @@ import {
   diasComSentido,
   diasValidos,
   marcoPorDias,
+  situacaoDoMarco,
   nomeModelo,
   sentidoDosDias,
 } from '@/utilitarios/checklist'
@@ -97,5 +98,19 @@ describe('utilitários do checklist', () => {
     expect(TEXTOS_CHECKLIST.toastRecalculado(3)).toBe('Prazos de 3 tarefas recalculados.')
     expect(TEXTOS_MODELOS_CHECKLIST.itens(1)).toBe('1 item')
     expect(TEXTOS_MODELOS_CHECKLIST.confirmarExclusaoTexto(0)).not.toContain('itens')
+  })
+})
+
+describe('situacaoDoMarco', () => {
+  it('[UNITÁRIO] conta concluídas, abertas e atrasadas abertas, deixando canceladas fora', () => {
+    expect(
+      situacaoDoMarco([
+        { status: 'Concluida', atrasada: false },
+        { status: 'AFazer', atrasada: true },
+        { status: 'EmAndamento', atrasada: false },
+        { status: 'Cancelada', atrasada: true },
+      ]),
+    ).toEqual({ total: 4, concluidas: 1, abertas: 2, atrasadas: 1 })
+    expect(situacaoDoMarco([])).toEqual({ total: 0, concluidas: 0, abertas: 0, atrasadas: 0 })
   })
 })

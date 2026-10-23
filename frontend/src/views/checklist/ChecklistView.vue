@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
@@ -15,6 +15,7 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import ProgressoChecklist from '@/componentes/base/ProgressoChecklist.vue'
 import ReguaMarcos from '@/componentes/base/ReguaMarcos.vue'
+import SugestaoTarefasModelo from '@/componentes/tarefas/SugestaoTarefasModelo.vue'
 import type { ItemMenuAcoes, MarcoRegua } from '@/componentes/base/tipos'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useEventosStore } from '@/stores/eventos'
@@ -23,11 +24,13 @@ import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { modelosDoTipo } from '@/utilitarios/modelosPorTipo'
 import { COMPLEMENTO_MARCO_CHECKLIST, ROTULOS_MARCO_CHECKLIST, TEXTOS_CHECKLIST } from '@/textos/checklist'
 import { ROTULOS_STATUS_TAREFA, TEXTOS_TAREFAS } from '@/textos/tarefas'
-import type { AplicacaoModeloChecklistDto } from '@/tipos/checklist'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import type { AplicacaoModeloChecklistDto, MarcoChecklist } from '@/tipos/checklist'
 import type { StatusTarefa, TarefaDto } from '@/tipos/tarefas'
-import { agruparPorMarco, diasAntesDoEvento } from '@/utilitarios/checklist'
+import { agruparPorMarco, diasAntesDoEvento, marcoPorDias, situacaoDoMarco } from '@/utilitarios/checklist'
 import { formatarDataCalendarioComDiaSemana, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
-import { badgeTarefa, metadadosTarefa, tarefaAberta } from '@/utilitarios/tarefas'
+import { descreverFaltaParaEvento } from '@/utilitarios/prazoTarefaEvento'
+import { badgeTarefa, metadadosTarefa } from '@/utilitarios/tarefas'
 
 const props = defineProps<{ id: string }>()
 
@@ -47,6 +50,8 @@ const painelAberto = ref(false)
 const tarefaEmAndamento = ref<string | null>(null)
 const dialogoRecalculo = ref(false)
 const recalculando = ref(false)
+const tituloPainel = ref<HTMLElement | null>(null)
+const botaoAbrirPainel = ref<{ $el: HTMLElement } | null>(null)
 
 const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
 const nomes = computed(() =>
@@ -57,6 +62,11 @@ const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
 const arquivado = computed(() => dados.value?.eventoArquivado ?? evento.value?.arquivado ?? false)
 const semChecklist = computed(() => dados.value !== null && dados.value.tarefas.length === 0)
 const mostrarPainel = computed(() => !arquivado.value && (semChecklist.value || painelAberto.value))
+const vocabulario = computed(() => vocabularioOuNeutro(evento.value?.tipo))
+const faltaParaEvento = computed(() =>
+  evento.value ? descreverFaltaParaEvento(evento.value.diasRestantes, vocabulario.value) : null,
+)
+const marcoAtual = computed<MarcoChecklist | null>(() => (evento.value ? marcoPorDias(evento.value.diasRestantes) : null))
 const descricao = computed(() =>
   evento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(evento.value.data)}` : undefined,
 )
@@ -75,18 +85,38 @@ const grupos = computed(() => {
   return agruparPorMarco(atual.tarefas, (tarefa) => diasAntesDoEvento(atual.dataEvento, tarefa.prazo))
 })
 
-const marcos = computed<MarcoRegua[]>(() =>
+function complementoDoMarco(marco: MarcoChecklist): string | null {
+  if (marco === 'noDia' || marco === 'depois') {
+    return vocabulario.value.referencia.contracaoDe
+  }
+  return COMPLEMENTO_MARCO_CHECKLIST[marco]
+}
+
+const resumoMarcos = computed(() =>
   grupos.value.map((grupo) => {
-    const concluidas = grupo.itens.filter((tarefa) => tarefa.status === 'Concluida').length
-    const encerradas = grupo.itens.filter((tarefa) => !tarefaAberta(tarefa.status)).length
+    const situacao = situacaoDoMarco(grupo.itens)
     return {
       chave: grupo.marco,
       rotulo: ROTULOS_MARCO_CHECKLIST[grupo.marco],
-      complemento: COMPLEMENTO_MARCO_CHECKLIST[grupo.marco],
-      detalhe: TEXTOS_CHECKLIST.progresso(concluidas, grupo.itens.length),
-      concluido: encerradas === grupo.itens.length && concluidas > 0,
+      progresso: TEXTOS_CHECKLIST.progresso(situacao.concluidas, situacao.total),
+      falta: situacao.atrasadas > 0 ? TEXTOS_CHECKLIST.faltaNoMarco(situacao.abertas, situacao.atrasadas) : null,
+      atrasadas: situacao.atrasadas,
+      atual: grupo.marco === marcoAtual.value,
+      concluido: situacao.abertas === 0 && situacao.concluidas > 0,
+      detalhe: TEXTOS_CHECKLIST.detalheMarco(situacao.concluidas, situacao.total, situacao.atrasadas),
     }
   }),
+)
+
+const marcos = computed<MarcoRegua[]>(() =>
+  resumoMarcos.value.map((marco) => ({
+    chave: marco.chave,
+    rotulo: marco.rotulo,
+    complemento: complementoDoMarco(marco.chave),
+    detalhe: marco.detalhe,
+    concluido: marco.concluido,
+    destaque: marco.atual ? TEXTOS_CHECKLIST.marcoAgora : null,
+  })),
 )
 
 const mensagemPrevia = computed<string[]>(() => {
@@ -164,6 +194,18 @@ watch(
   },
   { immediate: true },
 )
+
+async function abrirPainel() {
+  painelAberto.value = true
+  await nextTick()
+  tituloPainel.value?.focus()
+}
+
+async function fecharPainel() {
+  painelAberto.value = false
+  await nextTick()
+  botaoAbrirPainel.value?.$el.focus()
+}
 
 async function atualizarPrevia() {
   const modeloId = modeloSelecionado.value
@@ -318,6 +360,7 @@ async function recalcular() {
           #acoes
         >
           <Button
+            ref="botaoAbrirPainel"
             :label="TEXTOS_CHECKLIST.aplicarOutroTitulo"
             icon="ie ie-mais"
             severity="secondary"
@@ -325,7 +368,7 @@ async function recalcular() {
             :aria-expanded="painelAberto"
             aria-controls="painel-aplicar-modelo"
             data-teste="abrir-aplicar"
-            @click="painelAberto = true"
+            @click="abrirPainel"
           />
         </template>
       </CabecalhoPagina>
@@ -378,14 +421,12 @@ async function recalcular() {
 
           <div class="checklist__corpo">
             <aside
+              v-if="!semChecklist"
               class="checklist__lateral pilha pilha--grupo"
               aria-labelledby="titulo-progresso-checklist"
               data-teste="lateral-checklist"
             >
-              <section
-                class="checklist__progresso cartao pilha pilha--grupo"
-                :aria-label="TEXTOS_CHECKLIST.progressoRotulo"
-              >
+              <div class="checklist__progresso cartao pilha pilha--grupo">
                 <div class="checklist__progresso-geral pilha pilha--grupo">
                   <h2
                     id="titulo-progresso-checklist"
@@ -393,6 +434,13 @@ async function recalcular() {
                   >
                     {{ TEXTOS_CHECKLIST.progressoTitulo }}
                   </h2>
+                  <p
+                    v-if="faltaParaEvento"
+                    class="checklist__falta-evento"
+                    data-teste="falta-para-evento"
+                  >
+                    {{ faltaParaEvento }}
+                  </p>
                   <ProgressoChecklist
                     :percentual="dados.progresso.percentual"
                     :concluidas="dados.progresso.concluidas"
@@ -412,28 +460,47 @@ async function recalcular() {
                   >
                     {{ TEXTOS_CHECKLIST.porMarcoTitulo }}
                   </h3>
+                  <p
+                    class="checklist__nota-marcos"
+                    data-teste="nota-marcos"
+                  >
+                    {{ TEXTOS_CHECKLIST.notaMarcos(vocabulario.referencia.contracaoDe) }}
+                  </p>
                   <dl
                     class="checklist__marcos"
                     aria-labelledby="titulo-por-marco"
                   >
                     <div
-                      v-for="marco in marcos"
+                      v-for="marco in resumoMarcos"
                       :key="marco.chave"
                       class="checklist__marco"
-                      :class="{ 'checklist__marco--concluido': marco.concluido }"
+                      :class="{ 'checklist__marco--concluido': marco.concluido, 'checklist__marco--atual': marco.atual }"
                       :data-teste="`resumo-marco-${marco.chave}`"
                     >
-                      <dt>{{ marco.rotulo }}</dt>
+                      <dt>
+                        {{ marco.rotulo }}
+                        <span
+                          v-if="marco.atual"
+                          class="checklist__agora"
+                          data-teste="marco-agora"
+                        >{{ TEXTOS_CHECKLIST.marcoAgora }}</span>
+                      </dt>
                       <dd class="numeros-tabulares">
-                        {{ marco.detalhe }}
+                        {{ marco.progresso }}
+                      </dd>
+                      <dd
+                        v-if="marco.falta"
+                        class="checklist__falta numeros-tabulares"
+                        data-teste="falta-marco"
+                      >
+                        {{ marco.falta }}
                       </dd>
                     </div>
                   </dl>
                 </div>
-              </section>
+              </div>
 
               <RouterLink
-                v-if="!semChecklist"
                 class="checklist__ver-tarefas"
                 :to="{ name: 'evento-tarefas', params: { id } }"
                 data-teste="ver-tarefas"
@@ -446,8 +513,8 @@ async function recalcular() {
               <EstadoVazio
                 v-if="semChecklist"
                 icone="concluido"
-                :titulo="TEXTOS_CHECKLIST.vazioTitulo"
-                :descricao="TEXTOS_CHECKLIST.vazioTexto"
+                :titulo="TEXTOS_CHECKLIST.vazioTituloEvento(vocabulario.referencia.artigo)"
+                :descricao="TEXTOS_CHECKLIST.vazioTextoEvento(vocabulario.referencia.contracaoDe)"
               />
 
               <section
@@ -459,7 +526,9 @@ async function recalcular() {
               >
                 <h2
                   id="titulo-aplicar-modelo"
+                  ref="tituloPainel"
                   class="checklist__titulo-aplicar"
+                  tabindex="-1"
                 >
                   {{ semChecklist ? TEXTOS_CHECKLIST.aplicarTitulo : TEXTOS_CHECKLIST.aplicarOutroTitulo }}
                 </h2>
@@ -527,7 +596,7 @@ async function recalcular() {
 
                   <div class="checklist__acoes-aplicar">
                     <Button
-                      :label="TEXTOS_CHECKLIST.aplicar"
+                      :label="semChecklist ? TEXTOS_CHECKLIST.aplicarPrimeiro : TEXTOS_CHECKLIST.aplicar"
                       :loading="aplicando"
                       :disabled="!podeAplicar"
                       data-teste="aplicar-modelo"
@@ -540,7 +609,7 @@ async function recalcular() {
                       text
                       :disabled="aplicando"
                       data-teste="fechar-aplicar"
-                      @click="painelAberto = false"
+                      @click="fecharPainel"
                     />
                   </div>
                 </template>
@@ -587,6 +656,36 @@ async function recalcular() {
                 </template>
               </ReguaMarcos>
             </div>
+
+            <aside
+              v-if="semChecklist"
+              class="checklist__lateral pilha pilha--grupo"
+              aria-labelledby="titulo-como-organiza"
+              data-teste="lateral-checklist"
+            >
+              <div
+                class="checklist__como-organiza cartao pilha pilha--campo"
+                data-teste="como-organiza"
+              >
+                <h2
+                  id="titulo-como-organiza"
+                  class="texto-rotulo"
+                >
+                  {{ TEXTOS_CHECKLIST.comoOrganizaTitulo }}
+                </h2>
+                <p class="checklist__nota-marcos">
+                  {{ TEXTOS_CHECKLIST.comoOrganizaTexto(vocabulario.referencia.contracaoDe) }}
+                </p>
+              </div>
+              <SugestaoTarefasModelo
+                v-if="!arquivado && modeloSelecionado"
+                :evento-id="id"
+                :tipo="evento?.tipo ?? null"
+                :modelo-id="modeloSelecionado"
+                :texto="TEXTOS_CHECKLIST.sugestaoTextoSelecionado(vocabulario.referencia.contracaoDe)"
+                sem-acao
+              />
+            </aside>
           </div>
         </template>
       </div>
@@ -640,10 +739,10 @@ async function recalcular() {
 }
 
 .checklist__marco {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  justify-content: space-between;
-  gap: var(--p-ritmo-grupo);
+  column-gap: var(--p-ritmo-grupo);
   font-size: var(--p-fonte-tamanho-controle);
 }
 
@@ -654,6 +753,39 @@ async function recalcular() {
 .checklist__marco dd {
   margin: 0;
   color: var(--p-cor-texto-secundario);
+}
+
+.checklist__marco .checklist__falta {
+  grid-column: 1 / -1;
+  font-size: var(--p-fonte-tamanho-apoio);
+  color: var(--p-cor-erro-texto);
+}
+
+.checklist__agora {
+  margin-left: var(--p-ritmo-campo);
+  font-family: var(--p-fonte-serif);
+  font-style: italic;
+  color: var(--p-cor-acento-texto);
+}
+
+.checklist__falta-evento {
+  margin: 0;
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-style: italic;
+  line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-texto);
+}
+
+.checklist__nota-marcos {
+  margin: 0;
+  font-size: var(--p-fonte-tamanho-apoio);
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--p-cor-texto-apoio);
+}
+
+.checklist__como-organiza h2 {
+  margin: 0;
 }
 
 .checklist__marco--concluido dt,
@@ -669,6 +801,10 @@ async function recalcular() {
 .checklist__ver-tarefas {
   align-self: flex-start;
   font-size: var(--p-fonte-tamanho-controle);
+}
+
+.checklist__aplicar {
+  container: aplicar-modelo / inline-size;
 }
 
 .checklist__titulo-aplicar {
@@ -723,9 +859,27 @@ async function recalcular() {
   align-self: flex-start;
 }
 
-@media (min-width: 640px) {
+@container aplicar-modelo (min-width: 28rem) {
   .checklist__acoes-aplicar {
     flex-direction: row;
+  }
+}
+
+@container lateral-checklist (min-width: 44rem) {
+  .checklist__progresso {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+
+  .checklist__marcos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--p-ritmo-campo) var(--p-ritmo-bloco);
+  }
+}
+
+@container checklist (max-width: 35.99rem) {
+  .checklist__por-marco {
+    display: none;
   }
 }
 
