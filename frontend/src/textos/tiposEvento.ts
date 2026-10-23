@@ -197,6 +197,12 @@ export function vocabularioDoTipo(tipo: TipoEvento | null | undefined): Vocabula
   return VOCABULARIO_TIPO_EVENTO[ehTipoEvento(tipo) ? tipo : 'Casamento']
 }
 
+export const TIPO_EVENTO_NEUTRO: TipoEvento = 'Comemoracao'
+
+export function vocabularioOuNeutro(tipo: TipoEvento | null | undefined): VocabularioTipoEvento {
+  return VOCABULARIO_TIPO_EVENTO[ehTipoEvento(tipo) ? tipo : TIPO_EVENTO_NEUTRO]
+}
+
 export function aceitaSegundoNome(tipo: TipoEvento): boolean {
   return VOCABULARIO_TIPO_EVENTO[tipo].homenageados.segundo !== null
 }

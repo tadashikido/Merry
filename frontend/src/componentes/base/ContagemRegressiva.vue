@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { descreverContagem, descreverContagemAcessivel, legendaContagemDestaque } from '@/textos/eventos'
+import { descreverContagem, descreverContagemAcessivel, legendaContagemDestaque, REFERENCIA_EVENTO_GENERICA } from '@/textos/eventos'
 
-const props = withDefaults(defineProps<{ dias: number; variante?: 'compacta' | 'destaque' | 'cabecalho' }>(), {
-  variante: 'compacta',
-})
+const props = withDefaults(
+  defineProps<{ dias: number; variante?: 'compacta' | 'destaque' | 'cabecalho'; referencia?: string }>(),
+  {
+    variante: 'compacta',
+    referencia: REFERENCIA_EVENTO_GENERICA,
+  },
+)
 
 const futuro = computed(() => props.dias > 0)
 const texto = computed(() => descreverContagem(props.dias))
-const textoAcessivel = computed(() => descreverContagemAcessivel(props.dias))
+const textoAcessivel = computed(() => descreverContagemAcessivel(props.dias, props.referencia))
 const numero = computed(() => props.dias.toLocaleString('pt-BR'))
 </script>
 
@@ -37,7 +41,7 @@ const numero = computed(() => props.dias.toLocaleString('pt-BR'))
       <span
         class="contagem__legenda"
         aria-hidden="true"
-      >{{ legendaContagemDestaque(dias) }}</span>
+      >{{ legendaContagemDestaque(dias, referencia) }}</span>
     </template>
     <span
       v-else

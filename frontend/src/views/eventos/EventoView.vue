@@ -15,6 +15,7 @@ import NomesAnfitrioes from '@/componentes/base/NomesAnfitrioes.vue'
 import BlocoAcessoAnfitriao from '@/componentes/acessoAnfitriao/BlocoAcessoAnfitriao.vue'
 import BlocoAlertasPagamentos from '@/componentes/base/BlocoAlertasPagamentos.vue'
 import BlocoConvidados from '@/componentes/convidados/BlocoConvidados.vue'
+import AndamentoEvento from '@/componentes/eventos/AndamentoEvento.vue'
 import BlocoProximosPassos from '@/componentes/eventos/BlocoProximosPassos.vue'
 import type { ItemDetalhe } from '@/componentes/base/tipos'
 import { useNotificacao } from '@/composables/useNotificacao'
@@ -23,7 +24,7 @@ import { useEventosStore } from '@/stores/eventos'
 import { useFinanceiroStore } from '@/stores/financeiro'
 import { TEXTOS_AREA_ANFITRIAO } from '@/textos/acessoAnfitriao'
 import { ROTULOS_FASE, TEXTOS_EVENTOS, VARIANTE_FASE } from '@/textos/eventos'
-import { vocabularioDoTipo } from '@/textos/tiposEvento'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import { TEXTOS_DUPLICACAO_EVENTO } from '@/textos/duplicacaoEvento'
 import {
   formatarDataCalendarioComDiaSemana,
@@ -56,7 +57,10 @@ const quando = computed(() => {
 
 const podeEditar = computed(() => !autenticacao.ehAnfitriao && Boolean(evento.value && !evento.value.arquivado))
 
-const vocabulario = computed(() => vocabularioDoTipo(evento.value?.tipo))
+const vocabulario = computed(() => vocabularioOuNeutro(evento.value?.tipo))
+
+const exibeProximosPassos = computed(() => !autenticacao.ehAnfitriao && Boolean(evento.value && !evento.value.arquivado))
+const exibeTopo = computed(() => Boolean(evento.value && !evento.value.arquivado))
 
 const dadosFaltantes = computed(() => {
   const atual = evento.value
@@ -210,6 +214,7 @@ async function desfazerArquivamento(id: string) {
           <ContagemRegressiva
             :dias="evento.diasRestantes"
             variante="cabecalho"
+            :referencia="vocabulario.referencia.artigo"
           />
         </template>
         <template
@@ -270,51 +275,73 @@ async function desfazerArquivamento(id: string) {
           </MensagemFormulario>
         </div>
 
-        <BlocoProximosPassos
-          v-if="!autenticacao.ehAnfitriao && !evento.arquivado"
-          :evento-id="evento.id"
-        />
-
         <div
-          class="evento__resumo"
-          data-teste="resumo-evento"
+          class="evento__painel"
+          :class="{ 'evento__painel--sem-topo': !exibeTopo }"
+          data-teste="painel-evento"
         >
-          <BlocoAlertasPagamentos
-            v-if="!evento.arquivado"
-            :alertas="financeiro.eventoAlertas === evento.id ? financeiro.alertasEvento : null"
-            contexto="evento"
-            :carregando="financeiro.carregandoAlertasEvento"
-            :com-erro="financeiro.eventoAlertas === evento.id && financeiro.falhaAlertasEvento !== null"
-            :destino-financeiro="{ name: 'evento-financeiro', params: { id: evento.id } }"
-            @tentar-novamente="financeiro.carregarAlertasEvento(evento.id)"
-          />
-
-          <section
-            class="cartao pilha pilha--campo"
-            aria-labelledby="titulo-detalhes"
-            data-teste="detalhes-evento"
+          <div
+            v-if="exibeTopo"
+            class="evento__topo pilha pilha--bloco"
           >
-            <h2 id="titulo-detalhes">
-              {{ TEXTOS_EVENTOS.detalhesTitulo }}
-            </h2>
-            <ListaDetalhes
-              :itens="detalhes"
-              embutida
+            <BlocoProximosPassos
+              v-if="exibeProximosPassos"
+              :evento-id="evento.id"
             />
-          </section>
+            <AndamentoEvento
+              :evento-id="evento.id"
+              :tipo="evento.tipo"
+              :data="evento.data"
+              :dias-restantes="evento.diasRestantes"
+              :data-limite-rsvp-efetiva="evento.dataLimiteRsvpEfetiva"
+              :percentual-checklist="evento.percentualChecklist"
+              :exibir-checklist="!autenticacao.ehAnfitriao"
+            />
+          </div>
+
+          <div
+            class="evento__resumo"
+            data-teste="resumo-evento"
+          >
+            <BlocoAlertasPagamentos
+              v-if="!evento.arquivado"
+              :alertas="financeiro.eventoAlertas === evento.id ? financeiro.alertasEvento : null"
+              contexto="evento"
+              :carregando="financeiro.carregandoAlertasEvento"
+              :com-erro="financeiro.eventoAlertas === evento.id && financeiro.falhaAlertasEvento !== null"
+              :destino-financeiro="{ name: 'evento-financeiro', params: { id: evento.id } }"
+              @tentar-novamente="financeiro.carregarAlertasEvento(evento.id)"
+            />
+  
+            <section
+              class="cartao pilha pilha--campo"
+              aria-labelledby="titulo-detalhes"
+              data-teste="detalhes-evento"
+            >
+              <h2 id="titulo-detalhes">
+                {{ TEXTOS_EVENTOS.detalhesTitulo }}
+              </h2>
+              <ListaDetalhes
+                :itens="detalhes"
+                embutida
+              />
+            </section>
+          </div>
+
+          <div class="evento__base pilha pilha--bloco">
+            <BlocoConvidados
+              :evento-id="evento.id"
+              :arquivado="evento.arquivado"
+              :convidados-estimados="evento.convidadosEstimados"
+            />
+
+            <BlocoAcessoAnfitriao
+              v-if="!autenticacao.ehAnfitriao"
+              :evento-id="evento.id"
+              :arquivado="evento.arquivado"
+            />
+          </div>
         </div>
-
-        <BlocoConvidados
-          :evento-id="evento.id"
-          :arquivado="evento.arquivado"
-          :convidados-estimados="evento.convidadosEstimados"
-        />
-
-        <BlocoAcessoAnfitriao
-          v-if="!autenticacao.ehAnfitriao"
-          :evento-id="evento.id"
-          :arquivado="evento.arquivado"
-        />
       </div>
     </template>
   </LayoutPainelUsuario>
@@ -331,11 +358,49 @@ async function desfazerArquivamento(id: string) {
   gap: var(--p-ritmo-campo);
 }
 
+.evento {
+  container: evento / inline-size;
+}
+
+.evento__painel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
+}
+
 .evento__resumo {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(28rem, 100%), 1fr));
   gap: var(--p-ritmo-cartao);
   align-items: start;
+}
+
+@container evento (min-width: 64rem) {
+  .evento__painel {
+    grid-template-columns: minmax(0, 1fr) minmax(var(--p-dimensao-largura-gaveta), var(--p-dimensao-largura-autenticacao));
+    grid-template-rows: auto 1fr;
+  }
+
+  .evento__topo {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .evento__resumo {
+    grid-template-columns: minmax(0, 1fr);
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .evento__base {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .evento__painel--sem-topo .evento__base {
+    grid-row: 1 / span 2;
+  }
 }
 
 .evento__voltar {

@@ -137,12 +137,14 @@ export function resumoListaEventos(exibidos: number, total: number, situacao: Si
   return `${quantidade} ${substantivo} ${adjetivo}`
 }
 
-export function legendaContagemDestaque(dias: number): string {
-  return dias === 1 ? 'dia para o evento' : 'dias para o evento'
+export const REFERENCIA_EVENTO_GENERICA = 'o evento'
+
+export function legendaContagemDestaque(dias: number, referencia: string = REFERENCIA_EVENTO_GENERICA): string {
+  return dias === 1 ? `dia para ${referencia}` : `dias para ${referencia}`
 }
 
-export function descreverContagemAcessivel(dias: number): string {
-  return dias > 0 ? `${descreverContagem(dias)} para o evento` : descreverContagem(dias)
+export function descreverContagemAcessivel(dias: number, referencia: string = REFERENCIA_EVENTO_GENERICA): string {
+  return dias > 0 ? `${descreverContagem(dias)} para ${referencia}` : descreverContagem(dias)
 }
 
 export const MENSAGENS_VALIDACAO_EVENTO = {
@@ -176,4 +178,31 @@ export const TEXTOS_FORMULARIO_EVENTO = {
   outrosModelos: (quantidade: number) => `mais ${contar(quantidade, 'modelo disponível', 'modelos disponíveis')}`,
   semModeloChecklist: 'Nenhum modelo de checklist para este tipo ainda. Crie um em Modelos de checklist.',
   semModeloCronograma: 'Nenhum modelo de cronograma para este tipo ainda. Crie um em Modelos de cronograma.',
+} as const
+
+export const TEXTOS_ANDAMENTO_EVENTO = {
+  titulo: (contracaoDe: string) => `Andamento ${contracaoDe}`,
+  checklistTitulo: 'Checklist',
+  checklistLegenda: 'das tarefas do checklist concluídas',
+  checklistAria: (percentual: number) => `Checklist ${percentual}% concluído`,
+  checklistVazioTitulo: 'Nenhum modelo aplicado',
+  checklistVazioTexto: (contracaoDe: string) =>
+    `Aplique um modelo para gerar as tarefas ${contracaoDe} com prazos contados pela data.`,
+  abrirChecklist: 'Abrir checklist',
+  aplicarChecklist: 'Aplicar checklist',
+  confirmacaoTitulo: 'Confirmação de presença',
+  diasPrazo: (dias: number) => {
+    if (dias <= 0) {
+      return 'Último dia'
+    }
+    return dias === 1 ? '1 dia' : `${dias.toLocaleString('pt-BR')} dias`
+  },
+  prazoEncerradoCurto: 'Encerrado',
+  antesDoEvento: (dias: number, contracaoDe: string) => {
+    if (dias <= 0) {
+      return `No dia ${contracaoDe}`
+    }
+    return dias === 1 ? `1 dia antes ${contracaoDe}` : `${dias.toLocaleString('pt-BR')} dias antes ${contracaoDe}`
+  },
+  verConfirmacoes: 'Ver confirmações',
 } as const

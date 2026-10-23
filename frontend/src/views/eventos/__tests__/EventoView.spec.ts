@@ -85,21 +85,29 @@ function filhosDiretos(elemento: Element): string[] {
 }
 
 describe('EventoView — estrutura reestruturada', () => {
-  it('[COMPONENTE] coloca Pagamentos e Detalhes na faixa de resumo, nessa ordem, e Convidados e Acesso dos anfitriões abaixo em largura total', async () => {
+  it('[COMPONENTE] organiza o painel em topo (próximos passos e andamento), resumo (Pagamentos e Detalhes) e base (Convidados e Acesso dos anfitriões), nessa ordem', async () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
       quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto())),
       quando('GET', ROTA_ALERTAS, () => respostaJson(alertasExemplo())),
+      quando('GET', `${ROTA_EVENTO}/proximos-passos`, () =>
+        respostaJson({ anfitriaoConvidado: false, checklistAplicado: false, convidadosCadastrados: false, convitesEnviados: false, todosConcluidos: false }),
+      ),
     )
     const tela = await abrir()
 
     const conteudo = tela.get('.evento')
     expect(conteudo.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
-    const resumo = tela.get('[data-teste="resumo-evento"]')
-    expect(filhosDiretos(resumo.element)).toEqual(['bloco-alertas-pagamentos', 'detalhes-evento'])
-    const ordem = filhosDiretos(conteudo.element)
-    expect(ordem).toEqual(['resumo-evento', 'bloco-convidados', 'bloco-acesso-anfitriao'])
+    expect(filhosDiretos(conteudo.element)).toEqual(['painel-evento'])
+    const painel = tela.get('[data-teste="painel-evento"]')
+    const [topo, resumo, base] = Array.from(painel.element.children)
+    expect(topo!.classList.contains('evento__topo')).toBe(true)
+    expect(filhosDiretos(topo!)).toEqual(['bloco-proximos-passos', 'andamento-evento'])
+    expect(resumo!.getAttribute('data-teste')).toBe('resumo-evento')
+    expect(filhosDiretos(resumo!)).toEqual(['bloco-alertas-pagamentos', 'detalhes-evento'])
+    expect(base!.classList.contains('evento__base')).toBe(true)
+    expect(filhosDiretos(base!)).toEqual(['bloco-convidados', 'bloco-acesso-anfitriao'])
   })
 
   it('[COMPONENTE] Detalhes é um cartão com título próprio e lista embutida, sem moldura duplicada', async () => {
@@ -125,6 +133,9 @@ describe('EventoView — estrutura reestruturada', () => {
     expect(avisos.querySelector('[data-teste="aviso-arquivado"]')).not.toBeNull()
     expect(filhosDiretos(tela.get('[data-teste="resumo-evento"]').element)).toEqual(['detalhes-evento'])
     expect(tela.find('[data-teste="bloco-alertas-pagamentos"]').exists()).toBe(false)
+    expect(tela.find('.evento__topo').exists()).toBe(false)
+    expect(tela.find('[data-teste="andamento-evento"]').exists()).toBe(false)
+    expect(tela.get('[data-teste="painel-evento"]').classes()).toContain('evento__painel--sem-topo')
   })
 
   it('[COMPONENTE] dados incompletos ficam agrupados acima do resumo; sem avisos o grupo não é renderizado', async () => {
@@ -154,6 +165,9 @@ describe('EventoView — estrutura reestruturada', () => {
     expect(tela.find('[data-teste="editar-evento"]').exists()).toBe(false)
     expect(tela.find('[data-teste="duplicar-evento"]').exists()).toBe(false)
     expect(tela.get('[data-teste="detalhes-evento"]').text()).not.toContain(TEXTOS_EVENTOS.observacoes)
+    expect(tela.find('[data-teste="bloco-proximos-passos"]').exists()).toBe(false)
+    expect(tela.find('[data-teste="andamento-checklist"]').exists()).toBe(false)
+    expect(tela.find('[data-teste="andamento-confirmacao"]').exists()).toBe(true)
   })
 
   it('[SEGURANÇA] 404 agrupa o erro e a volta para a lista sem renderizar dados do evento', async () => {
@@ -185,6 +199,9 @@ describe('EventoView — estrutura reestruturada', () => {
     expect(estiloView).not.toMatch(/margin/)
     expect(estiloView).toMatch(/repeat\(auto-fit, minmax\(min\(28rem, 100%\), 1fr\)\)/)
     expect(estiloView).toMatch(/gap: var\(--p-ritmo-cartao\)/)
+    expect(estiloView).not.toMatch(/@media/)
+    expect(estiloView).toMatch(/container: evento \/ inline-size/)
+    expect(estiloView).toMatch(/@container evento \(min-width: 64rem\)/)
 
     const estiloCabecalho = estiloDe(lerFonte('componentes/base/CabecalhoPagina.vue'))
     const desktop = estiloCabecalho.slice(estiloCabecalho.indexOf('@media (min-width: 1024px)'))
