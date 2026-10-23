@@ -1,6 +1,7 @@
 import type { DiaCronograma } from '@/tipos/cronograma'
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import type { OpcaoLocalModelo } from '@/tipos/modelosCronograma'
+import { momentoDoModelo } from '@/textos/modelos'
 import { VOCABULARIO_TIPO_EVENTO, ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 
 function numero(valor: number): string {
@@ -84,14 +85,17 @@ export const TEXTOS_MODELOS_CRONOGRAMA = {
   formNovo: 'Novo modelo de cronograma',
   formEditar: 'Editar modelo de cronograma',
   formNovoDescricao:
-    'Dê um nome que a equipe reconheça e o horário da cerimônia que serve de base. Os itens entram depois, no detalhe do modelo.',
+    'Dê um nome que a equipe reconheça e o horário do momento principal que serve de base. Os itens entram depois, no detalhe do modelo.',
   grupoModelo: 'Sobre o modelo',
   campoNome: 'Nome',
   campoNomePlaceholder: 'Ex.: Roteiro fazenda',
   campoDescricao: 'Descrição',
   campoDescricaoDica: (atual: number, limite: number) => `Opcional. ${numero(atual)} de ${numero(limite)} caracteres.`,
-  campoReferencia: 'Horário de referência da cerimônia',
-  dicaReferencia: 'Só muda como os horários aparecem aqui. A distância de cada item até a cerimônia continua a mesma.',
+  campoReferenciaPara: (contracaoMomento: string) => `Horário de referência ${contracaoMomento}`,
+  dicaReferenciaPara: (artigoMomento: string) =>
+    `Só muda como os horários aparecem aqui. A distância de cada item até ${artigoMomento} continua a mesma.`,
+  depoisDeCriarItens: 'Adicione os itens no detalhe do modelo, que abre ao criar.',
+  depoisDeCriarAplicar: 'Em Aplicar modelo, escolha este modelo. O roteiro acompanha o horário do momento principal marcado no evento.',
   criarModelo: 'Criar modelo',
   salvarAlteracoes: 'Salvar alterações',
   cancelar: 'Cancelar',
@@ -146,6 +150,17 @@ export function rotuloLocalModelo(opcao: OpcaoLocalModelo, tipo: TipoEvento | nu
   }
   const locais = VOCABULARIO_TIPO_EVENTO[tipo].locais
   return opcao === 'Cerimonia' ? locais.campoPrincipal : opcao === 'Recepcao' ? locais.campoSecundario : ROTULOS_LOCAL_SEM_TIPO.Outro
+}
+
+export function dicasModeloCronograma(tipo: TipoEvento | null | undefined): string[] {
+  const momento = momentoDoModelo(tipo)
+  return [
+    'Na descrição, conte quando usar: porte, estilo ou local.',
+    `Os itens entram no detalhe do modelo, cada um com horário antes ou depois ${momento.contracaoDe}, da véspera ao dia seguinte.`,
+    ehTipoEvento(tipo)
+      ? `O horário de referência é só um exemplo: ao aplicar, o roteiro acompanha o horário ${momento.contracaoDe} marcado no evento.`
+      : `Ao aplicar, os horários contam a partir do momento principal de cada evento: ${momentosPrincipaisEmFrase()}.`,
+  ]
 }
 
 export function referenciaHorarioModelo(horario: string, tipo: TipoEvento | null | undefined): string {

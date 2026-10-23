@@ -715,14 +715,95 @@ describe('Formulários de modelo de cronograma', () => {
   it('[UNITÁRIO] estilo do formulário de modelo usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModeloCronogramaFormularioView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(fonte).toContain('class="pagina-formulario"')
+    expect(fonte).toContain('class="pagina-formulario formulario-modelo-tela__pagina"')
     expect(estilo).toContain('container: formulario-modelo / inline-size')
     expect(estilo).toContain('@container formulario-modelo (min-width: 40rem)')
+    expect(estilo).toContain('container: formulario-modelo-tela / inline-size')
+    expect(estilo).toContain('@container formulario-modelo-tela (min-width: 64rem)')
     expect(estilo).toContain('repeat(2, minmax(0, 1fr))')
+    expect(estilo).not.toContain('sticky')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')
     expect(fonte).not.toContain("validarCampo('")
+  })
+
+  it('[COMPONENTE] criação mostra lateral para qualquer evento, horário do evento e Depois de criar', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/modelos-cronograma/novo')
+
+    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).toContain('formulario-modelo-tela__pagina--com-lateral')
+    expect(wrapper.get('label[for="modelo-cronograma-horarioReferencia"]').text()).toContain('Horário de referência do evento')
+    expect(wrapper.get('[data-teste="formulario-modelo"]').text()).not.toMatch(/cerimônia|casamento|comemoração/i)
+    expect(wrapper.get('.cabecalho-pagina__descricao').text()).not.toMatch(/cerimônia|casamento/i)
+    const lateral = wrapper.get('[data-teste="lateral-formulario-modelo"]')
+    expect(lateral.get('[data-teste="selo-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.origemAssessoria)
+    expect(lateral.get('[data-teste="onde-aparece-modelo"]').text()).toBe('Na lista ao aplicar o cronograma de qualquer evento.')
+    expect(lateral.find('[data-teste="contagem-modelo"]').exists()).toBe(false)
+    expect(lateral.findAll('[data-teste="exemplos-nome-modelo"] dd')).toHaveLength(4)
+    expect(lateral.get('[data-teste="dicas-modelo"]').text()).toContain(momentosPrincipaisEmFrase())
+    const passos = lateral.findAll('[data-teste="passo-aplicar-modelo"]').map((passo) => passo.text())
+    expect(passos).toHaveLength(3)
+    expect(passos[0]).toContain(TEXTOS_MODELOS_CRONOGRAMA.depoisDeCriarItens)
+    expect(passos[1]).toContain(TEXTOS_MODELOS_POR_TIPO.abrirQualquerEvento('Cronograma'))
+    expect(passos[2]).toContain('Aplicar modelo')
+    expect(lateral.get('[data-teste="como-aplicar-modelo"] h2').text()).toBe(TEXTOS_MODELOS_POR_TIPO.depoisDeCriarTitulo)
+    expect(lateral.find('a, button').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] formulário de modelo de cronograma vem antes da lateral no DOM', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/modelos-cronograma/novo')
+
+    const formulario = wrapper.get('[data-teste="formulario-modelo"]').element
+    const lateral = wrapper.get('[data-teste="lateral-formulario-modelo"]').element
+    expect(formulario.compareDocumentPosition(lateral) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it.each([
+    ['Casamento', 'Sugerido para casamento', 'de cada casamento', 'Horário de referência da cerimônia', 'até a cerimônia'],
+    ['QuinzeAnos', 'Sugerido para festa de 15 anos', 'de cada festa de 15 anos', 'Horário de referência da festa', 'até a festa'],
+    ['Aniversario', 'Sugerido para aniversário', 'de cada aniversário', 'Horário de referência da festa', 'até a festa'],
+    ['Comemoracao', 'Sugerido para comemoração', 'de cada comemoração', 'Horário de referência do evento', 'até o evento'],
+  ] as const)('[COMPONENTE] edição de sugerido %s mostra o tipo e o momento, sem Depois de criar', async (tipo, selo, onde, rotulo, dica) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ tipoEvento: tipo }))))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/editar`)
+
+    expect(wrapper.get('label[for="modelo-cronograma-horarioReferencia"]').text()).toContain(rotulo)
+    expect(wrapper.get('[data-teste="formulario-modelo"]').text()).toContain(dica)
+    const lateral = wrapper.get('[data-teste="lateral-formulario-modelo"]')
+    expect(lateral.get('[data-teste="selo-modelo"]').text()).toBe(selo)
+    expect(lateral.get('[data-teste="onde-aparece-modelo"]').text()).toContain(onde)
+    expect(lateral.get('[data-teste="contagem-modelo"]').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.itens(modeloCronogramaCompleto().itens.length))
+    expect(lateral.find('[data-teste="como-aplicar-modelo"]').exists()).toBe(false)
+  })
+
+  it.each([
+    ['nulo', null, TEXTOS_MODELOS_POR_TIPO.origemAssessoria, false],
+    ['desconhecido', 'Formatura' as unknown as TipoEvento, 'Sugerido', true],
+  ] as const)('[COMPONENTE] edição de modelo de cronograma com tipo %s não cai em casamento, comemoração nem cerimônia', async (_, tipo, selo, sugerido) => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ tipoEvento: tipo, sugerido, nome: 'Evento no campo', descricao: null }))),
+    )
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/editar`)
+
+    expect(wrapper.get('[data-teste="formulario-modelo"]').text()).not.toMatch(/cerimônia|casamento|comemoração/i)
+    const lateral = wrapper.get('[data-teste="lateral-formulario-modelo"]')
+    expect(lateral.get('[data-teste="selo-modelo"]').text()).toBe(selo)
+    expect(lateral.get('[data-teste="onde-modelo"]').text()).not.toMatch(/cerimônia|casamento|comemoração/i)
+    expect(lateral.get('[data-teste="dicas-modelo"]').text()).toContain('depois do evento')
+  })
+
+  it.each([
+    ['sem permissão', 403],
+    ['não encontrado', 404],
+  ] as const)('[COMPONENTE] %s não mostra a lateral nem alarga a página', async (_, status) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(status, { title: 'Falha' })))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/editar`)
+
+    expect(wrapper.find('[data-teste="lateral-formulario-modelo"]').exists()).toBe(false)
+    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).not.toContain('formulario-modelo-tela__pagina--com-lateral')
   })
 
   it('[INTEGRAÇÃO] novo item converte dia e horário em minutos desde a cerimônia', async () => {

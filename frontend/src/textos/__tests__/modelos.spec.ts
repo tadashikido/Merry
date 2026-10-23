@@ -12,7 +12,7 @@ import {
   referenciaDoModelo,
   rotuloSugeridoDoModelo,
 } from '@/textos/modelos'
-import { TEXTOS_MODELOS_CRONOGRAMA, rotuloLocalModelo } from '@/textos/modelosCronograma'
+import { TEXTOS_MODELOS_CRONOGRAMA, dicasModeloCronograma, momentosPrincipaisEmFrase, rotuloLocalModelo } from '@/textos/modelosCronograma'
 import type { TipoEvento } from '@/tipos/eventos'
 
 const TIPO_DESCONHECIDO = 'Formatura' as unknown as TipoEvento
@@ -130,5 +130,39 @@ describe('textos de modelos por tipo', () => {
     expect(abrirEventoDoModelo('Aniversario', 'Cronograma')).toBe('Abra um aniversário e entre em Cronograma.')
     expect(TEXTOS_MODELOS_CRONOGRAMA.semNinguem(1)).toBe('1 item sem responsável nem fornecedor.')
     expect(TEXTOS_MODELOS_CRONOGRAMA.duracaoRoteiro('32 h')).toBe('32 h de roteiro')
+  })
+
+  it.each([
+    ['Casamento', 'Horário de referência da cerimônia', 'até a cerimônia', 'depois da cerimônia', 'horário da cerimônia marcado'],
+    ['QuinzeAnos', 'Horário de referência da festa', 'até a festa', 'depois da festa', 'horário da festa marcado'],
+    ['Aniversario', 'Horário de referência da festa', 'até a festa', 'depois da festa', 'horário da festa marcado'],
+    ['Comemoracao', 'Horário de referência do evento', 'até o evento', 'depois do evento', 'horário do evento marcado'],
+  ] as const)('[UNITÁRIO] formulário de modelo de cronograma %s fala do momento do tipo', (tipo, rotulo, dica, dicaItens, dicaAplicar) => {
+    const momento = momentoDoModelo(tipo)
+    expect(TEXTOS_MODELOS_CRONOGRAMA.campoReferenciaPara(momento.contracaoDe)).toBe(rotulo)
+    expect(TEXTOS_MODELOS_CRONOGRAMA.dicaReferenciaPara(momento.artigo)).toContain(dica)
+    const dicas = dicasModeloCronograma(tipo)
+    expect(dicas).toHaveLength(3)
+    expect(dicas[1]).toContain(dicaItens)
+    expect(dicas[2]).toContain(dicaAplicar)
+  })
+
+  it.each([
+    ['nulo', null],
+    ['desconhecido', TIPO_DESCONHECIDO],
+  ] as const)('[UNITÁRIO] formulário de modelo de cronograma com tipo %s fala do evento e lista os momentos por tipo', (_, tipo) => {
+    const momento = momentoDoModelo(tipo)
+    expect(TEXTOS_MODELOS_CRONOGRAMA.campoReferenciaPara(momento.contracaoDe)).toBe('Horário de referência do evento')
+    expect(TEXTOS_MODELOS_CRONOGRAMA.dicaReferenciaPara(momento.artigo)).not.toMatch(/cerimônia|casamento|comemoração/i)
+    const dicas = dicasModeloCronograma(tipo)
+    expect(dicas.slice(0, 2).join(' ')).not.toMatch(/cerimônia|casamento|comemoração/i)
+    expect(dicas[2]).toBe(`Ao aplicar, os horários contam a partir do momento principal de cada evento: ${momentosPrincipaisEmFrase()}.`)
+  })
+
+  it('[UNITÁRIO] criação de modelo de cronograma não trata cerimônia como conceito geral', () => {
+    expect(TEXTOS_MODELOS_CRONOGRAMA.formNovoDescricao).not.toMatch(/cerimônia|casamento/i)
+    expect(TEXTOS_MODELOS_CRONOGRAMA.depoisDeCriarItens).not.toMatch(/cerimônia|casamento/i)
+    expect(TEXTOS_MODELOS_CRONOGRAMA.depoisDeCriarAplicar).toContain('Aplicar modelo')
+    expect(TEXTOS_MODELOS_CRONOGRAMA.depoisDeCriarAplicar).not.toMatch(/cerimônia|casamento/i)
   })
 })

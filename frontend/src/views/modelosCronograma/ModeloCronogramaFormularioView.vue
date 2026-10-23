@@ -11,13 +11,16 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import ComoAplicarModelo from '@/componentes/modelos/ComoAplicarModelo.vue'
+import OrientacaoFormularioModelo from '@/componentes/modelos/OrientacaoFormularioModelo.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import type { FalhaEvento } from '@/stores/eventos'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
-import { TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
-import type { SalvarModeloCronogramaRequest } from '@/tipos/modelosCronograma'
+import { TEXTOS_MODELOS_POR_TIPO, abrirEventoDoModelo, momentoDoModelo } from '@/textos/modelos'
+import { TEXTOS_MODELOS_CRONOGRAMA, dicasModeloCronograma } from '@/textos/modelosCronograma'
+import type { ModeloCronogramaDto, SalvarModeloCronogramaRequest } from '@/tipos/modelosCronograma'
 import {
   HORARIO_REFERENCIA_PADRAO,
   LIMITES_MODELO_CRONOGRAMA,
@@ -43,6 +46,7 @@ const falhaCarga = ref<FalhaEvento | null>(null)
 const enviando = ref(false)
 const mensagemErro = ref<string | null>(null)
 const nomeCarregado = ref('')
+const modeloCarregado = ref<ModeloCronogramaDto | null>(null)
 
 const formulario = useFormulario(
   { nome: '', descricao: '', horarioReferencia: HORARIO_REFERENCIA_PADRAO },
@@ -63,6 +67,17 @@ const descricaoCabecalho = computed(() => {
   return nomeCarregado.value || undefined
 })
 
+const mostrarLateral = computed(() => !carregando.value && !falhaCarga.value && (!edicao.value || modeloCarregado.value !== null))
+const tipoModelo = computed(() => modeloCarregado.value?.tipoEvento ?? null)
+const momentoModelo = computed(() => momentoDoModelo(tipoModelo.value))
+const dicasModelo = computed(() => dicasModeloCronograma(tipoModelo.value))
+const contagemItens = computed(() => (modeloCarregado.value ? TEXTOS_MODELOS_CRONOGRAMA.itens(modeloCarregado.value.itens.length) : null))
+const passosDepoisDeCriar = [
+  TEXTOS_MODELOS_CRONOGRAMA.depoisDeCriarItens,
+  abrirEventoDoModelo(null, 'Cronograma'),
+  TEXTOS_MODELOS_CRONOGRAMA.depoisDeCriarAplicar,
+]
+
 async function carregar() {
   if (!props.modeloId) {
     return
@@ -75,6 +90,7 @@ async function carregar() {
     falhaCarga.value = resultado.falha
     return
   }
+  modeloCarregado.value = resultado.valor
   nomeCarregado.value = resultado.valor.nome
   formulario.valores.nome = resultado.valor.nome
   formulario.valores.descricao = resultado.valor.descricao ?? ''
@@ -153,156 +169,207 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="pagina-formulario">
-      <CabecalhoPagina
-        :titulo="titulo"
-        :descricao="descricaoCabecalho"
-      />
-
-      <div class="formulario-modelo pilha pilha--cartao">
-        <EstadoCarregando
-          v-if="carregando"
-          variante="formulario"
-          :linhas="2"
+    <div class="formulario-modelo-tela">
+      <div
+        class="pagina-formulario formulario-modelo-tela__pagina"
+        :class="{ 'formulario-modelo-tela__pagina--com-lateral': mostrarLateral }"
+      >
+        <CabecalhoPagina
+          :titulo="titulo"
+          :descricao="descricaoCabecalho"
         />
 
-        <EstadoErro
-          v-else-if="falhaCarga?.tipo === 'naoEncontrado'"
-          :titulo="TEXTOS_MODELOS_CRONOGRAMA.naoEncontradoTitulo"
-          :mensagem="TEXTOS_MODELOS_CRONOGRAMA.naoEncontradoTexto"
-          :pode-tentar-novamente="false"
-        />
+        <div class="formulario-modelo-tela__corpo">
+          <div class="formulario-modelo pilha pilha--cartao">
+            <EstadoCarregando
+              v-if="carregando"
+              variante="formulario"
+              :linhas="2"
+            />
 
-        <EstadoErro
-          v-else-if="falhaCarga"
-          :titulo="TEXTOS_MODELOS_CRONOGRAMA.erroTitulo"
-          :mensagem="falhaCarga.tipo === 'semPermissao' ? TEXTOS_MODELOS_CRONOGRAMA.semAcesso : TEXTOS_MODELOS_CRONOGRAMA.erroTexto"
-          :pode-tentar-novamente="falhaCarga.tipo !== 'semPermissao'"
-          :variante="falhaCarga.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
-          @tentar-novamente="carregar"
-        />
+            <EstadoErro
+              v-else-if="falhaCarga?.tipo === 'naoEncontrado'"
+              :titulo="TEXTOS_MODELOS_CRONOGRAMA.naoEncontradoTitulo"
+              :mensagem="TEXTOS_MODELOS_CRONOGRAMA.naoEncontradoTexto"
+              :pode-tentar-novamente="false"
+            />
 
-        <template v-else>
-          <MensagemFormulario
-            v-if="mensagemErro"
-            :mensagem="mensagemErro"
-            data-teste="erro-formulario"
-          />
+            <EstadoErro
+              v-else-if="falhaCarga"
+              :titulo="TEXTOS_MODELOS_CRONOGRAMA.erroTitulo"
+              :mensagem="falhaCarga.tipo === 'semPermissao' ? TEXTOS_MODELOS_CRONOGRAMA.semAcesso : TEXTOS_MODELOS_CRONOGRAMA.erroTexto"
+              :pode-tentar-novamente="falhaCarga.tipo !== 'semPermissao'"
+              :variante="falhaCarga.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
+              @tentar-novamente="carregar"
+            />
 
-          <form
-            class="pilha pilha--bloco"
-            novalidate
-            data-teste="formulario-modelo"
-            @submit.prevent="enviar"
-          >
-            <fieldset
-              class="formulario-modelo__grupo pilha pilha--grupo"
-              data-teste="grupo-modelo"
-            >
-              <legend class="formulario-modelo__legenda texto-rotulo">
-                {{ TEXTOS_MODELOS_CRONOGRAMA.grupoModelo }}
-              </legend>
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_MODELOS_CRONOGRAMA.campoNome"
-                :id-campo="idCampo('nome')"
-                obrigatorio
-                :erro="formulario.erros.nome"
+            <template v-else>
+              <MensagemFormulario
+                v-if="mensagemErro"
+                :mensagem="mensagemErro"
+                data-teste="erro-formulario"
+              />
+
+              <form
+                class="pilha pilha--bloco"
+                novalidate
+                data-teste="formulario-modelo"
+                @submit.prevent="enviar"
               >
-                <InputText
-                  :id="idEntrada"
-                  v-model="formulario.valores.nome"
-                  autocomplete="off"
-                  :maxlength="LIMITES_MODELO_CRONOGRAMA.nomeMaximo"
-                  :placeholder="TEXTOS_MODELOS_CRONOGRAMA.campoNomePlaceholder"
-                  aria-required="true"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-nome"
-                  @update:model-value="formulario.revalidarAoDigitar('nome')"
-                  @blur="formulario.validarAoSair('nome')"
-                />
-              </CampoFormulario>
-
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_MODELOS_CRONOGRAMA.campoDescricao"
-                :id-campo="idCampo('descricao')"
-                :dica="TEXTOS_MODELOS_CRONOGRAMA.campoDescricaoDica(formulario.valores.descricao.length, LIMITES_MODELO_CRONOGRAMA.descricaoMaximo)"
-                :erro="formulario.erros.descricao"
-              >
-                <Textarea
-                  :id="idEntrada"
-                  v-model="formulario.valores.descricao"
-                  rows="4"
-                  auto-resize
-                  :maxlength="LIMITES_MODELO_CRONOGRAMA.descricaoMaximo"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-descricao"
-                  @update:model-value="formulario.revalidarAoDigitar('descricao')"
-                  @blur="formulario.validarAoSair('descricao')"
-                />
-              </CampoFormulario>
-
-              <div class="formulario-modelo__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_MODELOS_CRONOGRAMA.campoReferencia"
-                  :id-campo="idCampo('horarioReferencia')"
-                  obrigatorio
-                  :dica="TEXTOS_MODELOS_CRONOGRAMA.dicaReferencia"
-                  :erro="formulario.erros.horarioReferencia"
+                <fieldset
+                  class="formulario-modelo__grupo pilha pilha--grupo"
+                  data-teste="grupo-modelo"
                 >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.horarioReferencia"
-                    type="time"
-                    aria-required="true"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    data-teste="campo-horario-referencia"
-                    @update:model-value="formulario.revalidarAoDigitar('horarioReferencia')"
-                    @blur="formulario.validarAoSair('horarioReferencia')"
-                  />
-                </CampoFormulario>
-              </div>
-            </fieldset>
+                  <legend class="formulario-modelo__legenda texto-rotulo">
+                    {{ TEXTOS_MODELOS_CRONOGRAMA.grupoModelo }}
+                  </legend>
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_MODELOS_CRONOGRAMA.campoNome"
+                    :id-campo="idCampo('nome')"
+                    obrigatorio
+                    :erro="formulario.erros.nome"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.nome"
+                      autocomplete="off"
+                      :maxlength="LIMITES_MODELO_CRONOGRAMA.nomeMaximo"
+                      :placeholder="TEXTOS_MODELOS_CRONOGRAMA.campoNomePlaceholder"
+                      aria-required="true"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-nome"
+                      @update:model-value="formulario.revalidarAoDigitar('nome')"
+                      @blur="formulario.validarAoSair('nome')"
+                    />
+                  </CampoFormulario>
 
-            <div class="formulario-modelo__acoes">
-              <Button
-                type="submit"
-                :label="edicao ? TEXTOS_MODELOS_CRONOGRAMA.salvarAlteracoes : TEXTOS_MODELOS_CRONOGRAMA.criarModelo"
-                :loading="enviando"
-                :aria-busy="enviando"
-                data-teste="salvar-modelo"
-              />
-              <Button
-                type="button"
-                :label="TEXTOS_MODELOS_CRONOGRAMA.cancelar"
-                severity="secondary"
-                text
-                :disabled="enviando"
-                data-teste="cancelar"
-                @click="cancelar"
-              />
-            </div>
-          </form>
-        </template>
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_MODELOS_CRONOGRAMA.campoDescricao"
+                    :id-campo="idCampo('descricao')"
+                    :dica="TEXTOS_MODELOS_CRONOGRAMA.campoDescricaoDica(formulario.valores.descricao.length, LIMITES_MODELO_CRONOGRAMA.descricaoMaximo)"
+                    :erro="formulario.erros.descricao"
+                  >
+                    <Textarea
+                      :id="idEntrada"
+                      v-model="formulario.valores.descricao"
+                      rows="4"
+                      auto-resize
+                      :maxlength="LIMITES_MODELO_CRONOGRAMA.descricaoMaximo"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-descricao"
+                      @update:model-value="formulario.revalidarAoDigitar('descricao')"
+                      @blur="formulario.validarAoSair('descricao')"
+                    />
+                  </CampoFormulario>
+
+                  <div class="formulario-modelo__colunas">
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="TEXTOS_MODELOS_CRONOGRAMA.campoReferenciaPara(momentoModelo.contracaoDe)"
+                      :id-campo="idCampo('horarioReferencia')"
+                      obrigatorio
+                      :dica="TEXTOS_MODELOS_CRONOGRAMA.dicaReferenciaPara(momentoModelo.artigo)"
+                      :erro="formulario.erros.horarioReferencia"
+                    >
+                      <InputText
+                        :id="idEntrada"
+                        v-model="formulario.valores.horarioReferencia"
+                        type="time"
+                        aria-required="true"
+                        :invalid="invalido"
+                        :aria-invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :readonly="enviando"
+                        data-teste="campo-horario-referencia"
+                        @update:model-value="formulario.revalidarAoDigitar('horarioReferencia')"
+                        @blur="formulario.validarAoSair('horarioReferencia')"
+                      />
+                    </CampoFormulario>
+                  </div>
+                </fieldset>
+
+                <div class="formulario-modelo__acoes">
+                  <Button
+                    type="submit"
+                    :label="edicao ? TEXTOS_MODELOS_CRONOGRAMA.salvarAlteracoes : TEXTOS_MODELOS_CRONOGRAMA.criarModelo"
+                    :loading="enviando"
+                    :aria-busy="enviando"
+                    data-teste="salvar-modelo"
+                  />
+                  <Button
+                    type="button"
+                    :label="TEXTOS_MODELOS_CRONOGRAMA.cancelar"
+                    severity="secondary"
+                    text
+                    :disabled="enviando"
+                    data-teste="cancelar"
+                    @click="cancelar"
+                  />
+                </div>
+              </form>
+            </template>
+          </div>
+
+          <div
+            v-if="mostrarLateral"
+            class="formulario-modelo-tela__lateral pilha pilha--bloco"
+            data-teste="lateral-formulario-modelo"
+          >
+            <OrientacaoFormularioModelo
+              :recurso="TEXTOS_MODELOS_CRONOGRAMA.recurso"
+              :rotulo-sugerido="TEXTOS_MODELOS_CRONOGRAMA.sugerido"
+              :dicas="dicasModelo"
+              :edicao="edicao"
+              :tipo="tipoModelo"
+              :sugerido="modeloCarregado?.sugerido ?? false"
+              :contagem="contagemItens"
+            />
+            <ComoAplicarModelo
+              v-if="!edicao"
+              :titulo="TEXTOS_MODELOS_POR_TIPO.depoisDeCriarTitulo"
+              :passos="passosDepoisDeCriar"
+              :nota="TEXTOS_MODELOS_CRONOGRAMA.notaAplicar"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </LayoutPainelUsuario>
 </template>
 
 <style scoped>
+.formulario-modelo-tela {
+  container: formulario-modelo-tela / inline-size;
+}
+
+.formulario-modelo-tela__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'principal'
+    'lateral';
+  gap: var(--p-ritmo-bloco);
+}
+
 .formulario-modelo {
   container: formulario-modelo / inline-size;
+  grid-area: principal;
+  min-width: 0;
+}
+
+.formulario-modelo-tela__lateral {
+  grid-area: lateral;
+  min-width: 0;
+  padding-top: var(--p-ritmo-bloco);
+  border-top: 1px solid var(--p-cor-borda);
 }
 
 .formulario-modelo__grupo {
@@ -341,6 +408,25 @@ function cancelar() {
   .formulario-modelo__acoes {
     flex-direction: row;
     gap: var(--p-ritmo-grupo);
+  }
+}
+
+@container formulario-modelo-tela (min-width: 64rem) {
+  .formulario-modelo-tela__pagina--com-lateral {
+    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
+  }
+
+  .formulario-modelo-tela__pagina--com-lateral .formulario-modelo-tela__corpo {
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
+    grid-template-areas: 'principal lateral';
+    align-items: start;
+  }
+
+  .formulario-modelo-tela__lateral {
+    padding-top: 0;
+    padding-inline-start: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>
