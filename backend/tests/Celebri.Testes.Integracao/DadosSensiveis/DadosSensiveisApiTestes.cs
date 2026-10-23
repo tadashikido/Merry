@@ -4,9 +4,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Celebri.Aplicacao.Calendario;
-using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Rsvp;
 using Celebri.Dominio.DadosSensiveis;
 using Celebri.Infraestrutura.Seguranca;
@@ -20,8 +20,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
-using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 
 namespace Celebri.Testes.Integracao.DadosSensiveis;
 

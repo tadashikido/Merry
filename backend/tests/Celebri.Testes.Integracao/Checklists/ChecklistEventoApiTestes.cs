@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
-using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Checklists;
-using Celebri.Dominio.Eventos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Tarefas;
 using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Isolamento;

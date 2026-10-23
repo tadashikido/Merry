@@ -1,7 +1,7 @@
 using Celebri.Aplicacao.Confirmacoes;
 using Celebri.Aplicacao.Convidados;
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Eventos;
 using static Celebri.Testes.Unidade.Convidados.ConviteTestes;
 
 namespace Celebri.Testes.Unidade.Confirmacoes;

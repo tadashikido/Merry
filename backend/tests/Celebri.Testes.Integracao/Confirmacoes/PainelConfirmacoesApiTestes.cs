@@ -3,18 +3,18 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Confirmacoes;
 using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
 using static Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
-using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 
 namespace Celebri.Testes.Integracao.Confirmacoes;
 

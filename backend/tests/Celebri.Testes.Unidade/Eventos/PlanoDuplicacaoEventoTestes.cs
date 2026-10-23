@@ -1,5 +1,5 @@
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Fornecedores;
 using Celebri.Dominio.Tarefas;
 

@@ -1,5 +1,5 @@
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Fornecedores;
 

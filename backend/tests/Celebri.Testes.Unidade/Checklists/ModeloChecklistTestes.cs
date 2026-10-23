@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Celebri.Aplicacao.Checklists;
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Checklists;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Isolamento;
 using Celebri.Dominio.Organizacoes;

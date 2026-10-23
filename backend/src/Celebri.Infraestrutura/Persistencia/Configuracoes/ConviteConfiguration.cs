@@ -1,5 +1,5 @@
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Organizacoes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

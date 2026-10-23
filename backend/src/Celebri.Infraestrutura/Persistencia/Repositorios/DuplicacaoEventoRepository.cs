@@ -1,6 +1,6 @@
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Fornecedores;
 using Celebri.Dominio.Tarefas;
 using Microsoft.EntityFrameworkCore;

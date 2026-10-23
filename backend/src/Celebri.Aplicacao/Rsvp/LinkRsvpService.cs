@@ -4,8 +4,8 @@ using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.Rsvp.Portas;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Rsvp;
 

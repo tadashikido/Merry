@@ -2,8 +2,8 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Convidados;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Rsvp;
 using Celebri.Dominio.Convidados;
 using Celebri.Dominio.Rsvp;
@@ -12,8 +12,8 @@ using Celebri.Testes.Integracao.Infraestrutura;
 using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.EntityFrameworkCore;
 using static Celebri.Testes.Integracao.Rsvp.ClienteRsvp;
-using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 
 namespace Celebri.Testes.Integracao.Rsvp;
 

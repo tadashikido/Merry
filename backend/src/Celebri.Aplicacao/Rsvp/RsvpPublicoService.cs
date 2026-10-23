@@ -1,14 +1,14 @@
 using Celebri.Aplicacao.Autenticacao.Portas;
 using Celebri.Aplicacao.Calendario;
-using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.DadosSensiveis;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Rsvp;
 using Microsoft.Extensions.Options;

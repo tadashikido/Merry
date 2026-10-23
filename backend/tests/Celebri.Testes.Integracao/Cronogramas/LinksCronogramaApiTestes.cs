@@ -11,8 +11,8 @@ using Celebri.Testes.Integracao.Isolamento;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ClienteAcessoAnfitriao = Celebri.Testes.Integracao.AcessosAnfitriao.ClienteAcessoAnfitriao;
-using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 using ClienteConvites = Celebri.Testes.Integracao.Convidados.ClienteConvites;
+using ClienteEventos = Celebri.Testes.Integracao.Eventos.ClienteEventos;
 
 namespace Celebri.Testes.Integracao.Cronogramas;
 

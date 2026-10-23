@@ -5,8 +5,8 @@ using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.GrandeDia;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Persistencia;
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Eventos;
 
 namespace Celebri.Aplicacao.CronogramaPublico;
 

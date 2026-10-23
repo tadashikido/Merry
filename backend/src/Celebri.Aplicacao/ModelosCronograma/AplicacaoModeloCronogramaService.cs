@@ -2,8 +2,8 @@ using Celebri.Aplicacao.Cronogramas;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.UsuarioAtual;
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Excecoes;
 using Celebri.Dominio.Fornecedores;
 

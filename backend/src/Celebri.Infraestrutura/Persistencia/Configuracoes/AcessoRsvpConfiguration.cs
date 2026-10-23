@@ -1,5 +1,5 @@
-using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Organizacoes;
 using Celebri.Dominio.Rsvp;
 using Microsoft.EntityFrameworkCore;

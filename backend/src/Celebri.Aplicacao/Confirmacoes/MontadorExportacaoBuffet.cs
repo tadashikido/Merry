@@ -1,9 +1,9 @@
 using System.Globalization;
-using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Convidados;
 using Celebri.Aplicacao.DadosSensiveis;
-using Celebri.Dominio.Eventos;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Eventos;
 
 namespace Celebri.Aplicacao.Confirmacoes;
 
