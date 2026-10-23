@@ -1,7 +1,9 @@
 import type { SegmentoProgresso } from '@/componentes/base/tipos'
 import { TEXTOS_COBRANCA, TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
-import type { ConvitePendenteDto, SituacaoConvitesDto } from '@/tipos/confirmacoes'
+import type { ConvitePendenteDto, PainelConfirmacoesDto, SituacaoConvitesDto } from '@/tipos/confirmacoes'
+import type { DataCalendario } from '@/tipos/eventos'
 import { contemTexto } from '@/utilitarios/busca'
+import { diferencaEmDias } from '@/utilitarios/dataCalendario'
 import { formatarNumero } from '@/utilitarios/formatacao'
 
 export function segmentosEnvio(convites: SituacaoConvitesDto): SegmentoProgresso[] {
@@ -93,4 +95,64 @@ export function textoUltimaCobranca(instante: string | null, agora: Date = new D
     return minutos < MINUTOS_AGORA_HA_POUCO ? TEXTOS_COBRANCA.cobradoAgora : TEXTOS_COBRANCA.cobradoHoje(formatarHoraCurta(data))
   }
   return dias === 1 ? TEXTOS_COBRANCA.cobradoOntem : TEXTOS_COBRANCA.cobradoDias(dias)
+}
+
+export type ChavePassoConfirmacao = 'aEnviar' | 'semLembrete' | 'jaLembrados'
+
+export interface PassoConfirmacao {
+  chave: ChavePassoConfirmacao
+  quantidade: number
+}
+
+export interface ProximosPassosConfirmacoes {
+  confirmadas: number
+  maximo: number
+  semResposta: number
+  passos: PassoConfirmacao[]
+  visualizadosSemLembrete: number
+  lembradosHoje: number
+  diasPrazoAntesDoEvento: number | null
+}
+
+function categoriaDoPendente(pendente: ConvitePendenteDto): ChavePassoConfirmacao | null {
+  if (pendente.statusEnvio === 'NaoEnviado') {
+    return 'aEnviar'
+  }
+  if (!pendente.cobravel) {
+    return null
+  }
+  return lerInstante(pendente.ultimaCobrancaEm) === null ? 'semLembrete' : 'jaLembrados'
+}
+
+export function proximosPassosConfirmacoes(
+  painel: Pick<PainelConfirmacoesDto, 'pessoas' | 'pendentes' | 'prazo'>,
+  dataEvento: DataCalendario | null,
+  agora: Date = new Date(),
+): ProximosPassosConfirmacoes {
+  const contagem: Record<ChavePassoConfirmacao, number> = { aEnviar: 0, semLembrete: 0, jaLembrados: 0 }
+  let visualizadosSemLembrete = 0
+  for (const pendente of painel.pendentes) {
+    const categoria = categoriaDoPendente(pendente)
+    if (categoria === null) {
+      continue
+    }
+    contagem[categoria] += 1
+    if (categoria === 'semLembrete' && pendente.statusEnvio === 'Visualizado') {
+      visualizadosSemLembrete += 1
+    }
+  }
+  const ordem: ChavePassoConfirmacao[] = ['aEnviar', 'semLembrete', 'jaLembrados']
+  const dias = dataEvento ? diferencaEmDias(painel.prazo.dataLimite, dataEvento) : null
+  const confirmadas = painel.pessoas.confirmados.total
+  const semResposta = painel.pessoas.pendentes.total
+
+  return {
+    confirmadas,
+    maximo: confirmadas + semResposta,
+    semResposta,
+    passos: ordem.filter((chave) => contagem[chave] > 0).map((chave) => ({ chave, quantidade: contagem[chave] })),
+    visualizadosSemLembrete,
+    lembradosHoje: contarCobradosHoje(painel.pendentes, agora),
+    diasPrazoAntesDoEvento: dias !== null && dias >= 0 ? dias : null,
+  }
 }

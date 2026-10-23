@@ -48,7 +48,8 @@ export const TEXTOS_CONFIRMACOES = {
   colunaPendentes: 'Sem resposta',
   pessoasPendentes: (pendentes: number, total: number) => `${formatarNumero(pendentes)} de ${formatarNumero(total)} sem resposta`,
   vazioTitulo: 'Nenhum convite ainda',
-  vazioTexto: 'Cadastre os convites para acompanhar as confirmações aqui.',
+  vazioTexto:
+    'Quando os convites saírem, aqui aparecem quem respondeu, quem falta lembrar e quantas pessoas contar para o buffet e as mesas.',
   adicionarConvite: 'Adicionar convite',
   importarPlanilha: 'Importar planilha',
   erroCarregar: 'Não foi possível carregar as confirmações.',
@@ -57,6 +58,36 @@ export const TEXTOS_CONFIRMACOES = {
   naoEncontradoTexto: 'Ele pode ter sido removido ou pertencer a outra assessoria.',
   voltarEventos: 'Voltar aos eventos',
   avisoArquivado: 'Evento arquivado: dá para consultar e exportar, mas não enviar convites.',
+} as const
+
+export const TEXTOS_PROXIMOS_PASSOS_CONFIRMACOES = {
+  titulo: 'Para fechar as confirmações',
+  prazoAntes: (dias: number, contracaoDe: string) =>
+    dias === 0
+      ? `O prazo de respostas fecha no dia ${contracaoDe}.`
+      : `O prazo de respostas fecha ${contar(dias, 'dia', 'dias')} antes ${contracaoDe}.`,
+  numerosRotulo: 'Pessoas para o buffet e as mesas',
+  confirmadas: (quantidade: number) => (quantidade === 1 ? 'confirmada' : 'confirmadas'),
+  confirmadasAcessivel: (quantidade: number) => contar(quantidade, 'pessoa confirmada', 'pessoas confirmadas'),
+  maximo: 'se todos que faltam vierem',
+  maximoAcessivel: (quantidade: number) => `até ${contar(quantidade, 'pessoa', 'pessoas')} se todos que faltam vierem`,
+  numeroFechado: 'Número fechado: ninguém falta responder.',
+  passosRotulo: 'Passos para cobrar respostas',
+  aEnviar: (quantidade: number) => `${contar(quantidade, 'convite', 'convites')} para enviar`,
+  aEnviarApoio: (quantidade: number) => (quantidade === 1 ? 'Ainda não saiu. Envie pela lista.' : 'Ainda não saíram. Envie pela lista.'),
+  semLembrete: (quantidade: number) => `${contar(quantidade, 'convite', 'convites')} sem lembrete`,
+  visualizaram: (quantidade: number) =>
+    `${formatarNumero(quantidade)} já ${quantidade === 1 ? 'abriu' : 'abriram'} o convite; um lembrete costuma bastar.`,
+  semLembreteApoio: 'Use “Cobrar pendentes” para lembrar um por um.',
+  jaLembrados: (quantidade: number) => contar(quantidade, 'convite já lembrado', 'convites já lembrados'),
+  jaLembradosApoio: 'Se o prazo estiver perto, vale um contato direto.',
+  lembradosHoje: (quantidade: number) => `${contar(quantidade, 'lembrete enviado', 'lembretes enviados')} hoje.`,
+  todosResponderam: 'Todos responderam. O número já pode ir para o buffet e para as mesas.',
+  prazoEncerrado: (pessoas: number) =>
+    `O prazo terminou com ${contar(pessoas, 'pessoa', 'pessoas')} sem resposta. Feche os números com quem respondeu e combine uma margem com o buffet.`,
+  semPassos: 'Os convites sem resposta já foram enviados. Acompanhe pela lista.',
+  mesas: (mesaEspecial: string) => `Com os confirmados, distribua as mesas, começando pela ${mesaEspecial.toLocaleLowerCase('pt-BR')}.`,
+  organizarMesas: 'Organizar as mesas',
 } as const
 
 export const TEXTOS_COBRANCA = {
@@ -123,7 +154,8 @@ export const TEXTOS_FICHA_BUFFET = {
   colunaNome: 'Nome',
   colunaConvite: 'Convite',
   colunaRestricao: 'Restrição',
-  ilegiveis: (quantidade: number) => `${contar(quantidade, 'restrição não pôde', 'restrições não puderam')} ser lidas. Fale com o suporte.`,
+  ilegiveis: (quantidade: number) =>
+    `${contar(quantidade, 'restrição não pôde ser lida', 'restrições não puderam ser lidas')}. Fale com o suporte.`,
   dadosExcluidos: (data: string) => `As restrições deste evento foram apagadas em ${data} pela política de privacidade.`,
   confirmados: (convites: number) => `Confirmados por convite (${formatarNumero(convites)})`,
   crianca: 'criança',

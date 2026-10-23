@@ -19,6 +19,7 @@ import ResumoCardapio from '@/componentes/base/ResumoCardapio.vue'
 import ResumoContagem from '@/componentes/base/ResumoContagem.vue'
 import type { ColunaListagem, LinhaCardapio } from '@/componentes/base/tipos'
 import DialogoCobrancaPendentes from '@/componentes/confirmacoes/DialogoCobrancaPendentes.vue'
+import ProximosPassosConfirmacoes from '@/componentes/confirmacoes/ProximosPassosConfirmacoes.vue'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useEnvioConvite, type ConviteParaEnvio } from '@/composables/useEnvioConvite'
 import { useNotificacao } from '@/composables/useNotificacao'
@@ -421,103 +422,115 @@ function importar() {
             </div>
           </div>
 
-          <section
-            class="confirmacoes__pendentes pilha pilha--cartao"
-            aria-labelledby="titulo-pendentes"
-          >
-            <div class="confirmacoes__cabecalho-pendentes cabecalho-secao">
-              <div>
-                <h2
-                  id="titulo-pendentes"
-                  class="confirmacoes__titulo-secao"
-                >
-                  {{ TEXTOS_CONFIRMACOES.pendentesTitulo }}
-                  <span class="confirmacoes__quantidade numeros-tabulares">({{ painel.pendentes.length }})</span>
-                </h2>
-              </div>
-
-              <div
-                v-if="podeCobrar"
-                class="confirmacoes__cobrar"
-              >
-                <Button
-                  :label="TEXTOS_COBRANCA.acaoAbrir(fila.length)"
-                  icon="ie ie-mensagem"
-                  severity="secondary"
-                  outlined
-                  aria-haspopup="dialog"
-                  data-teste="abrir-cobranca"
-                  @click="cobrancaAberta = true"
-                />
-              </div>
-              <p
-                v-else-if="prazoEncerrado && !arquivado && painel.pendentes.length > 0"
-                class="confirmacoes__aviso-cobranca"
-                data-teste="cobranca-prazo-encerrado"
-              >
-                {{ TEXTOS_COBRANCA.prazoEncerrado }}
-              </p>
-            </div>
-
-            <MensagemFormulario
-              v-if="painel.pendentes.length === 0"
-              variante="sucesso"
-              :mensagem="TEXTOS_CONFIRMACOES.pendentesVazio"
-              data-teste="pendentes-vazio"
-            />
-
-            <ListagemDados
-              v-else
-              v-model:busca="busca"
-              :itens="linhasPendentes"
-              :colunas="colunasPendentes"
-              chave="id"
-              :rotulo="TEXTOS_CONFIRMACOES.pendentesRotulo"
-              :placeholder-busca="TEXTOS_CONFIRMACOES.buscaPendentes"
+          <div class="confirmacoes__corpo">
+            <section
+              class="confirmacoes__pendentes pilha pilha--cartao"
+              aria-labelledby="titulo-pendentes"
             >
-              <template #celula-nome="{ item }">
-                <div
-                  class="confirmacoes__convite"
-                  data-teste="pendente"
-                >
-                  <span class="confirmacoes__nome-convite">{{ item.nome }}</span>
-                  <span class="confirmacoes__pessoas">{{ item.pendentes }}</span>
-                  <span class="confirmacoes__contagem-pessoas numeros-tabulares">
-                    {{ TEXTOS_CONFIRMACOES.pessoasPendentes(item.pendente.pessoasPendentes.length, item.pendente.totalPessoas) }}
-                  </span>
+              <div class="confirmacoes__cabecalho-pendentes cabecalho-secao">
+                <div>
+                  <h2
+                    id="titulo-pendentes"
+                    class="confirmacoes__titulo-secao"
+                  >
+                    {{ TEXTOS_CONFIRMACOES.pendentesTitulo }}
+                    <span class="confirmacoes__quantidade numeros-tabulares">({{ painel.pendentes.length }})</span>
+                  </h2>
                 </div>
-              </template>
 
-              <template #celula-envio="{ item }">
-                <BadgeStatus
-                  :texto="ROTULOS_STATUS_ENVIO[item.pendente.statusEnvio]"
-                  :variante="VARIANTE_STATUS_ENVIO[item.pendente.statusEnvio]"
-                />
-              </template>
+                <div
+                  v-if="podeCobrar"
+                  class="confirmacoes__cobrar"
+                >
+                  <Button
+                    :label="TEXTOS_COBRANCA.acaoAbrir(fila.length)"
+                    icon="ie ie-mensagem"
+                    severity="secondary"
+                    outlined
+                    aria-haspopup="dialog"
+                    data-teste="abrir-cobranca"
+                    @click="cobrancaAberta = true"
+                  />
+                </div>
+                <p
+                  v-else-if="prazoEncerrado && !arquivado && painel.pendentes.length > 0"
+                  class="confirmacoes__aviso-cobranca"
+                  data-teste="cobranca-prazo-encerrado"
+                >
+                  {{ TEXTOS_COBRANCA.prazoEncerrado }}
+                </p>
+              </div>
 
-              <template #acoes-linha="{ item }">
-                <Button
-                  v-if="!arquivado"
-                  :label="TEXTOS_ENVIO_CONVITE.enviarWhatsApp"
-                  :aria-label="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.enviarWhatsApp, item.nome)"
-                  icon="ie ie-whatsapp"
-                  severity="secondary"
-                  outlined
-                  :loading="conviteEmAndamento === item.id"
-                  :disabled="conviteEmAndamento !== null && conviteEmAndamento !== item.id"
-                  data-teste="enviar-whatsapp"
-                  @click="envio.enviarWhatsApp(paraEnvio(item.pendente))"
-                />
-                <MenuAcoes
-                  :itens="itensMenuLink()"
-                  :rotulo="TEXTOS_ENVIO_CONVITE.maisAcoes"
-                  :rotulo-acessivel="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.maisAcoes, item.nome)"
-                  :desabilitado="conviteEmAndamento !== null"
-                  @selecionar="envio.executarAcaoLink(paraEnvio(item.pendente), $event)"
-                />
-              </template>
-            </ListagemDados>
-          </section>
+              <MensagemFormulario
+                v-if="painel.pendentes.length === 0"
+                variante="sucesso"
+                :mensagem="TEXTOS_CONFIRMACOES.pendentesVazio"
+                data-teste="pendentes-vazio"
+              />
+
+              <ListagemDados
+                v-else
+                v-model:busca="busca"
+                :itens="linhasPendentes"
+                :colunas="colunasPendentes"
+                chave="id"
+                :rotulo="TEXTOS_CONFIRMACOES.pendentesRotulo"
+                :placeholder-busca="TEXTOS_CONFIRMACOES.buscaPendentes"
+              >
+                <template #celula-nome="{ item }">
+                  <div
+                    class="confirmacoes__convite"
+                    data-teste="pendente"
+                  >
+                    <span class="confirmacoes__nome-convite">{{ item.nome }}</span>
+                    <span class="confirmacoes__pessoas">{{ item.pendentes }}</span>
+                    <span class="confirmacoes__contagem-pessoas numeros-tabulares">
+                      {{ TEXTOS_CONFIRMACOES.pessoasPendentes(item.pendente.pessoasPendentes.length, item.pendente.totalPessoas) }}
+                    </span>
+                  </div>
+                </template>
+
+                <template #celula-envio="{ item }">
+                  <BadgeStatus
+                    :texto="ROTULOS_STATUS_ENVIO[item.pendente.statusEnvio]"
+                    :variante="VARIANTE_STATUS_ENVIO[item.pendente.statusEnvio]"
+                  />
+                </template>
+
+                <template #acoes-linha="{ item }">
+                  <Button
+                    v-if="!arquivado"
+                    :label="TEXTOS_ENVIO_CONVITE.enviarWhatsApp"
+                    :aria-label="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.enviarWhatsApp, item.nome)"
+                    icon="ie ie-whatsapp"
+                    severity="secondary"
+                    outlined
+                    :loading="conviteEmAndamento === item.id"
+                    :disabled="conviteEmAndamento !== null && conviteEmAndamento !== item.id"
+                    data-teste="enviar-whatsapp"
+                    @click="envio.enviarWhatsApp(paraEnvio(item.pendente))"
+                  />
+                  <MenuAcoes
+                    :itens="itensMenuLink()"
+                    :rotulo="TEXTOS_ENVIO_CONVITE.maisAcoes"
+                    :rotulo-acessivel="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.maisAcoes, item.nome)"
+                    :desabilitado="conviteEmAndamento !== null"
+                    @selecionar="envio.executarAcaoLink(paraEnvio(item.pendente), $event)"
+                  />
+                </template>
+              </ListagemDados>
+            </section>
+
+            <div class="confirmacoes__passos">
+              <ProximosPassosConfirmacoes
+                :painel="painel"
+                :tipo="evento?.tipo ?? null"
+                :data-evento="evento?.data ?? null"
+                :arquivado="arquivado"
+                :evento-id="id"
+              />
+            </div>
+          </div>
         </template>
       </div>
 
@@ -553,6 +566,30 @@ function importar() {
   --confirmacoes-coluna-minima: 22rem;
 
   container: confirmacoes / inline-size;
+}
+
+.confirmacoes__corpo {
+  --confirmacoes-largura-lateral: 21rem;
+
+  display: grid;
+  grid-template-areas:
+    'pendentes'
+    'passos';
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
+}
+
+.confirmacoes__passos {
+  display: grid;
+  grid-area: passos;
+  min-width: 0;
+}
+
+.confirmacoes__pendentes {
+  container: confirmacoes-lista / inline-size;
+  grid-area: pendentes;
+  min-width: 0;
 }
 
 .confirmacoes :deep(.resumo-contagem--indicadores .resumo-contagem__itens.grade) {
@@ -652,6 +689,19 @@ function importar() {
 @container confirmacoes (min-width: 48rem) {
   .confirmacoes :deep(.resumo-contagem--indicadores .resumo-contagem__itens.grade) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@container confirmacoes (min-width: 64rem) {
+  .confirmacoes__corpo {
+    grid-template-areas: 'pendentes passos';
+    grid-template-columns: minmax(0, 1fr) var(--confirmacoes-largura-lateral);
+  }
+}
+
+@container confirmacoes-lista (max-width: 55.99rem) {
+  .confirmacoes__pendentes :deep(.listagem__tabela .listagem__acoes-linha .p-button-label) {
+    display: none;
   }
 }
 
