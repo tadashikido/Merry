@@ -365,7 +365,7 @@ async function alternarArquivamento(evento: EventoResumoDto) {
 
 @container eventos (max-width: 39.99rem) {
   .eventos__filtro {
-    flex: 1 1 100%;
+    flex: 1 1 calc(50% - var(--p-ritmo-campo));
   }
 }
 
