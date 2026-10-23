@@ -111,7 +111,7 @@ export const TEXTOS_MODELOS_CHECKLIST = {
   },
   notaPrazos: (contracaoDe: string) => `Os prazos são contados a partir da data ${contracaoDe}.`,
   passosAplicar: (nome: string, contracaoDe: string) => [
-    `Toque em Aplicar checklist e escolha “${nome}”. A prévia mostra quantas tarefas serão criadas.`,
+    `Em Aplicar checklist ou Aplicar outro modelo, escolha “${nome}”. A prévia mostra quantas tarefas serão criadas.`,
     `Cada item vira uma tarefa com prazo contado a partir da data ${contracaoDe}. O que já passou entra atrasado.`,
   ],
   notaAplicar: 'Itens já aplicados não se repetem, e editar o modelo não muda as tarefas já criadas.',

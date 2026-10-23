@@ -58,7 +58,7 @@ describe('textos de modelos por tipo', () => {
     expect(TEXTOS_MODELOS_CHECKLIST.prazoNoEvento(-1095, 'do aniversário')).toBe('1.095 dias depois do aniversário')
     expect(descreverPrazoRelativo(0, 'do aniversário')).toBe('No dia do aniversário')
     expect(TEXTOS_MODELOS_CHECKLIST.passosAplicar('Essencial', 'da comemoração')).toEqual([
-      'Toque em Aplicar checklist e escolha “Essencial”. A prévia mostra quantas tarefas serão criadas.',
+      'Em Aplicar checklist ou Aplicar outro modelo, escolha “Essencial”. A prévia mostra quantas tarefas serão criadas.',
       'Cada item vira uma tarefa com prazo contado a partir da data da comemoração. O que já passou entra atrasado.',
     ])
   })
