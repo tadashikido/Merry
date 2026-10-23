@@ -59,18 +59,30 @@ export interface RotaResolvida {
   params: Record<string, unknown>
 }
 
+export function origemInterna<T extends string>(
+  anterior: unknown,
+  eventoId: string,
+  resolver: (caminho: string) => RotaResolvida,
+  permitidas: readonly T[],
+  padrao: T,
+): T {
+  if (typeof anterior !== 'string' || !anterior.startsWith('/') || anterior.startsWith('//')) {
+    return padrao
+  }
+  try {
+    const rota = resolver(anterior)
+    const permitida = permitidas.find((nome) => nome === rota.name)
+    return permitida !== undefined && rota.params.id === eventoId ? permitida : padrao
+  } catch {
+    return padrao
+  }
+}
+
 export function origemDaFicha(
   anterior: unknown,
   eventoId: string,
   resolver: (caminho: string) => RotaResolvida,
 ): OrigemFichaBuffet {
-  if (typeof anterior !== 'string' || !anterior.startsWith('/') || anterior.startsWith('//')) {
-    return 'confirmacoes'
-  }
-  try {
-    const rota = resolver(anterior)
-    return rota.name === 'restricoes-alimentares' && rota.params.id === eventoId ? 'restricoes' : 'confirmacoes'
-  } catch {
-    return 'confirmacoes'
-  }
+  const rota = origemInterna(anterior, eventoId, resolver, ['restricoes-alimentares'], 'painel-confirmacoes')
+  return rota === 'restricoes-alimentares' ? 'restricoes' : 'confirmacoes'
 }

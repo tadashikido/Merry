@@ -288,3 +288,20 @@ export function semMesaPorGrupo(pessoas: readonly PessoaMesaDto[]): GrupoSemMesa
     return b.quantidade - a.quantidade || a.rotulo.localeCompare(b.rotulo, 'pt-BR')
   })
 }
+
+export interface ResumoMesa {
+  livres: number
+  completa: boolean
+  criancas: number
+}
+
+export function resumoDaMesa(
+  mesa: Pick<MesaDto, 'capacidade' | 'ocupacao'>,
+  pessoas: readonly Pick<PessoaMesaDto, 'faixaEtaria'>[],
+): ResumoMesa {
+  return {
+    livres: lugaresLivres(mesa),
+    completa: mesa.capacidade > 0 && mesa.ocupacao >= mesa.capacidade,
+    criancas: pessoas.filter((pessoa) => pessoa.faixaEtaria === 'Crianca').length,
+  }
+}

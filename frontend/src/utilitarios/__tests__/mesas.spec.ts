@@ -18,6 +18,7 @@ import {
   mesasComPessoas,
   opcoesConvite,
   opcoesGrupo,
+  resumoDaMesa,
   opcoesSentar,
   proximoNumeroMesa,
   rotuloMesa,
@@ -162,5 +163,21 @@ describe('exportação do mapa de mesas', () => {
     expect(nomeArquivoMesas({ nomePrimeiraPessoa: 'Ana Beatriz', nomeSegundaPessoa: 'Bruno', data: '2027-05-15' })).toBe(
       'mesas-ana-beatriz-e-bruno-2027-05-15.csv',
     )
+  })
+})
+
+describe('resumoDaMesa', () => {
+  it('[UNIT] conta lugares livres e crianças da mesa', () => {
+    const pessoas = [pessoaMesa({ id: 'a', nome: 'A' }), pessoaMesa({ id: 'b', nome: 'B', faixaEtaria: 'Crianca' })]
+    expect(resumoDaMesa({ capacidade: 5, ocupacao: 2 }, pessoas)).toEqual({ livres: 3, completa: false, criancas: 1 })
+  })
+
+  it('[UNIT] mesa cheia ou acima da capacidade fica completa sem livres negativos', () => {
+    expect(resumoDaMesa({ capacidade: 2, ocupacao: 2 }, [])).toEqual({ livres: 0, completa: true, criancas: 0 })
+    expect(resumoDaMesa({ capacidade: 2, ocupacao: 3 }, [])).toEqual({ livres: 0, completa: true, criancas: 0 })
+  })
+
+  it('[UNIT] mesa sem lugares não é completa', () => {
+    expect(resumoDaMesa({ capacidade: 0, ocupacao: 0 }, []).completa).toBe(false)
   })
 })

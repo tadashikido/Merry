@@ -30,6 +30,7 @@ beforeEach(() => {
 afterEach(() => {
   wrapper?.unmount()
   wrapper = undefined
+  window.history.replaceState(null, '')
   document.body.innerHTML = ''
   registrarProvedorAutenticacao(null)
   vi.restoreAllMocks()
@@ -47,46 +48,158 @@ async function abrir(evento: Partial<EventoDto> = {}, mapa: MapaMesasDto = mapaE
 }
 
 describe('ImpressaoMesasView reestruturada', () => {
-  it('[COMPONENTE] cabeçalho timbrado identifica documento, geração, anfitriões, data e local', async () => {
-    await abrir({ localRecepcao: 'Villa Giardino' })
+  it('[COMPONENTE] cabeçalho timbrado identifica documento, geração, tipo, anfitriões, data e locais rotulados', async () => {
+    await abrir({ localCerimonia: 'Capela São José', localRecepcao: 'Villa Giardino' })
 
     const cabecalho = wrapper!.get('[data-teste="mapa-mesas-impressao"] header')
     expect(cabecalho.get('.mapa__documento').text()).toContain(TEXTOS_IMPRESSAO_MESAS.documento)
     expect(cabecalho.get('.mapa__documento').text()).toContain('Gerado em')
     expect(cabecalho.findAll('h1')).toHaveLength(1)
     expect(cabecalho.get('h1').text()).toBe('Ana Beatriz & Bruno')
-    expect(cabecalho.get('.mapa__quando').text()).toMatch(/\d{4}/)
-    expect(cabecalho.get('[data-teste="local-impressao"]').text()).toBe('Villa Giardino')
+    expect(cabecalho.get('[data-teste="mapa-tipo"]').text()).toBe('Casamento')
+    const detalhes = cabecalho.get('[data-teste="mapa-detalhes"]')
+    expect(detalhes.element.tagName).toBe('DL')
+    expect(detalhes.attributes('aria-label')).toBe(TEXTOS_IMPRESSAO_MESAS.detalhesRotulo)
+    expect(detalhes.get('[data-teste="mapa-detalhe-data"] dd').text()).toMatch(/\d{4}/)
+    expect(detalhes.get('[data-teste="mapa-detalhe-localPrincipal"]').text()).toContain('Cerimônia')
+    expect(detalhes.get('[data-teste="mapa-detalhe-localPrincipal"]').text()).toContain('Capela São José')
+    expect(detalhes.get('[data-teste="mapa-detalhe-localSecundario"]').text()).toContain('Recepção')
+    expect(detalhes.get('[data-teste="mapa-detalhe-localSecundario"]').text()).toContain('Villa Giardino')
     expect(cabecalho.find('[data-teste="totais-impressao"]').exists()).toBe(false)
   })
 
-  it('[COMPONENTE] sem local de recepção não renderiza linha vazia', async () => {
+  it('[COMPONENTE] sem local secundário não renderiza linha vazia e resumo lista os totais', async () => {
     await abrir({ localRecepcao: null })
 
-    expect(wrapper!.find('[data-teste="local-impressao"]').exists()).toBe(false)
-    expect(wrapper!.get('[data-teste="totais-impressao"]').text()).toBe('2 sentados · 5 lugares livres · 3 sem mesa · 3 mesas')
+    expect(wrapper!.find('[data-teste="mapa-detalhe-localSecundario"]').exists()).toBe(false)
+    const totais = wrapper!.get('[data-teste="totais-impressao"]')
+    expect(totais.element.tagName).toBe('UL')
+    expect(totais.attributes('aria-label')).toBe(TEXTOS_IMPRESSAO_MESAS.resumoRotulo)
+    expect(totais.findAll('li').map((item) => item.text())).toEqual(['3 mesas', '7 lugares', '2 sentados', '5 lugares livres', '3 sem mesa'])
+    expect(wrapper!.find('[data-teste="faltam-impressao"]').exists()).toBe(false)
   })
 
-  it('[COMPONENTE] cada mesa é um cartão com título, ocupação e pessoas; mesa vazia mostra nota', async () => {
+  it('[COMPONENTE] cada mesa é um cartão com título, ocupação, totais e pessoas; mesa vazia mostra nota', async () => {
     await abrir()
 
     const mesas = wrapper!.findAll('[data-teste="mesa-impressao"]')
     expect(mesas).toHaveLength(3)
     expect(mesas[0]!.classes()).toContain('mapa__mesa--especial')
-    expect(mesas[0]!.get('h2').text()).toBe(TEXTOS_MESAS.rotuloMesaAnfitrioes)
+    expect(mesas[0]!.get('h2').text()).toBe('Mesa dos noivos')
     expect(mesas[0]!.find('[data-teste="selo-anfitrioes"]').exists()).toBe(false)
     expect(mesas[0]!.find('[data-teste="ocupacao-mesa"]').exists()).toBe(true)
+    expect(mesas[0]!.get('[data-teste="resumo-mesa"]').text()).toBe('1 lugar livre')
     expect(mesas[0]!.findAll('ol li').map((item) => item.text())).toEqual(['Ana Souza'])
+    expect(mesas[1]!.get('[data-teste="resumo-mesa"]').text()).toBe('2 lugares livres')
     expect(mesas[2]!.text()).toContain(TEXTOS_MESAS.mesaVazia)
   })
 
-  it('[COMPONENTE] mesa dos anfitriões com nome próprio ganha selo textual', async () => {
+  it('[COMPONENTE] mesa completa e crianças sentadas aparecem no total da mesa', async () => {
+    const base = mapaExemplo()
+    const pessoas = base.pessoas.map((pessoa) => (pessoa.id === 'p-pedro' ? { ...pessoa, mesaId: MESA_ANFITRIOES } : pessoa))
+    const mesas = base.mesas.map((mesa) => (mesa.id === MESA_ANFITRIOES ? { ...mesa, ocupacao: 2 } : mesa))
+    await abrir({}, { ...base, pessoas, mesas })
+
+    const primeira = wrapper!.findAll('[data-teste="mesa-impressao"]')[0]!
+    expect(primeira.get('[data-teste="resumo-mesa"]').text()).toBe(`${TEXTOS_IMPRESSAO_MESAS.completa}, 1 criança`)
+    expect(primeira.find('[data-teste="criancas-mesa"]').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] avisa quando faltam lugares para os confirmados sem mesa', async () => {
+    const base = mapaExemplo()
+    await abrir({}, { ...base, totais: { ...base.totais, lugaresLivres: 1, semMesa: 3 } })
+
+    expect(wrapper!.get('[data-teste="faltam-impressao"]').text()).toBe('Faltam 2 lugares para sentar todos os confirmados.')
+  })
+
+  it('[COMPONENTE] legenda explica amostras, marcadores e a mesa especial pelo termo do tipo', async () => {
+    await abrir({ tipo: 'Aniversario', nomeSegundaPessoa: null })
+
+    const legenda = wrapper!.get('[data-teste="legenda-impressao"]')
+    expect(legenda.attributes('aria-label')).toBe(TEXTOS_IMPRESSAO_MESAS.legendaRotulo)
+    expect(legenda.text()).toContain(TEXTOS_IMPRESSAO_MESAS.legendaOcupado)
+    expect(legenda.text()).toContain(TEXTOS_IMPRESSAO_MESAS.legendaLivre)
+    expect(legenda.text()).toContain(TEXTOS_IMPRESSAO_MESAS.legendaMarcadores)
+    expect(legenda.get('[data-teste="legenda-especial"]').text()).toBe('Mesa do aniversariante: contorno mais forte, sempre primeiro')
+    expect(legenda.findAll('[aria-hidden="true"]').length).toBeGreaterThan(0)
+  })
+
+  it('[COMPONENTE] sem mesa especial a legenda não cita o termo', async () => {
+    const base = mapaExemplo()
+    await abrir({}, { ...base, mesas: base.mesas.map((mesa) => ({ ...mesa, especial: false })) })
+
+    expect(wrapper!.get('[data-teste="legenda-impressao"]').find('[data-teste="legenda-especial"]').exists()).toBe(false)
+  })
+
+  it.each([
+    ['Casamento', 'Casamento', 'Mesa dos noivos', 'Horário da cerimônia', /anfitri/i],
+    ['QuinzeAnos', 'Festa de 15 anos', 'Mesa da debutante', 'Horário da festa', /casamento|noiv|cerimônia|anfitri/i],
+    ['Aniversario', 'Aniversário', 'Mesa do aniversariante', 'Horário da festa', /casamento|noiv|cerimônia|anfitri/i],
+    ['Comemoracao', 'Comemoração', 'Mesa de honra', 'Horário do evento', /casamento|noiv|cerimônia|anfitri/i],
+  ] as const)('[COMPONENTE] tipo %s usa tipo, mesa especial e horário do vocabulário', async (tipo, rotuloTipo, termo, horario, proibido) => {
+    const base = mapaExemplo()
+    const mesas = base.mesas.map((mesa) => (mesa.id === MESA_ANFITRIOES ? mesaExemplo({ ...mesa, nome: 'Principal' }) : mesa))
+    await abrir({ tipo }, { ...base, mesas })
+
+    expect(wrapper!.get('[data-teste="mapa-tipo"]').text()).toBe(rotuloTipo)
+    expect(wrapper!.get('[data-teste="mapa-detalhe-horario"] dt').text()).toBe(horario)
+    const primeira = wrapper!.findAll('[data-teste="mesa-impressao"]')[0]!
+    expect(primeira.get('[data-teste="selo-anfitrioes"]').text()).toBe(termo)
+    expect(primeira.get('h2').text()).toBe('Mesa 1 · Principal')
+    expect(wrapper!.get('[data-teste="mapa-mesas-impressao"]').text()).not.toMatch(proibido)
+  })
+
+  it('[COMPONENTE] tipo desconhecido omite a linha de tipo e usa mesa de honra, nunca termo de casamento', async () => {
+    await abrir({ tipo: 'Corporativo' as EventoDto['tipo'] })
+
+    expect(wrapper!.find('[data-teste="mapa-tipo"]').exists()).toBe(false)
+    expect(wrapper!.findAll('[data-teste="mesa-impressao"]')[0]!.get('h2').text()).toBe('Mesa de honra')
+    expect(wrapper!.get('[data-teste="mapa-detalhe-horario"] dt').text()).toBe('Horário do evento')
+    expect(wrapper!.get('[data-teste="mapa-mesas-impressao"]').text()).not.toMatch(/casamento|noiv|anfitri/i)
+  })
+
+  it('[COMPONENTE] voltar leva às mesas por padrão', async () => {
+    await abrir()
+
+    const voltar = wrapper!.get('[data-teste="voltar-mesas"]')
+    expect(voltar.text()).toBe(TEXTOS_IMPRESSAO_MESAS.voltar)
+    expect(voltar.attributes('href')).toBe(`/eventos/${ID_EVENTO}/mesas`)
+  })
+
+  it('[COMPONENTE] voltar respeita o painel de confirmações do mesmo evento como origem', async () => {
+    window.history.replaceState({ back: `/eventos/${ID_EVENTO}/confirmacoes` }, '')
+    await abrir()
+
+    const voltar = wrapper!.get('[data-teste="voltar-mesas"]')
+    expect(voltar.text()).toBe(TEXTOS_IMPRESSAO_MESAS.voltarConfirmacoes)
+    expect(voltar.attributes('href')).toBe(`/eventos/${ID_EVENTO}/confirmacoes`)
+  })
+
+  it('[SEGURANÇA] origem de outro evento, rota fora da lista ou externa volta às mesas', async () => {
+    window.history.replaceState({ back: '/eventos/00000000-0000-4000-8000-000000000999/confirmacoes' }, '')
+    await abrir()
+    expect(wrapper!.get('[data-teste="voltar-mesas"]').attributes('href')).toBe(`/eventos/${ID_EVENTO}/mesas`)
+    wrapper!.unmount()
+    wrapper = undefined
+
+    window.history.replaceState({ back: `/eventos/${ID_EVENTO}/restricoes-alimentares` }, '')
+    await abrir()
+    expect(wrapper!.get('[data-teste="voltar-mesas"]').attributes('href')).toBe(`/eventos/${ID_EVENTO}/mesas`)
+    wrapper!.unmount()
+    wrapper = undefined
+
+    window.history.replaceState({ back: '//malicioso.example/eventos' }, '')
+    await abrir()
+    expect(wrapper!.get('[data-teste="voltar-mesas"]').attributes('href')).toBe(`/eventos/${ID_EVENTO}/mesas`)
+  })
+
+  it('[COMPONENTE] mesa especial com nome próprio ganha selo textual com o termo do tipo', async () => {
     const base = mapaExemplo()
     const mesas = base.mesas.map((mesa) => (mesa.id === MESA_ANFITRIOES ? mesaExemplo({ ...mesa, nome: 'Ana & Bruno' }) : mesa))
     await abrir({}, { ...base, mesas })
 
     const primeira = wrapper!.findAll('[data-teste="mesa-impressao"]')[0]!
-    expect(primeira.get('[data-teste="selo-anfitrioes"]').text()).toBe(TEXTOS_MESAS.rotuloMesaAnfitrioes)
+    expect(primeira.get('[data-teste="selo-anfitrioes"]').text()).toBe('Mesa dos noivos')
     expect(primeira.get('h2').text()).toContain('Ana & Bruno')
   })
 
@@ -149,6 +262,7 @@ describe('ImpressaoMesasView reestruturada', () => {
     expect(estilo).toContain('break-inside: avoid')
     expect(estilo).toContain('font-weight: var(--p-fonte-peso-leve)')
     expect(estilo).not.toMatch(/@media \(min-width/)
+    expect(estilo.match(/@media [^{]+/g)?.map((regra) => regra.trim())).toEqual(['@media print'])
     expect(estilo).not.toContain('--p-espaco-')
     expect(estilo).not.toMatch(/#[0-9a-f]{3,6}\b/i)
     expect(estilo.replace(/1px (solid|dotted)/g, '')).not.toMatch(/\d+(px|mm|pt)\b/)

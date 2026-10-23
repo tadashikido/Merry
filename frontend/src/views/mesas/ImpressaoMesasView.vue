@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 
 import LayoutImpressao from '@/layouts/LayoutImpressao.vue'
@@ -9,15 +9,18 @@ import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import OcupacaoMesa from '@/componentes/base/OcupacaoMesa.vue'
 import { useEventosStore } from '@/stores/eventos'
 import { useMesasStore } from '@/stores/mesas'
-import { TEXTOS_IMPRESSAO_MESAS, TEXTOS_MESAS } from '@/textos/mesas'
+import { TEXTOS_FECHAMENTO_MESAS, TEXTOS_IMPRESSAO_MESAS, TEXTOS_MESAS } from '@/textos/mesas'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { PessoaMesaDto } from '@/tipos/mesas'
-import { formatarDataCalendarioComDiaSemana, formatarDataHora, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
-import { agruparPorConvite, conviteDeUmaPessoa, mesasComPessoas, rotuloMesa } from '@/utilitarios/mesas'
+import { cabecalhoFichaEvento, origemInterna } from '@/utilitarios/fichaBuffet'
+import { formatarDataHora, formatarNomesAnfitrioes, formatarNumero } from '@/utilitarios/formatacao'
+import { agruparPorConvite, conviteDeUmaPessoa, mesasComPessoas, resumoDaMesa, rotuloMesa } from '@/utilitarios/mesas'
 
 const props = defineProps<{ id: string }>()
 
 const eventos = useEventosStore()
 const store = useMesasStore()
+const roteador = useRouter()
 
 const geradoEm = new Date().toISOString()
 
@@ -28,15 +31,57 @@ const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
 const nomes = computed(() =>
   evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
-const quando = computed(() => {
-  if (!evento.value) {
-    return ''
-  }
-  const data = formatarDataCalendarioComDiaSemana(evento.value.data)
-  return evento.value.horario ? `${data}, ${evento.value.horario}` : data
-})
-const mesas = computed(() => (mapa.value ? mesasComPessoas(mapa.value.mesas, mapa.value.pessoas, mapa.value.pessoas) : []))
+const cabecalho = computed(() => (evento.value ? cabecalhoFichaEvento(evento.value, evento.value) : null))
+const termoEspecial = computed(() => vocabularioOuNeutro(cabecalho.value?.tipo).mesaEspecial)
+
+const mesas = computed(() =>
+  mapa.value
+    ? mesasComPessoas(mapa.value.mesas, mapa.value.pessoas, mapa.value.pessoas).map((item) => ({
+        ...item,
+        resumo: resumoDaMesa(item.mesa, item.pessoas),
+      }))
+    : [],
+)
 const semMesa = computed(() => agruparPorConvite((mapa.value?.pessoas ?? []).filter((pessoa) => pessoa.mesaId === null)))
+const temEspecial = computed(() => mesas.value.some((item) => item.mesa.especial))
+
+const resumo = computed(() => {
+  const totais = mapa.value?.totais
+  if (!totais) {
+    return []
+  }
+  return [
+    { chave: 'mesas', valor: totais.mesas, rotulo: TEXTOS_IMPRESSAO_MESAS.resumoMesas(totais.mesas) },
+    { chave: 'lugares', valor: totais.capacidadeTotal, rotulo: TEXTOS_IMPRESSAO_MESAS.resumoLugares(totais.capacidadeTotal) },
+    { chave: 'sentados', valor: totais.acomodados, rotulo: TEXTOS_IMPRESSAO_MESAS.resumoSentados(totais.acomodados) },
+    { chave: 'livres', valor: totais.lugaresLivres, rotulo: TEXTOS_IMPRESSAO_MESAS.resumoLivres(totais.lugaresLivres) },
+    { chave: 'sem-mesa', valor: totais.semMesa, rotulo: TEXTOS_IMPRESSAO_MESAS.resumoSemMesa },
+  ]
+})
+
+const faltamLugares = computed(() => {
+  const totais = mapa.value?.totais
+  return totais ? Math.max(totais.semMesa - totais.lugaresLivres, 0) : 0
+})
+
+function lerEstadoAnterior(): unknown {
+  const estado: unknown = window.history.state
+  return typeof estado === 'object' && estado !== null && 'back' in estado ? estado.back : null
+}
+
+const voltar = computed(() => {
+  const origem = origemInterna(
+    lerEstadoAnterior(),
+    props.id,
+    (caminho) => roteador.resolve(caminho),
+    ['evento-mesas', 'painel-confirmacoes'],
+    'evento-mesas',
+  )
+  return {
+    rota: { name: origem, params: { id: props.id } },
+    rotulo: origem === 'painel-confirmacoes' ? TEXTOS_IMPRESSAO_MESAS.voltarConfirmacoes : TEXTOS_IMPRESSAO_MESAS.voltar,
+  }
+})
 
 function marcadores(pessoa: PessoaMesaDto): string {
   const partes: string[] = []
@@ -82,10 +127,10 @@ function imprimir() {
   <LayoutImpressao :rotulo-acoes="TEXTOS_IMPRESSAO_MESAS.acoesRotulo">
     <template #acoes>
       <RouterLink
-        :to="{ name: 'evento-mesas', params: { id } }"
+        :to="voltar.rota"
         data-teste="voltar-mesas"
       >
-        {{ TEXTOS_IMPRESSAO_MESAS.voltar }}
+        {{ voltar.rotulo }}
       </RouterLink>
       <Button
         :label="TEXTOS_IMPRESSAO_MESAS.imprimir"
@@ -126,31 +171,94 @@ function imprimir() {
           </p>
         </div>
         <div class="mapa__identificacao pilha pilha--campo">
+          <p
+            v-if="cabecalho?.tipoRotulo"
+            class="mapa__tipo"
+            data-teste="mapa-tipo"
+          >
+            {{ cabecalho.tipoRotulo }}
+          </p>
           <h1 class="mapa__anfitriao">
             {{ nomes }}
           </h1>
-          <p
-            v-if="quando"
-            class="mapa__quando numeros-tabulares"
-          >
-            {{ quando }}
-          </p>
-          <p
-            v-if="evento?.localRecepcao"
-            class="mapa__local"
-            data-teste="local-impressao"
-          >
-            {{ evento.localRecepcao }}
-          </p>
         </div>
+        <dl
+          v-if="cabecalho"
+          class="mapa__detalhes"
+          :aria-label="TEXTOS_IMPRESSAO_MESAS.detalhesRotulo"
+          data-teste="mapa-detalhes"
+        >
+          <div
+            v-for="detalhe in cabecalho.detalhes"
+            :key="detalhe.chave"
+            class="mapa__detalhe"
+            :data-teste="`mapa-detalhe-${detalhe.chave}`"
+          >
+            <dt>{{ detalhe.rotulo }}</dt>
+            <dd class="numeros-tabulares">
+              {{ detalhe.valor }}
+            </dd>
+          </div>
+        </dl>
       </header>
 
-      <p
-        class="mapa__totais numeros-tabulares"
-        data-teste="totais-impressao"
-      >
-        {{ TEXTOS_IMPRESSAO_MESAS.totais(mapa.totais.acomodados, mapa.totais.lugaresLivres, mapa.totais.semMesa, mapa.totais.mesas) }}
-      </p>
+      <div class="mapa__conferencia pilha pilha--grupo">
+        <ul
+          class="mapa__resumo"
+          :aria-label="TEXTOS_IMPRESSAO_MESAS.resumoRotulo"
+          data-teste="totais-impressao"
+        >
+          <li
+            v-for="item in resumo"
+            :key="item.chave"
+            class="mapa__resumo-item"
+            :data-teste="`total-${item.chave}`"
+          >
+            <span class="mapa__resumo-numero">{{ formatarNumero(item.valor) }}</span>{{ ' ' }}<span class="mapa__resumo-rotulo">{{ item.rotulo }}</span>
+          </li>
+        </ul>
+
+        <p
+          v-if="faltamLugares > 0"
+          class="mapa__faltam"
+          data-teste="faltam-impressao"
+        >
+          {{ TEXTOS_FECHAMENTO_MESAS.faltam(faltamLugares) }}
+        </p>
+
+        <ul
+          v-if="mesas.length > 0"
+          class="mapa__legenda"
+          :aria-label="TEXTOS_IMPRESSAO_MESAS.legendaRotulo"
+          data-teste="legenda-impressao"
+        >
+          <li class="mapa__legenda-item">
+            <span
+              class="mapa__amostra mapa__amostra--ocupado"
+              aria-hidden="true"
+            />{{ ' ' }}{{ TEXTOS_IMPRESSAO_MESAS.legendaOcupado }}
+          </li>
+          <li class="mapa__legenda-item">
+            <span
+              class="mapa__amostra"
+              aria-hidden="true"
+            />{{ ' ' }}{{ TEXTOS_IMPRESSAO_MESAS.legendaLivre }}
+          </li>
+          <li class="mapa__legenda-item">
+            {{ TEXTOS_IMPRESSAO_MESAS.legendaMarcadores }}
+          </li>
+          <li
+            v-if="temEspecial"
+            class="mapa__legenda-item"
+            data-teste="legenda-especial"
+          >
+            <span
+              class="mapa__amostra-especial"
+              aria-hidden="true"
+            />{{ ' ' }}{{ TEXTOS_IMPRESSAO_MESAS.legendaEspecial(termoEspecial) }}
+          </li>
+        </ul>
+      </div>
 
       <p
         v-if="mesas.length === 0"
@@ -172,19 +280,28 @@ function imprimir() {
           <div class="mapa__mesa-cabecalho pilha pilha--campo">
             <p
               v-if="item.mesa.especial && item.mesa.nome"
-              class="mapa__selo texto-rotulo"
+              class="mapa__selo"
               data-teste="selo-anfitrioes"
             >
-              {{ TEXTOS_MESAS.rotuloMesaAnfitrioes }}
+              {{ termoEspecial }}
             </p>
             <h2 class="mapa__mesa-titulo">
-              {{ rotuloMesa(item.mesa) }}
+              {{ rotuloMesa(item.mesa, termoEspecial) }}
             </h2>
             <OcupacaoMesa
               :ocupados="item.mesa.ocupacao"
               :lugares="item.mesa.capacidade"
               compacta
             />
+            <p
+              class="mapa__mesa-resumo numeros-tabulares"
+              data-teste="resumo-mesa"
+            >
+              <span>{{ item.resumo.completa ? TEXTOS_IMPRESSAO_MESAS.completa : TEXTOS_IMPRESSAO_MESAS.livresNaMesa(item.resumo.livres) }}</span><span
+                v-if="item.resumo.criancas > 0"
+                data-teste="criancas-mesa"
+              >{{ ', ' }}{{ TEXTOS_IMPRESSAO_MESAS.criancasNaMesa(item.resumo.criancas) }}</span>
+            </p>
           </div>
           <ol
             v-if="item.pessoas.length > 0"
@@ -284,18 +401,119 @@ function imprimir() {
   overflow-wrap: anywhere;
 }
 
-.mapa__quando,
-.mapa__local {
+.mapa__tipo {
   margin: 0;
   font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-corpo);
   font-style: italic;
+  font-variant-numeric: lining-nums;
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--p-cor-texto-apoio);
+}
+
+.mapa__detalhes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-campo) var(--p-ritmo-cartao);
+  margin: 0;
+}
+
+.mapa__detalhe {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mapa__detalhe dt {
+  font-size: var(--p-fonte-tamanho-apoio);
+  color: var(--p-cor-texto-apoio);
+}
+
+.mapa__detalhe dd {
+  margin: 0;
+  color: var(--p-cor-texto);
+  overflow-wrap: anywhere;
+}
+
+.mapa__conferencia {
+  break-inside: avoid;
+}
+
+.mapa__resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--p-ritmo-campo) var(--p-ritmo-cartao);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mapa__resumo-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--p-ritmo-campo);
+}
+
+.mapa__resumo-numero {
+  font-family: var(--p-fonte-interface);
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-weight: var(--p-fonte-peso-leve);
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-texto);
 }
 
-.mapa__totais {
+.mapa__resumo-rotulo {
+  font-family: var(--p-fonte-serif);
+  font-style: italic;
+  color: var(--p-cor-texto-apoio);
+}
+
+.mapa__faltam {
   margin: 0;
+  padding-left: var(--p-ritmo-grupo);
+  font-size: var(--p-fonte-tamanho-apoio);
   font-weight: var(--p-fonte-peso-medio);
+  line-height: var(--p-fonte-entrelinha-leitura);
   color: var(--p-cor-texto);
+  border-left: medium solid var(--p-cor-primaria);
+}
+
+.mapa__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
+  margin: 0;
+  padding: var(--p-ritmo-campo) 0 0;
+  font-size: var(--p-fonte-tamanho-apoio);
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--p-cor-texto-apoio);
+  list-style: none;
+  border-top: 1px dotted var(--p-cor-borda-campo);
+}
+
+.mapa__legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--p-ritmo-campo);
+}
+
+.mapa__amostra {
+  flex: none;
+  inline-size: 0.625em;
+  block-size: 0.625em;
+  border: thin dashed var(--p-cor-borda-campo);
+  border-radius: var(--p-raio-total);
+}
+
+.mapa__amostra--ocupado {
+  border: 0.3125em solid var(--p-cor-primaria);
+}
+
+.mapa__amostra-especial {
+  flex: none;
+  inline-size: 1.25em;
+  border-top: medium solid var(--p-cor-primaria);
 }
 
 .mapa__nota {
@@ -323,6 +541,14 @@ function imprimir() {
 
 .mapa__mesa--especial {
   border-color: var(--p-cor-texto-apoio);
+  border-top: medium solid var(--p-cor-primaria);
+}
+
+.mapa__mesa-resumo {
+  margin: 0;
+  font-size: var(--p-fonte-tamanho-apoio);
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--p-cor-texto-apoio);
 }
 
 .mapa__mesa-cabecalho {
@@ -332,6 +558,11 @@ function imprimir() {
 
 .mapa__selo {
   margin: 0;
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-corpo);
+  font-style: italic;
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--p-cor-texto-apoio);
 }
 
 .mapa__mesa-titulo,
@@ -398,6 +629,10 @@ function imprimir() {
   .mapa__convites {
     columns: 2;
   }
+
+  .mapa__detalhes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @container mapa (min-width: 56rem) {
@@ -430,9 +665,30 @@ function imprimir() {
     border-color: var(--p-cor-texto);
   }
 
+  .mapa__detalhes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mapa__faltam {
+    border-left-color: var(--p-cor-texto);
+  }
+
+  .mapa__amostra--ocupado {
+    border-color: var(--p-cor-texto);
+  }
+
+  .mapa__amostra-especial {
+    border-top-color: var(--p-cor-texto);
+  }
+
   .mapa__nota,
   .mapa__gerado,
   .mapa__selo,
+  .mapa__tipo,
+  .mapa__detalhe dt,
+  .mapa__resumo-rotulo,
+  .mapa__legenda,
+  .mapa__mesa-resumo,
   .mapa :deep(.ocupacao-mesa__texto) {
     color: var(--p-cor-texto);
   }

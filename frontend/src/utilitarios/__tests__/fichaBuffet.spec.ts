@@ -4,7 +4,7 @@ import { exportacaoExemplo } from '@/__tests__/auxiliaresConfirmacoes'
 import { ORIENTACAO_TIPO_RESTRICAO, TEXTOS_PREPARO_BUFFET } from '@/textos/dadosSensiveis'
 import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
-import { cabecalhoFichaEvento, origemDaFicha, type RotaResolvida } from '@/utilitarios/fichaBuffet'
+import { cabecalhoFichaEvento, origemDaFicha, origemInterna, type RotaResolvida } from '@/utilitarios/fichaBuffet'
 import { faixaConfirmacao } from '@/utilitarios/painelConfirmacoes'
 import { conferenciaBuffet } from '@/utilitarios/preparoBuffet'
 
@@ -98,6 +98,31 @@ describe('origemDaFicha', () => {
         throw new Error('rota inválida')
       }),
     ).toBe('confirmacoes')
+  })
+})
+
+describe('origemInterna', () => {
+  const PERMITIDAS = ['evento-mesas', 'painel-confirmacoes'] as const
+
+  function resolver(nome: string, id: string) {
+    return (): RotaResolvida => ({ name: nome, params: { id } })
+  }
+
+  it('[UNIT] devolve a rota permitida quando a página anterior é do mesmo evento', () => {
+    expect(origemInterna(`/eventos/${ID}/confirmacoes`, ID, resolver('painel-confirmacoes', ID), PERMITIDAS, 'evento-mesas')).toBe('painel-confirmacoes')
+    expect(origemInterna(`/eventos/${ID}/mesas`, ID, resolver('evento-mesas', ID), PERMITIDAS, 'evento-mesas')).toBe('evento-mesas')
+  })
+
+  it('[SEGURANÇA] cai no padrão para rota fora da lista, outro evento, endereço externo ou erro', () => {
+    expect(origemInterna(`/eventos/${ID}/restricoes-alimentares`, ID, resolver('restricoes-alimentares', ID), PERMITIDAS, 'evento-mesas')).toBe('evento-mesas')
+    expect(origemInterna('/eventos/x/confirmacoes', ID, resolver('painel-confirmacoes', 'outro'), PERMITIDAS, 'evento-mesas')).toBe('evento-mesas')
+    expect(origemInterna('//malicioso.example/confirmacoes', ID, resolver('painel-confirmacoes', ID), PERMITIDAS, 'evento-mesas')).toBe('evento-mesas')
+    expect(origemInterna(undefined, ID, resolver('painel-confirmacoes', ID), PERMITIDAS, 'evento-mesas')).toBe('evento-mesas')
+    expect(
+      origemInterna('/qualquer', ID, () => {
+        throw new Error('rota inválida')
+      }, PERMITIDAS, 'evento-mesas'),
+    ).toBe('evento-mesas')
   })
 })
 

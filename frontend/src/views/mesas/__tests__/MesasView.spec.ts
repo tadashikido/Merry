@@ -412,7 +412,7 @@ describe('ImpressaoMesasView', { timeout: 30_000 }, () => {
 
     const folha = wrapper!.get('[data-teste="mapa-mesas-impressao"]')
     expect(folha.get('h1').text()).toBe('Ana Beatriz & Bruno')
-    expect(folha.get('[data-teste="totais-impressao"]').text()).toBe('2 sentados · 5 lugares livres · 3 sem mesa · 3 mesas')
+    expect(folha.findAll('[data-teste="totais-impressao"] li').map((item) => item.text())).toEqual(['3 mesas', '7 lugares', '2 sentados', '5 lugares livres', '3 sem mesa'])
     const mesas = folha.findAll('[data-teste="mesa-impressao"]')
     expect(mesas).toHaveLength(3)
     expect(mesas[0]!.text()).toContain('Ana Souza')
