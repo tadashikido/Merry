@@ -1,12 +1,18 @@
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import type { CategoriaFornecedor } from '@/tipos/fornecedores'
 
+export interface ExemploItemChecklist {
+  titulo: string
+  dias: number
+}
+
 export interface VocabularioTipoEvento {
   rotulo: string
   rotuloPlural: string
   descricao: string
   comoCostumaSer: string
   exemploNomeModelo: string
+  exemplosItemChecklist: readonly ExemploItemChecklist[]
   contagem: {
     singular: string
     plural: string
@@ -56,6 +62,11 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     descricao: 'Dois nomes, cerimônia e recepção',
     comoCostumaSer: 'Cerimônia e recepção, às vezes em lugares diferentes, com padrinhos, mesa dos noivos e um roteiro do dia com horários marcados.',
     exemploNomeModelo: 'Casamento no campo',
+    exemplosItemChecklist: [
+      { titulo: 'Reservar o local da cerimônia', dias: 365 },
+      { titulo: 'Fechar a lista de padrinhos', dias: 180 },
+      { titulo: 'Fazer a prova final dos trajes', dias: 15 },
+    ],
     contagem: {
       singular: 'casamento',
       plural: 'casamentos',
@@ -103,6 +114,11 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     descricao: 'A festa da debutante',
     comoCostumaSer: 'Uma festa com valsa, homenagens e mesa da debutante; às vezes com missa ou cerimônia antes, em outro endereço.',
     exemploNomeModelo: '15 anos com baile',
+    exemplosItemChecklist: [
+      { titulo: 'Escolher o vestido da valsa', dias: 180 },
+      { titulo: 'Ensaiar a valsa com a corte', dias: 30 },
+      { titulo: 'Fechar a playlist da festa', dias: 15 },
+    ],
     contagem: {
       singular: 'festa de 15 anos',
       plural: 'festas de 15 anos',
@@ -150,6 +166,11 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     descricao: 'Para quem faz aniversário',
     comoCostumaSer: 'Uma festa, quase sempre num lugar só, com parabéns, mesa do aniversariante e uma lista de convidados mais próxima.',
     exemploNomeModelo: 'Aniversário infantil',
+    exemplosItemChecklist: [
+      { titulo: 'Reservar o espaço da festa', dias: 90 },
+      { titulo: 'Encomendar o bolo e os docinhos', dias: 30 },
+      { titulo: 'Confirmar a lista de convidados', dias: 7 },
+    ],
     contagem: {
       singular: 'aniversário',
       plural: 'aniversários',
@@ -197,6 +218,11 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     descricao: 'Bodas, chá, encontro de família',
     comoCostumaSer: 'Bodas, chá ou encontro de família: um ou mais homenageados, um local principal e um roteiro simples.',
     exemploNomeModelo: 'Bodas de prata',
+    exemplosItemChecklist: [
+      { titulo: 'Reservar o espaço', dias: 120 },
+      { titulo: 'Fechar o cardápio com o buffet', dias: 30 },
+      { titulo: 'Confirmar os convidados de honra', dias: 10 },
+    ],
     contagem: {
       singular: 'comemoração',
       plural: 'comemorações',

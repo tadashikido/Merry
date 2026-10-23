@@ -14,18 +14,22 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import ExemplosItemModelo from '@/componentes/modelos/ExemplosItemModelo.vue'
+import PosicaoItemModelo from '@/componentes/modelos/PosicaoItemModelo.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import type { FalhaEvento } from '@/stores/eventos'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { ROTULOS_SENTIDO_PRAZO, TEXTOS_ITEM_MODELO, TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
+import { exemploTituloItem, referenciaDoModelo } from '@/textos/modelos'
 import { ROTULOS_CATEGORIA_TAREFA, ROTULOS_RESPONSAVEL_TAREFA, TEXTOS_TAREFAS } from '@/textos/tarefas'
-import { SENTIDOS_PRAZO, type SalvarItemModeloChecklistRequest, type SentidoPrazo } from '@/tipos/checklist'
+import { SENTIDOS_PRAZO, type ModeloChecklistDto, type SalvarItemModeloChecklistRequest, type SentidoPrazo } from '@/tipos/checklist'
 import { CATEGORIAS_TAREFA, RESPONSAVEIS_TAREFA, type CategoriaTarefa, type ResponsavelTarefa } from '@/tipos/tarefas'
 import { LIMITES_CHECKLIST, diasComSentido, diasValidos, sentidoDosDias } from '@/utilitarios/checklist'
 import { focarElemento } from '@/utilitarios/foco'
 import { LIMITES_TAREFA, descricaoTarefa, tituloTarefa } from '@/utilitarios/tarefas'
+import { descreverPrazoAproximado } from '@/utilitarios/prazoModelo'
 import { obrigatorio } from '@/utilitarios/validacao'
 
 const CAMPOS = ['titulo', 'categoria', 'descricao', 'dias', 'responsavel'] as const
@@ -50,6 +54,7 @@ const carregando = ref(false)
 const falhaCarga = ref<FalhaEvento | null>(null)
 const itemInexistente = ref(false)
 const nomeModelo = ref('')
+const modeloCarregado = ref<ModeloChecklistDto | null>(null)
 const enviando = ref(false)
 const mensagemErro = ref<string | null>(null)
 
@@ -75,6 +80,22 @@ const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 const idCampo = (campo: Campo | 'sentido') => `item-modelo-${campo}`
 const titulo = computed(() => (edicao.value ? TEXTOS_ITEM_MODELO.formEditar : TEXTOS_ITEM_MODELO.formNovo))
 
+const mostrarLateral = computed(
+  () => !carregando.value && !falhaCarga.value && !itemInexistente.value && modeloCarregado.value !== null,
+)
+const tipoModelo = computed(() => modeloCarregado.value?.tipoEvento ?? null)
+const contracaoModelo = computed(() => referenciaDoModelo(tipoModelo.value).contracaoDe)
+const placeholderTitulo = computed(() => TEXTOS_ITEM_MODELO.campoTituloPlaceholderPara(exemploTituloItem(tipoModelo.value)))
+const diasPrevia = computed(() => {
+  const dias = formulario.valores.dias
+  return diasValidos(dias, sentido.value) === null && dias !== null ? diasComSentido(dias, sentido.value) : null
+})
+const dicaQuando = computed(() =>
+  diasPrevia.value === null
+    ? TEXTOS_ITEM_MODELO.campoQuandoDicaPara(contracaoModelo.value)
+    : TEXTOS_ITEM_MODELO.previaDica(descreverPrazoAproximado(diasPrevia.value, contracaoModelo.value)),
+)
+
 const opcoesSentido = SENTIDOS_PRAZO.map((valor) => ({ valor, rotulo: ROTULOS_SENTIDO_PRAZO[valor] }))
 const opcoesResponsavel = RESPONSAVEIS_TAREFA.map((valor) => ({ valor, rotulo: ROTULOS_RESPONSAVEL_TAREFA[valor] }))
 const opcoesCategoria = CATEGORIAS_TAREFA.map((valor) => ({ valor, rotulo: ROTULOS_CATEGORIA_TAREFA[valor] }))
@@ -90,6 +111,7 @@ async function carregar() {
     return
   }
   nomeModelo.value = resultado.valor.nome
+  modeloCarregado.value = resultado.valor
   if (!props.itemId) {
     return
   }
@@ -193,242 +215,286 @@ function alterarSentido() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="pagina-formulario">
-      <CabecalhoPagina
-        :titulo="titulo"
-        :descricao="nomeModelo || undefined"
-        :rotulos-trilha="{ 'modelo-checklist': nomeModelo || TEXTOS_MODELOS_CHECKLIST.titulo }"
-      />
-
-      <div class="formulario-item pilha pilha--cartao">
-        <EstadoCarregando
-          v-if="carregando"
-          variante="formulario"
-          :linhas="4"
+    <div class="formulario-item-tela">
+      <div
+        class="pagina-formulario formulario-item-tela__pagina"
+        :class="{ 'formulario-item-tela__pagina--com-lateral': mostrarLateral }"
+      >
+        <CabecalhoPagina
+          :titulo="titulo"
+          :descricao="nomeModelo || undefined"
+          :rotulos-trilha="{ 'modelo-checklist': nomeModelo || TEXTOS_MODELOS_CHECKLIST.titulo }"
         />
 
-        <EstadoErro
-          v-else-if="itemInexistente"
-          :titulo="TEXTOS_ITEM_MODELO.naoEncontradoTitulo"
-          :mensagem="TEXTOS_ITEM_MODELO.naoEncontradoTexto"
-          :pode-tentar-novamente="false"
-        />
+        <div class="formulario-item-tela__corpo">
+          <div class="formulario-item pilha pilha--cartao">
+            <EstadoCarregando
+              v-if="carregando"
+              variante="formulario"
+              :linhas="4"
+            />
 
-        <EstadoErro
-          v-else-if="falhaCarga?.tipo === 'naoEncontrado'"
-          :titulo="TEXTOS_MODELOS_CHECKLIST.naoEncontradoTitulo"
-          :mensagem="TEXTOS_MODELOS_CHECKLIST.naoEncontradoTexto"
-          :pode-tentar-novamente="false"
-        />
+            <EstadoErro
+              v-else-if="itemInexistente"
+              :titulo="TEXTOS_ITEM_MODELO.naoEncontradoTitulo"
+              :mensagem="TEXTOS_ITEM_MODELO.naoEncontradoTexto"
+              :pode-tentar-novamente="false"
+            />
 
-        <EstadoErro
-          v-else-if="falhaCarga"
-          :titulo="TEXTOS_MODELOS_CHECKLIST.erroTitulo"
-          :mensagem="falhaCarga.tipo === 'semPermissao' ? TEXTOS_MODELOS_CHECKLIST.semAcesso : TEXTOS_MODELOS_CHECKLIST.erroTexto"
-          :pode-tentar-novamente="falhaCarga.tipo !== 'semPermissao'"
-          :variante="falhaCarga.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
-          @tentar-novamente="carregar"
-        />
+            <EstadoErro
+              v-else-if="falhaCarga?.tipo === 'naoEncontrado'"
+              :titulo="TEXTOS_MODELOS_CHECKLIST.naoEncontradoTitulo"
+              :mensagem="TEXTOS_MODELOS_CHECKLIST.naoEncontradoTexto"
+              :pode-tentar-novamente="false"
+            />
 
-        <template v-else>
-          <MensagemFormulario
-            v-if="mensagemErro"
-            :mensagem="mensagemErro"
-            data-teste="erro-formulario"
-          />
+            <EstadoErro
+              v-else-if="falhaCarga"
+              :titulo="TEXTOS_MODELOS_CHECKLIST.erroTitulo"
+              :mensagem="falhaCarga.tipo === 'semPermissao' ? TEXTOS_MODELOS_CHECKLIST.semAcesso : TEXTOS_MODELOS_CHECKLIST.erroTexto"
+              :pode-tentar-novamente="falhaCarga.tipo !== 'semPermissao'"
+              :variante="falhaCarga.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
+              @tentar-novamente="carregar"
+            />
 
-          <form
-            class="pilha pilha--bloco"
-            novalidate
-            data-teste="formulario-item-modelo"
-            @submit.prevent="enviar"
-          >
-            <fieldset
-              class="formulario-item__grupo pilha pilha--grupo"
-              data-teste="grupo-item"
-            >
-              <legend class="formulario-item__legenda texto-rotulo">
-                {{ TEXTOS_ITEM_MODELO.grupoItem }}
-              </legend>
+            <template v-else>
+              <MensagemFormulario
+                v-if="mensagemErro"
+                :mensagem="mensagemErro"
+                data-teste="erro-formulario"
+              />
 
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_ITEM_MODELO.campoTitulo"
-                :id-campo="idCampo('titulo')"
-                obrigatorio
-                :erro="formulario.erros.titulo"
+              <form
+                class="pilha pilha--bloco"
+                novalidate
+                data-teste="formulario-item-modelo"
+                @submit.prevent="enviar"
               >
-                <InputText
-                  :id="idEntrada"
-                  v-model="formulario.valores.titulo"
-                  autocomplete="off"
-                  :maxlength="LIMITES_TAREFA.tituloMaximo"
-                  :placeholder="TEXTOS_ITEM_MODELO.campoTituloPlaceholder"
-                  aria-required="true"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-titulo"
-                  @update:model-value="formulario.revalidarAoDigitar('titulo')"
-                  @blur="formulario.validarAoSair('titulo')"
-                />
-              </CampoFormulario>
+                <fieldset
+                  class="formulario-item__grupo pilha pilha--grupo"
+                  data-teste="grupo-item"
+                >
+                  <legend class="formulario-item__legenda texto-rotulo">
+                    {{ TEXTOS_ITEM_MODELO.grupoItem }}
+                  </legend>
 
-              <CampoFormulario
-                v-slot="{ id: idEntrada, descritoPor }"
-                :rotulo="TEXTOS_ITEM_MODELO.campoCategoria"
-                :id-campo="idCampo('categoria')"
-                :erro="formulario.erros.categoria"
-              >
-                <Select
-                  v-model="formulario.valores.categoria"
-                  :input-id="idEntrada"
-                  :options="opcoesCategoria"
-                  option-label="rotulo"
-                  option-value="valor"
-                  :aria-describedby="descritoPor"
-                  :disabled="enviando"
-                  data-teste="campo-categoria"
-                />
-              </CampoFormulario>
-
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_ITEM_MODELO.campoDescricao"
-                :id-campo="idCampo('descricao')"
-                :dica="TEXTOS_TAREFAS.campoDescricaoDica(formulario.valores.descricao.length, LIMITES_TAREFA.descricaoMaximo)"
-                :erro="formulario.erros.descricao"
-              >
-                <Textarea
-                  :id="idEntrada"
-                  v-model="formulario.valores.descricao"
-                  rows="4"
-                  auto-resize
-                  :maxlength="LIMITES_TAREFA.descricaoMaximo"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-descricao"
-                  @update:model-value="formulario.revalidarAoDigitar('descricao')"
-                  @blur="formulario.validarAoSair('descricao')"
-                />
-              </CampoFormulario>
-            </fieldset>
-
-            <fieldset
-              class="formulario-item__grupo pilha pilha--grupo"
-              data-teste="grupo-prazo"
-            >
-              <legend class="formulario-item__legenda texto-rotulo">
-                {{ TEXTOS_ITEM_MODELO.grupoPrazo }}
-              </legend>
-
-              <fieldset
-                class="formulario-item__quando pilha pilha--campo"
-                data-teste="campo-quando"
-              >
-                <legend class="formulario-item__legenda-campo">
-                  {{ TEXTOS_ITEM_MODELO.campoQuando }}
-                </legend>
-                <div class="formulario-item__colunas">
                   <CampoFormulario
                     v-slot="{ id: idEntrada, invalido, descritoPor }"
-                    :rotulo="TEXTOS_ITEM_MODELO.campoDias"
-                    :id-campo="idCampo('dias')"
+                    :rotulo="TEXTOS_ITEM_MODELO.campoTitulo"
+                    :id-campo="idCampo('titulo')"
                     obrigatorio
-                    :dica="TEXTOS_ITEM_MODELO.campoQuandoDica"
-                    :erro="formulario.erros.dias"
+                    :erro="formulario.erros.titulo"
                   >
-                    <InputNumber
-                      v-model="formulario.valores.dias"
-                      :input-id="idEntrada"
-                      :min="0"
-                      :max="LIMITES_CHECKLIST.diasAntesMaximo"
-                      :use-grouping="false"
-                      :allow-empty="true"
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.titulo"
+                      autocomplete="off"
+                      :maxlength="LIMITES_TAREFA.tituloMaximo"
+                      :placeholder="placeholderTitulo"
                       aria-required="true"
                       :invalid="invalido"
                       :aria-invalid="invalido"
                       :aria-describedby="descritoPor"
                       :readonly="enviando"
-                      data-teste="campo-dias"
-                      @update:model-value="formulario.revalidarAoDigitar('dias')"
-                      @blur="formulario.validarAoSair('dias')"
+                      data-teste="campo-titulo"
+                      @update:model-value="formulario.revalidarAoDigitar('titulo')"
+                      @blur="formulario.validarAoSair('titulo')"
                     />
                   </CampoFormulario>
+
                   <CampoFormulario
-                    v-slot="{ id: idEntrada }"
-                    :rotulo="TEXTOS_ITEM_MODELO.campoSentido"
-                    :id-campo="idCampo('sentido')"
+                    v-slot="{ id: idEntrada, descritoPor }"
+                    :rotulo="TEXTOS_ITEM_MODELO.campoCategoria"
+                    :id-campo="idCampo('categoria')"
+                    :erro="formulario.erros.categoria"
+                  >
+                    <Select
+                      v-model="formulario.valores.categoria"
+                      :input-id="idEntrada"
+                      :options="opcoesCategoria"
+                      option-label="rotulo"
+                      option-value="valor"
+                      :aria-describedby="descritoPor"
+                      :disabled="enviando"
+                      data-teste="campo-categoria"
+                    />
+                  </CampoFormulario>
+
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_ITEM_MODELO.campoDescricao"
+                    :id-campo="idCampo('descricao')"
+                    :dica="TEXTOS_TAREFAS.campoDescricaoDica(formulario.valores.descricao.length, LIMITES_TAREFA.descricaoMaximo)"
+                    :erro="formulario.erros.descricao"
+                  >
+                    <Textarea
+                      :id="idEntrada"
+                      v-model="formulario.valores.descricao"
+                      rows="4"
+                      auto-resize
+                      :maxlength="LIMITES_TAREFA.descricaoMaximo"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-descricao"
+                      @update:model-value="formulario.revalidarAoDigitar('descricao')"
+                      @blur="formulario.validarAoSair('descricao')"
+                    />
+                  </CampoFormulario>
+                </fieldset>
+
+                <fieldset
+                  class="formulario-item__grupo pilha pilha--grupo"
+                  data-teste="grupo-prazo"
+                >
+                  <legend class="formulario-item__legenda texto-rotulo">
+                    {{ TEXTOS_ITEM_MODELO.grupoPrazo }}
+                  </legend>
+
+                  <fieldset
+                    class="formulario-item__quando pilha pilha--campo"
+                    data-teste="campo-quando"
+                  >
+                    <legend class="formulario-item__legenda-campo">
+                      {{ TEXTOS_ITEM_MODELO.campoQuando }}
+                    </legend>
+                    <div class="formulario-item__colunas">
+                      <CampoFormulario
+                        v-slot="{ id: idEntrada, invalido, descritoPor }"
+                        :rotulo="TEXTOS_ITEM_MODELO.campoDias"
+                        :id-campo="idCampo('dias')"
+                        obrigatorio
+                        :dica="dicaQuando"
+                        :erro="formulario.erros.dias"
+                      >
+                        <InputNumber
+                          v-model="formulario.valores.dias"
+                          :input-id="idEntrada"
+                          :min="0"
+                          :max="LIMITES_CHECKLIST.diasAntesMaximo"
+                          :use-grouping="false"
+                          :allow-empty="true"
+                          aria-required="true"
+                          :invalid="invalido"
+                          :aria-invalid="invalido"
+                          :aria-describedby="descritoPor"
+                          :readonly="enviando"
+                          data-teste="campo-dias"
+                          @update:model-value="formulario.revalidarAoDigitar('dias')"
+                          @blur="formulario.validarAoSair('dias')"
+                        />
+                      </CampoFormulario>
+                      <CampoFormulario
+                        v-slot="{ id: idEntrada }"
+                        :rotulo="TEXTOS_ITEM_MODELO.campoSentido"
+                        :id-campo="idCampo('sentido')"
+                      >
+                        <SelectButton
+                          :id="idEntrada"
+                          v-model="sentido"
+                          :options="opcoesSentido"
+                          option-label="rotulo"
+                          option-value="valor"
+                          :allow-empty="false"
+                          :aria-label="TEXTOS_ITEM_MODELO.campoSentido"
+                          :disabled="enviando"
+                          data-teste="campo-sentido"
+                          @change="alterarSentido"
+                        />
+                      </CampoFormulario>
+                    </div>
+                  </fieldset>
+
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, descritoPor }"
+                    :rotulo="TEXTOS_ITEM_MODELO.campoResponsavel"
+                    :id-campo="idCampo('responsavel')"
+                    :dica="TEXTOS_TAREFAS.campoResponsavelDica"
+                    :erro="formulario.erros.responsavel"
                   >
                     <SelectButton
                       :id="idEntrada"
-                      v-model="sentido"
-                      :options="opcoesSentido"
+                      v-model="formulario.valores.responsavel"
+                      :options="opcoesResponsavel"
                       option-label="rotulo"
                       option-value="valor"
                       :allow-empty="false"
-                      :aria-label="TEXTOS_ITEM_MODELO.campoSentido"
+                      :aria-label="TEXTOS_ITEM_MODELO.campoResponsavel"
+                      :aria-describedby="descritoPor"
                       :disabled="enviando"
-                      data-teste="campo-sentido"
-                      @change="alterarSentido"
+                      data-teste="campo-responsavel"
                     />
                   </CampoFormulario>
+                </fieldset>
+
+                <div class="formulario-item__acoes">
+                  <Button
+                    type="submit"
+                    :label="edicao ? TEXTOS_ITEM_MODELO.salvar : TEXTOS_ITEM_MODELO.criar"
+                    :loading="enviando"
+                    :aria-busy="enviando"
+                    data-teste="salvar-item"
+                  />
+                  <Button
+                    type="button"
+                    :label="TEXTOS_ITEM_MODELO.cancelar"
+                    severity="secondary"
+                    text
+                    :disabled="enviando"
+                    data-teste="cancelar"
+                    @click="cancelar"
+                  />
                 </div>
-              </fieldset>
+              </form>
+            </template>
+          </div>
 
-              <CampoFormulario
-                v-slot="{ id: idEntrada, descritoPor }"
-                :rotulo="TEXTOS_ITEM_MODELO.campoResponsavel"
-                :id-campo="idCampo('responsavel')"
-                :dica="TEXTOS_TAREFAS.campoResponsavelDica"
-                :erro="formulario.erros.responsavel"
-              >
-                <SelectButton
-                  :id="idEntrada"
-                  v-model="formulario.valores.responsavel"
-                  :options="opcoesResponsavel"
-                  option-label="rotulo"
-                  option-value="valor"
-                  :allow-empty="false"
-                  :aria-label="TEXTOS_ITEM_MODELO.campoResponsavel"
-                  :aria-describedby="descritoPor"
-                  :disabled="enviando"
-                  data-teste="campo-responsavel"
-                />
-              </CampoFormulario>
-            </fieldset>
-
-            <div class="formulario-item__acoes">
-              <Button
-                type="submit"
-                :label="edicao ? TEXTOS_ITEM_MODELO.salvar : TEXTOS_ITEM_MODELO.criar"
-                :loading="enviando"
-                :aria-busy="enviando"
-                data-teste="salvar-item"
-              />
-              <Button
-                type="button"
-                :label="TEXTOS_ITEM_MODELO.cancelar"
-                severity="secondary"
-                text
-                :disabled="enviando"
-                data-teste="cancelar"
-                @click="cancelar"
-              />
-            </div>
-          </form>
-        </template>
+          <div
+            v-if="mostrarLateral && modeloCarregado"
+            class="formulario-item-tela__lateral pilha pilha--bloco"
+            data-teste="lateral-formulario-item"
+          >
+            <PosicaoItemModelo
+              :itens="modeloCarregado.itens"
+              :dias="diasPrevia"
+              :titulo="formulario.valores.titulo"
+              :item-id="itemId ?? null"
+              :tipo="tipoModelo"
+            />
+            <ExemplosItemModelo :tipo="tipoModelo" />
+          </div>
+        </div>
       </div>
     </div>
   </LayoutPainelUsuario>
 </template>
 
 <style scoped>
+.formulario-item-tela {
+  container: formulario-item-tela / inline-size;
+}
+
+.formulario-item-tela__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'principal'
+    'lateral';
+  gap: var(--p-ritmo-bloco);
+}
+
 .formulario-item {
   container: formulario-item / inline-size;
+  grid-area: principal;
+  min-width: 0;
+}
+
+.formulario-item-tela__lateral {
+  grid-area: lateral;
+  min-width: 0;
+  padding-top: var(--p-ritmo-bloco);
+  border-top: 1px solid var(--p-cor-borda);
 }
 
 .formulario-item__grupo,
@@ -488,6 +554,25 @@ function alterarSentido() {
   .formulario-item__acoes {
     flex-direction: row;
     gap: var(--p-ritmo-grupo);
+  }
+}
+
+@container formulario-item-tela (min-width: 64rem) {
+  .formulario-item-tela__pagina--com-lateral {
+    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
+  }
+
+  .formulario-item-tela__pagina--com-lateral .formulario-item-tela__corpo {
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
+    grid-template-areas: 'principal lateral';
+    align-items: start;
+  }
+
+  .formulario-item-tela__lateral {
+    padding-top: 0;
+    padding-inline-start: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

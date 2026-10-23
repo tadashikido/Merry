@@ -779,13 +779,109 @@ describe('Formulários de modelo e item', () => {
   it('[UNITÁRIO] estilo do formulário de item usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ItemModeloChecklistFormularioView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(fonte).toContain('class="pagina-formulario"')
+    expect(fonte).toContain('class="pagina-formulario formulario-item-tela__pagina"')
     expect(estilo).toContain('container: formulario-item / inline-size')
     expect(estilo).toContain('@container formulario-item (min-width: 40rem)')
+    expect(estilo).toContain('container: formulario-item-tela / inline-size')
+    expect(estilo).toContain('@container formulario-item-tela (min-width: 64rem)')
+    expect(estilo).not.toContain('sticky')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')
     expect(fonte).not.toContain("validarCampo('")
+  })
+
+  it.each([
+    ['Casamento', 'Reservar o local da cerimônia', 'Cerca de 6 meses antes do casamento', 'um casamento'],
+    ['QuinzeAnos', 'Escolher o vestido da valsa', 'Cerca de 6 meses antes da festa de 15 anos', 'uma festa de 15 anos'],
+    ['Aniversario', 'Reservar o espaço da festa', 'Cerca de 6 meses antes do aniversário', 'um aniversário'],
+    ['Comemoracao', 'Reservar o espaço', 'Cerca de 6 meses antes da comemoração', 'uma comemoração'],
+  ] as const)('[COMPONENTE] item de modelo %s traduz placeholder, dica e lateral para o tipo', async (tipo, exemplo, previa, indefinido) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([itemModelo({ id: 'outro', titulo: 'Contratar o buffet', diasAntesDoEvento: 200 })], { tipoEvento: tipo }))))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/novo`)
+
+    expect(wrapper.get('[data-teste="campo-titulo"]').attributes('placeholder')).toBe(`Ex.: ${exemplo}`)
+    expect(wrapper.get('[data-teste="campo-quando"]').text()).toContain(`${previa}.`)
+    expect(wrapper.get('.formulario-item-tela__pagina').classes()).toContain('formulario-item-tela__pagina--com-lateral')
+    const lateral = wrapper.get('[data-teste="lateral-formulario-item"]')
+    expect(lateral.get('[data-teste="previa-prazo-item"]').text()).toBe(previa)
+    expect(lateral.get('[data-teste="marco-item-seisMeses"]').classes()).toContain('posicao-item__marco--atual')
+    expect(lateral.findAll('[data-teste="vizinho-item"]').map((vizinho) => vizinho.text())).toEqual([expect.stringContaining('Contratar o buffet')])
+    expect(lateral.get('[data-teste="apoio-exemplos-item"]').text()).toBe(TEXTOS_ITEM_MODELO.exemplosApoioTipo(indefinido))
+    expect(lateral.find('a, button').exists()).toBe(false)
+  })
+
+  it.each([
+    ['nulo', null],
+    ['desconhecido', 'Formatura' as unknown as TipoEvento],
+  ] as const)('[COMPONENTE] item de modelo com tipo %s fala do evento, sem casamento nem comemoração', async (_, tipo) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([itemModelo({ titulo: 'Contratar o buffet', diasAntesDoEvento: 30 })], { tipoEvento: tipo, sugerido: false }))))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/novo`)
+
+    expect(wrapper.get('[data-teste="campo-titulo"]').attributes('placeholder')).toBe('Ex.: Reservar o local')
+    const posicao = wrapper.get('[data-teste="posicao-item-modelo"]')
+    expect(posicao.get('[data-teste="previa-prazo-item"]').text()).toBe('Cerca de 6 meses antes do evento')
+    expect(posicao.text()).not.toMatch(/casamento|comemoração/i)
+    expect(wrapper.get('[data-teste="formulario-item-modelo"]').text()).not.toMatch(/casamento|comemoração|cerimônia/i)
+    expect(wrapper.findAll('[data-teste="tipo-exemplo-item"]')).toHaveLength(4)
+  })
+
+  it('[COMPONENTE] prévia acompanha os dias e o sentido e some com valor inválido', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([], { tipoEvento: 'QuinzeAnos' }))))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/novo`)
+    const previa = () => wrapper.get('[data-teste="previa-prazo-item"]').text()
+
+    expect(wrapper.get('[data-teste="nota-alcance-item"]').text()).toBe(TEXTOS_ITEM_MODELO.primeiroItem)
+    const dias = wrapper.get('[data-teste="campo-dias"] input')
+    await dias.setValue('15')
+    await dias.trigger('input')
+    await dias.trigger('blur')
+    await aguardarAte(() => expect(previa()).toBe('Cerca de 2 semanas antes da festa de 15 anos'))
+    const opcoes = () => wrapper.get('[data-teste="campo-sentido"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]')
+    await opcoes().find((opcao) => opcao.text() === 'depois do evento')!.trigger('click')
+    await aguardarAte(() => expect(previa()).toBe('Cerca de 2 semanas depois da festa de 15 anos'))
+    expect(wrapper.find('[data-teste="marco-item-depois"]').exists()).toBe(true)
+
+    await dias.setValue('500')
+    await dias.trigger('input')
+    await dias.trigger('blur')
+    await aguardarAte(() => expect(previa()).toBe(TEXTOS_ITEM_MODELO.posicaoSemDias))
+  })
+
+  it('[COMPONENTE] edição não lista o próprio item como vizinho e lateral vem depois do formulário', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () =>
+        respostaJson(modeloCompleto([itemModelo({ diasAntesDoEvento: 400 }), itemModelo({ id: 'outro', titulo: 'Definir orçamento', diasAntesDoEvento: 380 })], { tipoEvento: 'Aniversario' })),
+      ),
+    )
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/${ID_ITEM}/editar`)
+
+    const lateral = wrapper.get('[data-teste="lateral-formulario-item"]')
+    expect(lateral.findAll('[data-teste="vizinho-item"]').map((vizinho) => vizinho.text())).toEqual([expect.stringContaining('Definir orçamento')])
+    expect(lateral.get('[data-teste="este-item"]').text()).toContain('Reservar local da cerimônia e da recepção')
+    expect(lateral.get('[data-teste="marco-item-dozeMeses"] [data-teste="contagem-marco-item"]').text()).toBe('2 itens')
+    const formulario = wrapper.get('[data-teste="formulario-item-modelo"]').element
+    expect(formulario.compareDocumentPosition(lateral.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it.each([
+    ['sem permissão', 403],
+    ['modelo não encontrado', 404],
+  ] as const)('[COMPONENTE] %s não mostra a lateral nem alarga a página', async (_, status) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(status, { title: 'Falha' })))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/novo`)
+
+    expect(wrapper.find('[data-teste="lateral-formulario-item"]').exists()).toBe(false)
+    expect(wrapper.get('.formulario-item-tela__pagina').classes()).not.toContain('formulario-item-tela__pagina--com-lateral')
+  })
+
+  it('[COMPONENTE] item inexistente não mostra a lateral', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([]))))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/${ID_ITEM}/editar`)
+
+    expect(wrapper.text()).toContain(TEXTOS_ITEM_MODELO.naoEncontradoTitulo)
+    expect(wrapper.find('[data-teste="lateral-formulario-item"]').exists()).toBe(false)
   })
 
   it('[SEGURANÇA] anfitriões são redirecionados para fora das rotas de modelos', async () => {

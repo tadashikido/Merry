@@ -1,5 +1,11 @@
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
-import { VOCABULARIO_TIPO_EVENTO, ehTipoEvento, vocabularioOuNeutro, type VocabularioTipoEvento } from '@/textos/tiposEvento'
+import {
+  VOCABULARIO_TIPO_EVENTO,
+  ehTipoEvento,
+  vocabularioOuNeutro,
+  type ExemploItemChecklist,
+  type VocabularioTipoEvento,
+} from '@/textos/tiposEvento'
 
 function numero(valor: number): string {
   return valor.toLocaleString('pt-BR')
@@ -79,4 +85,30 @@ export function exemplosNomeModelo(): ExemploNomeModelo[] {
     rotulo: VOCABULARIO_TIPO_EVENTO[tipo].rotulo,
     exemplo: VOCABULARIO_TIPO_EVENTO[tipo].exemploNomeModelo,
   }))
+}
+
+export const EXEMPLO_ITEM_NEUTRO: ExemploItemChecklist = { titulo: 'Reservar o local', dias: 180 }
+
+export interface ExemploItemModelo extends ExemploItemChecklist {
+  chave: string
+  tipoRotulo: string | null
+}
+
+export function exemplosItemChecklist(tipo: TipoEvento | null | undefined): ExemploItemModelo[] {
+  if (ehTipoEvento(tipo)) {
+    return VOCABULARIO_TIPO_EVENTO[tipo].exemplosItemChecklist.map((exemplo, indice) => ({
+      ...exemplo,
+      chave: `${tipo}-${indice}`,
+      tipoRotulo: null,
+    }))
+  }
+  return TIPOS_EVENTO.map((cada) => ({
+    ...VOCABULARIO_TIPO_EVENTO[cada].exemplosItemChecklist[0]!,
+    chave: cada,
+    tipoRotulo: VOCABULARIO_TIPO_EVENTO[cada].rotulo,
+  }))
+}
+
+export function exemploTituloItem(tipo: TipoEvento | null | undefined): string {
+  return ehTipoEvento(tipo) ? (VOCABULARIO_TIPO_EVENTO[tipo].exemplosItemChecklist[0]?.titulo ?? EXEMPLO_ITEM_NEUTRO.titulo) : EXEMPLO_ITEM_NEUTRO.titulo
 }
