@@ -309,10 +309,10 @@ function imprimir() {
               class="ie ie-alerta"
               aria-hidden="true"
             />
-            {{ TEXTOS_PREPARO_BUFFET.alergiaTitulo }}
+            {{ TEXTOS_FICHA_BUFFET.alergiaTitulo }}
           </p>
           <p class="ficha__alergia-texto">
-            {{ TEXTOS_PREPARO_BUFFET.alergiaTexto }}
+            {{ TEXTOS_FICHA_BUFFET.alergiaTexto }}
           </p>
         </div>
         <dl
@@ -338,7 +338,7 @@ function imprimir() {
           class="ficha__nota"
           data-teste="ficha-conferir-outras"
         >
-          {{ TEXTOS_PREPARO_BUFFET.outras(conferencia.outras) }}
+          {{ TEXTOS_FICHA_BUFFET.outrasConferir(conferencia.outras) }}
         </p>
         <p
           v-if="conferencia.necessidades > 0"

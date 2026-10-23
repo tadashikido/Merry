@@ -304,12 +304,24 @@ describe('ImpressaoBuffetView', () => {
     const conferir = wrapper!.get('[data-teste="ficha-conferir"]')
     expect(conferir.get('h2').text()).toBe(TEXTOS_FICHA_BUFFET.conferirTitulo)
     expect(conferir.attributes('aria-labelledby')).toBe('ficha-conferir')
-    expect(conferir.get('[data-teste="ficha-alergia"]').text()).toContain(TEXTOS_PREPARO_BUFFET.alergiaTitulo)
+    expect(conferir.get('[data-teste="ficha-alergia"]').text()).toContain(TEXTOS_FICHA_BUFFET.alergiaTitulo)
+    expect(conferir.get('[data-teste="ficha-alergia"]').text()).toContain(TEXTOS_FICHA_BUFFET.alergiaTexto)
     expect(conferir.find('[data-teste="ficha-orientacao-AlergiaAmendoimCastanhas"]').exists()).toBe(true)
-    expect(conferir.get('[data-teste="ficha-conferir-outras"]').text()).toBe(TEXTOS_PREPARO_BUFFET.outras(2))
+    expect(conferir.get('[data-teste="ficha-conferir-outras"]').text()).toBe(
+      '2 restrições descritas em texto: siga a descrição em Restrições por pessoa, como foram escritas.',
+    )
     expect(conferir.get('[data-teste="ficha-conferir-necessidades"]').text()).toBe(TEXTOS_PREPARO_BUFFET.necessidades(2))
     const blocos = wrapper!.get('[data-teste="ficha-buffet"]').element.querySelectorAll('[data-teste="ficha-conferir"], [data-teste="ficha-restricoes-pessoas"]')
     expect([...blocos].map((elemento) => elemento.getAttribute('data-teste'))).toEqual(['ficha-conferir', 'ficha-restricoes-pessoas'])
+  })
+
+  it('[COMPONENTE] textos da conferência falam com a equipe do buffet, não pedem para repassar ao buffet', async () => {
+    rotasComEvento({ tipo: 'Casamento' }, exportacaoComAlergia())
+    await abrir()
+
+    const conferir = wrapper!.get('[data-teste="ficha-conferir"]').text()
+    expect(conferir).not.toMatch(/com o buffet|ao buffet/i)
+    expect(TEXTOS_FICHA_BUFFET.outrasConferir(1)).toBe('1 restrição descrita em texto: siga a descrição em Restrições por pessoa, como foi escrita.')
   })
 
   it('[COMPONENTE] sem alergia entre os confirmados não há alerta', async () => {

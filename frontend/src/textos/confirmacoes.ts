@@ -151,6 +151,12 @@ export const TEXTOS_FICHA_BUFFET = {
   pendentes: (quantidade: number) => `${contar(quantidade, 'pessoa ainda', 'pessoas ainda')} sem resposta.`,
   maximo: (quantidade: number) => `Se todos que faltam vierem: até ${contar(quantidade, 'pessoa', 'pessoas')}.`,
   conferirTitulo: 'Para o buffet conferir',
+  alergiaTitulo: 'Alergia entre os confirmados',
+  alergiaTexto: 'Alergia não é preferência: preparo e utensílios separados, e o prato identificado até chegar à pessoa certa.',
+  outrasConferir: (quantidade: number) =>
+    quantidade === 1
+      ? '1 restrição descrita em texto: siga a descrição em Restrições por pessoa, como foi escrita.'
+      : `${formatarNumero(quantidade)} restrições descritas em texto: siga a descrição em Restrições por pessoa, como foram escritas.`,
   restricoes: 'Restrições alimentares',
   outrasRestricoes: 'Outras restrições',
   necessidadesEspeciais: 'Necessidades especiais',
