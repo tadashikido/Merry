@@ -173,6 +173,29 @@ export const TEXTOS_FORNECEDORES_EVENTO = {
       : base
   },
   opcaoEvento: (nomes: string, data: string, arquivado: boolean) => `${nomes} — ${data}${arquivado ? ' (arquivado)' : ''}`,
+  categoriaEssencial: {
+    SemFornecedor: 'essencial, ainda sem fornecedor',
+    Cotacao: 'essencial, em cotação',
+    EmNegociacao: 'essencial, em negociação',
+    Contratado: 'essencial, já contratada',
+  },
+  categoriaComSituacao: (categoria: string, situacao: string) => `${categoria} · ${situacao}`,
+  essenciaisPara: (artigo: string) => `Essenciais para ${artigo}`,
+} as const
+
+export const TEXTOS_HISTORICO_FORNECEDOR_EVENTO = {
+  titulo: 'Em outros eventos',
+  semEscolha: 'Escolha um fornecedor para ver em que outros eventos da assessoria ele entrou.',
+  carregando: 'Carregando histórico…',
+  erro: 'Não foi possível carregar o histórico deste fornecedor.',
+  tentarNovamente: 'Tentar novamente',
+  vazio: 'Primeiro evento da assessoria com este fornecedor.',
+  legenda: (total: number) => plural(total, 'outro evento da assessoria', 'outros eventos da assessoria'),
+  contratados: (quantidade: number) =>
+    quantidade === 0 ? 'Ainda não foi contratado em nenhum deles.' : `Contratado em ${quantidade} deles.`,
+  listaRotulo: 'Eventos mais recentes com este fornecedor',
+  maisN: (quantidade: number) => `e mais ${quantidade} ${plural(quantidade, 'evento', 'eventos')}`,
+  arquivado: 'Arquivado',
 } as const
 
 export const TEXTOS_HISTORICO_FORNECEDOR = {

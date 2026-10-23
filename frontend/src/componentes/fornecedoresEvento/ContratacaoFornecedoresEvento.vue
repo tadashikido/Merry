@@ -8,7 +8,9 @@ import type { TipoEvento } from '@/tipos/eventos'
 import type { FornecedorEventoDto } from '@/tipos/fornecedoresEvento'
 import { coberturaEssenciais } from '@/utilitarios/fornecedoresEvento'
 
-const props = defineProps<{ vinculos: FornecedorEventoDto[]; tipo: TipoEvento }>()
+const props = withDefaults(defineProps<{ vinculos: FornecedorEventoDto[]; tipo: TipoEvento; titulo?: string | null }>(), {
+  titulo: null,
+})
 
 const vocabulario = computed(() => vocabularioOuNeutro(props.tipo))
 const cobertura = computed(() => coberturaEssenciais(props.vinculos, vocabulario.value.fornecedoresEssenciais))
@@ -30,7 +32,7 @@ const emConversa = computed(() =>
       id="titulo-contratacao-fornecedores"
       class="contratacao__titulo texto-rotulo"
     >
-      {{ TEXTOS_CONTRATACAO_FORNECEDORES.titulo }}
+      {{ titulo ?? TEXTOS_CONTRATACAO_FORNECEDORES.titulo }}
     </h2>
 
     <p

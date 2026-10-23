@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
@@ -16,6 +16,8 @@ import DialogoConfirmacao from '@/componentes/base/DialogoConfirmacao.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import ContratacaoFornecedoresEvento from '@/componentes/fornecedoresEvento/ContratacaoFornecedoresEvento.vue'
+import HistoricoFornecedorEvento from '@/componentes/fornecedoresEvento/HistoricoFornecedorEvento.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
@@ -28,6 +30,7 @@ import {
   TEXTOS_CONTRATO,
   TEXTOS_FORNECEDORES_EVENTO,
 } from '@/textos/fornecedoresEvento'
+import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import { CATEGORIAS_FORNECEDOR } from '@/tipos/fornecedores'
 import {
   STATUS_FORNECEDOR_EVENTO,
@@ -44,6 +47,7 @@ import {
   regraFornecedor,
   regraValor,
   regraValorContratado,
+  situacaoEssencialDaCategoria,
 } from '@/utilitarios/fornecedoresEvento'
 import { tamanhoMaximo } from '@/utilitarios/validacao'
 
@@ -122,6 +126,46 @@ const gruposFornecedores = computed(() =>
   })).filter((grupo) => grupo.itens.length > 0),
 )
 const fornecedorEscolhido = computed(() => (base.lista ?? []).find((item) => item.id === formulario.valores.fornecedorId) ?? null)
+const tipoConhecido = computed(() => (evento.value && ehTipoEvento(evento.value.tipo) ? evento.value.tipo : null))
+const vinculosDoEvento = computed(() => (store.eventoId === props.id ? (store.lista?.vinculos ?? null) : null))
+const mostrarContratacao = computed(() => !edicao.value && tipoConhecido.value !== null && vinculosDoEvento.value !== null)
+const legendaEscolhido = computed(() => {
+  const escolhido = fornecedorEscolhido.value
+  if (!escolhido) {
+    return null
+  }
+  const rotulo = ROTULOS_CATEGORIA_FORNECEDOR[escolhido.categoria]
+  if (tipoConhecido.value === null || vinculosDoEvento.value === null) {
+    return rotulo
+  }
+  const situacao = situacaoEssencialDaCategoria(
+    vinculosDoEvento.value,
+    vocabularioOuNeutro(tipoConhecido.value).fornecedoresEssenciais,
+    escolhido.categoria,
+  )
+  return situacao
+    ? TEXTOS_FORNECEDORES_EVENTO.categoriaComSituacao(rotulo, TEXTOS_FORNECEDORES_EVENTO.categoriaEssencial[situacao])
+    : rotulo
+})
+const fornecedorDoHistorico = computed(() =>
+  edicao.value ? (vinculo.value?.fornecedor.id ?? null) : formulario.valores.fornecedorId || null,
+)
+const participacoesDoFornecedor = computed(() =>
+  fornecedorDoHistorico.value && base.participacoesDe === fornecedorDoHistorico.value ? base.participacoes : null,
+)
+const falhaHistorico = computed(
+  () => fornecedorDoHistorico.value !== null && base.participacoesDe === fornecedorDoHistorico.value && base.falhaParticipacoes !== null,
+)
+const comLateral = computed(() => !carregandoVinculo.value && !falhaVinculo.value && (!edicao.value || vinculo.value !== null))
+
+function carregarHistorico() {
+  if (fornecedorDoHistorico.value) {
+    void base.carregarParticipacoes(fornecedorDoHistorico.value)
+  }
+}
+
+watch(fornecedorDoHistorico, carregarHistorico)
+
 const semDisponiveisTexto = computed(() =>
   (base.lista ?? []).some((fornecedor) => !fornecedor.arquivado)
     ? TEXTOS_FORNECEDORES_EVENTO.semDisponiveis
@@ -318,324 +362,346 @@ async function removerContrato() {
 
 <template>
   <LayoutPainelUsuario>
-    <div
-      class="formulario-vinculo"
-      :class="{ 'pagina-formulario': !edicao }"
-    >
-      <CabecalhoPagina
-        :titulo="titulo"
-        :descricao="nomes || undefined"
-      />
-
-      <EstadoCarregando
-        v-if="carregandoVinculo"
-        variante="formulario"
-        :linhas="5"
-      />
-
-      <EstadoErro
-        v-else-if="falhaVinculo?.tipo === 'naoEncontrado'"
-        :titulo="TEXTOS_FORNECEDORES_EVENTO.vinculoNaoEncontradoTitulo"
-        :mensagem="TEXTOS_FORNECEDORES_EVENTO.vinculoNaoEncontradoTexto"
-        :pode-tentar-novamente="false"
-      />
-
-      <EstadoErro
-        v-else-if="falhaVinculo"
-        :titulo="TEXTOS_FORNECEDORES_EVENTO.erroTitulo"
-        :mensagem="falhaVinculo.tipo === 'semPermissao' ? TEXTOS_FORNECEDORES_EVENTO.semAcesso : TEXTOS_FORNECEDORES_EVENTO.erroTexto"
-        :pode-tentar-novamente="falhaVinculo.tipo !== 'semPermissao'"
-        :variante="falhaVinculo.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
-        @tentar-novamente="carregarVinculo"
-      />
-
+    <div class="formulario-vinculo">
       <div
-        v-else
-        class="formulario-vinculo__corpo"
+        class="pagina-formulario formulario-vinculo__pagina"
+        :class="{ 'formulario-vinculo__pagina--com-lateral': comLateral }"
       >
-        <div class="formulario-vinculo__principal pilha pilha--cartao">
-          <MensagemFormulario
-            v-if="arquivado"
-            variante="alerta"
-            :mensagem="TEXTOS_FORNECEDORES_EVENTO.arquivado"
-            data-teste="aviso-arquivado"
-          />
-          <MensagemFormulario
-            v-if="mensagemErro"
-            :mensagem="mensagemErro"
-            data-teste="erro-formulario"
-          />
+        <CabecalhoPagina
+          :titulo="titulo"
+          :descricao="nomes || undefined"
+        />
 
-          <form
-            class="pilha pilha--bloco"
-            novalidate
-            data-teste="formulario-vinculo"
-            @submit.prevent="enviar"
-          >
-            <fieldset
-              class="formulario-vinculo__grupo pilha pilha--grupo"
-              data-teste="grupo-fornecedor"
+        <EstadoCarregando
+          v-if="carregandoVinculo"
+          variante="formulario"
+          :linhas="5"
+        />
+
+        <EstadoErro
+          v-else-if="falhaVinculo?.tipo === 'naoEncontrado'"
+          :titulo="TEXTOS_FORNECEDORES_EVENTO.vinculoNaoEncontradoTitulo"
+          :mensagem="TEXTOS_FORNECEDORES_EVENTO.vinculoNaoEncontradoTexto"
+          :pode-tentar-novamente="false"
+        />
+
+        <EstadoErro
+          v-else-if="falhaVinculo"
+          :titulo="TEXTOS_FORNECEDORES_EVENTO.erroTitulo"
+          :mensagem="falhaVinculo.tipo === 'semPermissao' ? TEXTOS_FORNECEDORES_EVENTO.semAcesso : TEXTOS_FORNECEDORES_EVENTO.erroTexto"
+          :pode-tentar-novamente="falhaVinculo.tipo !== 'semPermissao'"
+          :variante="falhaVinculo.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
+          @tentar-novamente="carregarVinculo"
+        />
+
+        <div
+          v-else
+          class="formulario-vinculo__corpo"
+        >
+          <div class="formulario-vinculo__principal pilha pilha--cartao">
+            <MensagemFormulario
+              v-if="arquivado"
+              variante="alerta"
+              :mensagem="TEXTOS_FORNECEDORES_EVENTO.arquivado"
+              data-teste="aviso-arquivado"
+            />
+            <MensagemFormulario
+              v-if="mensagemErro"
+              :mensagem="mensagemErro"
+              data-teste="erro-formulario"
+            />
+
+            <form
+              class="pilha pilha--bloco"
+              novalidate
+              data-teste="formulario-vinculo"
+              @submit.prevent="enviar"
             >
-              <legend class="formulario-vinculo__legenda texto-rotulo">
-                {{ TEXTOS_FORNECEDORES_EVENTO.grupoFornecedor }}
-              </legend>
-
-              <CampoFormulario
-                v-if="!edicao"
-                :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoFornecedor"
-                :id-campo="idCampo('fornecedorId')"
-                obrigatorio
-                :erro="formulario.erros.fornecedorId"
+              <fieldset
+                class="formulario-vinculo__grupo pilha pilha--grupo"
+                data-teste="grupo-fornecedor"
               >
-                <template #acao-rotulo>
-                  <RouterLink
-                    :to="{ name: 'fornecedor-novo' }"
-                    class="formulario-vinculo__link"
-                    data-teste="cadastrar-na-base"
-                  >
-                    {{ TEXTOS_FORNECEDORES_EVENTO.linkCadastrar }}
-                  </RouterLink>
-                </template>
-                <template #default="{ id: idEntrada, invalido, descritoPor }">
-                  <p
-                    v-if="base.carregandoLista && !base.lista"
-                    class="formulario-vinculo__apoio"
-                  >
-                    {{ TEXTOS_FORNECEDORES_EVENTO.carregandoFornecedores }}
-                  </p>
-                  <p
-                    v-else-if="base.falhaLista"
-                    class="formulario-vinculo__apoio"
-                    data-teste="erro-base"
-                  >
-                    {{ TEXTOS_FORNECEDORES_EVENTO.erroFornecedores }}
-                  </p>
-                  <p
-                    v-else-if="gruposFornecedores.length === 0"
-                    class="formulario-vinculo__apoio"
-                    data-teste="sem-disponiveis"
-                  >
-                    {{ semDisponiveisTexto }}
-                  </p>
-                  <Select
-                    v-else
-                    v-model="formulario.valores.fornecedorId"
-                    :input-id="idEntrada"
-                    :options="gruposFornecedores"
-                    option-label="rotulo"
-                    option-value="valor"
-                    option-group-label="rotulo"
-                    option-group-children="itens"
-                    filter
-                    :placeholder="TEXTOS_FORNECEDORES_EVENTO.placeholderFornecedor"
-                    :invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :disabled="enviando"
-                    data-teste="campo-fornecedor"
-                    @change="formulario.validarAoSair('fornecedorId')"
-                  />
-                  <p
-                    v-if="fornecedorEscolhido"
-                    class="texto-legenda"
-                    data-teste="fornecedor-escolhido"
-                  >
-                    {{ ROTULOS_CATEGORIA_FORNECEDOR[fornecedorEscolhido.categoria] }}
-                  </p>
-                </template>
-              </CampoFormulario>
+                <legend class="formulario-vinculo__legenda texto-rotulo">
+                  {{ TEXTOS_FORNECEDORES_EVENTO.grupoFornecedor }}
+                </legend>
 
-              <div
-                v-else-if="vinculo"
-                class="formulario-vinculo__fixo pilha pilha--campo"
-                data-teste="fornecedor-fixo"
+                <CampoFormulario
+                  v-if="!edicao"
+                  :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoFornecedor"
+                  :id-campo="idCampo('fornecedorId')"
+                  obrigatorio
+                  :erro="formulario.erros.fornecedorId"
+                >
+                  <template #acao-rotulo>
+                    <RouterLink
+                      :to="{ name: 'fornecedor-novo' }"
+                      class="formulario-vinculo__link"
+                      data-teste="cadastrar-na-base"
+                    >
+                      {{ TEXTOS_FORNECEDORES_EVENTO.linkCadastrar }}
+                    </RouterLink>
+                  </template>
+                  <template #default="{ id: idEntrada, invalido, descritoPor }">
+                    <p
+                      v-if="base.carregandoLista && !base.lista"
+                      class="formulario-vinculo__apoio"
+                    >
+                      {{ TEXTOS_FORNECEDORES_EVENTO.carregandoFornecedores }}
+                    </p>
+                    <p
+                      v-else-if="base.falhaLista"
+                      class="formulario-vinculo__apoio"
+                      data-teste="erro-base"
+                    >
+                      {{ TEXTOS_FORNECEDORES_EVENTO.erroFornecedores }}
+                    </p>
+                    <p
+                      v-else-if="gruposFornecedores.length === 0"
+                      class="formulario-vinculo__apoio"
+                      data-teste="sem-disponiveis"
+                    >
+                      {{ semDisponiveisTexto }}
+                    </p>
+                    <Select
+                      v-else
+                      v-model="formulario.valores.fornecedorId"
+                      :input-id="idEntrada"
+                      :options="gruposFornecedores"
+                      option-label="rotulo"
+                      option-value="valor"
+                      option-group-label="rotulo"
+                      option-group-children="itens"
+                      filter
+                      :placeholder="TEXTOS_FORNECEDORES_EVENTO.placeholderFornecedor"
+                      :invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :disabled="enviando"
+                      data-teste="campo-fornecedor"
+                      @change="formulario.validarAoSair('fornecedorId')"
+                    />
+                    <p
+                      v-if="legendaEscolhido"
+                      class="texto-legenda"
+                      data-teste="fornecedor-escolhido"
+                    >
+                      {{ legendaEscolhido }}
+                    </p>
+                  </template>
+                </CampoFormulario>
+
+                <div
+                  v-else-if="vinculo"
+                  class="formulario-vinculo__fixo pilha pilha--campo"
+                  data-teste="fornecedor-fixo"
+                >
+                  <span class="formulario-vinculo__empresa">{{ vinculo.fornecedor.nomeEmpresa }}</span>
+                  <span class="texto-legenda">{{ ROTULOS_CATEGORIA_FORNECEDOR[vinculo.fornecedor.categoria] }}</span>
+                </div>
+              </fieldset>
+
+              <fieldset
+                class="formulario-vinculo__grupo pilha pilha--grupo"
+                data-teste="grupo-contratacao"
               >
-                <span class="formulario-vinculo__empresa">{{ vinculo.fornecedor.nomeEmpresa }}</span>
-                <span class="texto-legenda">{{ ROTULOS_CATEGORIA_FORNECEDOR[vinculo.fornecedor.categoria] }}</span>
-              </div>
-            </fieldset>
+                <legend class="formulario-vinculo__legenda texto-rotulo">
+                  {{ TEXTOS_FORNECEDORES_EVENTO.grupoContratacao }}
+                </legend>
 
-            <fieldset
-              class="formulario-vinculo__grupo pilha pilha--grupo"
-              data-teste="grupo-contratacao"
-            >
-              <legend class="formulario-vinculo__legenda texto-rotulo">
-                {{ TEXTOS_FORNECEDORES_EVENTO.grupoContratacao }}
-              </legend>
-
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoServico"
-                :id-campo="idCampo('servico')"
-                :erro="formulario.erros.servico"
-              >
-                <InputText
-                  :id="idEntrada"
-                  v-model="formulario.valores.servico"
-                  autocomplete="off"
-                  :maxlength="LIMITES_VINCULO.servicoMaximo"
-                  :placeholder="TEXTOS_FORNECEDORES_EVENTO.placeholderServico"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-servico"
-                  @update:model-value="formulario.revalidarAoDigitar('servico')"
-                  @blur="formulario.validarAoSair('servico')"
-                />
-              </CampoFormulario>
-
-              <CampoFormulario
-                v-slot="{ id: idEntrada, descritoPor }"
-                :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoStatus"
-                :id-campo="idCampo('status')"
-                obrigatorio
-                :erro="formulario.erros.status"
-              >
-                <div class="formulario-vinculo__trilho">
-                  <SelectButton
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoServico"
+                  :id-campo="idCampo('servico')"
+                  :erro="formulario.erros.servico"
+                >
+                  <InputText
                     :id="idEntrada"
-                    v-model="formulario.valores.status"
-                    :options="opcoesStatus"
-                    option-label="rotulo"
-                    option-value="valor"
-                    :allow-empty="false"
-                    :aria-label="TEXTOS_FORNECEDORES_EVENTO.campoStatus"
+                    v-model="formulario.valores.servico"
+                    autocomplete="off"
+                    :maxlength="LIMITES_VINCULO.servicoMaximo"
+                    :placeholder="TEXTOS_FORNECEDORES_EVENTO.placeholderServico"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
                     :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    data-teste="campo-servico"
+                    @update:model-value="formulario.revalidarAoDigitar('servico')"
+                    @blur="formulario.validarAoSair('servico')"
+                  />
+                </CampoFormulario>
+
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoStatus"
+                  :id-campo="idCampo('status')"
+                  obrigatorio
+                  :erro="formulario.erros.status"
+                >
+                  <div class="formulario-vinculo__trilho">
+                    <SelectButton
+                      :id="idEntrada"
+                      v-model="formulario.valores.status"
+                      :options="opcoesStatus"
+                      option-label="rotulo"
+                      option-value="valor"
+                      :allow-empty="false"
+                      :aria-label="TEXTOS_FORNECEDORES_EVENTO.campoStatus"
+                      :aria-describedby="descritoPor"
+                      :disabled="enviando"
+                      data-teste="campo-status"
+                      @change="formulario.validarAoSair('valorContratado')"
+                    />
+                  </div>
+                </CampoFormulario>
+
+                <div class="formulario-vinculo__colunas">
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoOrcado"
+                    :id-campo="idCampo('valorOrcado')"
+                    :erro="formulario.erros.valorOrcado"
+                  >
+                    <InputNumber
+                      v-model="formulario.valores.valorOrcado"
+                      :input-id="idEntrada"
+                      mode="currency"
+                      currency="BRL"
+                      locale="pt-BR"
+                      :min="0"
+                      :max="LIMITES_VINCULO.valorMaximo"
+                      :allow-empty="true"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-orcado"
+                      @update:model-value="formulario.revalidarAoDigitar('valorOrcado')"
+                      @blur="formulario.validarAoSair('valorOrcado')"
+                    />
+                  </CampoFormulario>
+
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoContratado"
+                    :id-campo="idCampo('valorContratado')"
+                    :obrigatorio="formulario.valores.status === 'Contratado'"
+                    :dica="TEXTOS_FORNECEDORES_EVENTO.ajudaContratado"
+                    :erro="formulario.erros.valorContratado"
+                  >
+                    <InputNumber
+                      v-model="formulario.valores.valorContratado"
+                      :input-id="idEntrada"
+                      mode="currency"
+                      currency="BRL"
+                      locale="pt-BR"
+                      :min="0"
+                      :max="LIMITES_VINCULO.valorMaximo"
+                      :allow-empty="true"
+                      :aria-required="formulario.valores.status === 'Contratado'"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-contratado"
+                      @update:model-value="formulario.revalidarAoDigitar('valorContratado')"
+                      @blur="formulario.validarAoSair('valorContratado')"
+                    />
+                  </CampoFormulario>
+                </div>
+
+                <CampoFormulario
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoNotas"
+                  :id-campo="idCampo('notasInternas')"
+                  :dica="TEXTOS_FORNECEDORES_EVENTO.ajudaNotas(formulario.valores.notasInternas.length, LIMITES_VINCULO.notasMaximo)"
+                  :erro="formulario.erros.notasInternas"
+                >
+                  <Textarea
+                    :id="idEntrada"
+                    v-model="formulario.valores.notasInternas"
+                    rows="3"
+                    auto-resize
+                    :maxlength="LIMITES_VINCULO.notasMaximo"
+                    :invalid="invalido"
+                    :aria-invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :readonly="enviando"
+                    data-teste="campo-notas"
+                    @update:model-value="formulario.revalidarAoDigitar('notasInternas')"
+                    @blur="formulario.validarAoSair('notasInternas')"
+                  />
+                </CampoFormulario>
+              </fieldset>
+
+              <div class="pilha pilha--grupo">
+                <div class="formulario-vinculo__acoes">
+                  <Button
+                    type="submit"
+                    :label="rotuloSalvar"
+                    :loading="enviando"
+                    :aria-busy="enviando"
+                    :disabled="arquivado"
+                    data-teste="salvar-vinculo"
+                  />
+                  <Button
+                    type="button"
+                    :label="TEXTOS_FORNECEDORES_EVENTO.cancelar"
+                    severity="secondary"
+                    text
                     :disabled="enviando"
-                    data-teste="campo-status"
-                    @change="formulario.validarAoSair('valorContratado')"
+                    data-teste="cancelar"
+                    @click="cancelar"
                   />
                 </div>
-              </CampoFormulario>
-
-              <div class="formulario-vinculo__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoOrcado"
-                  :id-campo="idCampo('valorOrcado')"
-                  :erro="formulario.erros.valorOrcado"
+                <p
+                  v-if="!edicao"
+                  class="texto-legenda"
+                  data-teste="contrato-depois"
                 >
-                  <InputNumber
-                    v-model="formulario.valores.valorOrcado"
-                    :input-id="idEntrada"
-                    mode="currency"
-                    currency="BRL"
-                    locale="pt-BR"
-                    :min="0"
-                    :max="LIMITES_VINCULO.valorMaximo"
-                    :allow-empty="true"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    data-teste="campo-orcado"
-                    @update:model-value="formulario.revalidarAoDigitar('valorOrcado')"
-                    @blur="formulario.validarAoSair('valorOrcado')"
-                  />
-                </CampoFormulario>
-
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoContratado"
-                  :id-campo="idCampo('valorContratado')"
-                  :obrigatorio="formulario.valores.status === 'Contratado'"
-                  :dica="TEXTOS_FORNECEDORES_EVENTO.ajudaContratado"
-                  :erro="formulario.erros.valorContratado"
-                >
-                  <InputNumber
-                    v-model="formulario.valores.valorContratado"
-                    :input-id="idEntrada"
-                    mode="currency"
-                    currency="BRL"
-                    locale="pt-BR"
-                    :min="0"
-                    :max="LIMITES_VINCULO.valorMaximo"
-                    :allow-empty="true"
-                    :aria-required="formulario.valores.status === 'Contratado'"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    data-teste="campo-contratado"
-                    @update:model-value="formulario.revalidarAoDigitar('valorContratado')"
-                    @blur="formulario.validarAoSair('valorContratado')"
-                  />
-                </CampoFormulario>
+                  {{ TEXTOS_CONTRATO.antesDeSalvar }}
+                </p>
               </div>
+            </form>
+          </div>
 
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoNotas"
-                :id-campo="idCampo('notasInternas')"
-                :dica="TEXTOS_FORNECEDORES_EVENTO.ajudaNotas(formulario.valores.notasInternas.length, LIMITES_VINCULO.notasMaximo)"
-                :erro="formulario.erros.notasInternas"
-              >
-                <Textarea
-                  :id="idEntrada"
-                  v-model="formulario.valores.notasInternas"
-                  rows="3"
-                  auto-resize
-                  :maxlength="LIMITES_VINCULO.notasMaximo"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-notas"
-                  @update:model-value="formulario.revalidarAoDigitar('notasInternas')"
-                  @blur="formulario.validarAoSair('notasInternas')"
-                />
-              </CampoFormulario>
-            </fieldset>
+          <div
+            v-if="comLateral"
+            class="formulario-vinculo__lateral pilha pilha--bloco"
+            data-teste="lateral-vinculo"
+          >
+            <aside
+              v-if="edicao && vinculo"
+              :aria-label="TEXTOS_FORNECEDORES_EVENTO.lateralContrato"
+              data-teste="lateral-contrato"
+            >
+              <AnexoContrato
+                :nome-empresa="vinculo.fornecedor.nomeEmpresa"
+                :contrato="vinculo.contrato"
+                :editavel="!arquivado"
+                :enviando="enviandoContrato"
+                :ocupado="enviandoContrato || removendoContrato || enviando"
+                :erro="erroContrato"
+                @selecionar="enviarContrato"
+                @baixar="baixarContrato"
+                @remover="confirmandoRemocaoContrato = true"
+              />
+            </aside>
 
-            <div class="pilha pilha--grupo">
-              <div class="formulario-vinculo__acoes">
-                <Button
-                  type="submit"
-                  :label="rotuloSalvar"
-                  :loading="enviando"
-                  :aria-busy="enviando"
-                  :disabled="arquivado"
-                  data-teste="salvar-vinculo"
-                />
-                <Button
-                  type="button"
-                  :label="TEXTOS_FORNECEDORES_EVENTO.cancelar"
-                  severity="secondary"
-                  text
-                  :disabled="enviando"
-                  data-teste="cancelar"
-                  @click="cancelar"
-                />
-              </div>
-              <p
-                v-if="!edicao"
-                class="texto-legenda"
-                data-teste="contrato-depois"
-              >
-                {{ TEXTOS_CONTRATO.antesDeSalvar }}
-              </p>
-            </div>
-          </form>
+            <HistoricoFornecedorEvento
+              :evento-atual-id="id"
+              :escolhido="fornecedorDoHistorico !== null"
+              :participacoes="participacoesDoFornecedor"
+              :falha="falhaHistorico"
+              @tentar-novamente="carregarHistorico"
+            />
+
+            <ContratacaoFornecedoresEvento
+              v-if="mostrarContratacao && tipoConhecido && vinculosDoEvento"
+              :vinculos="vinculosDoEvento"
+              :tipo="tipoConhecido"
+              :titulo="TEXTOS_FORNECEDORES_EVENTO.essenciaisPara(vocabularioOuNeutro(tipoConhecido).referencia.artigo)"
+            />
+          </div>
         </div>
-
-        <aside
-          v-if="edicao && vinculo"
-          class="formulario-vinculo__lateral"
-          :aria-label="TEXTOS_FORNECEDORES_EVENTO.lateralContrato"
-          data-teste="lateral-contrato"
-        >
-          <AnexoContrato
-            :nome-empresa="vinculo.fornecedor.nomeEmpresa"
-            :contrato="vinculo.contrato"
-            :editavel="!arquivado"
-            :enviando="enviandoContrato"
-            :ocupado="enviandoContrato || removendoContrato || enviando"
-            :erro="erroContrato"
-            @selecionar="enviarContrato"
-            @baixar="baixarContrato"
-            @remover="confirmandoRemocaoContrato = true"
-          />
-        </aside>
       </div>
     </div>
 
@@ -668,6 +734,7 @@ async function removerContrato() {
 }
 
 .formulario-vinculo__principal {
+  container: formulario-vinculo-campos / inline-size;
   grid-area: principal;
   min-width: 0;
 }
@@ -730,7 +797,7 @@ async function removerContrato() {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
-@media (min-width: 640px) {
+@container formulario-vinculo-campos (min-width: 36rem) {
   .formulario-vinculo__colunas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
@@ -743,8 +810,12 @@ async function removerContrato() {
 }
 
 @container formulario-vinculo (min-width: 64rem) {
+  .formulario-vinculo__pagina--com-lateral {
+    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
+  }
+
   .formulario-vinculo__corpo {
-    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(20rem, 28rem);
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
     grid-template-areas: 'principal lateral';
     align-items: start;
   }

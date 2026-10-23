@@ -3,6 +3,7 @@ import { TEXTOS_FORNECEDORES_EVENTO } from '@/textos/fornecedoresEvento'
 import { CATEGORIAS_FORNECEDOR, type CategoriaFornecedor, type FornecedorResumoDto } from '@/tipos/fornecedores'
 import type {
   FornecedorEventoDto,
+  ParticipacaoFornecedorDto,
   ResumoCategoriaOrcamentoDto,
   ResumoOrcamentoDto,
   StatusFornecedorEvento,
@@ -209,5 +210,40 @@ export function coberturaEssenciais(
     total: itens.length,
     emCotacao: ativos.filter((vinculo) => vinculo.status === 'Cotacao').length,
     emNegociacao: ativos.filter((vinculo) => vinculo.status === 'EmNegociacao').length,
+  }
+}
+
+export function situacaoEssencialDaCategoria(
+  vinculos: FornecedorEventoDto[],
+  essenciais: readonly CategoriaFornecedor[],
+  categoria: CategoriaFornecedor,
+): SituacaoCategoriaEssencial | null {
+  if (!essenciais.includes(categoria)) {
+    return null
+  }
+  return coberturaEssenciais(vinculos, [categoria]).itens[0]?.situacao ?? null
+}
+
+export interface ResumoParticipacoes {
+  total: number
+  contratados: number
+  recentes: ParticipacaoFornecedorDto[]
+  restantes: number
+}
+
+export const LIMITE_PARTICIPACOES_RECENTES = 4
+
+export function resumirParticipacoes(
+  participacoes: ParticipacaoFornecedorDto[],
+  eventoAtualId: string,
+  limite: number = LIMITE_PARTICIPACOES_RECENTES,
+): ResumoParticipacoes {
+  const outras = participacoes.filter((participacao) => participacao.eventoId !== eventoAtualId)
+  const recentes = outras.slice(0, Math.max(0, limite))
+  return {
+    total: outras.length,
+    contratados: outras.filter((participacao) => participacao.status === 'Contratado').length,
+    recentes,
+    restantes: outras.length - recentes.length,
   }
 }
