@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { TEXTOS_CHECKLIST, TEXTOS_ITEM_MODELO, TEXTOS_MODELOS_CHECKLIST, descreverPrazoRelativo } from '@/textos/checklist'
 import {
   agruparPorMarco,
+  alcanceDosPrazos,
   descricaoModelo,
   diasAntesDoEvento,
   diasComSentido,
@@ -112,5 +113,11 @@ describe('situacaoDoMarco', () => {
       ]),
     ).toEqual({ total: 4, concluidas: 1, abertas: 2, atrasadas: 1 })
     expect(situacaoDoMarco([])).toEqual({ total: 0, concluidas: 0, abertas: 0, atrasadas: 0 })
+  })
+
+  it('[UNITÁRIO] alcance dos prazos vai do maior ao menor número de dias antes do evento', () => {
+    expect(alcanceDosPrazos([30, 400, -20, 0])).toEqual({ primeiro: 400, ultimo: -20 })
+    expect(alcanceDosPrazos([90])).toEqual({ primeiro: 90, ultimo: 90 })
+    expect(alcanceDosPrazos([])).toBeNull()
   })
 })

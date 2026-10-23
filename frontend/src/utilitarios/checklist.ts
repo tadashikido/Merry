@@ -67,6 +67,18 @@ export function agruparPorMarco<T>(itens: T[], diasDe: (item: T) => number | nul
   return MARCOS_CHECKLIST.filter((marco) => grupos.has(marco)).map((marco) => ({ marco, itens: grupos.get(marco) ?? [] }))
 }
 
+export interface AlcancePrazos {
+  primeiro: number
+  ultimo: number
+}
+
+export function alcanceDosPrazos(dias: readonly number[]): AlcancePrazos | null {
+  if (dias.length === 0) {
+    return null
+  }
+  return { primeiro: Math.max(...dias), ultimo: Math.min(...dias) }
+}
+
 export function sentidoDosDias(dias: number): SentidoPrazo {
   return dias < 0 ? 'depois' : 'antes'
 }

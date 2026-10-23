@@ -18,9 +18,8 @@ import { useNotificacao } from '@/composables/useNotificacao'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { ABAS_MODELOS } from '@/layouts/abasModelos'
 import { TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
-import { TEXTOS_MODELOS_POR_TIPO } from '@/textos/modelos'
+import { TEXTOS_MODELOS_POR_TIPO, rotuloSugeridoDoModelo } from '@/textos/modelos'
 import { TEXTOS_ABAS_MODELOS } from '@/textos/modelosCronograma'
-import { VOCABULARIO_TIPO_EVENTO, ehTipoEvento } from '@/textos/tiposEvento'
 import type { ModeloChecklistResumoDto } from '@/tipos/checklist'
 
 const store = useModelosChecklistStore()
@@ -41,9 +40,7 @@ onMounted(() => {
 })
 
 function rotuloSugerido(modelo: ModeloChecklistResumoDto): string {
-  return ehTipoEvento(modelo.tipoEvento)
-    ? TEXTOS_MODELOS_POR_TIPO.sugeridoPara(VOCABULARIO_TIPO_EVENTO[modelo.tipoEvento].contagem.singular)
-    : TEXTOS_MODELOS_CHECKLIST.sugerido
+  return rotuloSugeridoDoModelo(modelo.tipoEvento, TEXTOS_MODELOS_CHECKLIST.sugerido)
 }
 
 function novoModelo() {

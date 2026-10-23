@@ -90,7 +90,6 @@ export const TEXTOS_MODELOS_CHECKLIST = {
   regua: 'Itens por marco',
   adicionarItem: 'Adicionar item',
   itensVazioTitulo: 'Este modelo ainda não tem itens',
-  itensVazioTexto: 'Adicione o que precisa acontecer e quando, contando a partir da data do evento.',
   itemMaisAcoesAria: (titulo: string) => `Mais ações para ${titulo}`,
   itemEditar: 'Editar item',
   itemExcluir: 'Excluir',
@@ -100,8 +99,36 @@ export const TEXTOS_MODELOS_CHECKLIST = {
   resumoTitulo: 'Resumo do modelo',
   porMarcoTitulo: 'Por marco',
   porResponsavelTitulo: 'Quem faz',
-  notaAplicacao: 'Aplique este modelo pelo Checklist de cada evento. Os prazos são contados a partir da data do evento.',
+  itensVazioTextoPara: (contracaoDe: string) => `Adicione o que precisa acontecer e quando, contando a partir da data ${contracaoDe}.`,
+  primeiroPrazo: 'Primeiro prazo',
+  ultimoPrazo: 'Último prazo',
+  prazoNoEvento: (dias: number, contracaoDe: string) => {
+    if (dias === 0) {
+      return `No dia ${contracaoDe}`
+    }
+    const absoluto = Math.abs(dias)
+    return `${numero(absoluto)} ${plural(absoluto, 'dia', 'dias')} ${dias > 0 ? 'antes' : 'depois'} ${contracaoDe}`
+  },
+  notaPrazos: (contracaoDe: string) => `Os prazos são contados a partir da data ${contracaoDe}.`,
+  passosAplicar: (nome: string, contracaoDe: string) => [
+    `Toque em Aplicar checklist e escolha “${nome}”. A prévia mostra quantas tarefas serão criadas.`,
+    `Cada item vira uma tarefa com prazo contado a partir da data ${contracaoDe}. O que já passou entra atrasado.`,
+  ],
+  notaAplicar: 'Itens já aplicados não se repetem, e editar o modelo não muda as tarefas já criadas.',
 } as const
+
+export function complementoMarcoModelo(marco: MarcoChecklist, contracaoDe: string): string | null {
+  if (marco === 'dozeMeses') {
+    return `ou mais antes ${contracaoDe}`
+  }
+  if (marco === 'seisMeses' || marco === 'tresMeses' || marco === 'trintaDias') {
+    return `antes ${contracaoDe}`
+  }
+  if (marco === 'noDia' || marco === 'depois') {
+    return contracaoDe
+  }
+  return COMPLEMENTO_MARCO_CHECKLIST[marco]
+}
 
 export const TEXTOS_ITEM_MODELO = {
   formNovo: 'Novo item',
@@ -201,9 +228,9 @@ export const TEXTOS_CHECKLIST = {
     `As tarefas ficam em marcos pelo prazo, contados a partir da data ${contracaoDe}: 12 meses, 6 meses, 3 meses, 30 dias, reta final, no dia e depois.`,
 } as const
 
-export function descreverPrazoRelativo(dias: number): string {
+export function descreverPrazoRelativo(dias: number, contracaoDe = 'do evento'): string {
   if (dias === 0) {
-    return 'No dia do evento'
+    return `No dia ${contracaoDe}`
   }
   const absoluto = Math.abs(dias)
   const unidade = `${numero(absoluto)} ${plural(absoluto, 'dia', 'dias')}`

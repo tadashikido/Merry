@@ -12,20 +12,28 @@ import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
 import ItemModeloChecklist from '@/componentes/base/ItemModeloChecklist.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import ReguaMarcos from '@/componentes/base/ReguaMarcos.vue'
+import ComoAplicarModelo from '@/componentes/modelos/ComoAplicarModelo.vue'
 import type { ItemMenuAcoes, MarcoRegua } from '@/componentes/base/tipos'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import {
-  COMPLEMENTO_MARCO_CHECKLIST,
   ROTULOS_MARCO_CHECKLIST,
   TEXTOS_MODELOS_CHECKLIST,
+  complementoMarcoModelo,
   descreverPrazoRelativo,
 } from '@/textos/checklist'
+import {
+  TEXTOS_MODELOS_POR_TIPO,
+  abrirEventoDoModelo,
+  ondeApareceModelo,
+  referenciaDoModelo,
+  rotuloSugeridoDoModelo,
+} from '@/textos/modelos'
 import { ROTULOS_CATEGORIA_TAREFA, ROTULOS_RESPONSAVEL_TAREFA } from '@/textos/tarefas'
 import type { ItemModeloChecklistDto } from '@/tipos/checklist'
 import { RESPONSAVEIS_TAREFA } from '@/tipos/tarefas'
-import { agruparPorMarco } from '@/utilitarios/checklist'
+import { agruparPorMarco, alcanceDosPrazos } from '@/utilitarios/checklist'
 
 const props = defineProps<{ modeloId: string }>()
 
@@ -37,11 +45,20 @@ const { confirmarExclusao } = useConfirmarExclusao()
 const modelo = computed(() => (store.atual?.id === props.modeloId ? store.atual : null))
 const falha = computed(() => (modelo.value ? null : store.falhaAtual))
 const grupos = computed(() => agruparPorMarco(modelo.value?.itens ?? [], (item) => item.diasAntesDoEvento))
+const referencia = computed(() => referenciaDoModelo(modelo.value?.tipoEvento))
+const rotuloSugerido = computed(() => rotuloSugeridoDoModelo(modelo.value?.tipoEvento, TEXTOS_MODELOS_CHECKLIST.sugerido))
+const ondeAparece = computed(() => (modelo.value ? ondeApareceModelo(modelo.value.tipoEvento, TEXTOS_MODELOS_CHECKLIST.recurso) : null))
+const alcance = computed(() => alcanceDosPrazos(modelo.value?.itens.map((item) => item.diasAntesDoEvento) ?? []))
+const passosAplicar = computed(() =>
+  modelo.value
+    ? [abrirEventoDoModelo(modelo.value.tipoEvento), ...TEXTOS_MODELOS_CHECKLIST.passosAplicar(modelo.value.nome, referencia.value.contracaoDe)]
+    : [],
+)
 const marcos = computed<MarcoRegua[]>(() =>
   grupos.value.map((grupo) => ({
     chave: grupo.marco,
     rotulo: ROTULOS_MARCO_CHECKLIST[grupo.marco],
-    complemento: COMPLEMENTO_MARCO_CHECKLIST[grupo.marco],
+    complemento: complementoMarcoModelo(grupo.marco, referencia.value.contracaoDe),
     detalhe: TEXTOS_MODELOS_CHECKLIST.resumoItens(grupo.itens.length),
   })),
 )
@@ -152,11 +169,22 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
           >
             <BadgeStatus
               v-if="modelo.sugerido"
-              :texto="TEXTOS_MODELOS_CHECKLIST.sugerido"
+              :texto="rotuloSugerido"
               variante="informacao"
               icone="informacao"
             />
+            <span
+              v-else
+              class="modelo__origem"
+              data-teste="origem-modelo"
+            >{{ TEXTOS_MODELOS_POR_TIPO.origemAssessoria }}</span>
             <span>{{ TEXTOS_MODELOS_CHECKLIST.resumoItens(modelo.itens.length) }}</span>
+          </p>
+          <p
+            class="modelo__onde"
+            data-teste="onde-aparece-modelo"
+          >
+            {{ ondeAparece }}
           </p>
         </template>
         <template
@@ -206,7 +234,7 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
           v-else-if="modelo && modelo.itens.length === 0"
           icone="lista"
           :titulo="TEXTOS_MODELOS_CHECKLIST.itensVazioTitulo"
-          :descricao="TEXTOS_MODELOS_CHECKLIST.itensVazioTexto"
+          :descricao="TEXTOS_MODELOS_CHECKLIST.itensVazioTextoPara(referencia.contracaoDe)"
         >
           <template #acao>
             <Button
@@ -243,8 +271,29 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
                 >
                   {{ TEXTOS_MODELOS_CHECKLIST.resumoItens(modelo.itens.length) }}
                 </p>
-                <p class="modelo__nota texto-legenda">
-                  {{ TEXTOS_MODELOS_CHECKLIST.notaAplicacao }}
+                <dl
+                  v-if="alcance"
+                  class="modelo__alcance"
+                  data-teste="alcance-modelo"
+                >
+                  <div>
+                    <dt>{{ TEXTOS_MODELOS_CHECKLIST.primeiroPrazo }}</dt>
+                    <dd data-teste="primeiro-prazo-modelo">
+                      {{ TEXTOS_MODELOS_CHECKLIST.prazoNoEvento(alcance.primeiro, referencia.contracaoDe) }}
+                    </dd>
+                  </div>
+                  <div v-if="alcance.ultimo !== alcance.primeiro">
+                    <dt>{{ TEXTOS_MODELOS_CHECKLIST.ultimoPrazo }}</dt>
+                    <dd data-teste="ultimo-prazo-modelo">
+                      {{ TEXTOS_MODELOS_CHECKLIST.prazoNoEvento(alcance.ultimo, referencia.contracaoDe) }}
+                    </dd>
+                  </div>
+                </dl>
+                <p
+                  class="modelo__nota texto-legenda"
+                  data-teste="nota-prazos-modelo"
+                >
+                  {{ TEXTOS_MODELOS_CHECKLIST.notaPrazos(referencia.contracaoDe) }}
                 </p>
               </div>
 
@@ -328,7 +377,7 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
                     v-for="item in itensDoMarco(marco.chave)"
                     :key="item.id"
                     :titulo="item.titulo"
-                    :prazo-relativo="descreverPrazoRelativo(item.diasAntesDoEvento)"
+                    :prazo-relativo="descreverPrazoRelativo(item.diasAntesDoEvento, referencia.contracaoDe)"
                     :metadados="metadados(item)"
                     :descricao="item.descricao"
                   >
@@ -346,6 +395,13 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
               </template>
             </ReguaMarcos>
           </div>
+
+          <ComoAplicarModelo
+            class="modelo__aplicar"
+            :titulo="TEXTOS_MODELOS_POR_TIPO.comoAplicarTitulo"
+            :passos="passosAplicar"
+            :nota="TEXTOS_MODELOS_CHECKLIST.notaAplicar"
+          />
         </div>
       </div>
     </template>
@@ -354,7 +410,7 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
 
 <style scoped>
 .modelo {
-  --modelo-largura-lateral: 18rem;
+  --modelo-largura-lateral: 20rem;
 
   container: modelo / inline-size;
 }
@@ -367,7 +423,8 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
 }
 
 .modelo__principal,
-.modelo__lateral {
+.modelo__lateral,
+.modelo__aplicar {
   min-width: 0;
 }
 
@@ -377,10 +434,45 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
 
 .modelo__detalhes {
   display: inline-flex;
+  font-variant-numeric: lining-nums;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--p-ritmo-campo);
   margin: 0;
+}
+
+.modelo__origem {
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-controle);
+  font-style: italic;
+  color: var(--p-cor-texto-secundario);
+}
+
+.modelo__onde {
+  margin: var(--p-ritmo-campo) 0 0;
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-controle);
+  font-style: italic;
+  font-variant-numeric: lining-nums;
+  line-height: var(--p-fonte-entrelinha-leitura);
+  color: var(--p-cor-texto-secundario);
+}
+
+.modelo__alcance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-campo);
+  margin: 0;
+  font-size: var(--p-fonte-tamanho-controle);
+}
+
+.modelo__alcance dt {
+  color: var(--p-cor-texto-secundario);
+}
+
+.modelo__alcance dd {
+  margin: 0;
+  color: var(--p-cor-texto);
 }
 
 .modelo__resumo {
@@ -394,6 +486,10 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
 .modelo__total,
 .modelo__nota {
   margin: 0;
+}
+
+.modelo__nota {
+  font-variant-numeric: lining-nums;
 }
 
 .modelo__total {
@@ -468,18 +564,23 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
 @container modelo (min-width: 64rem) {
   .modelo__corpo {
     grid-template-columns: minmax(0, 1fr) var(--modelo-largura-lateral);
+    grid-template-rows: auto 1fr;
   }
 
   .modelo__lateral {
     grid-column: 2;
     grid-row: 1;
-    position: sticky;
-    top: var(--p-ritmo-bloco);
+  }
+
+  .modelo__aplicar {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
   }
 
   .modelo__principal {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 1 / span 2;
   }
 }
 </style>

@@ -284,7 +284,7 @@ describe('ModeloChecklistView', () => {
     expect(lateral.attributes('aria-labelledby')).toBe('titulo-resumo-modelo')
     expect(wrapper.get('#titulo-resumo-modelo').text()).toBe(TEXTOS_MODELOS_CHECKLIST.resumoTitulo)
     expect(lateral.get('[data-teste="total-itens-modelo"]').text()).toBe('3 itens')
-    expect(lateral.text()).toContain(TEXTOS_MODELOS_CHECKLIST.notaAplicacao)
+    expect(lateral.get('[data-teste="nota-prazos-modelo"]').text()).toBe(TEXTOS_MODELOS_CHECKLIST.notaPrazos('do casamento'))
     expect(lateral.get('[data-teste="resumo-marco-dozeMeses"]').text()).toContain('2')
     expect(lateral.get('[data-teste="resumo-marco-trintaDias"]').text()).toContain('1')
     expect(lateral.get('[data-teste="resumo-responsavel-Assessoria"]').text()).toContain('1')
@@ -355,12 +355,100 @@ describe('ModeloChecklistView', () => {
     expect(wrapper.get('[data-teste="total-itens-modelo"]').text()).toBe('1 item')
   })
 
+  it.each([
+    ['Casamento', 'casamento', 'do casamento', 'Abra um casamento e entre em Checklist.'],
+    ['QuinzeAnos', 'festa de 15 anos', 'da festa de 15 anos', 'Abra uma festa de 15 anos e entre em Checklist.'],
+    ['Aniversario', 'aniversário', 'do aniversário', 'Abra um aniversário e entre em Checklist.'],
+    ['Comemoracao', 'comemoração', 'da comemoração', 'Abra uma comemoração e entre em Checklist.'],
+  ] as const)('[COMPONENTE] modelo sugerido de %s mostra o tipo, onde aparece e fala da data do tipo', async (tipo, singular, contracaoDe, abrirEvento) => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () =>
+        respostaJson(
+          modeloCompleto(
+            [itemModelo({ diasAntesDoEvento: 180 }), itemModelo({ id: 'i2', titulo: 'Conferir montagem', diasAntesDoEvento: 0 }), itemModelo({ id: 'i3', titulo: 'Pagar saldo', diasAntesDoEvento: -10 })],
+            { tipoEvento: tipo },
+          ),
+        ),
+      ),
+    )
+
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}`)
+
+    const resumo = wrapper.get('[data-teste="resumo-modelo"]')
+    expect(resumo.text()).toContain(TEXTOS_MODELOS_POR_TIPO.sugeridoPara(singular))
+    expect(resumo.find('[data-teste="origem-modelo"]').exists()).toBe(false)
+    expect(wrapper.get('[data-teste="onde-aparece-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.notaTipo('checklist', singular))
+    expect(wrapper.get('[data-teste="marco-seisMeses"] h2').text()).toContain(`antes ${contracaoDe}`)
+    expect(wrapper.get('[data-teste="marco-noDia"] h2').text()).toContain(contracaoDe)
+    expect(wrapper.get('[data-teste="marco-noDia"] [data-teste="prazo-item-modelo"]').text()).toBe(`No dia ${contracaoDe}`)
+    expect(wrapper.get('[data-teste="primeiro-prazo-modelo"]').text()).toBe(`180 dias antes ${contracaoDe}`)
+    expect(wrapper.get('[data-teste="ultimo-prazo-modelo"]').text()).toBe(`10 dias depois ${contracaoDe}`)
+    expect(wrapper.get('[data-teste="nota-prazos-modelo"]').text()).toBe(TEXTOS_MODELOS_CHECKLIST.notaPrazos(contracaoDe))
+    const passos = wrapper.findAll('[data-teste="passo-aplicar-modelo"]').map((passo) => passo.get('.como-aplicar__texto').text())
+    expect(passos).toEqual([abrirEvento, ...TEXTOS_MODELOS_CHECKLIST.passosAplicar('Checklist essencial', contracaoDe)])
+    expect(wrapper.get('.modelo').text()).not.toContain('do evento')
+  })
+
+  it('[COMPONENTE] modelo próprio sem tipo mostra Modelo da assessoria e textos de qualquer evento', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([itemModelo({ titulo: 'Reservar o local', diasAntesDoEvento: 30 })], { sugerido: false, tipoEvento: null, nome: 'Evento no campo' }))))
+
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}`)
+
+    const resumo = wrapper.get('[data-teste="resumo-modelo"]')
+    expect(resumo.text()).not.toContain(TEXTOS_MODELOS_CHECKLIST.sugerido)
+    expect(resumo.get('[data-teste="origem-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.origemAssessoria)
+    expect(wrapper.get('[data-teste="onde-aparece-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.notaQualquer('checklist'))
+    expect(wrapper.get('[data-teste="marco-trintaDias"] h2').text()).toContain('antes do evento')
+    expect(wrapper.get('[data-teste="primeiro-prazo-modelo"]').text()).toBe('30 dias antes do evento')
+    expect(wrapper.find('[data-teste="ultimo-prazo-modelo"]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(TEXTOS_MODELOS_POR_TIPO.abrirQualquerEvento)
+    expect(wrapper.get('main').text()).not.toMatch(/casamento|comemoração/i)
+  })
+
+  it('[COMPONENTE] tipo desconhecido usa selo Sugerido, nota de tipo não reconhecido e vocabulário neutro', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([itemModelo({ titulo: 'Conferir o salão', diasAntesDoEvento: 0 })], { tipoEvento: 'Formatura' as unknown as TipoEvento, nome: 'Modelo de formatura' }))))
+
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}`)
+
+    const resumo = wrapper.get('[data-teste="resumo-modelo"]')
+    expect(resumo.text()).toContain(TEXTOS_MODELOS_CHECKLIST.sugerido)
+    expect(resumo.text()).not.toContain('Sugerido para')
+    expect(wrapper.get('[data-teste="onde-aparece-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.notaOutros)
+    expect(wrapper.get('[data-teste="primeiro-prazo-modelo"]').text()).toBe('No dia do evento')
+    expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(TEXTOS_MODELOS_POR_TIPO.abrirEventoOutroTipo)
+    expect(wrapper.get('main').text()).not.toMatch(/casamento|comemoração/i)
+  })
+
+  it('[COMPONENTE] modelo vazio ensina pelo tipo e não mostra Como aplicar', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([], { tipoEvento: 'Aniversario' }))))
+
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}`)
+
+    expect(wrapper.find('[data-teste="como-aplicar-modelo"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.itensVazioTextoPara('do aniversário'))
+  })
+
+  it('[COMPONENTE] ordem no DOM: resumo, itens e depois Como aplicar', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([itemModelo()]))))
+
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}`)
+
+    const filhos = [...wrapper.get('.modelo__corpo').element.children].map((filho) => filho.className)
+    expect(filhos[0]).toContain('modelo__lateral')
+    expect(filhos[1]).toContain('modelo__principal')
+    expect(filhos[2]).toContain('modelo__aplicar')
+    expect(wrapper.get('[data-teste="nota-aplicar-modelo"]').text()).toBe(TEXTOS_MODELOS_CHECKLIST.notaAplicar)
+  })
+
   it('[UNITÁRIO] estilo do detalhe usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModeloChecklistView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
     expect(estilo).toContain('container: modelo / inline-size')
     expect(estilo).toContain('@container modelo (min-width: 64rem)')
     expect(estilo).toContain('@container lateral-modelo (min-width: 36rem)')
+    expect(estilo).not.toContain('sticky')
+    expect(estilo).toContain('grid-row: 1 / span 2')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')
