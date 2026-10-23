@@ -6,6 +6,7 @@ import CampoSenha from '@/componentes/base/CampoSenha.vue'
 import IndicadorAbertura from '@/componentes/base/IndicadorAbertura.vue'
 import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import OrientacaoAcesso from '@/componentes/base/OrientacaoAcesso.vue'
 import ResumoUsuario from '@/componentes/base/ResumoUsuario.vue'
 import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import { MENSAGENS_AUTENTICACAO, ROTULOS_CAMPOS_AUTENTICACAO } from '@/textos/autenticacao'
@@ -114,5 +115,45 @@ describe('ResumoUsuario e IndicadorAbertura', () => {
     const wrapper = mount(IndicadorAbertura, { global })
 
     expect(wrapper.get('[role="status"]').text()).toContain(MENSAGENS_AUTENTICACAO.abrindoConta)
+  })
+})
+
+describe('OrientacaoAcesso', () => {
+  const itens = [
+    { chave: 'um', titulo: 'Primeiro caminho', texto: 'Texto do primeiro.', teste: 'item-um' },
+    { chave: 'dois', titulo: 'Segundo caminho', texto: 'Texto do segundo.' },
+  ]
+
+  it('[COMPONENTE] é uma região complementar rotulada pelo título, com um h3 e um texto por item', () => {
+    const wrapper = mount(OrientacaoAcesso, {
+      props: { idTitulo: 'orientacao-teste', titulo: 'Orientação', itens },
+      attrs: { 'data-teste': 'orientacao' },
+      global,
+    })
+
+    const regiao = wrapper.get('aside')
+    expect(regiao.attributes('data-teste')).toBe('orientacao')
+    expect(regiao.attributes('aria-labelledby')).toBe('orientacao-teste')
+    expect(wrapper.get('h2#orientacao-teste').text()).toBe('Orientação')
+    expect(wrapper.findAll('li h3').map((titulo) => titulo.text())).toEqual(['Primeiro caminho', 'Segundo caminho'])
+    expect(wrapper.get('[data-teste="item-um"] p').text()).toBe('Texto do primeiro.')
+    expect(wrapper.find('.orientacao-acesso__nota').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] a ação recebe o item e a nota aparece depois da lista só quando informada', () => {
+    const wrapper = mount(OrientacaoAcesso, {
+      props: { idTitulo: 'orientacao-teste', titulo: 'Orientação', itens },
+      slots: {
+        acao: `<template #acao="{ item }"><a v-if="item.chave === 'um'" href="/destino">Ir</a></template>`,
+        default: '<p data-teste="nota">Nota final</p>',
+      },
+      global,
+    })
+
+    expect(wrapper.findAll('a')).toHaveLength(1)
+    expect(wrapper.get('[data-teste="item-um"] a').attributes('href')).toBe('/destino')
+    const nota = wrapper.get('.orientacao-acesso__nota')
+    expect(nota.get('[data-teste="nota"]').text()).toBe('Nota final')
+    expect(wrapper.get('ul').element.compareDocumentPosition(nota.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 })

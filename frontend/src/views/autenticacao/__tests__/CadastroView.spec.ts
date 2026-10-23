@@ -5,6 +5,8 @@ import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import CadastroView from '@/views/autenticacao/CadastroView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CADASTRO } from '@/textos/autenticacao'
+import { VOCABULARIO_TIPO_EVENTO, tiposEventoEmFrase } from '@/textos/tiposEvento'
+import { TIPOS_EVENTO } from '@/tipos/eventos'
 import { MENSAGENS_VALIDACAO } from '@/utilitarios/validacao'
 import {
   SESSAO_EXEMPLO,
@@ -159,5 +161,61 @@ describe('CadastroView', () => {
       expect(grupo.get('legend').classes()).toContain('texto-rotulo')
     }
     expect(formulario.get('p.texto-legenda').text()).toBe(TEXTOS_CADASTRO.apoio)
+  })
+
+  it('[COMPONENTE] mostra, depois da folha, o que a assessoria organiza: quatro recursos em região rotulada', async () => {
+    await abrir()
+
+    const regiao = wrapper!.get('aside[data-teste="o-que-organiza"]')
+    const titulo = regiao.get('h2')
+    expect(regiao.attributes('aria-labelledby')).toBe(titulo.attributes('id'))
+    expect(titulo.text()).toBe('O que sua assessoria organiza no Celebri')
+    expect(regiao.findAll('li h3').map((item) => item.text())).toEqual([
+      TEXTOS_CADASTRO.recursoEventosTitulo,
+      TEXTOS_CADASTRO.recursoConvidadosTitulo,
+      TEXTOS_CADASTRO.recursoPlanejamentoTitulo,
+      TEXTOS_CADASTRO.recursoDiaTitulo,
+    ])
+    expect(regiao.find('a').exists()).toBe(false)
+    expect(regiao.text()).not.toMatch(/R\$|plano|preço|grátis/i)
+  })
+
+  it('[COMPONENTE] o recurso de eventos cita os quatro tipos sociais a partir do vocabulário', async () => {
+    await abrir()
+
+    const eventos = wrapper!.get('[data-teste="recurso-eventos"] p').text()
+    expect(eventos).toBe('Um espaço para cada evento: casamentos, festas de 15 anos, aniversários e comemorações.')
+    for (const tipo of TIPOS_EVENTO) {
+      expect(eventos).toContain(VOCABULARIO_TIPO_EVENTO[tipo].rotuloPlural.toLocaleLowerCase('pt-BR'))
+    }
+  })
+
+  it('[COMPONENTE] avisa o anfitrião convidado que não precisa criar conta, sem oferecer link', async () => {
+    await abrir()
+
+    const aviso = wrapper!.get('[data-teste="o-que-organiza"] [data-teste="aviso-anfitriao"]')
+    expect(aviso.get('strong').text()).toBe(TEXTOS_CADASTRO.anfitriaoTitulo)
+    expect(aviso.text()).toContain(TEXTOS_CADASTRO.anfitriaoTexto)
+    expect(aviso.find('a').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] o conteúdo complementar vem depois do botão, fora do formulário, sem tirar o foco inicial', async () => {
+    await abrir()
+
+    const botao = wrapper!.get('[data-teste="enviar"]').element
+    const regiao = wrapper!.get('[data-teste="o-que-organiza"]').element
+    expect(botao.compareDocumentPosition(regiao) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(wrapper!.get('form').find('[data-teste="o-que-organiza"]').exists()).toBe(false)
+    expect(wrapper!.get('main').find('[data-teste="o-que-organiza"]').exists()).toBe(false)
+    expect(document.activeElement?.id).toBe('cadastro-nomeAssessoria')
+    expect(wrapper!.findAll('[data-teste="link-entrar"]')).toHaveLength(1)
+  })
+
+  it('[COMPONENTE] não trata casamento como conceito geral e usa texto de apoio neutro', async () => {
+    await abrir()
+
+    const textoSemTipos = wrapper!.text().split(tiposEventoEmFrase()).join('')
+    expect(textoSemTipos).not.toMatch(/casamento|casal|noiv/i)
+    expect(wrapper!.get('p.texto-legenda').text()).toBe('Você fica responsável pela conta da assessoria.')
   })
 })

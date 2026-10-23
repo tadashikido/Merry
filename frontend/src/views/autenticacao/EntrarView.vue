@@ -8,6 +8,7 @@ import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import CampoSenha from '@/componentes/base/CampoSenha.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import OrientacaoAcesso, { type ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { useAutenticacaoStore, type AvisoEntrada, type TipoFalha } from '@/stores/autenticacao'
 import { MENSAGENS_AUTENTICACAO, ROTULOS_CAMPOS_AUTENTICACAO, TEXTOS_ENTRAR } from '@/textos/autenticacao'
@@ -33,6 +34,20 @@ const FALHAS: Partial<Record<TipoFalha, string>> = {
 }
 
 const ID_PRIMEIRA_VEZ = 'entrar-primeira-vez'
+const CAMINHOS_PRIMEIRA_VEZ: readonly ItemOrientacaoAcesso[] = [
+  {
+    chave: 'assessoria',
+    titulo: TEXTOS_ENTRAR.assessoriaTitulo,
+    texto: TEXTOS_ENTRAR.assessoriaTexto,
+    teste: 'caminho-assessoria',
+  },
+  {
+    chave: 'anfitriao',
+    titulo: TEXTOS_ENTRAR.anfitriaoTitulo,
+    texto: TEXTOS_ENTRAR.anfitriaoTexto,
+    teste: 'caminho-anfitriao',
+  },
+]
 
 const store = useAutenticacaoStore()
 const rota = useRoute()
@@ -161,101 +176,33 @@ function lembrarEmail() {
     </form>
 
     <template #complemento>
-      <aside
-        class="primeira-vez pilha pilha--grupo"
-        :aria-labelledby="ID_PRIMEIRA_VEZ"
+      <OrientacaoAcesso
+        :id-titulo="ID_PRIMEIRA_VEZ"
+        :titulo="TEXTOS_ENTRAR.primeiraVez"
+        :itens="CAMINHOS_PRIMEIRA_VEZ"
         data-teste="primeira-vez"
       >
-        <h2
-          :id="ID_PRIMEIRA_VEZ"
-          class="primeira-vez__titulo"
-        >
-          {{ TEXTOS_ENTRAR.primeiraVez }}
-        </h2>
-        <ul class="primeira-vez__caminhos pilha pilha--grupo">
-          <li
-            class="primeira-vez__caminho"
-            data-teste="caminho-assessoria"
+        <template #acao="{ item }">
+          <RouterLink
+            v-if="item.chave === 'assessoria'"
+            :to="{ name: 'cadastro' }"
+            data-teste="link-cadastro"
           >
-            <h3 class="primeira-vez__pergunta">
-              {{ TEXTOS_ENTRAR.assessoriaTitulo }}
-            </h3>
-            <p class="primeira-vez__texto">
-              {{ TEXTOS_ENTRAR.assessoriaTexto }}
-            </p>
-            <RouterLink
-              class="primeira-vez__link"
-              :to="{ name: 'cadastro' }"
-              data-teste="link-cadastro"
-            >
-              {{ TEXTOS_ENTRAR.criarConta }}
-            </RouterLink>
-          </li>
-          <li
-            class="primeira-vez__caminho"
-            data-teste="caminho-anfitriao"
-          >
-            <h3 class="primeira-vez__pergunta">
-              {{ TEXTOS_ENTRAR.anfitriaoTitulo }}
-            </h3>
-            <p class="primeira-vez__texto">
-              {{ TEXTOS_ENTRAR.anfitriaoTexto }}
-            </p>
-          </li>
-        </ul>
-      </aside>
+            {{ TEXTOS_ENTRAR.criarConta }}
+          </RouterLink>
+        </template>
+      </OrientacaoAcesso>
     </template>
   </LayoutAutenticacao>
 </template>
 
 <style scoped>
-.primeira-vez__titulo {
-  font-family: var(--p-fonte-display);
-  font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-regular);
-  line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
-}
-
-.primeira-vez__caminhos {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.primeira-vez__caminho {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--p-ritmo-campo);
-  padding-inline-start: var(--p-ritmo-grupo);
-  border-inline-start: 2px solid var(--p-cor-primaria);
-}
-
-.primeira-vez__pergunta {
-  font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-medio);
-  line-height: var(--p-fonte-entrelinha-interface);
-  color: var(--p-cor-texto);
-}
-
-.primeira-vez__texto {
-  font-size: var(--p-fonte-tamanho-controle);
-  line-height: var(--p-fonte-entrelinha-interface);
-  color: var(--p-cor-texto-apoio);
-}
-
-.primeira-vez__link {
-  font-size: var(--p-fonte-tamanho-controle);
-}
-
 .formulario-entrar__esqueci {
   font-size: var(--p-fonte-tamanho-controle);
 }
 
 @media (pointer: coarse) {
-  .formulario-entrar__esqueci,
-  .primeira-vez__link {
+  .formulario-entrar__esqueci {
     display: inline-flex;
     align-items: center;
     min-height: var(--p-dimensao-alvo-toque);

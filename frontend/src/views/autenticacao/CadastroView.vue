@@ -8,10 +8,12 @@ import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import CampoSenha from '@/componentes/base/CampoSenha.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import OrientacaoAcesso, { type ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore, type TipoFalha } from '@/stores/autenticacao'
 import { MENSAGENS_AUTENTICACAO, ROTULOS_CAMPOS_AUTENTICACAO, TEXTOS_CADASTRO } from '@/textos/autenticacao'
+import { tiposEventoEmFrase } from '@/textos/tiposEvento'
 import { focarElemento } from '@/utilitarios/foco'
 import { email, obrigatorio, senhaForte, tamanhoMaximo, tamanhoMinimo } from '@/utilitarios/validacao'
 
@@ -20,6 +22,34 @@ const FALHAS: Partial<Record<TipoFalha, string>> = {
   conexao: MENSAGENS_AUTENTICACAO.conexao,
   conflito: TEXTOS_CADASTRO.emailEmUso,
 }
+
+const ID_ORGANIZA = 'cadastro-o-que-organiza'
+const RECURSOS: readonly ItemOrientacaoAcesso[] = [
+  {
+    chave: 'eventos',
+    titulo: TEXTOS_CADASTRO.recursoEventosTitulo,
+    texto: TEXTOS_CADASTRO.recursoEventosTexto(tiposEventoEmFrase()),
+    teste: 'recurso-eventos',
+  },
+  {
+    chave: 'convidados',
+    titulo: TEXTOS_CADASTRO.recursoConvidadosTitulo,
+    texto: TEXTOS_CADASTRO.recursoConvidadosTexto,
+    teste: 'recurso-convidados',
+  },
+  {
+    chave: 'planejamento',
+    titulo: TEXTOS_CADASTRO.recursoPlanejamentoTitulo,
+    texto: TEXTOS_CADASTRO.recursoPlanejamentoTexto,
+    teste: 'recurso-planejamento',
+  },
+  {
+    chave: 'dia',
+    titulo: TEXTOS_CADASTRO.recursoDiaTitulo,
+    texto: TEXTOS_CADASTRO.recursoDiaTexto,
+    teste: 'recurso-dia',
+  },
+]
 
 const CAMPOS = ['nomeAssessoria', 'nome', 'email', 'senha'] as const
 type Campo = (typeof CAMPOS)[number]
@@ -231,6 +261,20 @@ async function enviar() {
         </p>
       </div>
     </form>
+
+    <template #complemento>
+      <OrientacaoAcesso
+        :id-titulo="ID_ORGANIZA"
+        :titulo="TEXTOS_CADASTRO.organizaTitulo"
+        :itens="RECURSOS"
+        data-teste="o-que-organiza"
+      >
+        <p data-teste="aviso-anfitriao">
+          <strong>{{ TEXTOS_CADASTRO.anfitriaoTitulo }}</strong>
+          {{ TEXTOS_CADASTRO.anfitriaoTexto }}
+        </p>
+      </OrientacaoAcesso>
+    </template>
 
     <template #rodape>
       {{ TEXTOS_CADASTRO.jaTemConta }}

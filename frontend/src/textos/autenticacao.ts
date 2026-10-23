@@ -20,11 +20,22 @@ export const TEXTOS_CADASTRO = {
   grupoAssessoria: 'Sua assessoria',
   grupoAcesso: 'Seu acesso',
   botao: 'Criar conta',
-  apoio: 'Você será a responsável pela conta da assessoria.',
+  apoio: 'Você fica responsável pela conta da assessoria.',
   emailEmUso: 'Este e-mail já tem uma conta. Entre ou recupere a senha.',
   recuperarSenha: 'Recuperar a senha',
   jaTemConta: 'Já tem conta?',
   entrar: 'Entrar',
+  organizaTitulo: `O que sua assessoria organiza no ${NOME_PRODUTO}`,
+  recursoEventosTitulo: 'Eventos dos seus clientes',
+  recursoEventosTexto: (tipos: string) => `Um espaço para cada evento: ${tipos}.`,
+  recursoConvidadosTitulo: 'Convidados e confirmações',
+  recursoConvidadosTexto: 'Lista de convidados, link para confirmar presença e restrições alimentares.',
+  recursoPlanejamentoTitulo: 'Checklist e cronograma',
+  recursoPlanejamentoTexto: 'Tarefas, prazos e o roteiro do dia, a partir de modelos para cada tipo de evento.',
+  recursoDiaTitulo: 'Dia do evento',
+  recursoDiaTexto: 'Cronograma em andamento, mesas e fornecedores à mão da equipe.',
+  anfitriaoTitulo: 'Recebeu um convite da assessoria?',
+  anfitriaoTexto: 'Você não precisa criar conta. Abra o link do e-mail para criar sua senha.',
 } as const
 
 export const TEXTOS_ESQUECI_SENHA = {
