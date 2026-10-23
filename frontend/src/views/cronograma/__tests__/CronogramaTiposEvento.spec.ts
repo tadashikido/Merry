@@ -233,6 +233,7 @@ describe('CronogramaView — resumo do dia e quem está no roteiro', () => {
     const view = estiloDe(lerFonte('views/cronograma/CronogramaView.vue'))
     expect(view).not.toContain('@media')
     expect(view).toContain('@container cronograma (min-width: 64rem)')
+    expect(view).not.toContain('position: sticky')
     const equipe = estiloDe(lerFonte('componentes/cronograma/EquipeRoteiroCronograma.vue'))
     expect(equipe).toContain('container: equipe-roteiro / inline-size')
     expect(equipe).toContain('@container equipe-roteiro (min-width: 36rem)')

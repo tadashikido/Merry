@@ -134,7 +134,6 @@ export const TEXTOS_APLICAR_MODELO_CRONOGRAMA = {
   previaNada: 'Todos os itens deste modelo já estão no cronograma.',
   previaLimite: (existentes: number, novos: number) =>
     `O cronograma passaria de 200 itens (hoje tem ${numero(existentes)}, o modelo cria ${numero(novos)}). Exclua itens ou use um modelo menor.`,
-  incompletoTitulo: 'Falta o horário da cerimônia.',
   incompletoTexto: 'Os horários do modelo são calculados a partir dele.',
   incompletoAcao: 'Adicionar horário',
   cancelar: 'Cancelar',

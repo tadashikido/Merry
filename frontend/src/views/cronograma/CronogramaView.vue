@@ -850,10 +850,5 @@ function excluir(item: ItemCronogramaDto) {
   .cronograma__corpo {
     grid-template-columns: minmax(0, 1fr) var(--cronograma-largura-lateral);
   }
-
-  .cronograma__lateral {
-    position: sticky;
-    top: var(--p-ritmo-bloco);
-  }
 }
 </style>

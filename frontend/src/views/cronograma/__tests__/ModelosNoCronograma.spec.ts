@@ -26,6 +26,7 @@ import {
   TEXTOS_RECALCULO_HORARIOS,
   TEXTOS_SALVAR_COMO_MODELO,
 } from '@/textos/modelosCronograma'
+import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import type { SessaoDto } from '@/tipos/api'
 import type { CronogramaDto } from '@/tipos/cronograma'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
@@ -169,7 +170,7 @@ describe('Aplicar modelo no cronograma', () => {
     await abrirPainel()
 
     const painel = wrapper!.get('[data-teste="painel-aplicar-modelo"]')
-    expect(painel.get('[data-teste="previa-sem-horario"]').text()).toContain(TEXTOS_APLICAR_MODELO_CRONOGRAMA.incompletoTitulo)
+    expect(painel.get('[data-teste="previa-sem-horario"]').text()).toContain(VOCABULARIO_TIPO_EVENTO.Casamento.faltaHorario)
     expect(painel.get('[data-teste="previa-adicionar-horario"]').attributes('href')).toBe(`/eventos/${ID_EVENTO}/editar`)
     expect(painel.get('[data-teste="confirmar-aplicar-modelo"]').attributes('disabled')).toBeDefined()
   })

@@ -18,6 +18,7 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
+import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import type { SessaoDto } from '@/tipos/api'
 import type { CronogramaDto } from '@/tipos/cronograma'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
@@ -317,7 +318,7 @@ describe('CronogramaView — assessoria', () => {
     await abrir(SESSAO_EXEMPLO, () => respostaJson(cronogramaExemplo([CERIMONIA], { horarioCerimonia: null })))
 
     const aviso = wrapper!.get('[data-teste="aviso-sem-horario"]')
-    expect(aviso.text()).toContain(TEXTOS_CRONOGRAMA.incompletoTitulo)
+    expect(aviso.text()).toContain(VOCABULARIO_TIPO_EVENTO.Casamento.faltaHorario)
     expect(aviso.text()).toContain(TEXTOS_CRONOGRAMA.incompletoTexto)
     expect(aviso.get('[data-teste="adicionar-horario"]').attributes('href')).toBe(`/eventos/${ID_EVENTO}/editar`)
     expect(wrapper!.text()).toContain('sem horário da cerimônia')

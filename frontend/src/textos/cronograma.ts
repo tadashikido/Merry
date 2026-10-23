@@ -28,7 +28,6 @@ export const TEXTOS_CRONOGRAMA = {
     quantidade === 1
       ? '1 item com conflito de horário. Confira responsáveis e fornecedores.'
       : `${quantidade.toLocaleString('pt-BR')} itens com conflito de horário. Confira responsáveis e fornecedores.`,
-  incompletoTitulo: 'Falta o horário da cerimônia.',
   incompletoTexto: 'Sem ele não conseguimos montar o cronograma do Grande Dia.',
   incompletoAcao: 'Adicionar horário',
   vazioTitulo: 'Monte o roteiro do dia',
