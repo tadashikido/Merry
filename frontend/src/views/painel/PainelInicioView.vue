@@ -39,11 +39,13 @@ const nomeOrganizacao = computed(() => autenticacao.usuario?.organizacao.nome ??
 const ehAssessoria = computed(() => !autenticacao.ehAnfitriao)
 const semPermissao = computed(() => eventos.falha?.tipo === 'semPermissao')
 const listaCarregada = computed(() => eventos.carregado && !eventos.falha)
-const semEventos = computed(() => listaCarregada.value && eventos.itens.length === 0)
+const listaAtualizada = computed(() => listaCarregada.value && !eventos.carregando)
+const semEventos = computed(() => listaAtualizada.value && eventos.itens.length === 0)
 const primeiroAcesso = computed(() => ehAssessoria.value && semEventos.value)
 const anfitriaoSemEvento = computed(() => autenticacao.ehAnfitriao && semEventos.value)
 const temRealizados = computed(() => eventos.itens.length > eventos.proximos.length)
 const exibirPendencias = computed(() => ehAssessoria.value && listaCarregada.value && eventos.itens.length > 0)
+const exibirResumoCarteira = computed(() => exibirPendencias.value && !eventos.carregando)
 const exibirVerTodos = computed(() => ehAssessoria.value && (eventos.proximos.length > 0 || temRealizados.value))
 
 const carteira = computed(() => resumirCarteira(eventos.itens))
@@ -154,7 +156,7 @@ onMounted(carregar)
       </div>
 
       <ResumoContagem
-        v-if="exibirPendencias"
+        v-if="exibirResumoCarteira"
         :itens="indicadoresCarteira"
         :rotulo="TEXTOS_PAINEL_INICIO.resumoRotulo"
         variante="indicadores"

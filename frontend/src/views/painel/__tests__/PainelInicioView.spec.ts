@@ -17,6 +17,7 @@ import { alertasExemplo } from '@/__tests__/auxiliaresFinanceiro'
 import { TEXTOS_ALERTAS_PAGAMENTOS } from '@/textos/financeiro'
 import { pendenciasExemplo } from '@/__tests__/auxiliaresTarefas'
 import { ROTA_PENDENCIAS_TAREFAS } from '@/stores/tarefas'
+import { useEventosStore } from '@/stores/eventos'
 import { TEXTOS_PAINEL_INICIO } from '@/textos/painelInicio'
 import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import { TIPOS_EVENTO } from '@/tipos/eventos'
@@ -414,5 +415,45 @@ describe('PainelInicioView', () => {
     const estilo = estiloDe(lerFonte('componentes/base/EstadoPrimeiroAcesso.vue'))
 
     expect(estilo).toMatch(/\.primeiro-acesso__titulo \{[^}]*font-weight: var\(--p-fonte-peso-leve\)/)
+  })
+
+  it('[INTEGRAÇÃO] ao voltar da lista de arquivados, a recarga dos ativos não mostra primeiro acesso nem resumo com dados antigos', async () => {
+    let liberarAtivos: (resposta: Response) => void = () => undefined
+    const ativosPendentes = new Promise<Response>((resolver) => {
+      liberarAtivos = resolver
+    })
+    fetchSimulado.mockImplementation(async (entrada) => {
+      const url = String(entrada)
+      if (url === '/api/autenticacao/renovar') {
+        return respostaJson(SESSAO_EXEMPLO)
+      }
+      if (url === '/api/eventos?situacao=Arquivados') {
+        return respostaJson([])
+      }
+      if (url === ROTA_ATIVOS) {
+        return ativosPendentes
+      }
+      return respostaProblema(404)
+    })
+    const montagem = await prepararAplicacao('/')
+    const eventos = useEventosStore(montagem.pinia)
+    await eventos.carregar('Arquivados')
+    expect(eventos.carregado).toBe(true)
+    expect(eventos.itens).toHaveLength(0)
+
+    wrapper = await montarView(PainelInicioView, montagem)
+
+    expect(eventos.carregando).toBe(true)
+    expect(wrapper.find('[data-teste="estado-primeiro-acesso"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="resumo-carteira"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="novo-evento"]').exists()).toBe(true)
+    expect(wrapper.find('[data-teste="estado-carregando"]').exists()).toBe(true)
+
+    liberarAtivos(respostaJson([resumoEvento({ tipo: 'QuinzeAnos', nomeSegundaPessoa: null, diasRestantes: 5 })]))
+    await flushPromises()
+
+    expect(wrapper.find('[data-teste="estado-primeiro-acesso"]').exists()).toBe(false)
+    expect(wrapper.get('[data-teste="contagem-pela-frente"]').text()).toContain('1 festa de 15 anos')
+    expect(wrapper.findAll('[data-teste="cartao-evento"]')).toHaveLength(1)
   })
 })
