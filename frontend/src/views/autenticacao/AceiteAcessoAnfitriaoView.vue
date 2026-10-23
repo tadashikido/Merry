@@ -9,20 +9,46 @@ import CampoSenha from '@/componentes/base/CampoSenha.vue'
 import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import IndicadorAbertura from '@/componentes/base/IndicadorAbertura.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import OrientacaoAcesso, { type ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore, type TipoFalha } from '@/stores/autenticacao'
-import { TEXTOS_ACEITE_ANFITRIAO } from '@/textos/acessoAnfitriao'
+import { TEXTOS_ACEITE_ANFITRIAO, TRATAMENTO_ACEITE_ANFITRIAO, tratamentoDoConvite } from '@/textos/acessoAnfitriao'
 import { MENSAGENS_AUTENTICACAO } from '@/textos/autenticacao'
+import { vocabularioDoTipo } from '@/textos/tiposEvento'
 import type { ConviteAcessoAnfitriaoDto } from '@/tipos/acessoAnfitriao'
 import { focarElemento } from '@/utilitarios/foco'
-import { formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
+import { formatarData, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { igualA, obrigatorio, senhaForte } from '@/utilitarios/validacao'
 
 const FALHAS: Partial<Record<TipoFalha, string>> = {
   limite: MENSAGENS_AUTENTICACAO.muitasTentativas,
   conexao: MENSAGENS_AUTENTICACAO.conexao,
 }
+
+const ID_ORIENTACAO_CONVITE = 'aceite-o-que-acompanhar'
+const ID_CONVITE_INVALIDO = 'aceite-convite-invalido'
+
+const ORIENTACAO_CONVITE_INVALIDO: readonly ItemOrientacaoAcesso[] = [
+  {
+    chave: 'prazo',
+    titulo: TEXTOS_ACEITE_ANFITRIAO.prazoTitulo,
+    texto: TEXTOS_ACEITE_ANFITRIAO.prazoTexto,
+    teste: 'orientacao-prazo',
+  },
+  {
+    chave: 'reenvio',
+    titulo: TEXTOS_ACEITE_ANFITRIAO.reenvioTitulo,
+    texto: TEXTOS_ACEITE_ANFITRIAO.reenvioTexto,
+    teste: 'orientacao-reenvio',
+  },
+  {
+    chave: 'uso-unico',
+    titulo: TEXTOS_ACEITE_ANFITRIAO.usoUnicoTitulo,
+    texto: TEXTOS_ACEITE_ANFITRIAO.usoUnicoTexto,
+    teste: 'orientacao-uso-unico',
+  },
+]
 
 const store = useAutenticacaoStore()
 const rota = useRoute()
@@ -49,19 +75,52 @@ const nomes = computed(() =>
   convite.value ? formatarNomesAnfitrioes(convite.value.nomePrimeiraPessoa, convite.value.nomeSegundaPessoa) : '',
 )
 
+const vocabulario = computed(() => vocabularioDoTipo(convite.value?.tipo))
+
+const textos = computed(() => TRATAMENTO_ACEITE_ANFITRIAO[tratamentoDoConvite(convite.value?.nomeSegundaPessoa)])
+
+const conviteValido = computed(() => convite.value !== null && !invalido.value)
+
 const titulo = computed(() => {
   if (invalido.value) {
     return TEXTOS_ACEITE_ANFITRIAO.invalidoTitulo
   }
-  return nomes.value ? TEXTOS_ACEITE_ANFITRIAO.titulo(nomes.value) : TEXTOS_ACEITE_ANFITRIAO.tituloPadrao
+  return nomes.value ? textos.value.titulo(vocabulario.value.referencia.artigo, nomes.value) : TEXTOS_ACEITE_ANFITRIAO.tituloPadrao
 })
 
 const descricao = computed(() => {
   if (invalido.value) {
     return TEXTOS_ACEITE_ANFITRIAO.invalidoTexto
   }
-  return convite.value ? TEXTOS_ACEITE_ANFITRIAO.descricao(convite.value.organizacao) : undefined
+  return convite.value ? textos.value.descricao(convite.value.organizacao, vocabulario.value.referencia.artigo) : undefined
 })
+
+const orientacaoConvite = computed<ItemOrientacaoAcesso[]>(() => [
+  {
+    chave: 'convidados',
+    titulo: TEXTOS_ACEITE_ANFITRIAO.convidadosTitulo,
+    texto: textos.value.convidadosTexto,
+    teste: 'orientacao-convidados',
+  },
+  {
+    chave: 'confirmacoes',
+    titulo: TEXTOS_ACEITE_ANFITRIAO.confirmacoesTitulo,
+    texto: textos.value.confirmacoesTexto,
+    teste: 'orientacao-confirmacoes',
+  },
+  {
+    chave: 'cronograma',
+    titulo: TEXTOS_ACEITE_ANFITRIAO.cronogramaTitulo,
+    texto: textos.value.cronogramaTexto(vocabulario.value.referencia.contracaoDe),
+    teste: 'orientacao-cronograma',
+  },
+  {
+    chave: 'validade',
+    titulo: TEXTOS_ACEITE_ANFITRIAO.validadeTitulo(formatarData(convite.value?.expiraEm)),
+    texto: textos.value.validadeTexto,
+    teste: 'orientacao-validade',
+  },
+])
 
 function lerToken(fragmento: string): string | null {
   const valor = new URLSearchParams(fragmento.replace(/^#/, '')).get('token')
@@ -125,7 +184,7 @@ async function enviar() {
   if (resultado.ok) {
     token.value = null
     const primeiroNome = store.usuario?.nome.split(' ')[0] ?? ''
-    notificacao.sucesso(TEXTOS_ACEITE_ANFITRIAO.boasVindas(primeiroNome))
+    notificacao.sucesso(TEXTOS_ACEITE_ANFITRIAO.boasVindas(primeiroNome, vocabulario.value.referencia.contracaoDe))
     const eventoId = store.eventoDoAnfitriao
     await roteador.replace(eventoId ? { name: 'evento', params: { id: eventoId } } : { name: 'inicio' })
     return
@@ -181,7 +240,7 @@ function aoDigitarSenha() {
       <MensagemFormulario
         v-if="tinhaSessao"
         variante="informacao"
-        :mensagem="TEXTOS_ACEITE_ANFITRIAO.outraConta"
+        :mensagem="textos.outraConta"
         data-teste="aviso-outra-conta"
       />
       <form
@@ -219,7 +278,7 @@ function aoDigitarSenha() {
           </CampoFormulario>
           <CampoFormulario
             v-slot="{ id, invalido: campoInvalido, descritoPor }"
-            :rotulo="TEXTOS_ACEITE_ANFITRIAO.confirmarSenha"
+            :rotulo="textos.confirmarSenha"
             id-campo="aceite-confirmacao"
             :erro="formulario.erros.confirmacao"
           >
@@ -250,14 +309,36 @@ function aoDigitarSenha() {
       :mensagem="mensagemErro"
     />
 
-    <template #rodape>
-      <p
-        v-if="convite && !invalido"
-        class="aceite__apoio texto-legenda"
+    <template
+      v-if="conviteValido || invalido"
+      #complemento
+    >
+      <OrientacaoAcesso
+        v-if="conviteValido"
+        :id-titulo="ID_ORIENTACAO_CONVITE"
+        :titulo="textos.orientacaoTitulo"
+        :itens="orientacaoConvite"
+        data-teste="orientacao-convite"
       >
-        {{ TEXTOS_ACEITE_ANFITRIAO.naoEsperava }}
-      </p>
-      <p v-else>
+        <p data-teste="nota-nao-esperava">
+          <strong>{{ textos.naoEsperavaTitulo }}</strong>
+          {{ textos.naoEsperavaTexto }}
+        </p>
+      </OrientacaoAcesso>
+      <OrientacaoAcesso
+        v-else
+        :id-titulo="ID_CONVITE_INVALIDO"
+        :titulo="TEXTOS_ACEITE_ANFITRIAO.motivoTitulo"
+        :itens="ORIENTACAO_CONVITE_INVALIDO"
+        data-teste="orientacao-convite-invalido"
+      />
+    </template>
+
+    <template
+      v-if="!conviteValido && !carregando"
+      #rodape
+    >
+      <p>
         {{ TEXTOS_ACEITE_ANFITRIAO.jaTemConta }}
         <RouterLink
           :to="{ name: 'entrar' }"
@@ -289,10 +370,5 @@ function aoDigitarSenha() {
   font-family: var(--p-fonte-interface);
   color: var(--p-cor-texto);
   overflow-wrap: anywhere;
-}
-
-.aceite__apoio {
-  max-width: 40ch;
-  text-wrap: pretty;
 }
 </style>

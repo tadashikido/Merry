@@ -4,6 +4,10 @@ export interface VocabularioTipoEvento {
   rotulo: string
   rotuloPlural: string
   descricao: string
+  referencia: {
+    artigo: string
+    contracaoDe: string
+  }
   homenageados: {
     grupo: string
     primeiro: string
@@ -32,6 +36,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: 'Casamento',
     rotuloPlural: 'Casamentos',
     descricao: 'Dois nomes, cerimônia e recepção',
+    referencia: {
+      artigo: 'o casamento',
+      contracaoDe: 'do casamento',
+    },
     homenageados: {
       grupo: 'Os noivos',
       primeiro: 'Nome de um dos noivos',
@@ -58,6 +66,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: '15 anos',
     rotuloPlural: 'Festas de 15 anos',
     descricao: 'A festa da debutante',
+    referencia: {
+      artigo: 'a festa de 15 anos',
+      contracaoDe: 'da festa de 15 anos',
+    },
     homenageados: {
       grupo: 'A debutante',
       primeiro: 'Nome da debutante',
@@ -84,6 +96,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: 'Aniversário',
     rotuloPlural: 'Aniversários',
     descricao: 'Para quem faz aniversário',
+    referencia: {
+      artigo: 'o aniversário',
+      contracaoDe: 'do aniversário',
+    },
     homenageados: {
       grupo: 'O aniversariante',
       primeiro: 'Nome do aniversariante',
@@ -110,6 +126,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: 'Comemoração',
     rotuloPlural: 'Comemorações',
     descricao: 'Bodas, chá, encontro de família',
+    referencia: {
+      artigo: 'a comemoração',
+      contracaoDe: 'da comemoração',
+    },
     homenageados: {
       grupo: 'Os homenageados',
       primeiro: 'Quem celebra',

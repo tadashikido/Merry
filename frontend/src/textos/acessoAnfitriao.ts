@@ -46,23 +46,78 @@ export const VARIANTE_SITUACAO_ACESSO: Record<SituacaoAcessoAnfitriao, VarianteS
 }
 
 export const TEXTOS_ACEITE_ANFITRIAO = {
-  titulo: (nomes: string) => `Acessem o evento de ${nomes}`,
-  tituloPadrao: 'Acessem o evento',
-  descricao: (assessoria: string) => `${assessoria} convidou vocês para acompanhar a lista de convidados. Criem a senha para entrar.`,
-  abrindo: 'Abrindo o convite de vocês…',
+  tituloPadrao: 'Acesso ao evento',
+  abrindo: 'Abrindo o convite…',
   email: 'E-mail',
   senha: 'Senha',
-  confirmarSenha: 'Confirmem a senha',
   senhasDiferentes: 'As senhas não são iguais.',
   enviar: 'Criar senha e entrar',
-  naoEsperava: 'Não esperavam este convite? Ignorem o e-mail; ninguém entra sem a senha.',
-  outraConta: 'Ao continuar, vocês entram com este e-mail.',
   invalidoTitulo: 'Este convite não vale mais',
-  invalidoTexto: 'O link expirou, foi substituído por um novo ou já foi usado. Peçam à assessoria um novo convite.',
-  jaTemConta: 'Já criaram a senha?',
+  invalidoTexto: 'O link expirou, foi substituído por um novo ou já foi usado. Peça à assessoria um novo convite.',
+  jaTemConta: 'Já criou a senha?',
   entrar: 'Entrar',
-  boasVindas: (primeiroNome: string) => `Boas-vindas, ${primeiroNome}! Aqui está o evento de vocês.`,
+  boasVindas: (primeiroNome: string, eventoContraido: string) => `Boas-vindas, ${primeiroNome}! Este é o painel ${eventoContraido}.`,
+  convidadosTitulo: 'Convidados',
+  confirmacoesTitulo: 'Confirmações',
+  cronogramaTitulo: 'Cronograma',
+  validadeTitulo: (data: string) => `Link válido até ${data}`,
+  motivoTitulo: 'Por que o convite deixou de valer',
+  prazoTitulo: 'O convite vale por 7 dias',
+  prazoTexto: 'Depois disso, a assessoria pode reenviar. O novo link chega no mesmo e-mail.',
+  reenvioTitulo: 'Cada reenvio troca o link',
+  reenvioTexto: 'Use o e-mail mais recente. O link anterior deixa de funcionar.',
+  usoUnicoTitulo: 'Cada convite funciona uma vez',
+  usoUnicoTexto: 'Se você já criou a senha com ele, é só entrar com o mesmo e-mail.',
 } as const
+
+export type TratamentoAceite = 'singular' | 'plural'
+
+export interface TextosTratamentoAceite {
+  titulo: (evento: string, nomes: string) => string
+  descricao: (assessoria: string, evento: string) => string
+  confirmarSenha: string
+  outraConta: string
+  orientacaoTitulo: string
+  convidadosTexto: string
+  confirmacoesTexto: string
+  cronogramaTexto: (eventoContraido: string) => string
+  validadeTexto: string
+  naoEsperavaTitulo: string
+  naoEsperavaTexto: string
+}
+
+export const TRATAMENTO_ACEITE_ANFITRIAO: Record<TratamentoAceite, TextosTratamentoAceite> = {
+  singular: {
+    titulo: (evento, nomes) => `Acesse ${evento} de ${nomes}`,
+    descricao: (assessoria, evento) => `${assessoria} convidou você para acompanhar ${evento}. Crie a senha para entrar.`,
+    confirmarSenha: 'Confirme a senha',
+    outraConta: 'Ao continuar, você entra com este e-mail.',
+    orientacaoTitulo: 'O que você vai acompanhar',
+    convidadosTexto: 'Inclua e ajuste os convites. A assessoria vê cada mudança.',
+    confirmacoesTexto: 'Veja quem já confirmou presença e quantas pessoas vêm.',
+    cronogramaTexto: (eventoContraido) => `Consulte o roteiro ${eventoContraido} preparado pela assessoria.`,
+    validadeTexto: 'Depois dessa data, peça um novo convite à assessoria.',
+    naoEsperavaTitulo: 'Não esperava este convite?',
+    naoEsperavaTexto: 'Ignore o e-mail; ninguém entra sem a senha.',
+  },
+  plural: {
+    titulo: (evento, nomes) => `Acessem ${evento} de ${nomes}`,
+    descricao: (assessoria, evento) => `${assessoria} convidou vocês para acompanhar ${evento}. Criem a senha para entrar.`,
+    confirmarSenha: 'Confirmem a senha',
+    outraConta: 'Ao continuar, vocês entram com este e-mail.',
+    orientacaoTitulo: 'O que vocês vão acompanhar',
+    convidadosTexto: 'Incluam e ajustem os convites. A assessoria vê cada mudança.',
+    confirmacoesTexto: 'Vejam quem já confirmou presença e quantas pessoas vêm.',
+    cronogramaTexto: (eventoContraido) => `Consultem o roteiro ${eventoContraido} preparado pela assessoria.`,
+    validadeTexto: 'Depois dessa data, peçam um novo convite à assessoria.',
+    naoEsperavaTitulo: 'Não esperavam este convite?',
+    naoEsperavaTexto: 'Ignorem o e-mail; ninguém entra sem a senha.',
+  },
+}
+
+export function tratamentoDoConvite(nomeSegundaPessoa: string | null | undefined): TratamentoAceite {
+  return nomeSegundaPessoa?.trim() ? 'plural' : 'singular'
+}
 
 export const TEXTOS_AREA_ANFITRIAO = {
   menuNossoEvento: 'Nosso evento',

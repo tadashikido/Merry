@@ -16,11 +16,18 @@ import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { painelExemplo } from '@/__tests__/auxiliaresConfirmacoes'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
-import { TEXTOS_ACEITE_ANFITRIAO, TEXTOS_ACESSO_ANFITRIAO, TEXTOS_AREA_ANFITRIAO } from '@/textos/acessoAnfitriao'
+import {
+  TEXTOS_ACEITE_ANFITRIAO,
+  TEXTOS_ACESSO_ANFITRIAO,
+  TEXTOS_AREA_ANFITRIAO,
+  TRATAMENTO_ACEITE_ANFITRIAO,
+  tratamentoDoConvite,
+} from '@/textos/acessoAnfitriao'
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import type { AcessoAnfitriaoDto, ConviteAcessoAnfitriaoDto } from '@/tipos/acessoAnfitriao'
 import type { SessaoDto } from '@/tipos/api'
 import type { ListaConvitesDto } from '@/tipos/convidados'
+import type { TipoEvento } from '@/tipos/eventos'
 import { ID_EVENTO, ID_OUTRO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from './auxiliaresEventos'
 
 await precarregarRotas('evento', 'eventos', 'evento-convidados', 'painel-confirmacoes', 'aceite-acesso-anfitriao')
@@ -428,8 +435,8 @@ describe('AceiteAcessoAnfitriaoView', () => {
 
     expect(corpoDaChamada(chamadas(fetchSimulado, 'POST', '/api/acesso-anfitriao/consulta')[0]!)).toEqual({ token: TOKEN_CONVITE })
     expect(window.location.hash).toBe('')
-    expect(wrapper!.get('h1').text()).toBe(TEXTOS_ACEITE_ANFITRIAO.titulo('Ana Beatriz & Bruno'))
-    expect(wrapper!.text()).toContain(TEXTOS_ACEITE_ANFITRIAO.descricao('Albuquerque Assessoria'))
+    expect(wrapper!.get('h1').text()).toBe('Acessem o casamento de Ana Beatriz & Bruno')
+    expect(wrapper!.text()).toContain('Albuquerque Assessoria convidou vocês para acompanhar o casamento. Criem a senha para entrar.')
     expect(wrapper!.get('[data-teste="email-convite"]').text()).toBe('livia@exemplo.com')
   })
 
@@ -441,6 +448,7 @@ describe('AceiteAcessoAnfitriaoView', () => {
     expect(wrapper!.find('[data-teste="convite-invalido"]').exists()).toBe(true)
     expect(wrapper!.text()).toContain(TEXTOS_ACEITE_ANFITRIAO.invalidoTexto)
     expect(wrapper!.find('[data-teste="formulario-aceite-anfitriao"]').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="orientacao-convite"]').exists()).toBe(false)
   })
 
   it('[SEGURANÇA] sem token no link não consulta a API', async () => {
@@ -484,7 +492,7 @@ describe('AceiteAcessoAnfitriaoView', () => {
     expect(corpoDaChamada(chamadas(fetchSimulado, 'POST', '/api/acesso-anfitriao/aceite')[0]!)).toEqual({ token: TOKEN_CONVITE, senha: 'anfitriaoFeliz2027' })
     await aguardarRota(montagem.roteador, 'evento')
     expect(montagem.roteador.currentRoute.value.params.id).toBe(ID_EVENTO)
-    expect(notificado(TEXTOS_ACEITE_ANFITRIAO.boasVindas('Lívia'))).toBe(true)
+    expect(notificado('Boas-vindas, Lívia! Este é o painel do casamento.')).toBe(true)
   })
 
   it('[COMPONENTE] senha recusada pelo servidor aparece sob o campo', async () => {
@@ -529,12 +537,179 @@ describe('AceiteAcessoAnfitriaoView', () => {
     await flushPromises()
   }
 
-  it('[COMPONENTE] fala com os anfitriões no plural', () => {
-    expect(TEXTOS_ACEITE_ANFITRIAO.titulo('Ana Beatriz & Bruno')).toBe('Acessem o evento de Ana Beatriz & Bruno')
-    expect(TEXTOS_ACEITE_ANFITRIAO.tituloPadrao).toBe('Acessem o evento')
-    expect(TEXTOS_ACEITE_ANFITRIAO.descricao('Albuquerque Assessoria')).toContain('convidou vocês')
-    expect(TEXTOS_ACEITE_ANFITRIAO.invalidoTexto).toContain('Peçam à assessoria')
-    expect(TEXTOS_ACEITE_ANFITRIAO.jaTemConta).toBe('Já criaram a senha?')
+  it('[UNITÁRIO] trata no plural quem tem dois nomes e no singular quem tem um', () => {
+    expect(tratamentoDoConvite('Bruno')).toBe('plural')
+    expect(tratamentoDoConvite(null)).toBe('singular')
+    expect(tratamentoDoConvite('   ')).toBe('singular')
+  })
+
+  it('[COMPONENTE] textos que não conhecem o convite são neutros e no singular', () => {
+    expect(TEXTOS_ACEITE_ANFITRIAO.tituloPadrao).toBe('Acesso ao evento')
+    expect(TEXTOS_ACEITE_ANFITRIAO.invalidoTexto).toContain('Peça à assessoria')
+    expect(TEXTOS_ACEITE_ANFITRIAO.jaTemConta).toBe('Já criou a senha?')
+  })
+
+  const CASOS_TIPO: {
+    tipo: TipoEvento
+    primeiro: string
+    segundo: string | null
+    titulo: string
+    descricao: string
+    orientacao: string
+    cronograma: string
+    confirmar: string
+    naoEsperava: string
+    boasVindas: string
+  }[] = [
+    {
+      tipo: 'Casamento',
+      primeiro: 'Ana Beatriz',
+      segundo: 'Bruno',
+      titulo: 'Acessem o casamento de Ana Beatriz & Bruno',
+      descricao: 'Albuquerque Assessoria convidou vocês para acompanhar o casamento. Criem a senha para entrar.',
+      orientacao: 'O que vocês vão acompanhar',
+      cronograma: 'Consultem o roteiro do casamento preparado pela assessoria.',
+      confirmar: 'Confirmem a senha',
+      naoEsperava: 'Não esperavam este convite?',
+      boasVindas: 'Boas-vindas, Lívia! Este é o painel do casamento.',
+    },
+    {
+      tipo: 'QuinzeAnos',
+      primeiro: 'Júlia',
+      segundo: null,
+      titulo: 'Acesse a festa de 15 anos de Júlia',
+      descricao: 'Albuquerque Assessoria convidou você para acompanhar a festa de 15 anos. Crie a senha para entrar.',
+      orientacao: 'O que você vai acompanhar',
+      cronograma: 'Consulte o roteiro da festa de 15 anos preparado pela assessoria.',
+      confirmar: 'Confirme a senha',
+      naoEsperava: 'Não esperava este convite?',
+      boasVindas: 'Boas-vindas, Lívia! Este é o painel da festa de 15 anos.',
+    },
+    {
+      tipo: 'Aniversario',
+      primeiro: 'Carlos',
+      segundo: null,
+      titulo: 'Acesse o aniversário de Carlos',
+      descricao: 'Albuquerque Assessoria convidou você para acompanhar o aniversário. Crie a senha para entrar.',
+      orientacao: 'O que você vai acompanhar',
+      cronograma: 'Consulte o roteiro do aniversário preparado pela assessoria.',
+      confirmar: 'Confirme a senha',
+      naoEsperava: 'Não esperava este convite?',
+      boasVindas: 'Boas-vindas, Lívia! Este é o painel do aniversário.',
+    },
+    {
+      tipo: 'Comemoracao',
+      primeiro: 'Família Souza',
+      segundo: null,
+      titulo: 'Acesse a comemoração de Família Souza',
+      descricao: 'Albuquerque Assessoria convidou você para acompanhar a comemoração. Crie a senha para entrar.',
+      orientacao: 'O que você vai acompanhar',
+      cronograma: 'Consulte o roteiro da comemoração preparado pela assessoria.',
+      confirmar: 'Confirme a senha',
+      naoEsperava: 'Não esperava este convite?',
+      boasVindas: 'Boas-vindas, Lívia! Este é o painel da comemoração.',
+    },
+    {
+      tipo: 'Comemoracao',
+      primeiro: 'Helena',
+      segundo: 'Otávio',
+      titulo: 'Acessem a comemoração de Helena & Otávio',
+      descricao: 'Albuquerque Assessoria convidou vocês para acompanhar a comemoração. Criem a senha para entrar.',
+      orientacao: 'O que vocês vão acompanhar',
+      cronograma: 'Consultem o roteiro da comemoração preparado pela assessoria.',
+      confirmar: 'Confirmem a senha',
+      naoEsperava: 'Não esperavam este convite?',
+      boasVindas: 'Boas-vindas, Lívia! Este é o painel da comemoração.',
+    },
+  ]
+
+  it.each(CASOS_TIPO)('[COMPONENTE] $tipo com $primeiro adapta título, descrição e orientação', async (caso) => {
+    rotear(
+      fetchSimulado,
+      null,
+      quando('POST', '/api/acesso-anfitriao/consulta', () =>
+        respostaJson({ ...CONVITE_ANFITRIAO, tipo: caso.tipo, nomePrimeiraPessoa: caso.primeiro, nomeSegundaPessoa: caso.segundo }),
+      ),
+    )
+
+    await abrir(`/acesso-anfitriao#token=${TOKEN_CONVITE}`)
+
+    expect(wrapper!.get('h1').text()).toBe(caso.titulo)
+    expect(wrapper!.text()).toContain(caso.descricao)
+    expect(wrapper!.text()).toContain(caso.confirmar)
+    const orientacao = wrapper!.get('[data-teste="orientacao-convite"]')
+    expect(orientacao.element.tagName).toBe('ASIDE')
+    expect(orientacao.get('h2').text()).toBe(caso.orientacao)
+    expect(orientacao.attributes('aria-labelledby')).toBe(orientacao.get('h2').attributes('id'))
+    expect(orientacao.get('[data-teste="orientacao-cronograma"]').text()).toContain(caso.cronograma)
+    expect(orientacao.get('[data-teste="nota-nao-esperava"]').text()).toContain(caso.naoEsperava)
+    expect(wrapper!.text()).not.toMatch(/casal/i)
+  })
+
+  it.each(CASOS_TIPO.slice(0, 4))('[COMPONENTE] $tipo: boas-vindas citam o evento pelo tipo', async (caso) => {
+    rotear(
+      fetchSimulado,
+      null,
+      quando('POST', '/api/acesso-anfitriao/consulta', () =>
+        respostaJson({ ...CONVITE_ANFITRIAO, tipo: caso.tipo, nomePrimeiraPessoa: caso.primeiro, nomeSegundaPessoa: caso.segundo }),
+      ),
+      quando('POST', '/api/acesso-anfitriao/aceite', () => respostaJson(SESSAO_ANFITRIAO)),
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ observacoes: null }))),
+      quando('GET', `${ROTA_EVENTO}/convites/totais`, () => respostaJson(LISTA_VAZIA.totais)),
+    )
+    const { montagem } = await abrir(`/acesso-anfitriao#token=${TOKEN_CONVITE}`)
+
+    await preencherEEnviarAceite('anfitriaoFeliz2027', 'anfitriaoFeliz2027')
+
+    await aguardarRota(montagem.roteador, 'evento')
+    expect(notificado(caso.boasVindas)).toBe(true)
+  })
+
+  it('[COMPONENTE] orientação do convite válido lista convidados, confirmações, cronograma e a validade do link', async () => {
+    await abrirConviteValido()
+
+    const orientacao = wrapper!.get('[data-teste="orientacao-convite"]')
+    const textos = TRATAMENTO_ACEITE_ANFITRIAO.plural
+    expect(orientacao.findAll('h3').map((titulo) => titulo.text())).toEqual([
+      TEXTOS_ACEITE_ANFITRIAO.convidadosTitulo,
+      TEXTOS_ACEITE_ANFITRIAO.confirmacoesTitulo,
+      TEXTOS_ACEITE_ANFITRIAO.cronogramaTitulo,
+      'Link válido até 06/10/2026',
+    ])
+    expect(orientacao.get('[data-teste="orientacao-convidados"]').text()).toContain(textos.convidadosTexto)
+    expect(orientacao.get('[data-teste="orientacao-confirmacoes"]').text()).toContain(textos.confirmacoesTexto)
+    expect(orientacao.get('[data-teste="orientacao-validade"]').text()).toContain(textos.validadeTexto)
+    expect(wrapper!.find('main [data-teste="orientacao-convite"]').exists()).toBe(false)
+    expect(wrapper!.find('footer').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="link-entrar"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] convite inválido explica por que deixou de valer', async () => {
+    rotear(fetchSimulado, null, quando('POST', '/api/acesso-anfitriao/consulta', () => respostaProblema(422, { detail: 'Este convite não vale mais.' })))
+
+    await abrir(`/acesso-anfitriao#token=${TOKEN_CONVITE}`)
+
+    const orientacao = wrapper!.get('[data-teste="orientacao-convite-invalido"]')
+    expect(orientacao.get('h2').text()).toBe(TEXTOS_ACEITE_ANFITRIAO.motivoTitulo)
+    expect(orientacao.get('[data-teste="orientacao-prazo"]').text()).toContain(TEXTOS_ACEITE_ANFITRIAO.prazoTexto)
+    expect(orientacao.get('[data-teste="orientacao-reenvio"]').text()).toContain(TEXTOS_ACEITE_ANFITRIAO.reenvioTexto)
+    expect(orientacao.get('[data-teste="orientacao-uso-unico"]').text()).toContain(TEXTOS_ACEITE_ANFITRIAO.usoUnicoTexto)
+    expect(wrapper!.get('h1').text()).toBe(TEXTOS_ACEITE_ANFITRIAO.invalidoTitulo)
+  })
+
+  it('[COMPONENTE] sem conexão não mostra orientação e oferece entrar', async () => {
+    fetchSimulado.mockImplementation(async (entrada) => {
+      if (String(entrada) === '/api/autenticacao/renovar') {
+        return respostaProblema(401)
+      }
+      throw new TypeError('Failed to fetch')
+    })
+
+    await abrir(`/acesso-anfitriao#token=${TOKEN_CONVITE}`)
+
+    expect(wrapper!.get('h1').text()).toBe(TEXTOS_ACEITE_ANFITRIAO.tituloPadrao)
+    expect(wrapper!.find('aside').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="link-entrar"]').exists()).toBe(true)
   })
 
   it('[COMPONENTE] convite inválido mostra título e texto uma única vez, com lacre decorativo e sem cartão de erro', async () => {
@@ -544,7 +719,7 @@ describe('AceiteAcessoAnfitriaoView', () => {
 
     expect(wrapper!.findAll('h1')).toHaveLength(1)
     expect(wrapper!.get('h1').text()).toBe(TEXTOS_ACEITE_ANFITRIAO.invalidoTitulo)
-    expect(wrapper!.find('h2').exists()).toBe(false)
+    expect(wrapper!.find('main h2').exists()).toBe(false)
     expect(wrapper!.find('[data-teste="estado-erro"]').exists()).toBe(false)
     expect(wrapper!.text().split(TEXTOS_ACEITE_ANFITRIAO.invalidoTexto)).toHaveLength(2)
     const lacre = wrapper!.get('[data-teste="convite-invalido"]').get('[data-teste="lacre-convite-invalido"]')
@@ -618,10 +793,12 @@ describe('AceiteAcessoAnfitriaoView', () => {
     expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(true)
   })
 
-  it('[COMPONENTE] mostra o e-mail do convite e o rodapé para quem não esperava o convite', async () => {
+  it('[COMPONENTE] mostra o e-mail do convite e a nota para quem não esperava o convite', async () => {
     await abrirConviteValido()
 
     expect(wrapper!.get('[data-teste="email-convite"]').text()).toBe(CONVITE_ANFITRIAO.email)
-    expect(wrapper!.text()).toContain(TEXTOS_ACEITE_ANFITRIAO.naoEsperava)
+    expect(wrapper!.get('[data-teste="nota-nao-esperava"]').text()).toBe(
+      `${TRATAMENTO_ACEITE_ANFITRIAO.plural.naoEsperavaTitulo} ${TRATAMENTO_ACEITE_ANFITRIAO.plural.naoEsperavaTexto}`,
+    )
   })
 })
