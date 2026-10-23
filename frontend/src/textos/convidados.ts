@@ -151,8 +151,8 @@ export const TEXTOS_PREVIA_CONVITE = {
   subtitulo: 'Um resumo da página de confirmação, atualizado enquanto você preenche.',
   nomeProvisorio: 'Nome do convite',
   pessoaProvisoria: (numero: number) => `Pessoa ${numero}`,
-  privacidade: 'Telefone e e-mail ficam só com a assessoria; o convidado vê apenas os nomes.',
-  restricoes: 'Restrição alimentar é informada pelo próprio convidado ao confirmar presença.',
+  privacidade: 'Telefone e e-mail servem para enviar o convite e não aparecem para o convidado; ele vê apenas os nomes.',
+  restricoes: 'Restrições alimentares chegam pela confirmação do convidado ou são registradas pela assessoria no painel de Restrições alimentares.',
 } as const
 
 export const ROTULOS_FAIXA_ETARIA: Record<FaixaEtaria, string> = {

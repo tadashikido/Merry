@@ -106,6 +106,8 @@ describe('PreviaConvite', () => {
     expect(previa.find('h1').exists()).toBe(false)
     expect(previa.get('[data-teste="previa-privacidade"]').text()).toBe(TEXTOS_PREVIA_CONVITE.privacidade)
     expect(previa.get('[data-teste="previa-restricoes"]').text()).toBe(TEXTOS_PREVIA_CONVITE.restricoes)
+    expect(TEXTOS_PREVIA_CONVITE.privacidade).not.toMatch(/só com a assessoria/)
+    expect(TEXTOS_PREVIA_CONVITE.restricoes).toContain('painel de Restrições alimentares')
   })
 
   it('[UNITÁRIO] estilos usam @container e ritmo, sem @media', () => {
