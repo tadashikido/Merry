@@ -1,5 +1,6 @@
 using Celebri.Aplicacao.DadosSensiveis;
 using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.Recifragem;
 using Celebri.Dominio.Convidados;
 using Microsoft.EntityFrameworkCore;
 
@@ -58,5 +59,41 @@ public class DadosSensiveisRepository : IDadosSensiveisRepository
                     .SetProperty(dados => dados.ConteudoCifrado, (string?)null)
                     .SetProperty(dados => dados.ExcluidoEm, (DateTimeOffset?)agora),
                 cancelamento);
+    }
+
+    public async Task<IReadOnlyList<CifraArmazenada>> ListarCifrasAsync(Guid? aposConvidadoId, int quantidade, CancellationToken cancelamento)
+    {
+        var consulta = _contexto.DadosSensiveisConvidados
+            .AsNoTracking()
+            .Where(dados => dados.ConteudoCifrado != null);
+
+        if (aposConvidadoId is { } ultimo)
+        {
+            consulta = consulta.Where(dados => dados.ConvidadoId.CompareTo(ultimo) > 0);
+        }
+
+        return await consulta
+            .OrderBy(dados => dados.ConvidadoId)
+            .Take(quantidade)
+            .Select(dados => new CifraArmazenada(dados.ConvidadoId, dados.ConvidadoId, dados.ConteudoCifrado!))
+            .ToListAsync(cancelamento);
+    }
+
+    public async Task<int> SubstituirCifrasAsync(IReadOnlyList<SubstituicaoCifra> substituicoes, CancellationToken cancelamento)
+    {
+        ArgumentNullException.ThrowIfNull(substituicoes);
+
+        await using var transacao = await _contexto.Database.BeginTransactionAsync(cancelamento);
+        var total = 0;
+
+        foreach (var substituicao in substituicoes)
+        {
+            total += await _contexto.DadosSensiveisConvidados
+                .Where(dados => dados.ConvidadoId == substituicao.Id && dados.ConteudoCifrado == substituicao.Anterior)
+                .ExecuteUpdateAsync(atualizacao => atualizacao.SetProperty(dados => dados.ConteudoCifrado, substituicao.Nova), cancelamento);
+        }
+
+        await transacao.CommitAsync(cancelamento);
+        return total;
     }
 }

@@ -1,3 +1,4 @@
+using Celebri.Aplicacao.Recifragem;
 using Celebri.Dominio.Cronogramas;
 
 namespace Celebri.Aplicacao.Persistencia;
@@ -13,4 +14,8 @@ public interface IAcessoCronogramaRepository
     void Adicionar(AcessoCronograma acesso);
 
     void Remover(AcessoCronograma acesso);
+
+    Task<IReadOnlyList<CifraArmazenada>> ListarCifrasAsync(Guid? aposAcessoId, int quantidade, CancellationToken cancelamento);
+
+    Task<int> SubstituirCifrasAsync(IReadOnlyList<SubstituicaoCifra> substituicoes, CancellationToken cancelamento);
 }

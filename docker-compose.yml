@@ -28,6 +28,7 @@ services:
       ConnectionStrings__Principal: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       Jwt__ChaveAssinatura: ${JWT_CHAVE_ASSINATURA:?defina JWT_CHAVE_ASSINATURA no .env}
       DadosSensiveis__ChaveCifragem: ${DADOS_SENSIVEIS_CHAVE:?defina DADOS_SENSIVEIS_CHAVE no .env (openssl rand -base64 32)}
+      DadosSensiveis__ChaveCifragemAnterior: ${DADOS_SENSIVEIS_CHAVE_ANTERIOR:-}
       Autenticacao__UrlFrontend: http://localhost:${WEB_PORTA:-8081}
       Email__Smtp__Host: email
       Email__Smtp__Porta: "1025"

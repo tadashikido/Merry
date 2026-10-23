@@ -58,6 +58,7 @@ public static class ConfiguracaoInfraestrutura
         servicos.AddOptions<OpcoesDadosSensiveis>()
             .Bind(configuracao.GetSection(OpcoesDadosSensiveis.Secao))
             .Validate(opcoes => OpcoesDadosSensiveis.ChaveValida(opcoes.ChaveCifragem), OpcoesDadosSensiveis.MensagemChaveInvalida)
+            .Validate(opcoes => OpcoesDadosSensiveis.ChaveAnteriorValida(opcoes.ChaveCifragem, opcoes.ChaveCifragemAnterior), OpcoesDadosSensiveis.MensagemChaveAnteriorInvalida)
             .ValidateOnStart();
 
         var secaoRetencao = configuracao.GetSection(OpcoesRetencaoDadosSensiveis.Secao);

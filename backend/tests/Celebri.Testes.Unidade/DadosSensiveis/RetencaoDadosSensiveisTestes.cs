@@ -30,14 +30,15 @@ public class RetencaoDadosSensiveisTestes
     }
 
     [Fact]
-    public void EscopoSistema_SoPodeSerAssumidoPeloExecutorDeRetencao()
+    public void EscopoSistema_SoPodeSerAssumidoPelosExecutoresDeRetencaoERecifragem()
     {
         var chamadores = Fontes()
             .Where(fonte => fonte.Conteudo.Contains(".Assumir(", StringComparison.Ordinal))
             .Select(fonte => Path.GetFileName(fonte.Arquivo))
+            .Order(StringComparer.Ordinal)
             .ToList();
 
-        Assert.Equal(["ExecutorRetencaoDadosSensiveis.cs"], chamadores);
+        Assert.Equal(["ExecutorRecifragemDadosSensiveis.cs", "ExecutorRetencaoDadosSensiveis.cs"], chamadores);
     }
 
     [Fact]

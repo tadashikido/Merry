@@ -38,6 +38,7 @@ services:
       ProxyReverso__Redes__0: 10.214.0.0/24
       Jwt__ChaveAssinatura: ${JWT_CHAVE_ASSINATURA:?defina JWT_CHAVE_ASSINATURA no .env}
       DadosSensiveis__ChaveCifragem: ${DADOS_SENSIVEIS_CHAVE:?defina DADOS_SENSIVEIS_CHAVE no .env (openssl rand -base64 32)}
+      DadosSensiveis__ChaveCifragemAnterior: ${DADOS_SENSIVEIS_CHAVE_ANTERIOR:-}
       Autenticacao__UrlFrontend: https://${DOMINIO}
       Email__Remetente: ${EMAIL_REMETENTE:?defina EMAIL_REMETENTE no .env}
       Email__Smtp__Host: ${SMTP_HOST:?defina SMTP_HOST no .env}

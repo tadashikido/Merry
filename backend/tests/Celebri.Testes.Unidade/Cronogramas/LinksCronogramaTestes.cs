@@ -5,6 +5,7 @@ using Celebri.Aplicacao.CronogramaPublico;
 using Celebri.Aplicacao.Excecoes;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Persistencia;
+using Celebri.Aplicacao.Recifragem;
 using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Excecoes;
@@ -592,6 +593,16 @@ public class LinksCronogramaTestes
         public void Remover(AcessoCronograma acesso)
         {
             Itens.Remove(acesso);
+        }
+
+        public Task<IReadOnlyList<CifraArmazenada>> ListarCifrasAsync(Guid? aposAcessoId, int quantidade, CancellationToken cancelamento)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task<int> SubstituirCifrasAsync(IReadOnlyList<SubstituicaoCifra> substituicoes, CancellationToken cancelamento)
+        {
+            throw new NotSupportedException();
         }
     }
 

@@ -15,6 +15,7 @@ using Celebri.Aplicacao.FornecedoresEvento;
 using Celebri.Aplicacao.GrandeDia;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Mesas;
+using Celebri.Aplicacao.Recifragem;
 using Celebri.Aplicacao.ModelosCronograma;
 using Celebri.Aplicacao.Rsvp;
 using Celebri.Aplicacao.Sistema;
@@ -65,6 +66,7 @@ public static class ConfiguracaoAplicacao
         servicos.AddScoped<IAplicacaoModeloCronogramaService, AplicacaoModeloCronogramaService>();
         servicos.AddScoped<IAutorAlteracao, AutorAlteracaoUsuarioAtual>();
         servicos.AddSingleton<IExecutorRetencaoDadosSensiveis, ExecutorRetencaoDadosSensiveis>();
+        servicos.AddSingleton<IExecutorRecifragemDadosSensiveis, ExecutorRecifragemDadosSensiveis>();
         return servicos;
     }
 }
