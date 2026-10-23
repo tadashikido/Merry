@@ -80,3 +80,19 @@ export interface ResultadoImportacaoDto {
   convitesCriados: number
   pessoasCriadas: number
 }
+
+export interface GrupoImportacao {
+  chave: string
+  rotulo: string
+  convites: number
+  pessoas: number
+  existentes: number | null
+}
+
+export interface ResumoGruposImportacao {
+  grupos: GrupoImportacao[]
+  semGrupo: { convites: number; pessoas: number }
+  comparado: boolean
+  novos: number
+  jaExistentes: number
+}

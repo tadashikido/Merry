@@ -13,7 +13,7 @@ function contar(quantidade: number, singular: string, varias: string): string {
   return `${formatarNumero(quantidade)} ${plural(quantidade, singular, varias)}`
 }
 
-function emFrase(itens: readonly string[], conector = 'e'): string {
+export function emFrase(itens: readonly string[], conector = 'e'): string {
   if (itens.length <= 1) {
     return itens[0] ?? ''
   }

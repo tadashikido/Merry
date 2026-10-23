@@ -15,10 +15,16 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import type { TextosEnvioArquivo } from '@/componentes/base/tipos'
 import PreviaImportacao from '@/componentes/convidados/PreviaImportacao.vue'
 import { useNotificacao } from '@/composables/useNotificacao'
+import { useConvidadosStore } from '@/stores/convidados'
 import { useEventosStore } from '@/stores/eventos'
 import { useImportacaoConvidadosStore } from '@/stores/importacaoConvidados'
 import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
-import { EXPLICACAO_COLUNAS, ROTULOS_COLUNA_IMPORTACAO, TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
+import {
+  ERROS_COMUNS_IMPORTACAO,
+  ROTULOS_COLUNA_IMPORTACAO,
+  TEXTOS_IMPORTACAO,
+  explicacaoColunas,
+} from '@/textos/importacaoConvidados'
 import type { FalhaConvidados } from '@/stores/convidados'
 import type { EtapaImportacao } from '@/tipos/importacaoConvidados'
 import { ACEITE_PLANILHA, baixarTexto, verificarArquivoPlanilha, type ProblemaArquivo } from '@/utilitarios/arquivo'
@@ -26,6 +32,7 @@ import { focarElemento } from '@/utilitarios/foco'
 import { formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import {
   csvLinhasComProblema,
+  gruposDoEvento,
   linhasBloqueantes,
   modeloImportacaoConvidados,
   ultrapassaLimite,
@@ -38,6 +45,7 @@ const props = defineProps<{ id: string }>()
 
 const eventos = useEventosStore()
 const store = useImportacaoConvidadosStore()
+const convidados = useConvidadosStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
 
@@ -68,6 +76,11 @@ const nomes = computed(() =>
   evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
 const arquivado = computed(() => evento.value?.arquivado === true)
+const tipo = computed(() => evento.value?.tipo ?? null)
+const colunas = computed(() => explicacaoColunas(tipo.value))
+const listaDoEvento = computed(() => (convidados.eventoId === props.id ? convidados.lista : null))
+const existentes = computed(() => (listaDoEvento.value ? gruposDoEvento(listaDoEvento.value.convites) : null))
+const carregandoExistentes = computed(() => convidados.eventoId === props.id && convidados.carregando)
 const previa = computed(() => (store.eventoId === props.id ? store.previa : null))
 const resultado = computed(() => (store.eventoId === props.id ? store.resultado : null))
 
@@ -117,6 +130,9 @@ watch(
     }
     erroArquivo.value = null
     void eventos.obter(id)
+    if (convidados.eventoId !== id || !convidados.lista) {
+      void convidados.carregar(id)
+    }
   },
   { immediate: true },
 )
@@ -161,7 +177,7 @@ async function selecionar(arquivo: File) {
 }
 
 function baixarModelo() {
-  baixarTexto(TEXTOS_IMPORTACAO.nomeArquivoModelo, modeloImportacaoConvidados())
+  baixarTexto(TEXTOS_IMPORTACAO.nomeArquivoModelo, modeloImportacaoConvidados(tipo.value))
 }
 
 function baixarCorrecao() {
@@ -213,6 +229,7 @@ function verConvidados() {
 
 function importarOutra() {
   recomecar()
+  void convidados.carregar(props.id)
 }
 </script>
 
@@ -325,7 +342,7 @@ function importarOutra() {
             </p>
             <dl class="importacao__colunas">
               <div
-                v-for="item in EXPLICACAO_COLUNAS"
+                v-for="item in colunas"
                 :key="item.coluna"
                 class="importacao__coluna"
               >
@@ -345,6 +362,42 @@ function importarOutra() {
               data-teste="baixar-modelo"
               @click="baixarModelo"
             />
+          </section>
+
+          <section
+            class="importacao__erros pilha pilha--grupo"
+            aria-labelledby="importacao-erros-comuns"
+            data-teste="erros-comuns"
+          >
+            <h3 id="importacao-erros-comuns">
+              {{ TEXTOS_IMPORTACAO.errosComunsTitulo }}
+            </h3>
+            <dl class="importacao__lista-erros">
+              <div
+                v-for="erro in ERROS_COMUNS_IMPORTACAO"
+                :key="erro.chave"
+                class="importacao__erro"
+              >
+                <dt>{{ erro.titulo }}</dt>
+                <dd>{{ erro.texto }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section
+            class="importacao__privacidade pilha pilha--campo"
+            aria-labelledby="importacao-privacidade"
+            data-teste="privacidade-importacao"
+          >
+            <h3 id="importacao-privacidade">
+              {{ TEXTOS_IMPORTACAO.privacidadeTitulo }}
+            </h3>
+            <p class="importacao__texto-privacidade">
+              {{ TEXTOS_IMPORTACAO.privacidade }}
+            </p>
+            <p class="importacao__texto-privacidade">
+              {{ TEXTOS_IMPORTACAO.privacidadeRestricoes }}
+            </p>
           </section>
 
           <div class="importacao__acoes importacao__acoes--inicio">
@@ -382,6 +435,9 @@ function importarOutra() {
           <PreviaImportacao
             :previa="previa"
             :nome-arquivo="nomeArquivo"
+            :tipo="tipo"
+            :existentes="existentes"
+            :carregando-existentes="carregandoExistentes"
           >
             <template #acoes-problemas>
               <Button
@@ -497,8 +553,51 @@ function importarOutra() {
   justify-content: center;
 }
 
-.importacao__instrucoes {
+.importacao__instrucoes,
+.importacao__erros,
+.importacao__privacidade {
   min-width: 0;
+}
+
+.importacao__lista-erros {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-grupo);
+  margin: 0;
+  padding-inline-start: var(--p-ritmo-grupo);
+  border-inline-start: 2px solid var(--p-cor-primaria);
+}
+
+.importacao__erro {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-size: var(--p-fonte-tamanho-controle);
+  line-height: var(--p-fonte-entrelinha-leitura);
+}
+
+.importacao__erro dt {
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-texto);
+}
+
+.importacao__erro dd {
+  margin: 0;
+  color: var(--p-cor-texto-apoio);
+}
+
+.importacao__privacidade {
+  padding-block-start: var(--p-ritmo-grupo);
+  border-top: 1px solid var(--p-cor-divisoria);
+}
+
+.importacao__texto-privacidade {
+  max-width: 60ch;
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-corpo);
+  font-style: italic;
+  line-height: var(--p-fonte-entrelinha-leitura);
+  color: var(--p-cor-texto-secundario);
 }
 
 .importacao__colunas {
@@ -602,6 +701,12 @@ function importarOutra() {
     padding: var(--p-ritmo-bloco);
   }
 
+  .importacao__lista-erros {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
+  }
+
   .importacao__titulo-concluida {
     font-size: var(--p-fonte-tamanho-pagina);
   }
@@ -610,10 +715,35 @@ function importarOutra() {
 @container importacao (min-width: 52rem) {
   .importacao__escolha {
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-areas:
+      'envio instrucoes'
+      'erros instrucoes'
+      'privacidade instrucoes'
+      'acoes acoes';
+    grid-template-rows: auto auto 1fr auto;
+    align-items: start;
+    column-gap: var(--p-ritmo-bloco);
+  }
+
+  .importacao__envio {
+    grid-area: envio;
+    align-self: stretch;
+  }
+
+  .importacao__instrucoes {
+    grid-area: instrucoes;
+  }
+
+  .importacao__erros {
+    grid-area: erros;
+  }
+
+  .importacao__privacidade {
+    grid-area: privacidade;
   }
 
   .importacao__acoes--inicio {
-    grid-column: 1 / -1;
+    grid-area: acoes;
   }
 }
 </style>

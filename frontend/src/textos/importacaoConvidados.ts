@@ -1,4 +1,6 @@
 import type { VarianteStatus } from '@/componentes/base/tipos'
+import { emFrase, gruposSugeridos } from '@/textos/convidados'
+import type { TipoEvento } from '@/tipos/eventos'
 import type { ColunaImportacao, TipoProblemaLinha } from '@/tipos/importacaoConvidados'
 import { formatarNumero } from '@/utilitarios/formatacao'
 
@@ -35,15 +37,60 @@ export const VARIANTE_TIPO_PROBLEMA: Record<TipoProblemaLinha, VarianteStatus> =
   Aviso: 'informacao',
 }
 
-export const EXPLICACAO_COLUNAS: { coluna: ColunaImportacao; texto: string }[] = [
-  { coluna: 'Nome', texto: 'nome da pessoa. Única coluna obrigatória.' },
-  { coluna: 'Convite', texto: 'nome da família ou do grupo que recebe o mesmo convite, como “Família Souza”.' },
-  { coluna: 'Grupo', texto: 'de que lado ou turma é, como “Família da noiva”.' },
-  { coluna: 'Telefone', texto: 'com DDD, como (11) 98765-4321.' },
-  { coluna: 'Email', texto: 'opcional.' },
-  { coluna: 'FaixaEtaria', texto: 'Adulto ou Criança. Em branco conta como adulto.' },
-  { coluna: 'Acompanhantes', texto: 'quantos acompanhantes o convite permite, de 0 a 10.' },
-  { coluna: 'Resposta', texto: 'Confirmado, Recusado ou em branco para pendente.' },
+export const LIMITE_GRUPOS_EXEMPLO = 3
+
+export interface ExplicacaoColuna {
+  coluna: ColunaImportacao
+  texto: string
+}
+
+export function explicacaoColunas(tipo: TipoEvento | null | undefined): ExplicacaoColuna[] {
+  const grupos = gruposSugeridos(tipo).slice(0, LIMITE_GRUPOS_EXEMPLO)
+  return [
+    { coluna: 'Nome', texto: 'nome da pessoa. Única coluna obrigatória.' },
+    { coluna: 'Convite', texto: 'nome da família ou do grupo que recebe o mesmo convite, como “Família Souza”.' },
+    { coluna: 'Grupo', texto: `para filtrar e enviar por partes, como ${emFrase(grupos, 'ou')}.` },
+    { coluna: 'Telefone', texto: 'com DDD, como (11) 98765-4321.' },
+    { coluna: 'Email', texto: 'opcional.' },
+    { coluna: 'FaixaEtaria', texto: 'Adulto ou Criança. Em branco conta como adulto.' },
+    { coluna: 'Acompanhantes', texto: 'quantos acompanhantes o convite permite, de 0 a 10.' },
+    { coluna: 'Resposta', texto: 'Confirmado, Recusado ou em branco para pendente.' },
+  ]
+}
+
+export interface ErroComumImportacao {
+  chave: string
+  titulo: string
+  texto: string
+}
+
+export const ERROS_COMUNS_IMPORTACAO: readonly ErroComumImportacao[] = [
+  { chave: 'formato', titulo: 'Arquivo em outro formato', texto: 'Salve como CSV. Arquivos .xlsx não são lidos.' },
+  {
+    chave: 'coluna-nome',
+    titulo: 'Sem a coluna Nome',
+    texto: 'A primeira linha precisa ter os títulos das colunas. Confira no modelo.',
+  },
+  {
+    chave: 'valores',
+    titulo: 'Faixa etária ou resposta escrita de outro jeito',
+    texto: 'Use Adulto ou Criança e Confirmado, Recusado ou em branco. Sim e Não também valem.',
+  },
+  {
+    chave: 'exemplo',
+    titulo: 'Linhas de exemplo do modelo',
+    texto: 'Apague as linhas marcadas com “(exemplo)” antes de enviar.',
+  },
+  {
+    chave: 'repetida',
+    titulo: 'Pessoa repetida',
+    texto: 'Quem aparece duas vezes na planilha ou já está na lista do evento não entra de novo.',
+  },
+  {
+    chave: 'convite',
+    titulo: 'Mesmo convite com dados diferentes',
+    texto: 'Grupo e acompanhantes valem os da primeira linha do convite.',
+  },
 ]
 
 function pronome(quantidade: number, singular: string, varias: string): string {
@@ -52,7 +99,7 @@ function pronome(quantidade: number, singular: string, varias: string): string {
 
 export const TEXTOS_IMPORTACAO = {
   titulo: 'Importar convidados',
-  subtitulo: 'Traga a lista dos anfitriões de uma planilha. Nada é gravado antes da sua confirmação.',
+  subtitulo: 'Traga os convidados de uma planilha. Nada é gravado antes da sua confirmação.',
   trilha: 'Importar',
   tituloDocumento: (nomes: string) => `Importar convidados de ${nomes}`,
   rotuloEtapas: 'Etapas da importação',
@@ -72,6 +119,12 @@ export const TEXTOS_IMPORTACAO = {
     'Uma linha por pessoa. Pessoas com o mesmo texto na coluna Convite ficam no mesmo convite. Só a coluna Nome é obrigatória.',
   dicaExcel: 'No Excel: Arquivo › Salvar como › CSV. No Google Planilhas: Arquivo › Fazer download › CSV.',
   baixarModelo: 'Baixar modelo',
+  errosComunsTitulo: 'Erros mais comuns',
+  privacidadeTitulo: 'Dados dos convidados',
+  privacidade:
+    'A planilha traz dados pessoais de outras pessoas. Inclua telefone e e-mail só se forem usados para enviar o convite. O arquivo não fica guardado: entram na lista só os convites que você confirmar.',
+  privacidadeRestricoes:
+    'Restrições alimentares não entram pela planilha: são dado de saúde e são informadas na confirmação de presença.',
   nomeArquivoModelo: 'modelo-convidados.csv',
   nomeArquivoCorrecao: 'linhas-para-corrigir.csv',
   resumoTudoPronto: (convites: number, pessoas: number) =>
@@ -103,6 +156,23 @@ export const TEXTOS_IMPORTACAO = {
   secaoConvites: 'Convites que serão criados',
   contagemConvites: (quantidade: number) => contar(quantidade, 'convite', 'convites'),
   semGrupo: 'Sem grupo',
+  gruposTitulo: 'Grupos da planilha',
+  gruposResumo: (novos: number, existentes: number) => {
+    if (novos === 0) {
+      return existentes === 1 ? 'O grupo já existe no evento.' : 'Todos os grupos já existem no evento.'
+    }
+    const parteNovos = contar(novos, 'grupo novo', 'grupos novos')
+    if (existentes === 0) {
+      return `${parteNovos} no evento.`
+    }
+    return `${parteNovos} e ${contar(existentes, 'que já existe', 'que já existem')} no evento.`
+  },
+  gruposSemComparacao: 'Não foi possível comparar com os grupos do evento agora.',
+  grupoDetalhe: (convites: number, pessoas: number) =>
+    `${contar(convites, 'convite', 'convites')}, ${contar(pessoas, 'pessoa', 'pessoas')}`,
+  grupoNovo: 'novo',
+  grupoExistente: (convites: number) => `já tem ${contar(convites, 'convite', 'convites')}`,
+  maisGrupos: (quantidade: number) => `e mais ${contar(quantidade, 'grupo', 'grupos')}`,
   acompanhantes: (quantidade: number) => `+${formatarNumero(quantidade)} ${pronome(quantidade, 'acompanhante', 'acompanhantes')}`,
   crianca: 'Criança',
   ficaDeFora: 'Fica de fora',

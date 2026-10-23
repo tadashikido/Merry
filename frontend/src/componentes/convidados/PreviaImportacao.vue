@@ -6,6 +6,7 @@ import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
 import ListaProblemasLinha from '@/componentes/base/ListaProblemasLinha.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import ResumoContagem from '@/componentes/base/ResumoContagem.vue'
+import GruposImportacao from '@/componentes/convidados/GruposImportacao.vue'
 import type { FiltroProblemaLinha, ItemProblemaLinha, TextosListaProblemas } from '@/componentes/base/tipos'
 import {
   ROTULOS_COLUNA_IMPORTACAO,
@@ -14,13 +15,24 @@ import {
   TEXTOS_IMPORTACAO,
   VARIANTE_TIPO_PROBLEMA,
 } from '@/textos/importacaoConvidados'
+import type { TipoEvento } from '@/tipos/eventos'
 import type { PreVisualizacaoImportacaoDto, TipoProblemaLinha } from '@/tipos/importacaoConvidados'
+import type { GrupoExistente } from '@/utilitarios/gruposConvite'
 import { frasePrevia, itensResumoImportacao, linhasBloqueantes, ultrapassaLimite } from '@/utilitarios/importacaoConvidados'
 
 const LIMITE_CONVITES = 30
 const TIPOS: TipoProblemaLinha[] = ['Erro', 'Duplicado', 'Aviso']
 
-const props = defineProps<{ previa: PreVisualizacaoImportacaoDto; nomeArquivo: string }>()
+const props = withDefaults(
+  defineProps<{
+    previa: PreVisualizacaoImportacaoDto
+    nomeArquivo: string
+    tipo?: TipoEvento | null
+    existentes?: ReadonlyMap<string, GrupoExistente> | null
+    carregandoExistentes?: boolean
+  }>(),
+  { tipo: null, existentes: null, carregandoExistentes: false },
+)
 
 const todosConvites = ref(false)
 
@@ -107,6 +119,14 @@ const convitesExibidos = computed(() =>
             {{ TEXTOS_IMPORTACAO.rodapeResumo(previa.resumo.convidadosExistentes, totalDepois) }}
           </template>
         </ResumoContagem>
+
+        <GruposImportacao
+          v-if="previa.resumo.convitesValidos > 0"
+          :convites="previa.convites"
+          :existentes="existentes"
+          :carregando-existentes="carregandoExistentes"
+          :tipo="tipo"
+        />
 
         <MensagemFormulario
           v-if="acimaDoLimite"
@@ -396,8 +416,6 @@ const convitesExibidos = computed(() =>
   }
 
   .previa__lateral {
-    position: sticky;
-    top: var(--p-ritmo-cartao);
     grid-column: 2;
     grid-row: 2 / span 2;
   }
