@@ -34,7 +34,6 @@ export const TEXTOS_MODELOS_POR_TIPO = {
   edicaoNaoMudaAplicados: (recurso: string) => `Mudar o nome ou a descrição não altera o ${recurso} dos eventos que já aplicaram este modelo.`,
   bomModeloTitulo: 'Para um bom modelo',
   exemplosApoio: 'Um nome que diga o tipo e o estilo do evento, como:',
-  exemplosRotulo: 'Exemplos de nome por tipo de evento',
   depoisDeCriarTitulo: 'Depois de criar',
 } as const
 
