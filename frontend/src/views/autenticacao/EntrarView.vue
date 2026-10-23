@@ -32,6 +32,8 @@ const FALHAS: Partial<Record<TipoFalha, string>> = {
   conexao: MENSAGENS_AUTENTICACAO.conexao,
 }
 
+const ID_PRIMEIRA_VEZ = 'entrar-primeira-vez'
+
 const store = useAutenticacaoStore()
 const rota = useRoute()
 const roteador = useRouter()
@@ -158,25 +160,102 @@ function lembrarEmail() {
       />
     </form>
 
-    <template #rodape>
-      {{ TEXTOS_ENTRAR.semConta }}
-      <RouterLink
-        :to="{ name: 'cadastro' }"
-        data-teste="link-cadastro"
+    <template #complemento>
+      <aside
+        class="primeira-vez pilha pilha--grupo"
+        :aria-labelledby="ID_PRIMEIRA_VEZ"
+        data-teste="primeira-vez"
       >
-        {{ TEXTOS_ENTRAR.criarConta }}
-      </RouterLink>
+        <h2
+          :id="ID_PRIMEIRA_VEZ"
+          class="primeira-vez__titulo"
+        >
+          {{ TEXTOS_ENTRAR.primeiraVez }}
+        </h2>
+        <ul class="primeira-vez__caminhos pilha pilha--grupo">
+          <li
+            class="primeira-vez__caminho"
+            data-teste="caminho-assessoria"
+          >
+            <h3 class="primeira-vez__pergunta">
+              {{ TEXTOS_ENTRAR.assessoriaTitulo }}
+            </h3>
+            <p class="primeira-vez__texto">
+              {{ TEXTOS_ENTRAR.assessoriaTexto }}
+            </p>
+            <RouterLink
+              class="primeira-vez__link"
+              :to="{ name: 'cadastro' }"
+              data-teste="link-cadastro"
+            >
+              {{ TEXTOS_ENTRAR.criarConta }}
+            </RouterLink>
+          </li>
+          <li
+            class="primeira-vez__caminho"
+            data-teste="caminho-anfitriao"
+          >
+            <h3 class="primeira-vez__pergunta">
+              {{ TEXTOS_ENTRAR.anfitriaoTitulo }}
+            </h3>
+            <p class="primeira-vez__texto">
+              {{ TEXTOS_ENTRAR.anfitriaoTexto }}
+            </p>
+          </li>
+        </ul>
+      </aside>
     </template>
   </LayoutAutenticacao>
 </template>
 
 <style scoped>
+.primeira-vez__titulo {
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-weight: var(--p-fonte-peso-regular);
+  line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-texto);
+}
+
+.primeira-vez__caminhos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.primeira-vez__caminho {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--p-ritmo-campo);
+  padding-inline-start: var(--p-ritmo-grupo);
+  border-inline-start: 2px solid var(--p-cor-primaria);
+}
+
+.primeira-vez__pergunta {
+  font-size: var(--p-fonte-tamanho-controle);
+  font-weight: var(--p-fonte-peso-medio);
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--p-cor-texto);
+}
+
+.primeira-vez__texto {
+  font-size: var(--p-fonte-tamanho-controle);
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--p-cor-texto-apoio);
+}
+
+.primeira-vez__link {
+  font-size: var(--p-fonte-tamanho-controle);
+}
+
 .formulario-entrar__esqueci {
   font-size: var(--p-fonte-tamanho-controle);
 }
 
 @media (pointer: coarse) {
-  .formulario-entrar__esqueci {
+  .formulario-entrar__esqueci,
+  .primeira-vez__link {
     display: inline-flex;
     align-items: center;
     min-height: var(--p-dimensao-alvo-toque);

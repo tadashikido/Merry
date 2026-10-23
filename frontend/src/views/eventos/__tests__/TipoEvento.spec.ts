@@ -6,7 +6,7 @@ import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaPr
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import CabecalhoConvite from '@/componentes/base/CabecalhoConvite.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
-import { VOCABULARIO_TIPO_EVENTO, aceitaSegundoNome, ehTipoEvento, vocabularioDoTipo } from '@/textos/tiposEvento'
+import { VOCABULARIO_TIPO_EVENTO, aceitaSegundoNome, ehTipoEvento, tiposEventoEmFrase, vocabularioDoTipo } from '@/textos/tiposEvento'
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import { montarLocaisOperacao } from '@/utilitarios/cronogramaPublico'
 import { formatarNomesAnfitrioes, formatarNomesEmFrase } from '@/utilitarios/formatacao'
@@ -63,6 +63,7 @@ describe('vocabulário por tipo de evento', () => {
     const vocabulario = VOCABULARIO_TIPO_EVENTO[tipo]
     const textos = [
       vocabulario.rotulo,
+      vocabulario.rotuloPlural,
       vocabulario.descricao,
       vocabulario.homenageados.grupo,
       vocabulario.homenageados.primeiro,
@@ -76,6 +77,13 @@ describe('vocabulário por tipo de evento', () => {
     ]
     expect(textos.filter((texto) => TERMOS_CASAMENTO.test(texto))).toEqual([])
     expect(vocabulario.aneisNoConvite).toBe(false)
+  })
+
+  it('[UNITÁRIO] lista os tipos atendidos em frase, na ordem do vocabulário', () => {
+    expect(tiposEventoEmFrase()).toBe('casamentos, festas de 15 anos, aniversários e comemorações')
+    for (const tipo of TIPOS_EVENTO) {
+      expect(tiposEventoEmFrase()).toContain(VOCABULARIO_TIPO_EVENTO[tipo].rotuloPlural.toLocaleLowerCase('pt-BR'))
+    }
   })
 
   it('[UNITÁRIO] só Casamento e Comemoração aceitam segundo nome', () => {

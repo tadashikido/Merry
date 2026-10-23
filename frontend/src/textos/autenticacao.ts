@@ -7,6 +7,11 @@ export const TEXTOS_ENTRAR = {
   esqueci: 'Esqueci minha senha',
   semConta: 'Ainda não tem conta?',
   criarConta: 'Criar conta da assessoria',
+  primeiraVez: `Primeira vez no ${NOME_PRODUTO}?`,
+  assessoriaTitulo: 'Organiza eventos para clientes?',
+  assessoriaTexto: 'Crie a conta da sua assessoria. Leva um minuto.',
+  anfitriaoTitulo: 'Recebeu um convite da assessoria?',
+  anfitriaoTexto: 'Abra o link do e-mail para criar sua senha. Depois, entre aqui com o mesmo e-mail.',
 } as const
 
 export const TEXTOS_CADASTRO = {
@@ -88,4 +93,5 @@ export const TEXTOS_PAINEL = {
 
 export const TEXTOS_AUTENTICACAO_LAYOUT = {
   frase: 'Eventos que conectam.',
+  tipos: (lista: string) => `Para ${lista}.`,
 } as const

@@ -124,6 +124,24 @@ describe('fundação Celebri: marca e textos', () => {
     expect(wrapper.find('svg').exists()).toBe(false)
   })
 
+  it('[COMPONENTE] o painel de marca lista os tipos de evento do vocabulário e o complemento só aparece quando informado', () => {
+    const wrapper = mount(LayoutAutenticacao, { props: { titulo: 'Entrar' }, global })
+
+    expect(wrapper.get('header [data-teste="tipos-atendidos"]').text()).toBe(
+      TEXTOS_AUTENTICACAO_LAYOUT.tipos('casamentos, festas de 15 anos, aniversários e comemorações'),
+    )
+    expect(wrapper.find('.layout-autenticacao__complemento').exists()).toBe(false)
+
+    const comComplemento = mount(LayoutAutenticacao, {
+      props: { titulo: 'Entrar' },
+      slots: { complemento: '<p data-teste="extra">Orientação</p>' },
+      global,
+    })
+    const complemento = comComplemento.get('.layout-autenticacao__complemento')
+    expect(complemento.get('[data-teste="extra"]').text()).toBe('Orientação')
+    expect(comComplemento.get('main').find('[data-teste="extra"]').exists()).toBe(false)
+  })
+
   it('[COMPONENTE] em modo demonstração não repete o cabeçalho de marca', () => {
     const wrapper = mount(LayoutAutenticacao, { props: { titulo: 'Entrar', demonstracao: true }, global })
 

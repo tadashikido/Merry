@@ -5,7 +5,7 @@ import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxilia
 import EntrarView from '@/views/autenticacao/EntrarView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
-import { MENSAGENS_AUTENTICACAO } from '@/textos/autenticacao'
+import { MENSAGENS_AUTENTICACAO, TEXTOS_ENTRAR } from '@/textos/autenticacao'
 import { MENSAGENS_VALIDACAO } from '@/utilitarios/validacao'
 import {
   SESSAO_EXEMPLO,
@@ -16,7 +16,7 @@ import {
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
 
-await precarregarRotas('entrar', 'esqueci-senha')
+await precarregarRotas('entrar', 'esqueci-senha', 'cadastro')
 
 describe('EntrarView', () => {
   let fetchSimulado: ReturnType<typeof simularFetch>
@@ -206,5 +206,55 @@ describe('EntrarView', () => {
 
     expect(wrapper!.text()).toContain('Use o e-mail e a senha da sua conta.')
     expect(wrapper!.text()).not.toContain('painel da sua assessoria')
+  })
+
+  it('[COMPONENTE] orienta a primeira vez: a assessoria cria a conta e o anfitrião usa o convite do e-mail', async () => {
+    await abrir()
+
+    const orientacao = wrapper!.get('aside[data-teste="primeira-vez"]')
+    const titulo = orientacao.get('h2')
+    expect(orientacao.attributes('aria-labelledby')).toBe(titulo.attributes('id'))
+    expect(titulo.text()).toBe('Primeira vez no Celebri?')
+    expect(orientacao.findAll('li')).toHaveLength(2)
+
+    const assessoria = orientacao.get('[data-teste="caminho-assessoria"]')
+    expect(assessoria.get('h3').text()).toBe(TEXTOS_ENTRAR.assessoriaTitulo)
+    expect(assessoria.text()).toContain(TEXTOS_ENTRAR.assessoriaTexto)
+
+    const anfitriao = orientacao.get('[data-teste="caminho-anfitriao"]')
+    expect(anfitriao.get('h3').text()).toBe(TEXTOS_ENTRAR.anfitriaoTitulo)
+    expect(anfitriao.text()).toContain(TEXTOS_ENTRAR.anfitriaoTexto)
+    expect(anfitriao.find('a').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] o link de cadastro aparece uma vez, no caminho da assessoria, e leva ao cadastro', async () => {
+    const { roteador } = await abrir()
+
+    const links = wrapper!.findAll('[data-teste="link-cadastro"]')
+    expect(links).toHaveLength(1)
+    expect(wrapper!.get('[data-teste="caminho-assessoria"] [data-teste="link-cadastro"]').text()).toBe(TEXTOS_ENTRAR.criarConta)
+
+    await links[0]!.trigger('click')
+    await aguardarRota(roteador, 'cadastro')
+  })
+
+  it('[COMPONENTE] a orientação vem depois do botão Entrar e não tira o foco inicial do e-mail', async () => {
+    await abrir()
+
+    const botao = wrapper!.get('[data-teste="enviar"]').element
+    const orientacao = wrapper!.get('[data-teste="primeira-vez"]').element
+    expect(botao.compareDocumentPosition(orientacao) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(document.activeElement?.id).toBe('entrar-email')
+    expect(wrapper!.get('form').find('[data-teste="primeira-vez"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] não trata casamento como conceito geral e lista os quatro tipos de evento no painel de marca', async () => {
+    await abrir()
+
+    const tipos = wrapper!.get('[data-teste="tipos-atendidos"]')
+    expect(tipos.text()).toBe('Para casamentos, festas de 15 anos, aniversários e comemorações.')
+
+    const textoSemTipos = wrapper!.text().replace(tipos.text(), '')
+    expect(textoSemTipos).not.toMatch(/casamento|casal|noiv/i)
   })
 })

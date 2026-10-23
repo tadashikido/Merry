@@ -2,6 +2,7 @@ import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 
 export interface VocabularioTipoEvento {
   rotulo: string
+  rotuloPlural: string
   descricao: string
   homenageados: {
     grupo: string
@@ -29,6 +30,7 @@ export interface VocabularioTipoEvento {
 export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> = {
   Casamento: {
     rotulo: 'Casamento',
+    rotuloPlural: 'Casamentos',
     descricao: 'Dois nomes, cerimônia e recepção',
     homenageados: {
       grupo: 'Os noivos',
@@ -54,6 +56,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
   },
   QuinzeAnos: {
     rotulo: '15 anos',
+    rotuloPlural: 'Festas de 15 anos',
     descricao: 'A festa da debutante',
     homenageados: {
       grupo: 'A debutante',
@@ -79,6 +82,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
   },
   Aniversario: {
     rotulo: 'Aniversário',
+    rotuloPlural: 'Aniversários',
     descricao: 'Para quem faz aniversário',
     homenageados: {
       grupo: 'O aniversariante',
@@ -104,6 +108,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
   },
   Comemoracao: {
     rotulo: 'Comemoração',
+    rotuloPlural: 'Comemorações',
     descricao: 'Bodas, chá, encontro de família',
     homenageados: {
       grupo: 'Os homenageados',
@@ -139,6 +144,12 @@ export function vocabularioDoTipo(tipo: TipoEvento | null | undefined): Vocabula
 
 export function aceitaSegundoNome(tipo: TipoEvento): boolean {
   return VOCABULARIO_TIPO_EVENTO[tipo].homenageados.segundo !== null
+}
+
+export function tiposEventoEmFrase(): string {
+  const rotulos = TIPOS_EVENTO.map((tipo) => VOCABULARIO_TIPO_EVENTO[tipo].rotuloPlural.toLocaleLowerCase('pt-BR'))
+  const ultimo = rotulos.pop() ?? ''
+  return rotulos.length > 0 ? `${rotulos.join(', ')} e ${ultimo}` : ultimo
 }
 
 export const TEXTOS_TIPO_EVENTO = {

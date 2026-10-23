@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
 import { TEXTOS_AUTENTICACAO_LAYOUT } from '@/textos/autenticacao'
+import { tiposEventoEmFrase } from '@/textos/tiposEvento'
 
 withDefaults(defineProps<{ titulo: string; descricao?: string; demonstracao?: boolean }>(), {
   descricao: undefined,
@@ -8,6 +9,7 @@ withDefaults(defineProps<{ titulo: string; descricao?: string; demonstracao?: bo
 })
 
 const ID_TITULO = 'autenticacao-titulo'
+const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
 </script>
 
 <template>
@@ -24,9 +26,17 @@ const ID_TITULO = 'autenticacao-titulo'
         class="layout-autenticacao__logo"
         destaque
       />
-      <p class="layout-autenticacao__frase">
-        {{ TEXTOS_AUTENTICACAO_LAYOUT.frase }}
-      </p>
+      <div class="layout-autenticacao__lema">
+        <p class="layout-autenticacao__frase">
+          {{ TEXTOS_AUTENTICACAO_LAYOUT.frase }}
+        </p>
+        <p
+          class="layout-autenticacao__tipos"
+          data-teste="tipos-atendidos"
+        >
+          {{ TIPOS_ATENDIDOS }}
+        </p>
+      </div>
     </header>
     <div class="layout-autenticacao__area">
       <component
@@ -61,6 +71,12 @@ const ID_TITULO = 'autenticacao-titulo'
         </div>
         <slot />
       </component>
+      <div
+        v-if="$slots.complemento"
+        class="layout-autenticacao__complemento"
+      >
+        <slot name="complemento" />
+      </div>
       <footer
         v-if="$slots.rodape"
         class="layout-autenticacao__rodape"
@@ -93,7 +109,7 @@ const ID_TITULO = 'autenticacao-titulo'
 }
 
 .layout-autenticacao__logo,
-.layout-autenticacao__frase {
+.layout-autenticacao__lema {
   display: none;
 }
 
@@ -150,6 +166,11 @@ const ID_TITULO = 'autenticacao-titulo'
   min-height: var(--p-dimensao-alvo-toque-movel);
 }
 
+.layout-autenticacao__complemento {
+  width: 100%;
+  max-width: var(--p-dimensao-largura-autenticacao);
+}
+
 .layout-autenticacao__rodape {
   max-width: var(--p-dimensao-largura-autenticacao);
   font-size: var(--p-fonte-tamanho-controle);
@@ -196,13 +217,30 @@ const ID_TITULO = 'autenticacao-titulo'
     display: inline-flex;
   }
 
+  .layout-autenticacao__lema {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--p-ritmo-campo);
+  }
+
   .layout-autenticacao__frase {
-    display: block;
     max-width: 20ch;
     font-family: var(--p-fonte-serif);
     text-wrap: balance;
     font-size: var(--p-fonte-tamanho-secao);
     line-height: 1.45;
+    color: var(--p-cor-texto-apoio);
+    text-align: center;
+  }
+
+  .layout-autenticacao__tipos {
+    max-width: 26ch;
+    font-family: var(--p-fonte-serif);
+    font-style: italic;
+    text-wrap: balance;
+    font-size: var(--p-fonte-tamanho-titulo);
+    line-height: var(--p-fonte-entrelinha-leitura);
     color: var(--p-cor-texto-apoio);
     text-align: center;
   }
