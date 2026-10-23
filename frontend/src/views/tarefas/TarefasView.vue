@@ -13,6 +13,7 @@ import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
 import ItemTarefa from '@/componentes/base/ItemTarefa.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
+import SugestaoTarefasModelo from '@/componentes/tarefas/SugestaoTarefasModelo.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
@@ -26,6 +27,7 @@ import {
   ROTULOS_STATUS_TAREFA,
   TEXTOS_TAREFAS,
 } from '@/textos/tarefas'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import {
   CATEGORIAS_TAREFA,
   RESPONSAVEIS_TAREFA,
@@ -76,6 +78,9 @@ const visaoDoAnfitriao = computed(() => autenticacao.ehAnfitriao || lista.value?
 const arquivado = computed(() => lista.value?.eventoArquivado ?? evento.value?.arquivado ?? false)
 const podeGerenciar = computed(() => !visaoDoAnfitriao.value && !arquivado.value)
 const resumo = computed(() => lista.value?.resumo ?? null)
+const vocabulario = computed(() => vocabularioOuNeutro(evento.value?.tipo))
+const checklistVazio = computed(() => lista.value !== null && !lista.value.tarefas.some((tarefa) => tarefa.geradaDeModelo))
+const mostrarSugestao = computed(() => podeGerenciar.value && !falha.value && evento.value !== null && checklistVazio.value)
 
 const titulo = computed(() => (visaoDoAnfitriao.value ? TEXTOS_TAREFAS.tituloAnfitriao : TEXTOS_TAREFAS.titulo))
 const detalhes = computed(() => {
@@ -416,26 +421,40 @@ function novaTarefa() {
           @tentar-novamente="store.carregar(id)"
         />
 
-        <EstadoVazio
+        <div
           v-else-if="semTarefas"
-          icone="checklist"
-          :titulo="visaoDoAnfitriao ? TEXTOS_TAREFAS.vazioAnfitriaoTitulo : TEXTOS_TAREFAS.vazioTitulo"
-          :descricao="visaoDoAnfitriao ? TEXTOS_TAREFAS.vazioAnfitriaoTexto : TEXTOS_TAREFAS.vazioTexto"
+          class="tarefas__corpo"
+          :class="{ 'tarefas__corpo--sem-lateral': !mostrarSugestao }"
         >
-          <template
-            v-if="podeGerenciar"
-            #acao
+          <EstadoVazio
+            icone="checklist"
+            :titulo="visaoDoAnfitriao ? TEXTOS_TAREFAS.vazioAnfitriaoTitulo : TEXTOS_TAREFAS.vazioTitulo"
+            :descricao="visaoDoAnfitriao ? TEXTOS_TAREFAS.vazioAnfitriaoTexto : TEXTOS_TAREFAS.vazioTextoEvento(vocabulario.referencia.artigo)"
           >
-            <Button
-              :label="TEXTOS_TAREFAS.nova"
-              icon="ie ie-mais"
-              severity="secondary"
-              outlined
-              data-teste="nova-tarefa-vazio"
-              @click="novaTarefa"
+            <template
+              v-if="podeGerenciar"
+              #acao
+            >
+              <Button
+                :label="TEXTOS_TAREFAS.nova"
+                icon="ie ie-mais"
+                severity="secondary"
+                outlined
+                data-teste="nova-tarefa-vazio"
+                @click="novaTarefa"
+              />
+            </template>
+          </EstadoVazio>
+          <div
+            v-if="mostrarSugestao && evento"
+            class="tarefas__lateral"
+          >
+            <SugestaoTarefasModelo
+              :evento-id="id"
+              :tipo="evento.tipo"
             />
-          </template>
-        </EstadoVazio>
+          </div>
+        </div>
 
         <div
           v-else-if="lista"
@@ -652,6 +671,12 @@ function novaTarefa() {
               </dl>
             </div>
 
+            <SugestaoTarefasModelo
+              v-if="mostrarSugestao && evento"
+              :evento-id="id"
+              :tipo="evento.tipo"
+            />
+
             <p
               v-if="visaoDoAnfitriao"
               class="tarefas__rodape texto-legenda"
@@ -862,6 +887,10 @@ function novaTarefa() {
 @container tarefas (min-width: 64rem) {
   .tarefas__corpo {
     grid-template-columns: minmax(0, 1fr) var(--tarefas-largura-lateral);
+  }
+
+  .tarefas__corpo--sem-lateral {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .tarefas__lateral {
