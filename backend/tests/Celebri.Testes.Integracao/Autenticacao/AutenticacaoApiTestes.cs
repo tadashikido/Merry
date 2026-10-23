@@ -222,17 +222,50 @@ public sealed class AutenticacaoApiTestes : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Renovar_ReusoDeTokenRotacionado_DeveRevogarAFamiliaELimparCookie()
+    public async Task Renovar_ReusoDeTokenRotacionadoForaDaJanela_DeveRevogarAFamiliaELimparCookie()
+    {
+        await using var fabrica = new FabricaApiAutenticacao(
+            _banco.CriarStringConexaoBancoNovo(),
+            new Dictionary<string, string?> { ["Autenticacao:JanelaReusoRefreshTokenSegundos"] = "0" });
+        using var cliente = fabrica.CriarClienteHttps();
+        var cadastro = await CadastrarAsync(cliente, EmailUnico());
+        var primeiro = LerRefreshToken(cadastro);
+        var segundo = LerRefreshToken(await RenovarAsync(cliente, primeiro));
+
+        var reuso = await RenovarAsync(cliente, primeiro);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, reuso.StatusCode);
+        Assert.Contains("expires=Thu, 01 Jan 1970", LerCabecalhoCookie(reuso), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await RenovarAsync(cliente, segundo)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Renovar_ReapresentacaoDentroDaJanela_DeveEmitirNovaSessaoSemDerrubarASucessora()
     {
         var cadastro = await CadastrarAsync(_cliente, EmailUnico());
         var primeiro = LerRefreshToken(cadastro);
         var segundo = LerRefreshToken(await RenovarAsync(_cliente, primeiro));
 
-        var reuso = await RenovarAsync(_cliente, primeiro);
+        var reapresentacao = await RenovarAsync(_cliente, primeiro);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, reuso.StatusCode);
-        Assert.Contains("expires=Thu, 01 Jan 1970", LerCabecalhoCookie(reuso), StringComparison.OrdinalIgnoreCase);
-        Assert.Equal(HttpStatusCode.Unauthorized, (await RenovarAsync(_cliente, segundo)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, reapresentacao.StatusCode);
+        var terceiro = LerRefreshToken(reapresentacao);
+        Assert.NotNull(terceiro);
+        Assert.NotEqual(segundo, terceiro);
+        Assert.Equal(HttpStatusCode.OK, (await ObterEuAsync(_cliente, await LerTokenAcessoAsync(reapresentacao))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await RenovarAsync(_cliente, segundo)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await RenovarAsync(_cliente, terceiro)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Renovar_ReapresentacaoAposSair_DeveRetornar401()
+    {
+        var cadastro = await CadastrarAsync(_cliente, EmailUnico());
+        var primeiro = LerRefreshToken(cadastro);
+        var segundo = LerRefreshToken(await RenovarAsync(_cliente, primeiro));
+        await SairAsync(_cliente, segundo);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await RenovarAsync(_cliente, primeiro)).StatusCode);
     }
 
     [Fact]

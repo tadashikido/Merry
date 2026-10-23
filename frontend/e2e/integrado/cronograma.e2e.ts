@@ -37,7 +37,7 @@ test.describe('Cronograma do dia', () => {
 
   test('cria modelo de cronograma com item', async ({ paginaAssessoria: page }) => {
     await page.goto('/modelos-cronograma')
-    await expect(page.getByRole('link', { name: 'Roteiro clássico' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Roteiro clássico', exact: true })).toBeVisible()
 
     await page.getByRole('button', { name: 'Novo modelo' }).click()
     await page.getByLabel('Nome', { exact: false }).first().fill('Roteiro praia')

@@ -60,7 +60,7 @@ test.describe('Tarefas e checklist', () => {
 
   test('cria modelo de checklist com item próprio', async ({ paginaAssessoria: page }) => {
     await page.goto('/modelos-checklist')
-    await expect(page.getByRole('link', { name: 'Checklist essencial' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Checklist essencial', exact: true })).toBeVisible()
 
     await page.getByRole('button', { name: 'Novo modelo' }).click()
     await page.getByLabel('Nome do modelo').fill('Evento no campo')

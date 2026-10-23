@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 const PORTA_E2E = Number(process.env.E2E_PORTA ?? 5180)
 const URL_BASE = `http://localhost:${PORTA_E2E}`
-const URL_API = process.env.API_PROXY_ALVO ?? 'http://localhost:5080'
+const URL_API = process.env.API_PROXY_ALVO ?? 'http://localhost:5280'
 const LENTIDAO_MS = Number(process.env.E2E_LENTIDAO_MS ?? 0)
 const EM_CI = Boolean(process.env.CI)
 

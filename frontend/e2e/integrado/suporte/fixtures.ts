@@ -5,7 +5,9 @@ import { novaAssessoria, type DadosAssessoria } from './dados'
 
 export async function entrarNaPagina(page: Page, email: string, senha: string): Promise<Sessao> {
   const sessao = await entrar(page.request, email, senha)
+  const renovacaoInicial = page.waitForResponse((resposta) => new URL(resposta.url()).pathname === '/api/autenticacao/renovar')
   await page.goto('/')
+  await renovacaoInicial
   return sessao
 }
 

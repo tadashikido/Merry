@@ -19,8 +19,9 @@
     "test:e2e:visivel": "playwright test --project=integrado --headed",
     "test:e2e:interface": "playwright test --ui",
     "test:e2e:instalar": "playwright install chromium",
-    "e2e:ambiente:subir": "docker compose --project-directory .. -f ../docker-compose.yml -f ../docker-compose.e2e.yml up -d --build db email api",
-    "e2e:ambiente:derrubar": "docker compose --project-directory .. -f ../docker-compose.yml -f ../docker-compose.e2e.yml stop db email api"
+    "e2e:ambiente:subir": "docker compose -f ../docker-compose.e2e.yml up -d --build --wait",
+    "e2e:ambiente:derrubar": "docker compose -f ../docker-compose.e2e.yml down",
+    "e2e:ambiente:zerar": "docker compose -f ../docker-compose.e2e.yml down --volumes"
   },
   "dependencies": {
     "@fontsource-variable/cormorant-garamond": "~5.3.0",

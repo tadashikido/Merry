@@ -35,6 +35,7 @@ test.describe('Convidados, importação, RSVP e confirmações', () => {
     await page.getByRole('button', { name: 'Editar Família Andrade' }).click()
     await page.getByRole('group', { name: 'Pessoa 1' }).getByRole('button', { name: 'Confirmado' }).click()
     await page.getByRole('button', { name: 'Salvar convite' }).click()
+    await expect(page.getByText('Convite “Família Andrade” salvo.')).toBeVisible()
     await page.goto(`/eventos/${evento.id}/convidados`)
     await expect(page.getByRole('region', { name: 'Totais de convidados' })).toContainText(/1\s*confirmadas?/)
 
@@ -79,9 +80,8 @@ test.describe('Convidados, importação, RSVP e confirmações', () => {
     await expect(page.getByRole('region', { name: 'Linhas para corrigir' })).toContainText('Nome: Preencha este campo.')
     await page.getByRole('button', { name: /^Importar só (o|os \d+) convites? prontos?$/ }).click()
     const confirmacao = page.getByRole('alertdialog')
-    if (await confirmacao.isVisible().catch(() => false)) {
-      await confirmacao.getByRole('button', { name: /Importar/ }).click()
-    }
+    await expect(confirmacao).toBeVisible()
+    await confirmacao.getByRole('button', { name: /Importar/ }).click()
 
     await expect(page.getByText('Lista importada')).toBeVisible()
   })

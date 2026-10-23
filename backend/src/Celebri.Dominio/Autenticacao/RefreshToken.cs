@@ -45,6 +45,14 @@ public class RefreshToken
         return !FoiUtilizado && ExpiraEm > agora;
     }
 
+    public bool PodeSerReapresentado(DateTimeOffset agora, TimeSpan janela)
+    {
+        return RevogadoEm is null
+            && SubstituidoEm is { } substituidoEm
+            && agora - substituidoEm <= janela
+            && ExpiraEm > agora;
+    }
+
     public void Substituir(DateTimeOffset agora)
     {
         SubstituidoEm ??= agora;

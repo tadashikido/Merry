@@ -18,6 +18,7 @@ test.describe('Fornecedores e financeiro', () => {
     await page.getByLabel('Responsável').fill('Dona Cida')
     await page.getByLabel('Telefone').fill('(11) 98765-4321')
     await page.getByRole('button', { name: 'Adicionar fornecedor' }).click()
+    await expect(page.getByText(`${empresa} adicionado.`)).toBeVisible()
 
     await page.goto('/fornecedores')
     await page.getByRole('searchbox', { name: 'Buscar fornecedor' }).fill(empresa)
@@ -51,6 +52,7 @@ test.describe('Fornecedores e financeiro', () => {
     await page.getByRole('button', { name: 'Contratado' }).click()
     await page.getByRole('spinbutton', { name: 'Valor contratado' }).pressSequentially('8500')
     await page.getByRole('button', { name: 'Adicionar ao evento' }).click()
+    await expect(page.getByText(`${empresa} adicionado ao evento.`)).toBeVisible()
 
     await page.goto(`/eventos/${evento.id}/fornecedores`)
     await expect(page.getByRole('link', { name: empresa, exact: true })).toBeVisible()

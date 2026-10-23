@@ -1,6 +1,6 @@
 import { expect, request, type APIRequestContext } from '@playwright/test'
 
-export const URL_MAILPIT = process.env.E2E_MAILPIT_URL ?? 'http://localhost:8025'
+export const URL_MAILPIT = process.env.E2E_MAILPIT_URL ?? 'http://localhost:8125'
 
 interface ResumoMensagem {
   ID: string

@@ -1,7 +1,34 @@
+name: celebri-e2e
+
 services:
-  api:
+  db:
+    image: postgres:16-alpine
     environment:
-      Autenticacao__UrlFrontend: http://localhost:5180
+      POSTGRES_DB: celebri_e2e
+      POSTGRES_USER: celebri_e2e
+      POSTGRES_PASSWORD: somente-e2e-local
+    volumes:
+      - dados-postgres-e2e:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U celebri_e2e -d celebri_e2e"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: src/Celebri.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Principal: Host=db;Port=5432;Database=celebri_e2e;Username=celebri_e2e;Password=somente-e2e-local
+      Jwt__ChaveAssinatura: chave-jwt-somente-para-o-ambiente-e2e-local-nunca-em-deploy
+      DadosSensiveis__ChaveCifragem: ZTJlLWxvY2FsLXNvbWVudGUtcGFyYS10ZXN0ZXMtMDE=
+      Autenticacao__UrlFrontend: http://localhost:${E2E_PORTA:-5180}
+      Email__Smtp__Host: email
+      Email__Smtp__Porta: "1025"
+      Email__Smtp__UsarSsl: "false"
+      ArmazenamentoArquivos__Diretorio: /var/lib/celebri/arquivos
       RetencaoDadosSensiveis__Habilitada: "false"
       LimitesRequisicao__entrar__Limite: "10000"
       LimitesRequisicao__cadastro__Limite: "10000"
@@ -13,3 +40,21 @@ services:
       LimitesRequisicao__contrato__Limite: "10000"
       LimitesRequisicao__comprovante__Limite: "10000"
       LimitesRequisicao__cronograma-publico__Limite: "10000"
+    volumes:
+      - arquivos-e2e:/var/lib/celebri/arquivos
+    ports:
+      - "127.0.0.1:${E2E_API_PORTA:-5280}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      email:
+        condition: service_started
+
+  email:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "127.0.0.1:${E2E_MAILPIT_PORTA:-8125}:8025"
+
+volumes:
+  dados-postgres-e2e:
+  arquivos-e2e:

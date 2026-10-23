@@ -125,6 +125,50 @@ public class AutenticacaoServiceTestes
     {
         var cadastro = await _cenario.CadastrarAsync();
         var renovado = await _cenario.Autenticacao.RenovarAsync(cadastro.RefreshToken, CancellationToken.None);
+        _cenario.Relogio.Avancar(TimeSpan.FromSeconds(16));
+
+        await Assert.ThrowsAsync<CredenciaisInvalidasException>(() => _cenario.Autenticacao.RenovarAsync(cadastro.RefreshToken, CancellationToken.None));
+
+        Assert.All(_cenario.Banco.RefreshTokens, token => Assert.True(token.FoiUtilizado));
+        await Assert.ThrowsAsync<CredenciaisInvalidasException>(() => _cenario.Autenticacao.RenovarAsync(renovado.RefreshToken, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Renovar_TokenRecemSubstituidoDentroDaJanela_DeveEmitirNovoTokenSemRevogarAFamilia()
+    {
+        var cadastro = await _cenario.CadastrarAsync();
+        var renovado = await _cenario.Autenticacao.RenovarAsync(cadastro.RefreshToken, CancellationToken.None);
+        _cenario.Relogio.Avancar(TimeSpan.FromSeconds(15));
+
+        var reapresentado = await _cenario.Autenticacao.RenovarAsync(cadastro.RefreshToken, CancellationToken.None);
+
+        Assert.NotEqual(renovado.RefreshToken, reapresentado.RefreshToken);
+        Assert.Equal(3, _cenario.Banco.RefreshTokens.Count);
+        Assert.Single(_cenario.Banco.RefreshTokens.Select(token => token.Familia).Distinct());
+        Assert.All(_cenario.Banco.RefreshTokens, token => Assert.Null(token.RevogadoEm));
+        Assert.NotNull(await _cenario.Autenticacao.RenovarAsync(renovado.RefreshToken, CancellationToken.None));
+        Assert.NotNull(await _cenario.Autenticacao.RenovarAsync(reapresentado.RefreshToken, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Renovar_TokenSubstituidoAposSair_DeveRecusarMesmoDentroDaJanela()
+    {
+        var cadastro = await _cenario.CadastrarAsync();
+        var renovado = await _cenario.Autenticacao.RenovarAsync(cadastro.RefreshToken, CancellationToken.None);
+        await _cenario.Autenticacao.SairAsync(renovado.RefreshToken, CancellationToken.None);
+
+        await Assert.ThrowsAsync<CredenciaisInvalidasException>(() => _cenario.Autenticacao.RenovarAsync(cadastro.RefreshToken, CancellationToken.None));
+
+        Assert.Equal(2, _cenario.Banco.RefreshTokens.Count);
+    }
+
+    [Fact]
+    public async Task Renovar_JanelaZero_ReusoImediatoDeveRevogarAFamilia()
+    {
+        _cenario.Opcoes.Value.JanelaReusoRefreshTokenSegundos = 0;
+        var cadastro = await _cenario.CadastrarAsync();
+        var renovado = await _cenario.Autenticacao.RenovarAsync(cadastro.RefreshToken, CancellationToken.None);
+        _cenario.Relogio.Avancar(TimeSpan.FromSeconds(1));
 
         await Assert.ThrowsAsync<CredenciaisInvalidasException>(() => _cenario.Autenticacao.RenovarAsync(cadastro.RefreshToken, CancellationToken.None));
 

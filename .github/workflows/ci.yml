@@ -104,6 +104,11 @@ jobs:
           : > .env
           ! docker compose -f docker-compose.prod.yml config --quiet
 
+      - name: Validar compose do ambiente E2E isolado
+        run: |
+          test "$(docker compose -f docker-compose.e2e.yml config --format json | jq -r .name)" = celebri-e2e
+          ! docker compose -f docker-compose.e2e.yml config | grep -q "casamento_"
+
       - name: Testar contexto Docker do frontend
         run: bash infra/testes/contexto-docker-web.test.sh
 

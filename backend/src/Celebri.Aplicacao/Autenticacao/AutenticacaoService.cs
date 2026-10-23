@@ -121,6 +121,11 @@ public class AutenticacaoService : IAutenticacaoService
 
         if (tokenAtual.FoiUtilizado)
         {
+            if (await PodeReapresentarAsync(tokenAtual, agora, cancelamento))
+            {
+                return await ReemitirNaFamiliaAsync(tokenAtual, agora, cancelamento);
+            }
+
             await RevogarFamiliaAsync(tokenAtual.Familia, agora, cancelamento);
             throw new CredenciaisInvalidasException(MensagensAutenticacao.SessaoInvalida);
         }
@@ -198,6 +203,32 @@ public class AutenticacaoService : IAutenticacaoService
 
         var refreshToken = EmitirRefreshToken(usuario.Id, Guid.NewGuid(), _relogio.GetUtcNow());
         return MontarResultado(usuario, organizacao, refreshToken);
+    }
+
+    private async Task<bool> PodeReapresentarAsync(RefreshToken token, DateTimeOffset agora, CancellationToken cancelamento)
+    {
+        var janela = TimeSpan.FromSeconds(Math.Max(0, _opcoes.JanelaReusoRefreshTokenSegundos));
+        if (!token.PodeSerReapresentado(agora, janela))
+        {
+            return false;
+        }
+
+        var naoUtilizados = await _refreshTokenRepository.ListarNaoUtilizadosDaFamiliaAsync(token.Familia, cancelamento);
+        return naoUtilizados.Any(ativo => ativo.EstaAtivo(agora));
+    }
+
+    private async Task<ResultadoAutenticacao> ReemitirNaFamiliaAsync(RefreshToken token, DateTimeOffset agora, CancellationToken cancelamento)
+    {
+        var usuario = await _usuarioRepository.ObterPorIdAsync(token.UsuarioId, cancelamento);
+        if (usuario is null || !usuario.Ativo)
+        {
+            throw new CredenciaisInvalidasException(MensagensAutenticacao.SessaoInvalida);
+        }
+
+        var organizacao = await ObterOrganizacaoAsync(usuario.OrganizacaoId, cancelamento);
+        var novoRefreshToken = EmitirRefreshToken(usuario.Id, token.Familia, agora);
+        await _unidadeTrabalho.SalvarAsync(cancelamento);
+        return MontarResultado(usuario, organizacao, novoRefreshToken);
     }
 
     private async Task RevogarFamiliaAsync(Guid familia, DateTimeOffset agora, CancellationToken cancelamento)

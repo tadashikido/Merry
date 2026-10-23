@@ -8,6 +8,8 @@ public class OpcoesAutenticacao
 
     public int ValidadeRefreshTokenDias { get; set; } = 14;
 
+    public int JanelaReusoRefreshTokenSegundos { get; set; } = 15;
+
     public int ValidadeTokenRedefinicaoMinutos { get; set; } = 60;
 
     public int ValidadeConviteAnfitriaoDias { get; set; } = 7;

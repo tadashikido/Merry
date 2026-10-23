@@ -80,19 +80,20 @@ cd frontend
 npm run test:e2e:instalar      # primeira vez: baixa o Chromium
 npm run test:e2e               # suíte simulada (sem backend)
 
-npm run e2e:ambiente:subir     # db + Mailpit + API com o override docker-compose.e2e.yml (Docker aberto, .env na raiz)
+npm run e2e:ambiente:subir     # db + Mailpit + API do projeto Docker isolado celebri-e2e (Docker aberto)
 npm run test:e2e:visivel       # suíte integrada com o navegador visível
 npm run test:e2e:integrado     # suíte integrada em headless
-npm run e2e:ambiente:derrubar  # para os containers
+npm run e2e:ambiente:derrubar  # remove os containers e mantém o banco E2E
+npm run e2e:ambiente:zerar     # remove os containers e apaga o banco E2E
 
 npm run test:e2e:interface     # modo interativo para depuração
 npx playwright show-report     # relatório HTML da última execução
 ```
 
 - `E2E_LENTIDAO_MS=300` deixa a execução visível mais lenta para acompanhar; `npm run test:e2e:visivel -- convidados` roda só um arquivo.
-- `E2E_PORTA` muda a porta do Vite de testes (padrão `5180`), `API_PROXY_ALVO` muda a API (padrão `http://localhost:5080`) e `E2E_MAILPIT_URL` muda o Mailpit (padrão `http://localhost:8025`).
-- O `docker-compose.e2e.yml` eleva os limites de requisição e aponta os links de e-mail para a porta 5180. Use-o só em ambiente local de testes, nunca em deploy.
-- Os testes criam assessorias com e-mails `@e2e.teste` no banco de desenvolvimento. Para zerar o banco: `docker compose down -v`.
+- `E2E_PORTA` muda a porta do Vite de testes (padrão `5180`), `API_PROXY_ALVO` muda a API (padrão `http://localhost:5280`) e `E2E_MAILPIT_URL` muda o Mailpit (padrão `http://localhost:8125`). Para subir o ambiente em outras portas: `E2E_API_PORTA` e `E2E_MAILPIT_PORTA`.
+- O `docker-compose.e2e.yml` é autônomo (projeto `celebri-e2e`, banco `celebri_e2e`, volumes `celebri-e2e_*`), não lê o `.env` e não toca no projeto `casamento` de desenvolvimento: os dois ambientes rodam juntos. Ele eleva os limites de requisição, aponta os links de e-mail para a porta 5180 e usa chaves fixas só de teste. Use-o só em ambiente local de testes, nunca em deploy.
+- Cada teste cadastra a própria assessoria (e-mail `@e2e.teste` único), então a suíte passa repetidas vezes no mesmo banco E2E sem limpeza. Se um Vite já estiver na porta 5180 apontando para outra API, pare-o antes: o Playwright reaproveita o servidor existente.
 - Testes em `Defeitos conhecidos` estão marcados com `test.fail()` e documentam bugs abertos no board; ao corrigir o bug, remova a marcação.
 
 ## Migrations

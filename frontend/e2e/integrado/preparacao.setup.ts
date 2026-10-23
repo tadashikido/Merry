@@ -2,7 +2,7 @@ import { expect, request, test } from '@playwright/test'
 
 import { URL_MAILPIT } from './suporte/mailpit'
 
-const URL_API = process.env.API_PROXY_ALVO ?? 'http://localhost:5080'
+const URL_API = process.env.API_PROXY_ALVO ?? 'http://localhost:5280'
 const INSTRUCAO = 'Rode `npm run e2e:ambiente:subir` com o Docker aberto.'
 
 async function responde(baseURL: string, caminho: string): Promise<boolean> {
