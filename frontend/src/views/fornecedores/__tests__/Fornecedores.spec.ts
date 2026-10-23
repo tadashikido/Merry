@@ -10,8 +10,9 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import router from '@/router'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
-import { TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
-import { RaizRotas, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
+import { TEXTOS_COBERTURA_FORNECEDORES, TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
+import type { TipoEvento } from '@/tipos/eventos'
+import { RaizRotas, chamadas, quando, resumoEvento, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
 
 await precarregarRotas('fornecedores', 'fornecedor-novo', 'fornecedor', 'fornecedor-editar')
 
@@ -25,6 +26,11 @@ vi.mock('@/composables/useNotificacao', () => ({
 
 const ROTA = '/api/fornecedores'
 const ROTA_FORNECEDOR = `${ROTA}/${ID_FORNECEDOR}`
+const ROTA_EVENTOS_ATIVOS = '/api/eventos?situacao=Ativos'
+
+function carteira(...tipos: TipoEvento[]) {
+  return tipos.map((tipo, indice) => resumoEvento({ id: `evento-${indice}`, tipo, diasRestantes: 10 + indice }))
+}
 
 const LISTA = [
   resumoFornecedor(),
@@ -479,7 +485,7 @@ describe('FornecedoresView — reestruturação da fundação', () => {
     expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.vazioTitulo)
   })
 
-  it('[UNITÁRIO] a view usa só o ritmo e abre a lateral do índice por contêiner, sem @media', () => {
+  it('[UNITÁRIO] a view usa só o ritmo e abre a lateral do índice por contêiner, sem @media nem sticky', () => {
     const estilo = estiloDe(lerFonte('views/fornecedores/FornecedoresView.vue'))
 
     expect(estilo).not.toMatch(/@media/)
@@ -488,7 +494,7 @@ describe('FornecedoresView — reestruturação da fundação', () => {
     expect(estilo).toMatch(/container:\s*fornecedores\s*\/\s*inline-size/)
     expect(estilo).toMatch(/container:\s*lista-fornecedores\s*\/\s*inline-size/)
     expect(estilo).toMatch(/@container fornecedores \(min-width: 64rem\)/)
-    expect(estilo).toMatch(/position:\s*sticky/)
+    expect(estilo).not.toMatch(/sticky/)
   })
 
   it('[UNITÁRIO] IndiceCategorias vira fichas horizontais só quando o próprio contêiner é largo', () => {
@@ -769,5 +775,82 @@ describe('rotas de fornecedores', () => {
       expect(rota.matched.length).toBeGreaterThan(0)
       expect(rota.meta.somenteAssessoria).toBe(true)
     }
+  })
+})
+
+describe('FornecedoresView — categorias essenciais', () => {
+  it('[COMPONENTE] carteira de casamentos e aniversário mostra as essenciais sem fornecedor ativo, depois da lista', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA, () => respostaJson(LISTA)),
+      quando('GET', ROTA_EVENTOS_ATIVOS, () => respostaJson(carteira('Casamento', 'Casamento', 'Aniversario'))),
+    )
+    const { wrapper } = await abrir('/fornecedores')
+    await aguardarAte(() => expect(wrapper.get('[data-teste="cobertura-fornecedores"]').attributes('data-carteira')).toBe('sim'))
+
+    expect(wrapper.get('[data-teste="cobertura-frase"]').text()).toBe('Para os eventos pela frente: 2 casamentos e 1 aniversário.')
+    expect(wrapper.get('[data-teste="cobertura-contagem"]').text()).toBe('2 de 10 categorias essenciais com fornecedor ativo')
+    expect(wrapper.get('[data-teste="cobertura-falta-Decoracao"]').text()).toContain('Essencial para 3 eventos pela frente')
+    expect(wrapper.get('[data-teste="cobertura-falta-Decoracao"]').text()).toContain('1 arquivado nesta categoria')
+    expect(wrapper.find('[data-teste="cobertura-falta-Buffet"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="cobertura-reaproveitamento"]').exists()).toBe(false)
+    expect(chamadas(fetchSimulado, 'GET', ROTA_EVENTOS_ATIVOS)).toHaveLength(1)
+
+    const filhos = wrapper.get('.fornecedores__corpo').element.children
+    const classes = Array.from(filhos).map((filho) => filho.className)
+    expect(classes.findIndex((nome) => nome.includes('fornecedores__principal'))).toBeLessThan(
+      classes.findIndex((nome) => nome.includes('fornecedores__cobertura')),
+    )
+  })
+
+  it('[COMPONENTE] carteira de 15 anos e comemoração cobra Iluminação e som e não cita casamento', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA, () => respostaJson(LISTA)),
+      quando('GET', ROTA_EVENTOS_ATIVOS, () => respostaJson(carteira('QuinzeAnos', 'Comemoracao'))),
+    )
+    const { wrapper } = await abrir('/fornecedores')
+    await aguardarAte(() => expect(wrapper.get('[data-teste="cobertura-frase"]').text()).toBe('Para os eventos pela frente: 1 festa de 15 anos e 1 comemoração.'))
+
+    expect(wrapper.get('[data-teste="cobertura-falta-IluminacaoSom"]').text()).toContain('Essencial para 1 evento pela frente')
+    expect(wrapper.find('[data-teste="cobertura-falta-ConvitesPapelaria"]').exists()).toBe(false)
+    expect(wrapper.get('[data-teste="cobertura-fornecedores"]').text()).not.toMatch(/casamento/i)
+  })
+
+  it.each([
+    ['tipo desconhecido', () => respostaJson([resumoEvento({ tipo: 'Formatura' as unknown as TipoEvento })])],
+    ['falha da lista de eventos', () => respostaProblema(500, { title: 'Erro' })],
+  ])('[COMPONENTE] com %s usa a regra dos 4 tipos sem erro na tela', async (_rotulo, resposta) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA, () => respostaJson(LISTA)), quando('GET', ROTA_EVENTOS_ATIVOS, resposta))
+    const { wrapper } = await abrir('/fornecedores')
+    await flushPromises()
+
+    expect(wrapper.get('[data-teste="cobertura-fornecedores"]').attributes('data-carteira')).toBe('nao')
+    expect(wrapper.get('[data-teste="cobertura-frase"]').text()).toBe(TEXTOS_COBERTURA_FORNECEDORES.semCarteira())
+    expect(wrapper.get('[data-teste="cobertura-falta-EspacoLocal"]').text()).toContain('Essencial nos 4 tipos de evento')
+    expect(nomesVisiveis(wrapper)).toEqual(['Buffet São João', 'Fotografia Ângela Lima'])
+  })
+
+  it('[COMPONENTE] base vazia ensina o reaproveitamento e mantém um só botão de adicionar', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA, () => respostaJson([])),
+      quando('GET', ROTA_EVENTOS_ATIVOS, () => respostaJson(carteira('Aniversario'))),
+    )
+    const { wrapper } = await abrir('/fornecedores')
+    await aguardarAte(() => expect(wrapper.get('[data-teste="cobertura-fornecedores"]').attributes('data-carteira')).toBe('sim'))
+
+    expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.vazioTexto)
+    expect(wrapper.get('[data-teste="cobertura-contagem"]').text()).toBe('0 de 6 categorias essenciais com fornecedor ativo')
+    expect(wrapper.findAll('[data-teste="cobertura-reaproveitamento"] li')).toHaveLength(3)
+    expect(wrapper.findAll('[data-teste^="adicionar-fornecedor"]')).toHaveLength(1)
+    expect(wrapper.get('[data-teste="cobertura-fornecedores"]').findAll('a, button')).toHaveLength(0)
+  })
+
+  it('[COMPONENTE] erro ao carregar fornecedores não mostra o bloco', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA, () => respostaProblema(500, { title: 'Erro' })))
+    const { wrapper } = await abrir('/fornecedores')
+
+    expect(wrapper.find('[data-teste="cobertura-fornecedores"]').exists()).toBe(false)
   })
 })

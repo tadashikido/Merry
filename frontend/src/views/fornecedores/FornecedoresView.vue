@@ -16,16 +16,20 @@ import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
 import IndiceCategorias from '@/componentes/base/IndiceCategorias.vue'
 import LinhaFornecedor from '@/componentes/base/LinhaFornecedor.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
+import CoberturaCategoriasFornecedores from '@/componentes/fornecedores/CoberturaCategoriasFornecedores.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useTelaPequena } from '@/composables/useTelaPequena'
+import { useEventosStore } from '@/stores/eventos'
 import { useFornecedoresStore } from '@/stores/fornecedores'
 import { TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
 import type { CategoriaFornecedor, FornecedorResumoDto, SituacaoListagemFornecedores } from '@/tipos/fornecedores'
+import { coberturaDaCarteira } from '@/utilitarios/coberturaFornecedores'
 import { agruparPorCategoria, contarPorCategoria, daSituacao, filtrarFornecedores } from '@/utilitarios/fornecedores'
 
 const store = useFornecedoresStore()
+const eventos = useEventosStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
 const { confirmarExclusao } = useConfirmarExclusao()
@@ -49,6 +53,7 @@ const quantidadeArquivados = computed(() => daSituacao(lista.value, 'arquivados'
 const semNenhum = computed(() => store.lista !== null && store.lista.length === 0)
 const filtroAtivo = computed(() => busca.value.trim() !== '' || categoria.value !== null)
 const comIndice = computed(() => !telaPequena.value && daSituacaoAtual.value.length > 0)
+const cobertura = computed(() => coberturaDaCarteira(lista.value, eventos.ativosCarregados ? eventos.ativos : null))
 const anuncio = computed(() => (store.lista && filtroAtivo.value ? TEXTOS_FORNECEDORES.resultados(filtrados.value.length) : ''))
 
 const opcoesSituacao = computed(() => [
@@ -76,6 +81,7 @@ function acoes(fornecedor: FornecedorResumoDto): ItemMenuAcoes[] {
 onMounted(() => {
   document.title = TEXTOS_FORNECEDORES.tituloDocumento
   void store.carregar()
+  void eventos.garantirAtivos()
 })
 
 function adicionar() {
@@ -185,21 +191,29 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
         @tentar-novamente="store.carregar()"
       />
 
-      <EstadoVazio
+      <div
         v-else-if="semNenhum"
-        icone="fornecedor"
-        :titulo="TEXTOS_FORNECEDORES.vazioTitulo"
-        :descricao="TEXTOS_FORNECEDORES.vazioTexto"
+        class="fornecedores__vazio pilha pilha--bloco"
       >
-        <template #acao>
-          <Button
-            :label="TEXTOS_FORNECEDORES.adicionar"
-            icon="ie ie-mais"
-            data-teste="adicionar-fornecedor-vazio"
-            @click="adicionar"
-          />
-        </template>
-      </EstadoVazio>
+        <EstadoVazio
+          icone="fornecedor"
+          :titulo="TEXTOS_FORNECEDORES.vazioTitulo"
+          :descricao="TEXTOS_FORNECEDORES.vazioTexto"
+        >
+          <template #acao>
+            <Button
+              :label="TEXTOS_FORNECEDORES.adicionar"
+              icon="ie ie-mais"
+              data-teste="adicionar-fornecedor-vazio"
+              @click="adicionar"
+            />
+          </template>
+        </EstadoVazio>
+        <CoberturaCategoriasFornecedores
+          :cobertura="cobertura"
+          com-reaproveitamento
+        />
+      </div>
 
       <template v-else-if="store.lista">
         <div class="fornecedores__barra">
@@ -351,6 +365,11 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
               </section>
             </div>
           </div>
+
+          <CoberturaCategoriasFornecedores
+            class="fornecedores__cobertura"
+            :cobertura="cobertura"
+          />
         </div>
       </template>
     </div>
@@ -359,7 +378,7 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
 
 <style scoped>
 .fornecedores {
-  --fornecedores-largura-indice: 16rem;
+  --fornecedores-largura-indice: 18rem;
 
   container: fornecedores / inline-size;
 }
@@ -395,7 +414,8 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
 }
 
 .fornecedores__indice,
-.fornecedores__principal {
+.fornecedores__principal,
+.fornecedores__cobertura {
   min-width: 0;
 }
 
@@ -421,17 +441,31 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
 }
 
 @container fornecedores (min-width: 64rem) {
-  .fornecedores__corpo--com-indice {
+  .fornecedores__corpo {
     grid-template-columns: var(--fornecedores-largura-indice) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'cobertura principal'
+      'vago principal';
+  }
+
+  .fornecedores__corpo--com-indice {
+    grid-template-areas:
+      'indice principal'
+      'cobertura principal';
   }
 
   .fornecedores__indice {
-    position: sticky;
-    top: var(--p-ritmo-bloco);
-    max-height: calc(100dvh - 2 * var(--p-ritmo-bloco));
-    overflow-y: auto;
+    grid-area: indice;
     padding: var(--p-ritmo-campo);
-    overscroll-behavior: contain;
+  }
+
+  .fornecedores__principal {
+    grid-area: principal;
+  }
+
+  .fornecedores__cobertura {
+    grid-area: cobertura;
   }
 }
 </style>

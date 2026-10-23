@@ -1,3 +1,5 @@
+import { VOCABULARIO_TIPO_EVENTO, tiposEventoEmFrase } from '@/textos/tiposEvento'
+import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import type { CategoriaFornecedor } from '@/tipos/fornecedores'
 
 function plural(quantidade: number, singular: string, varios: string): string {
@@ -56,7 +58,7 @@ export const TEXTOS_FORNECEDORES = {
   listaRotulo: 'Fornecedores da assessoria',
   quantidadeGrupo: (quantidade: number) => `${quantidade} ${plural(quantidade, 'fornecedor', 'fornecedores')}`,
   vazioTitulo: 'Você ainda não possui fornecedores.',
-  vazioTexto: 'Guarde aqui os contatos de confiança e use em todos os eventos.',
+  vazioTexto: 'Cadastre uma vez os contatos de confiança e adicione-os a cada evento, sem digitar de novo.',
   vazioArquivados: 'Nenhum fornecedor arquivado.',
   vazioArquivadosTexto: 'Os fornecedores arquivados ficam aqui e podem ser restaurados.',
   semResultado: 'Nenhum fornecedor encontrado.',
@@ -132,4 +134,32 @@ export const TEXTOS_FORNECEDORES = {
   erroExcluir: 'Não foi possível excluir o fornecedor. Tente de novo.',
   erroArquivar: 'Não foi possível arquivar o fornecedor. Tente de novo.',
   erroRestaurar: 'Não foi possível restaurar o fornecedor. Tente de novo.',
+} as const
+
+function tiposNoPlural(tipos: readonly TipoEvento[]): string {
+  const rotulos = tipos.map((tipo) => VOCABULARIO_TIPO_EVENTO[tipo].contagem.plural)
+  const ultimo = rotulos.pop() ?? ''
+  return rotulos.length > 0 ? `${rotulos.join(', ')} e ${ultimo}` : ultimo
+}
+
+export const TEXTOS_COBERTURA_FORNECEDORES = {
+  titulo: 'Categorias essenciais',
+  carteira: (descricao: string) => `Para os eventos pela frente: ${descricao}.`,
+  semCarteira: () => `O que costuma ser essencial em ${tiposEventoEmFrase()}.`,
+  legenda: (total: number) =>
+    `de ${total.toLocaleString('pt-BR')} ${plural(total, 'categoria essencial', 'categorias essenciais')} com fornecedor ativo`,
+  faltasTitulo: 'Ainda sem fornecedor',
+  essencialParaEventos: (quantidade: number) =>
+    `Essencial para ${quantidade.toLocaleString('pt-BR')} ${plural(quantidade, 'evento', 'eventos')} pela frente`,
+  essencialEm: (tipos: readonly TipoEvento[]) =>
+    tipos.length === TIPOS_EVENTO.length ? 'Essencial nos 4 tipos de evento' : `Essencial em ${tiposNoPlural(tipos)}`,
+  arquivados: (quantidade: number) =>
+    `${quantidade.toLocaleString('pt-BR')} ${plural(quantidade, 'arquivado', 'arquivados')} nesta categoria`,
+  todas: 'Todas as categorias essenciais têm fornecedor ativo.',
+  reaproveitamentoTitulo: 'Como a base é reaproveitada',
+  reaproveitamento: [
+    'Cadastre cada fornecedor uma vez; ele fica disponível para todos os eventos.',
+    'Em cada evento, adicione-o em Fornecedores do evento com o serviço e o valor combinados.',
+    'Arquive quem saiu do circuito: o histórico nos eventos continua.',
+  ],
 } as const
