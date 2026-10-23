@@ -337,7 +337,7 @@ const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..'
 const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
 
 describe('FornecedoresEventoView — reestruturação da fundação', () => {
-  it('[COMPONENTE] resumo fica num aside rotulado antes da lista; grupos usam rótulo e cartão', async () => {
+  it('[COMPONENTE] resumo fica antes da lista sem região duplicada; grupos usam rótulo e cartão', async () => {
     rotear(
       fetchSimulado,
       SESSAO_EXEMPLO,
@@ -347,8 +347,10 @@ describe('FornecedoresEventoView — reestruturação da fundação', () => {
     const { wrapper } = await abrir(`/eventos/${ID_EVENTO}/fornecedores`)
 
     const lateral = wrapper.get('[data-teste="lateral-orcamento"]')
-    expect(lateral.element.tagName).toBe('ASIDE')
-    expect(lateral.attributes('aria-label')).toBe(TEXTOS_RESUMO_ORCAMENTO.titulo)
+    expect(lateral.element.tagName).toBe('DIV')
+    expect(lateral.attributes('aria-label')).toBeUndefined()
+    expect(wrapper.get('.fornecedores-evento').findAll('aside')).toHaveLength(0)
+    expect(wrapper.findAll('section h2').filter((titulo) => titulo.text() === TEXTOS_RESUMO_ORCAMENTO.titulo)).toHaveLength(1)
     expect(lateral.find('[data-teste="resumo-orcamento"]').exists()).toBe(true)
 
     const corpo = wrapper.get('.fornecedores-evento__corpo')
@@ -388,17 +390,19 @@ describe('FornecedoresEventoView — reestruturação da fundação', () => {
     expect(estilo).toMatch(/container:\s*fornecedores-evento\s*\/\s*inline-size/)
     expect(estilo).toMatch(/container:\s*lista-vinculos\s*\/\s*inline-size/)
     expect(estilo).toMatch(/@container fornecedores-evento \(min-width: 64rem\)/)
-    expect(estilo).toMatch(/grid-template-areas:\s*'principal lateral'/)
+    expect(estilo).toMatch(/'principal orcamento'\s*'principal contratacao'/)
+    expect(estilo).not.toMatch(/sticky/)
+    expect(estilo).not.toMatch(/@media/)
   })
 
-  it('[UNITÁRIO] ResumoOrcamento compacta só quando o próprio contêiner é estreito e mantém as cores da régua', () => {
+  it('[UNITÁRIO] ResumoOrcamento abre a tabela só pelo próprio contêiner e mantém as cores da régua', () => {
     const estilo = estiloDe(lerFonte('componentes/base/ResumoOrcamento.vue'))
 
     expect(estilo).toMatch(/container:\s*resumo-orcamento\s*\/\s*inline-size/)
-    expect(estilo).toMatch(/@container resumo-orcamento \(max-width: 30rem\)/)
+    expect(estilo).toMatch(/@container resumo-orcamento \(min-width: 30rem\)/)
+    expect(estilo).not.toMatch(/@media \(min-width/)
     expect(estilo).toMatch(/\.resumo-orcamento__camada--pago\s*\{\s*background:\s*var\(--p-cor-primaria-escura\)/)
     expect(estilo).toMatch(/\.resumo-orcamento__camada--a-pagar\s*\{\s*background:\s*var\(--p-cor-acento\)/)
-    expect(estilo.indexOf('@container resumo-orcamento')).toBeGreaterThan(estilo.indexOf('@media (min-width: 640px)'))
   })
 
   it('[UNITÁRIO] LinhaFornecedorEvento empilha numa lista estreita e usa o ritmo no espaçamento interno', () => {

@@ -313,7 +313,7 @@ const totalExcedente = computed(() =>
   display: flex;
   flex-direction: column;
   gap: var(--p-ritmo-campo);
-  padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo);
+  padding: var(--p-ritmo-cartao);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
@@ -552,11 +552,7 @@ const totalExcedente = computed(() =>
   color: var(--p-cor-texto-apoio);
 }
 
-@media (min-width: 640px) {
-  .resumo-orcamento {
-    padding: var(--p-ritmo-cartao);
-  }
-
+@container resumo-orcamento (min-width: 30rem) {
   .resumo-orcamento__numero {
     font-size: var(--p-fonte-tamanho-pagina);
   }
@@ -575,38 +571,6 @@ const totalExcedente = computed(() =>
   .resumo-orcamento__valor--orcado {
     justify-content: flex-end;
     font-size: var(--p-fonte-tamanho-controle);
-  }
-}
-
-@container resumo-orcamento (max-width: 30rem) {
-  .resumo-orcamento__numero {
-    font-size: var(--p-fonte-tamanho-pagina-celular);
-  }
-
-  .resumo-orcamento__linha {
-    grid-template-columns: minmax(min-content, 1fr) minmax(0, max-content);
-    grid-template-areas:
-      'categoria contratado'
-      'orcado orcado'
-      'regua regua';
-    gap: var(--p-espaco-1) var(--p-espaco-3);
-  }
-
-  .resumo-orcamento__linha--total {
-    grid-template-columns: minmax(min-content, 1fr) minmax(0, max-content);
-    grid-template-areas:
-      'categoria contratado'
-      'orcado orcado';
-    gap: var(--p-espaco-1) var(--p-espaco-3);
-  }
-
-  .resumo-orcamento__linha--total .resumo-orcamento__regua-celula {
-    display: none;
-  }
-
-  .resumo-orcamento__valor--orcado {
-    justify-content: flex-start;
-    font-size: var(--p-fonte-tamanho-apoio);
   }
 }
 

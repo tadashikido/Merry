@@ -14,6 +14,7 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import ResumoOrcamento from '@/componentes/base/ResumoOrcamento.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
+import ContratacaoFornecedoresEvento from '@/componentes/fornecedoresEvento/ContratacaoFornecedoresEvento.vue'
 import DialogoImportarFornecedores from '@/componentes/fornecedoresEvento/DialogoImportarFornecedores.vue'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
@@ -21,7 +22,8 @@ import { useEventosStore } from '@/stores/eventos'
 import { useFornecedoresEventoStore } from '@/stores/fornecedoresEvento'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
 import { TEXTOS_PARCELAS_FORNECEDOR } from '@/textos/financeiro'
-import { TEXTOS_CONTRATO, TEXTOS_FORNECEDORES_EVENTO, TEXTOS_RESUMO_ORCAMENTO } from '@/textos/fornecedoresEvento'
+import { TEXTOS_CONTRATO, TEXTOS_FORNECEDORES_EVENTO } from '@/textos/fornecedoresEvento'
+import { ehTipoEvento } from '@/textos/tiposEvento'
 import type { FornecedorEventoDto, ResultadoImportacaoFornecedoresDto } from '@/tipos/fornecedoresEvento'
 import { formatarDataCalendarioComDiaSemana, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { agruparVinculosPorCategoria } from '@/utilitarios/fornecedoresEvento'
@@ -53,6 +55,7 @@ const arquivado = computed(() => lista.value?.eventoArquivado ?? evento.value?.a
 const podeGerenciar = computed(() => !visaoDoAnfitriao.value && lista.value?.somenteLeitura === false)
 const grupos = computed(() => agruparVinculosPorCategoria(lista.value?.vinculos ?? []))
 const semVinculos = computed(() => lista.value !== null && lista.value.vinculos.length === 0)
+const tipoEvento = computed(() => (evento.value && ehTipoEvento(evento.value.tipo) ? evento.value.tipo : null))
 const descricao = computed(() =>
   evento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(evento.value.data)}` : undefined,
 )
@@ -246,46 +249,58 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
           @tentar-novamente="store.carregar(id)"
         />
 
-        <EstadoVazio
+        <div
           v-else-if="semVinculos"
-          icone="fornecedor"
-          :titulo="visaoDoAnfitriao ? TEXTOS_FORNECEDORES_EVENTO.vazioAnfitriaoTitulo : TEXTOS_FORNECEDORES_EVENTO.vazioTitulo"
-          :descricao="visaoDoAnfitriao ? TEXTOS_FORNECEDORES_EVENTO.vazioAnfitriaoTexto : TEXTOS_FORNECEDORES_EVENTO.vazioTexto"
+          class="fornecedores-evento__corpo fornecedores-evento__corpo--vazio"
+          :class="{ 'fornecedores-evento__corpo--sem-lateral': !tipoEvento }"
         >
-          <template
-            v-if="podeGerenciar"
-            #acao
+          <EstadoVazio
+            class="fornecedores-evento__principal"
+            icone="fornecedor"
+            :titulo="visaoDoAnfitriao ? TEXTOS_FORNECEDORES_EVENTO.vazioAnfitriaoTitulo : TEXTOS_FORNECEDORES_EVENTO.vazioTitulo"
+            :descricao="visaoDoAnfitriao ? TEXTOS_FORNECEDORES_EVENTO.vazioAnfitriaoTexto : TEXTOS_FORNECEDORES_EVENTO.vazioTexto"
           >
-            <div class="fornecedores-evento__acoes-vazio">
-              <Button
-                :label="TEXTOS_FORNECEDORES_EVENTO.adicionar"
-                icon="ie ie-mais"
-                data-teste="adicionar-fornecedor-vazio"
-                @click="adicionar"
-              />
-              <Button
-                :label="TEXTOS_FORNECEDORES_EVENTO.importar"
-                icon="ie ie-importar"
-                severity="secondary"
-                outlined
-                data-teste="importar-fornecedores-vazio"
-                @click="importando = true"
-              />
-            </div>
-          </template>
-        </EstadoVazio>
+            <template
+              v-if="podeGerenciar"
+              #acao
+            >
+              <div class="fornecedores-evento__acoes-vazio">
+                <Button
+                  :label="TEXTOS_FORNECEDORES_EVENTO.adicionar"
+                  icon="ie ie-mais"
+                  data-teste="adicionar-fornecedor-vazio"
+                  @click="adicionar"
+                />
+                <Button
+                  :label="TEXTOS_FORNECEDORES_EVENTO.importar"
+                  icon="ie ie-importar"
+                  severity="secondary"
+                  outlined
+                  data-teste="importar-fornecedores-vazio"
+                  @click="importando = true"
+                />
+              </div>
+            </template>
+          </EstadoVazio>
+
+          <ContratacaoFornecedoresEvento
+            v-if="tipoEvento"
+            class="fornecedores-evento__contratacao"
+            :vinculos="lista?.vinculos ?? []"
+            :tipo="tipoEvento"
+          />
+        </div>
 
         <div
           v-else-if="lista"
           class="fornecedores-evento__corpo"
         >
-          <aside
-            class="fornecedores-evento__lateral"
-            :aria-label="TEXTOS_RESUMO_ORCAMENTO.titulo"
+          <div
+            class="fornecedores-evento__orcamento"
             data-teste="lateral-orcamento"
           >
             <ResumoOrcamento :resumo="lista.resumo" />
-          </aside>
+          </div>
 
           <div class="fornecedores-evento__principal pilha pilha--bloco">
             <div
@@ -367,6 +382,13 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
               {{ TEXTOS_FORNECEDORES_EVENTO.rodapeAnfitriao }}
             </p>
           </div>
+
+          <ContratacaoFornecedoresEvento
+            v-if="tipoEvento"
+            class="fornecedores-evento__contratacao"
+            :vinculos="lista.vinculos"
+            :tipo="tipoEvento"
+          />
         </div>
       </div>
 
@@ -421,19 +443,31 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    'lateral'
-    'principal';
+    'orcamento'
+    'principal'
+    'contratacao';
   gap: var(--p-ritmo-bloco);
   align-items: start;
 }
 
-.fornecedores-evento__lateral {
-  grid-area: lateral;
+.fornecedores-evento__corpo--vazio {
+  grid-template-areas:
+    'principal'
+    'contratacao';
+}
+
+.fornecedores-evento__orcamento {
+  grid-area: orcamento;
   min-width: 0;
 }
 
 .fornecedores-evento__principal {
   grid-area: principal;
+  min-width: 0;
+}
+
+.fornecedores-evento__contratacao {
+  grid-area: contratacao;
   min-width: 0;
 }
 
@@ -469,12 +503,20 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
 @container fornecedores-evento (min-width: 64rem) {
   .fornecedores-evento__corpo {
     grid-template-columns: minmax(0, 1fr) var(--fornecedores-evento-largura-lateral);
-    grid-template-areas: 'principal lateral';
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'principal orcamento'
+      'principal contratacao';
   }
 
-  .fornecedores-evento__lateral {
-    position: sticky;
-    top: var(--p-ritmo-bloco);
+  .fornecedores-evento__corpo--vazio {
+    grid-template-rows: auto;
+    grid-template-areas: 'principal contratacao';
+  }
+
+  .fornecedores-evento__corpo--sem-lateral {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'principal';
   }
 }
 </style>

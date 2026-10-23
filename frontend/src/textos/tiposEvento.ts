@@ -1,4 +1,5 @@
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
+import type { CategoriaFornecedor } from '@/tipos/fornecedores'
 
 export interface VocabularioTipoEvento {
   rotulo: string
@@ -38,6 +39,7 @@ export interface VocabularioTipoEvento {
   faltaHorario: string
   faltaLocal: string
   mesaEspecial: string
+  fornecedoresEssenciais: readonly CategoriaFornecedor[]
   aneisNoConvite: boolean
   celebracao: (nomes: string, varios: boolean) => string
 }
@@ -81,6 +83,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     faltaHorario: 'Falta o horário da cerimônia.',
     faltaLocal: 'Falta o local da cerimônia.',
     mesaEspecial: 'Mesa dos noivos',
+    fornecedoresEssenciais: ['EspacoLocal', 'Buffet', 'Fotografia', 'Decoracao', 'Musica', 'Filmagem', 'BoloDoces', 'Beleza', 'Vestuario', 'ConvitesPapelaria'],
     aneisNoConvite: true,
     celebracao: (nomes) => `${nomes} vão se casar`,
   },
@@ -122,6 +125,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     faltaHorario: 'Falta o horário da festa.',
     faltaLocal: 'Falta o local da festa.',
     mesaEspecial: 'Mesa da debutante',
+    fornecedoresEssenciais: ['EspacoLocal', 'Buffet', 'Decoracao', 'Fotografia', 'Musica', 'IluminacaoSom', 'Filmagem', 'BoloDoces', 'Beleza', 'Vestuario'],
     aneisNoConvite: false,
     celebracao: (nomes) => `${nomes} vai comemorar os 15 anos`,
   },
@@ -163,6 +167,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     faltaHorario: 'Falta o horário da festa.',
     faltaLocal: 'Falta o local da festa.',
     mesaEspecial: 'Mesa do aniversariante',
+    fornecedoresEssenciais: ['EspacoLocal', 'Buffet', 'Decoracao', 'BoloDoces', 'Fotografia', 'Musica'],
     aneisNoConvite: false,
     celebracao: (nomes) => `${nomes} vai comemorar o aniversário`,
   },
@@ -204,6 +209,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     faltaHorario: 'Falta o horário do evento.',
     faltaLocal: 'Falta o local do evento.',
     mesaEspecial: 'Mesa de honra',
+    fornecedoresEssenciais: ['EspacoLocal', 'Buffet', 'Decoracao', 'Fotografia'],
     aneisNoConvite: false,
     celebracao: (nomes, varios) => `${nomes} ${varios ? 'vão' : 'vai'} celebrar`,
   },

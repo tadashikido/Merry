@@ -39,6 +39,28 @@ export const TEXTOS_RESUMO_ORCAMENTO = {
   de: 'de',
 } as const
 
+export const TEXTOS_CONTRATACAO_FORNECEDORES = {
+  titulo: 'Contratação',
+  legenda: (total: number) =>
+    `de ${total} ${plural(total, 'categoria essencial já contratada', 'categorias essenciais já contratadas')}`,
+  todas: 'Todas as categorias essenciais estão contratadas.',
+  listaRotulo: 'Categorias essenciais e situação',
+  situacoes: {
+    SemFornecedor: 'Sem fornecedor',
+    Cotacao: 'Em cotação',
+    EmNegociacao: 'Em negociação',
+    Contratado: 'Contratado',
+  },
+  emConversa: (cotacao: number, negociacao: number) => {
+    const partes = [
+      cotacao > 0 ? `${cotacao} em cotação` : null,
+      negociacao > 0 ? `${negociacao} em negociação` : null,
+    ].filter((parte): parte is string => parte !== null)
+    return `Em conversa: ${partes.join(' e ')}.`
+  },
+  nota: (indefinido: string) => `Categorias que costumam entrar em ${indefinido}. Cada evento tem as suas: use como ponto de partida.`,
+} as const
+
 export const TEXTOS_CONTRATO = {
   titulo: 'Contrato',
   antesDeSalvar: 'Depois de adicionar, anexe o contrato aqui.',

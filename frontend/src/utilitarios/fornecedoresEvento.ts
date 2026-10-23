@@ -154,3 +154,60 @@ export function calcularResumoLocal(vinculos: FornecedorEventoDto[], anterior?: 
 function somar(valores: number[]): number {
   return Math.round(valores.reduce((total, valor) => total + Math.round(valor * 100), 0)) / 100
 }
+
+export type SituacaoCategoriaEssencial = 'SemFornecedor' | 'Cotacao' | 'EmNegociacao' | 'Contratado'
+
+export interface CategoriaEssencial {
+  categoria: CategoriaFornecedor
+  situacao: SituacaoCategoriaEssencial
+}
+
+export interface CoberturaEssenciais {
+  itens: CategoriaEssencial[]
+  contratadas: number
+  total: number
+  emCotacao: number
+  emNegociacao: number
+}
+
+const ORDEM_SITUACAO_ESSENCIAL: Record<SituacaoCategoriaEssencial, number> = {
+  SemFornecedor: 0,
+  Cotacao: 1,
+  EmNegociacao: 2,
+  Contratado: 3,
+}
+
+function situacaoDaCategoria(statusDaCategoria: StatusFornecedorEvento[]): SituacaoCategoriaEssencial {
+  if (statusDaCategoria.includes('Contratado')) {
+    return 'Contratado'
+  }
+  if (statusDaCategoria.includes('EmNegociacao')) {
+    return 'EmNegociacao'
+  }
+  return statusDaCategoria.includes('Cotacao') ? 'Cotacao' : 'SemFornecedor'
+}
+
+export function coberturaEssenciais(
+  vinculos: FornecedorEventoDto[],
+  essenciais: readonly CategoriaFornecedor[],
+): CoberturaEssenciais {
+  const ativos = vinculos.filter((vinculo) => vinculo.status !== 'Cancelado')
+  const unicas = essenciais.filter((categoria, indice) => essenciais.indexOf(categoria) === indice)
+  const itens = unicas
+    .map((categoria, indice) => ({
+      indice,
+      categoria,
+      situacao: situacaoDaCategoria(
+        ativos.filter((vinculo) => vinculo.fornecedor.categoria === categoria).map((vinculo) => vinculo.status),
+      ),
+    }))
+    .sort((a, b) => ORDEM_SITUACAO_ESSENCIAL[a.situacao] - ORDEM_SITUACAO_ESSENCIAL[b.situacao] || a.indice - b.indice)
+    .map(({ categoria, situacao }) => ({ categoria, situacao }))
+  return {
+    itens,
+    contratadas: itens.filter((item) => item.situacao === 'Contratado').length,
+    total: itens.length,
+    emCotacao: ativos.filter((vinculo) => vinculo.status === 'Cotacao').length,
+    emNegociacao: ativos.filter((vinculo) => vinculo.status === 'EmNegociacao').length,
+  }
+}
