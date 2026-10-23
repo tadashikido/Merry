@@ -60,6 +60,12 @@ npm run type-check
 npm run test
 ```
 
+```bash
+bash infra/testes/env-exemplo.test.sh
+```
+
+Falha se algum `.env*.example` versionado tiver valor com aparência de segredo real (hexadecimal ou Base64 longo, chave PEM, tokens de provedores) ou se o `.env.production.example` vier com segredo preenchido, e confere que o compose de produção recusa o exemplo sem segredos. Roda no job `infra` do CI.
+
 ### Testes E2E (Playwright)
 
 Os cenários ficam em `frontend/e2e/` e não entram na suíte do Vitest. O Playwright sobe um Vite dedicado na porta `5180` (ou reutiliza um já em execução nela), separado do `npm run dev` da 5173. Há duas suítes:
@@ -117,7 +123,7 @@ O workflow `Deploy` roda após o `CI` concluir com sucesso num push em `main` (o
 3. Crie o usuário de deploy sem sudo: `sudo adduser --disabled-password deploy && sudo usermod -aG docker deploy`.
 4. Como `deploy`, gere a chave de leitura do repositório (`ssh-keygen -t ed25519 -f ~/.ssh/github_celebri -N ""`), cadastre a pública como *Deploy key* somente leitura no GitHub e configure `~/.ssh/config` com `Host github.com` → `IdentityFile ~/.ssh/github_celebri`.
 5. `sudo install -d -o deploy -g deploy /var/www/celebri` e, como `deploy`, clone: `git clone git@github.com:tadashikido/Merry.git /var/www/celebri`.
-6. `cp .env.production.example .env && chmod 600 .env` e preencha. O compose interpola `$` dentro do `.env`; se um valor tiver `$`, escreva `$$`. Valores:
+6. `cp .env.production.example .env && chmod 600 .env` e preencha. Os segredos vêm vazios no exemplo e o compose recusa subir sem eles; gere-os na própria VPS (ou na sua máquina) e nunca os versione nem reaproveite de outro ambiente. O compose interpola `$` dentro do `.env`; se um valor tiver `$`, escreva `$$`. Valores:
    - senha do banco com `openssl rand -hex 32` (sem `;`, para não quebrar a connection string);
    - `JWT_CHAVE_ASSINATURA` com `openssl rand -base64 48`;
    - `DADOS_SENSIVEIS_CHAVE` com `openssl rand -base64 32` (guarde uma cópia fora da VPS);
@@ -151,6 +157,36 @@ O workflow `Deploy` roda após o `CI` concluir com sucesso num push em `main` (o
 2. Em *Settings → Environments*, crie o environment `production` (opcionalmente com aprovação obrigatória) e cadastre:
    - secrets `VPS_HOST`, `VPS_USUARIO` (`deploy`), `VPS_CHAVE_SSH` (conteúdo da chave privada `deploy_actions`) e `VPS_KNOWN_HOSTS` (saída de `ssh-keyscan -t ed25519 <host>`, conferida com `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` na VPS);
    - variables `VPS_DIRETORIO` e `VPS_PORTA` (padrão `22`). Sem `VPS_DIRETORIO`, o workflow envia `infra/deploy/localizar-deploy.sh` pela conexão SSH e usa o primeiro diretório que tiver `deploy.sh`, nesta ordem: `/var/www/celebri`, `/var/www/merry` (legado).
+
+### Segredos de produção vazados no histórico
+
+Desde o commit `2b6fe2d` (primeiro deploy) até a limpeza, o `.env.production.example` trazia valores com aparência de segredo real em `POSTGRES_PASSWORD`, `JWT_CHAVE_ASSINATURA` e `DADOS_SENSIVEIS_CHAVE`. O arquivo foi limpo, mas os valores continuam no histórico do git já enviado ao GitHub e devem ser tratados como públicos. Se a VPS usa algum deles, rotacione.
+
+**1. Verificar se a VPS usa os valores vazados** (como `deploy`; o clone da VPS já contém o commit `2b6fe2d` e nada é impresso além do resultado):
+
+```bash
+cd /var/www/celebri
+for nome in POSTGRES_PASSWORD JWT_CHAVE_ASSINATURA DADOS_SENSIVEIS_CHAVE; do
+  vazado=$(git show 2b6fe2d:.env.production.example | grep -E "^$nome=" | cut -d= -f2- | tr -d "\"'\r")
+  atual=$(grep -E "^$nome=" .env | tail -n 1 | cut -d= -f2- | tr -d "\"'\r")
+  if [ -n "$vazado" ] && [ "$vazado" = "$atual" ]; then echo "$nome: usa o valor vazado, rotacione"; else echo "$nome: diferente do valor vazado"; fi
+done
+```
+
+**2. Rotacionar o que estiver em uso**, nesta ordem, com `cd /var/www/celebri` e `C="docker compose -f docker-compose.prod.yml"`:
+
+| Segredo | Como rotacionar | Impacto |
+|---|---|---|
+| `POSTGRES_PASSWORD` | Trocar a variável não muda a senha de um banco já criado. Altere no PostgreSQL primeiro: `$C exec db psql -U casamento -d casamento` e, no prompt, `\password casamento` com a saída de `openssl rand -hex 32`. Grave o mesmo valor no `.env` e rode `$C up -d --force-recreate api` | API indisponível por alguns segundos; nenhum dado perdido. Se o `.env` e o banco ficarem diferentes, a API não conecta |
+| `JWT_CHAVE_ASSINATURA` | `openssl rand -base64 48` no `.env` e `$C up -d --force-recreate api` | Tokens de acesso emitidos deixam de valer, inclusive os forjados com a chave vazada; a sessão é renovada pelo refresh token (cookie `casamento_rt`), que não depende da chave. Os tokens dos links de RSVP e cronograma são cifrados com chave derivada desta: os links já enviados continuam funcionando, mas o painel não consegue reexibi-los (link irrecuperável) e gerar um novo invalida o anterior. Prefira rotacionar antes de enviar convites em massa |
+| `DADOS_SENSIVEIS_CHAVE` | **Não troque direto se houver dados.** Conte os registros: `$C exec -T db psql -U casamento -d casamento -tc "select count(*) from dados_sensiveis_convidados where conteudo_cifrado is not null"`. Se for zero, ou se a perda for aceita formalmente, gere `openssl rand -base64 32`, grave no `.env`, rode `$C up -d --force-recreate api` e guarde a nova chave fora da VPS. Se houver dados a preservar, a rotação depende de uma tarefa de backend que aceite a chave anterior e recifre os registros | Sem recifragem, todas as restrições alimentares e necessidades especiais gravadas ficam ilegíveis: o rótulo `casamento/dados-sensiveis/v1` amarra cada registro à chave. O job de retenção apaga esses dados após o evento, o que reduz o volume com o tempo |
+| `SMTP_USUARIO` / `SMTP_SENHA` | Nunca estiveram preenchidos no exemplo. Troque no provedor só se tiverem sido expostos por outro meio | Envio de e-mail falha até o `.env` receber a credencial nova |
+
+**3. Depois da rotação:** backups do banco feitos enquanto a chave vazada de dados sensíveis estava em uso continuam legíveis com ela; apague-os ou guarde-os cifrados. Restrições alimentares são dado de saúde (LGPD, art. 11): se houver indício de acesso indevido, avalie a comunicação de incidente (art. 48).
+
+**4. Histórico do git:** reescrever o histórico (por exemplo com `git filter-repo`) exige force push na `main`, quebra os clones existentes (inclusive o da VPS, que só avança por fast-forward) e não revoga cópias já feitas. A medida efetiva é a rotação; a reescrita fica a critério do dono do repositório. Ative também *Settings → Code security → Secret scanning* e *Push protection* no GitHub para barrar novos vazamentos.
+
+Para não repetir: segredos são gerados na VPS ou localmente e ficam só no `.env` (ignorado pelo git). O teste `infra/testes/env-exemplo.test.sh` faz o CI falhar se um `.env*.example` voltar a ter valor com aparência de segredo.
 
 ### Nomes físicos preservados no renome para Celebri
 
