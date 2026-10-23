@@ -14,10 +14,10 @@ export interface EventoArquivo {
   data: string
 }
 
-export function linhasCsvMesas(mapa: MapaMesasDto): Celula[][] {
+export function linhasCsvMesas(mapa: MapaMesasDto, rotuloEspecial?: string): Celula[][] {
   const linhas: Celula[][] = []
   for (const { mesa, pessoas } of mesasComPessoas(mapa.mesas, mapa.pessoas, mapa.pessoas)) {
-    const rotulo = rotuloMesa(mesa)
+    const rotulo = rotuloMesa(mesa, rotuloEspecial)
     if (pessoas.length === 0) {
       linhas.push([rotulo, mesa.capacidade, '', '', '', ''])
       continue
@@ -46,8 +46,8 @@ export function linhasCsvMesas(mapa: MapaMesasDto): Celula[][] {
   return linhas
 }
 
-export function gerarCsvMesas(mapa: MapaMesasDto): string {
-  return gerarCsv(CABECALHO_CSV_MESAS, linhasCsvMesas(mapa))
+export function gerarCsvMesas(mapa: MapaMesasDto, rotuloEspecial?: string): string {
+  return gerarCsv(CABECALHO_CSV_MESAS, linhasCsvMesas(mapa, rotuloEspecial))
 }
 
 export function nomeArquivoMesas(evento: EventoArquivo): string {

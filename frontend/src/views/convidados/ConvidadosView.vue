@@ -36,7 +36,7 @@ import {
   gruposSugeridos,
   referenciaDoEvento,
 } from '@/textos/convidados'
-import { ehTipoEvento } from '@/textos/tiposEvento'
+import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import { TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
 import { TEXTOS_ENVIO_CONVITE, VARIANTE_STATUS_ENVIO } from '@/textos/rsvp'
 import { RESPOSTAS_RSVP, type ConviteDto, type RespostaRsvp } from '@/tipos/convidados'
@@ -92,7 +92,7 @@ function abrirMesas() {
 }
 
 function mesaDaPessoa(mesaId: string | null | undefined): string | null {
-  return rotuloMesaPorId(lista.value?.mesas, mesaId)
+  return rotuloMesaPorId(lista.value?.mesas, mesaId, vocabularioOuNeutro(tipoEvento.value).mesaEspecial)
 }
 
 function abrirPainel() {

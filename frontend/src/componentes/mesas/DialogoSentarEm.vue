@@ -8,6 +8,8 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import OcupacaoMesa from '@/componentes/base/OcupacaoMesa.vue'
 import { breakpoints } from '@/design/tokens'
 import { TEXTOS_MESAS } from '@/textos/mesas'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import type { TipoEvento } from '@/tipos/eventos'
 import type { MesaDto, PessoaMesaDto } from '@/tipos/mesas'
 import { opcoesSentar, rotuloMesa } from '@/utilitarios/mesas'
 
@@ -19,8 +21,9 @@ const props = withDefaults(
     executando?: boolean
     mensagem?: string | null
     podeCriarMesa?: boolean
+    tipoEvento?: TipoEvento | null
   }>(),
-  { executando: false, mensagem: null, podeCriarMesa: true },
+  { executando: false, mensagem: null, podeCriarMesa: true, tipoEvento: null },
 )
 
 const emit = defineEmits<{ 'update:visivel': [valor: boolean]; escolher: [mesaId: string]; 'criar-mesa': [] }>()
@@ -28,6 +31,7 @@ const emit = defineEmits<{ 'update:visivel': [valor: boolean]; escolher: [mesaId
 const escolhida = ref<string | null>(null)
 const pontosQuebra = { [`${breakpoints.tablet - 1}px`]: '100vw' }
 
+const rotuloEspecial = computed(() => vocabularioOuNeutro(props.tipoEvento).mesaEspecial)
 const opcoes = computed(() => opcoesSentar(props.mesas, props.selecionadas))
 const titulo = computed(() => TEXTOS_MESAS.sentarTitulo(props.selecionadas.length))
 
@@ -129,7 +133,7 @@ function confirmar() {
         <label
           :for="`sentar-${opcao.mesa.id}`"
           class="dialogo-sentar__rotulo"
-        >{{ rotuloMesa(opcao.mesa) }}</label>
+        >{{ rotuloMesa(opcao.mesa, rotuloEspecial) }}</label>
         <OcupacaoMesa
           :ocupados="opcao.mesa.ocupacao"
           :lugares="opcao.mesa.capacidade"

@@ -1,7 +1,8 @@
 import { TEXTOS_MESAS } from '@/textos/mesas'
 import type { MesaResumoDto } from '@/tipos/convidados'
-import type { AvisoSaidaMesaDto, MesaDto, PessoaMesaDto } from '@/tipos/mesas'
+import type { AvisoSaidaMesaDto, MapaMesasDto, MesaDto, PessoaMesaDto } from '@/tipos/mesas'
 import { contemTexto, normalizarParaBusca } from '@/utilitarios/busca'
+import { faixaConfirmacao } from '@/utilitarios/painelConfirmacoes'
 
 export const GRUPO_SEM_GRUPO = '__sem-grupo__'
 export const FILTRO_TODOS = '__todos__'
@@ -36,18 +37,21 @@ export interface OpcaoSentar {
   atual: boolean
 }
 
-export function rotuloMesa(mesa: Pick<MesaResumoDto, 'numero' | 'nome' | 'especial'>): string {
+export function rotuloMesa(
+  mesa: Pick<MesaResumoDto, 'numero' | 'nome' | 'especial'>,
+  rotuloEspecial: string = TEXTOS_MESAS.rotuloMesaAnfitrioes,
+): string {
   if (mesa.especial && !mesa.nome) {
-    return TEXTOS_MESAS.rotuloMesaAnfitrioes
+    return rotuloEspecial
   }
   return TEXTOS_MESAS.rotuloMesa(mesa.numero, mesa.nome)
 }
 
-export function rotuloMesaAviso(aviso: AvisoSaidaMesaDto): string | null {
+export function rotuloMesaAviso(aviso: AvisoSaidaMesaDto, rotuloEspecial?: string): string | null {
   if (aviso.mesaNumero === null) {
     return null
   }
-  return rotuloMesa({ numero: aviso.mesaNumero, nome: aviso.mesaNome, especial: aviso.mesaEspecial ?? false })
+  return rotuloMesa({ numero: aviso.mesaNumero, nome: aviso.mesaNome, especial: aviso.mesaEspecial ?? false }, rotuloEspecial)
 }
 
 export function chaveGrupoMesa(grupo: string | null): string {
@@ -149,7 +153,12 @@ export function convitesDivididos(pessoas: readonly PessoaMesaDto[]): Set<string
   return divididos
 }
 
-export function descreverDivisao(pessoas: readonly PessoaMesaDto[], mesas: readonly MesaDto[], conviteId: string): string {
+export function descreverDivisao(
+  pessoas: readonly PessoaMesaDto[],
+  mesas: readonly MesaDto[],
+  conviteId: string,
+  rotuloEspecial?: string,
+): string {
   const doConvite = pessoas.filter((pessoa) => pessoa.conviteId === conviteId)
   if (doConvite.length === 0) {
     return ''
@@ -158,7 +167,7 @@ export function descreverDivisao(pessoas: readonly PessoaMesaDto[], mesas: reado
   for (const mesa of mesas) {
     const quantidade = doConvite.filter((pessoa) => pessoa.mesaId === mesa.id).length
     if (quantidade > 0) {
-      partes.push(TEXTOS_MESAS.divididoParteMesa(quantidade, rotuloMesa(mesa)))
+      partes.push(TEXTOS_MESAS.divididoParteMesa(quantidade, rotuloMesa(mesa, rotuloEspecial)))
     }
   }
   const semMesa = doConvite.filter((pessoa) => pessoa.mesaId === null).length
@@ -181,22 +190,26 @@ export function opcoesSentar(mesas: readonly MesaDto[], selecionadas: readonly P
   })
 }
 
-export function rotuloMesaPorId(mesas: readonly MesaResumoDto[] | undefined, mesaId: string | null | undefined): string | null {
+export function rotuloMesaPorId(
+  mesas: readonly MesaResumoDto[] | undefined,
+  mesaId: string | null | undefined,
+  rotuloEspecial?: string,
+): string | null {
   if (!mesaId || !mesas) {
     return null
   }
   const mesa = mesas.find((item) => item.id === mesaId)
-  return mesa ? rotuloMesa(mesa) : null
+  return mesa ? rotuloMesa(mesa, rotuloEspecial) : null
 }
 
-export function descreverAviso(aviso: AvisoSaidaMesaDto): string {
+export function descreverAviso(aviso: AvisoSaidaMesaDto, rotuloEspecial?: string): string {
   const motivo =
     aviso.resposta === 'Recusado'
       ? TEXTOS_MESAS.avisoRecusou
       : aviso.resposta === 'Pendente'
         ? TEXTOS_MESAS.avisoPendente
         : TEXTOS_MESAS.avisoConfirmou
-  const rotulo = rotuloMesaAviso(aviso)
+  const rotulo = rotuloMesaAviso(aviso, rotuloEspecial)
   const saida = rotulo ? TEXTOS_MESAS.avisoSaiuDa(rotulo) : TEXTOS_MESAS.avisoMesaExcluida
   return `${motivo}, ${saida}`
 }
@@ -208,4 +221,70 @@ export function proximoNumeroMesa(mesas: readonly Pick<MesaDto, 'numero'>[]): nu
     numero++
   }
   return numero
+}
+
+export interface SituacaoFechamentoMesas {
+  lugares: number
+  confirmados: number
+  semMesa: number
+  faltamLugares: number
+  sobramLugares: number
+  maximo: number | null
+  faltariamSeTodosVierem: number | null
+  mesaEspecial: MesaDto | null
+  completas: number
+  vazias: number
+  criancasSemMesa: number
+  convitesDivididos: number
+}
+
+export function situacaoFechamentoMesas(
+  mapa: Pick<MapaMesasDto, 'mesas' | 'pessoas' | 'totais'>,
+  pendentes: number | null,
+): SituacaoFechamentoMesas {
+  const { totais, mesas, pessoas } = mapa
+  const projecao = pendentes !== null && pendentes > 0 ? faixaConfirmacao(totais.confirmados, pendentes).maximo : null
+  return {
+    lugares: totais.capacidadeTotal,
+    confirmados: totais.confirmados,
+    semMesa: totais.semMesa,
+    faltamLugares: Math.max(totais.semMesa - totais.lugaresLivres, 0),
+    sobramLugares: Math.max(totais.lugaresLivres - totais.semMesa, 0),
+    maximo: projecao,
+    faltariamSeTodosVierem: projecao === null ? null : Math.max(projecao - totais.capacidadeTotal, 0),
+    mesaEspecial: mesas.find((mesa) => mesa.especial) ?? null,
+    completas: mesas.filter((mesa) => mesa.capacidade > 0 && mesa.ocupacao >= mesa.capacidade).length,
+    vazias: mesas.filter((mesa) => mesa.ocupacao === 0).length,
+    criancasSemMesa: pessoas.filter((pessoa) => pessoa.mesaId === null && pessoa.faixaEtaria === 'Crianca').length,
+    convitesDivididos: convitesDivididos(pessoas).size,
+  }
+}
+
+export interface GrupoSemMesa {
+  chave: string
+  rotulo: string
+  quantidade: number
+}
+
+export function semMesaPorGrupo(pessoas: readonly PessoaMesaDto[]): GrupoSemMesa[] {
+  const grupos = new Map<string, GrupoSemMesa>()
+  for (const pessoa of pessoas) {
+    if (pessoa.mesaId !== null) {
+      continue
+    }
+    const chave = chaveGrupoMesa(pessoa.grupo)
+    const existente = grupos.get(chave)
+    if (existente) {
+      existente.quantidade += 1
+    } else {
+      const rotulo = chave === GRUPO_SEM_GRUPO ? TEXTOS_MESAS.semGrupo : (pessoa.grupo?.trim() ?? TEXTOS_MESAS.semGrupo)
+      grupos.set(chave, { chave, rotulo, quantidade: 1 })
+    }
+  }
+  return [...grupos.values()].sort((a, b) => {
+    if (a.chave === GRUPO_SEM_GRUPO || b.chave === GRUPO_SEM_GRUPO) {
+      return a.chave === GRUPO_SEM_GRUPO ? 1 : -1
+    }
+    return b.quantidade - a.quantidade || a.rotulo.localeCompare(b.rotulo, 'pt-BR')
+  })
 }

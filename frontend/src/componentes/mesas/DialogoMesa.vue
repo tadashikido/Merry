@@ -11,14 +11,17 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { breakpoints } from '@/design/tokens'
 import { useMesasStore } from '@/stores/mesas'
+import { gruposSugeridos } from '@/textos/convidados'
 import { TEXTOS_MESAS } from '@/textos/mesas'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import type { TipoEvento } from '@/tipos/eventos'
 import type { MesaDto } from '@/tipos/mesas'
 import { LIMITES_MESA, regraCapacidadeMesa, regraNomeMesa, regraNumeroMesa } from '@/utilitarios/validacaoMesas'
 import { rotuloMesa } from '@/utilitarios/mesas'
 
 const props = withDefaults(
-  defineProps<{ visivel: boolean; eventoId: string; mesa?: MesaDto | null; numeroSugerido?: number }>(),
-  { mesa: null, numeroSugerido: 1 },
+  defineProps<{ visivel: boolean; eventoId: string; mesa?: MesaDto | null; numeroSugerido?: number; tipoEvento?: TipoEvento | null }>(),
+  { mesa: null, numeroSugerido: 1, tipoEvento: null },
 )
 
 const emit = defineEmits<{ 'update:visivel': [valor: boolean]; salvo: [mensagem: string] }>()
@@ -34,7 +37,11 @@ const formulario = useFormulario(
 )
 
 const edicao = computed(() => props.mesa !== null)
-const titulo = computed(() => (props.mesa ? TEXTOS_MESAS.formEditar(rotuloMesa(props.mesa)) : TEXTOS_MESAS.formNova))
+const rotuloEspecial = computed(() => vocabularioOuNeutro(props.tipoEvento).mesaEspecial)
+const dicaNome = computed(() => TEXTOS_MESAS.dicaNomePara(gruposSugeridos(props.tipoEvento).slice(0, 2)))
+const titulo = computed(() =>
+  props.mesa ? TEXTOS_MESAS.formEditar(rotuloMesa(props.mesa, rotuloEspecial.value)) : TEXTOS_MESAS.formNova,
+)
 
 const aberto = computed({
   get: () => props.visivel,
@@ -104,7 +111,7 @@ async function salvar() {
     }
     return
   }
-  const rotulo = rotuloMesa(resultado.valor)
+  const rotulo = rotuloMesa(resultado.valor, rotuloEspecial.value)
   emit('salvo', edicao.value ? TEXTOS_MESAS.mesaSalva(rotulo) : TEXTOS_MESAS.mesaCriada(rotulo))
   emit('update:visivel', false)
 }
@@ -183,7 +190,7 @@ async function salvar() {
         v-slot="{ id: idEntrada, invalido, descritoPor }"
         :rotulo="TEXTOS_MESAS.campoNome"
         id-campo="mesa-nome"
-        :dica="TEXTOS_MESAS.dicaNome"
+        :dica="dicaNome"
         :erro="formulario.erros.nome"
       >
         <InputText
@@ -210,7 +217,7 @@ async function salvar() {
           data-teste="campo-especial-mesa"
         />
         <span class="dialogo-mesa__especial-textos">
-          <label for="mesa-especial">{{ TEXTOS_MESAS.campoAnfitrioes }}</label>
+          <label for="mesa-especial">{{ rotuloEspecial }}</label>
           <span
             id="mesa-especial-dica"
             class="dialogo-mesa__dica"

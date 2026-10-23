@@ -131,7 +131,7 @@ describe('MesasView reestruturada', { timeout: 30_000 }, () => {
 
     const coluna = wrapper!.get('[data-teste="coluna-mesas"]')
     expect(coluna.find('.mesas__grade').exists()).toBe(false)
-    expect(coluna.text()).toContain(TEXTOS_MESAS.vazioMesasTitulo)
+    expect(coluna.text()).toContain('Crie as mesas do casamento')
     expect(coluna.find('[data-teste="nova-mesa-lista"]').exists()).toBe(true)
   })
 

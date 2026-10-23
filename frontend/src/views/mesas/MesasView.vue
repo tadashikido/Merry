@@ -21,14 +21,18 @@ import ResumoContagem from '@/componentes/base/ResumoContagem.vue'
 import type { ItemContagem, ItemMenuAcoes } from '@/componentes/base/tipos'
 import DialogoMesa from '@/componentes/mesas/DialogoMesa.vue'
 import DialogoSentarEm from '@/componentes/mesas/DialogoSentarEm.vue'
+import FechamentoMesas from '@/componentes/mesas/FechamentoMesas.vue'
+import GruposSemMesa from '@/componentes/mesas/GruposSemMesa.vue'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useTelaPequena } from '@/composables/useTelaPequena'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
+import { useConvidadosStore } from '@/stores/convidados'
 import { useEventosStore } from '@/stores/eventos'
 import { useMesasStore } from '@/stores/mesas'
 import { TEXTOS_MESAS } from '@/textos/mesas'
+import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { FalhaEvento } from '@/stores/eventos'
 import type { MesaDto, PessoaMesaDto } from '@/tipos/mesas'
 import { baixarTexto } from '@/utilitarios/arquivo'
@@ -58,6 +62,7 @@ const props = defineProps<{ id: string }>()
 const autenticacao = useAutenticacaoStore()
 const eventos = useEventosStore()
 const store = useMesasStore()
+const convidados = useConvidadosStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
 const { confirmarExclusao } = useConfirmarExclusao()
@@ -86,6 +91,16 @@ const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
 const arquivado = computed(() => mapa.value?.eventoArquivado ?? evento.value?.arquivado ?? false)
 const podeEditar = computed(() => mapa.value !== null && !arquivado.value)
 
+const tipo = computed(() => (evento.value && ehTipoEvento(evento.value.tipo) ? evento.value.tipo : null))
+const vocabulario = computed(() => vocabularioOuNeutro(tipo.value))
+const rotuloEspecial = computed(() => vocabulario.value.mesaEspecial)
+const tituloVazio = computed(() =>
+  TEXTOS_MESAS.vazioMesasTituloPara(tipo.value ? vocabulario.value.referencia.contracaoDe : TEXTOS_MESAS.referenciaSemTipo),
+)
+const pendentes = computed(() =>
+  convidados.eventoIdTotais === props.id && convidados.totais ? convidados.totais.pendentes.total : null,
+)
+
 const nomes = computed(() =>
   evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
@@ -108,7 +123,7 @@ const opcoesDeConvite = computed(() => opcoesConvite(pessoas.value))
 const estavaNaMesa = computed(() => {
   const mapaAvisos = new Map<string, string>()
   for (const aviso of mapa.value?.avisosSaida ?? []) {
-    const rotulo = rotuloMesaAviso(aviso)
+    const rotulo = rotuloMesaAviso(aviso, rotuloEspecial.value)
     if (rotulo) {
       mapaAvisos.set(aviso.convidadoId, TEXTOS_MESAS.estavaNaMesa(rotulo))
     }
@@ -166,6 +181,7 @@ watch(
     selecionados.value = []
     void eventos.obter(id)
     void store.carregar(id)
+    void convidados.carregarTotais(id)
   },
   { immediate: true },
 )
@@ -234,6 +250,10 @@ function alternarDivisao(conviteId: string) {
   divisaoAberta.value = divisaoAberta.value === conviteId ? null : conviteId
 }
 
+function alternarGrupo(chave: string) {
+  grupo.value = grupo.value === chave ? FILTRO_TODOS : chave
+}
+
 function limparFiltros() {
   busca.value = ''
   grupo.value = FILTRO_TODOS
@@ -268,7 +288,7 @@ function acaoMesa(chave: string, mesa: MesaDto) {
     dialogoMesaVisivel.value = true
     return
   }
-  const rotulo = rotuloMesa(mesa)
+  const rotulo = rotuloMesa(mesa, rotuloEspecial.value)
   const eventoId = props.id
   confirmarExclusao({
     nomeItem: rotulo,
@@ -308,7 +328,7 @@ async function sentar(mesaId: string) {
     notificarFalha(resultado.falha)
     return
   }
-  const mensagem = TEXTOS_MESAS.sentadas(ids.length, rotuloMesa(mesa))
+  const mensagem = TEXTOS_MESAS.sentadas(ids.length, rotuloMesa(mesa, rotuloEspecial.value))
   dialogoSentarVisivel.value = false
   limparSelecao()
   notificacao.sucesso(mensagem)
@@ -360,7 +380,7 @@ function baixarPlanilha() {
   if (!mapa.value || !evento.value) {
     return
   }
-  baixarTexto(nomeArquivoMesas(evento.value), gerarCsvMesas(mapa.value))
+  baixarTexto(nomeArquivoMesas(evento.value), gerarCsvMesas(mapa.value, rotuloEspecial.value))
   notificacao.sucesso(TEXTOS_MESAS.csvBaixado)
 }
 
@@ -496,7 +516,7 @@ function acaoCabecalho(chave: string) {
                 >
                   <strong>{{ aviso.nome }}</strong><template v-if="aviso.convite !== aviso.nome">
                     ({{ aviso.convite }})
-                  </template> — {{ descreverAviso(aviso) }}, {{ formatarDataCalendarioCurta(aviso.saiuEm.slice(0, 10)) }}
+                  </template> — {{ descreverAviso(aviso, rotuloEspecial) }}, {{ formatarDataCalendarioCurta(aviso.saiuEm.slice(0, 10)) }}
                 </li>
               </ul>
             </div>
@@ -516,7 +536,7 @@ function acaoCabecalho(chave: string) {
             class="mesas__vazio"
           >
             <EstadoVazio
-              :titulo="TEXTOS_MESAS.vazioMesasTitulo"
+              :titulo="tituloVazio"
               :descricao="TEXTOS_MESAS.vazioMesasTexto"
               icone="mesa"
             >
@@ -537,6 +557,13 @@ function acaoCabecalho(chave: string) {
           </div>
 
           <template v-else>
+            <FechamentoMesas
+              :mapa="mapa"
+              :tipo="tipo"
+              :pendentes="pendentes"
+              :arquivado="arquivado"
+            />
+
             <div
               class="mesas__filtros"
               role="search"
@@ -626,6 +653,11 @@ function acaoCabecalho(chave: string) {
                   </h2>
                   <span class="mesas__coluna-contagem numeros-tabulares">{{ TEXTOS_MESAS.contagemSemMesa(mapa.totais.semMesa) }}</span>
                 </header>
+                <GruposSemMesa
+                  :pessoas="pessoas"
+                  :grupo-ativo="grupo"
+                  @filtrar="alternarGrupo"
+                />
                 <p
                   v-if="podeEditar && mapa.totais.semMesa > 0"
                   class="mesas__instrucao"
@@ -736,7 +768,7 @@ function acaoCabecalho(chave: string) {
                       class="mesas__divisao"
                       data-teste="detalhe-divisao"
                     >
-                      {{ descreverDivisao(pessoas, mesas, grupoConvite.conviteId) }}
+                      {{ descreverDivisao(pessoas, mesas, grupoConvite.conviteId, rotuloEspecial) }}
                     </p>
                   </li>
                 </ul>
@@ -759,7 +791,7 @@ function acaoCabecalho(chave: string) {
 
                 <EstadoVazio
                   v-if="mesas.length === 0"
-                  :titulo="TEXTOS_MESAS.vazioMesasTitulo"
+                  :titulo="tituloVazio"
                   :descricao="TEXTOS_MESAS.vazioMesasTexto"
                   icone="mesa"
                 >
@@ -795,7 +827,7 @@ function acaoCabecalho(chave: string) {
                         :id="`mesa-${item.mesa.id}`"
                         class="mesas__mesa-titulo"
                       >
-                        {{ rotuloMesa(item.mesa) }}
+                        {{ rotuloMesa(item.mesa, rotuloEspecial) }}
                       </h3>
                       <OcupacaoMesa
                         :ocupados="item.mesa.ocupacao"
@@ -805,7 +837,7 @@ function acaoCabecalho(chave: string) {
                         v-if="podeEditar"
                         :itens="itensMenuMesa"
                         :rotulo="TEXTOS_MESAS.maisAcoes"
-                        :rotulo-acessivel="TEXTOS_MESAS.acoesMesa(rotuloMesa(item.mesa))"
+                        :rotulo-acessivel="TEXTOS_MESAS.acoesMesa(rotuloMesa(item.mesa, rotuloEspecial))"
                         somente-icone
                         data-teste="menu-mesa"
                         @selecionar="acaoMesa($event, item.mesa)"
@@ -900,6 +932,7 @@ function acaoCabecalho(chave: string) {
         :evento-id="id"
         :mesa="mesaEmEdicao"
         :numero-sugerido="proximoNumeroMesa(mesas)"
+        :tipo-evento="tipo"
         @salvo="aoSalvarMesa"
       />
       <DialogoSentarEm
@@ -910,6 +943,7 @@ function acaoCabecalho(chave: string) {
         :executando="sentando"
         :mensagem="mensagemSentar"
         :pode-criar-mesa="podeEditar"
+        :tipo-evento="tipo"
         @escolher="sentar"
         @criar-mesa="novaMesa"
       />

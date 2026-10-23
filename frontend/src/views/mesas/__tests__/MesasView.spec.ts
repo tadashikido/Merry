@@ -102,14 +102,14 @@ describe('MesasView', { timeout: 30_000 }, () => {
     const aviso = await excluirMesa('Mesa 2 · Padrinhos')
 
     expect(aviso.mensagem).toBe(TEXTOS_MESAS.mesaExcluida('Mesa 2 · Padrinhos'))
-    expect(titulosMesas()).toEqual(['Mesa dos anfitriões', 'Mesa 3 · Tios'])
+    expect(titulosMesas()).toEqual(['Mesa dos noivos', 'Mesa 3 · Tios'])
     expect(wrapper!.get('[data-teste="coluna-sem-mesa"]').text()).toContain('Rui Fontes')
 
     await aviso.desfazer!()
     await aviso.aoFechar!()
     await flushPromises()
 
-    expect(titulosMesas()).toEqual(['Mesa dos anfitriões', 'Mesa 2 · Padrinhos', 'Mesa 3 · Tios'])
+    expect(titulosMesas()).toEqual(['Mesa dos noivos', 'Mesa 2 · Padrinhos', 'Mesa 3 · Tios'])
     expect(wrapper!.get('[data-teste="coluna-sem-mesa"]').text()).not.toContain('Rui Fontes')
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_MESAS.mesaRestaurada('Mesa 2 · Padrinhos'))
     expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_MESAS}/${MESA_PADRINHOS}`)).toHaveLength(0)
@@ -153,7 +153,7 @@ describe('MesasView', { timeout: 30_000 }, () => {
     expect(semMesa.text()).toContain('=Primo Zeca')
     expect(semMesa.text()).not.toContain('Rui Fontes')
     const mesas = wrapper!.findAll('[data-teste="mesa"]')
-    expect(mesas.map((mesa) => mesa.get('h3').text())).toEqual(['Mesa dos anfitriões', 'Mesa 2 · Padrinhos', 'Mesa 3 · Tios'])
+    expect(mesas.map((mesa) => mesa.get('h3').text())).toEqual(['Mesa dos noivos', 'Mesa 2 · Padrinhos', 'Mesa 3 · Tios'])
     expect(mesas[0]!.classes()).toContain('mesas__mesa--especial')
     expect(mesas[1]!.get('[data-teste="texto-ocupacao"]').text()).toBe('1 de 3')
     expect(mesas[2]!.text()).toContain(TEXTOS_MESAS.mesaVazia)
@@ -267,7 +267,7 @@ describe('MesasView', { timeout: 30_000 }, () => {
     await linha('Carla Souza').get('[data-teste="convite-dividido"]').trigger('click')
     await flushPromises()
 
-    expect(wrapper!.get('[data-teste="detalhe-divisao"]').text()).toBe('Família Souza: 1 na Mesa dos anfitriões, 2 sem mesa.')
+    expect(wrapper!.get('[data-teste="detalhe-divisao"]').text()).toBe('Família Souza: 1 na Mesa dos noivos, 2 sem mesa.')
   })
 
   it('[COMPONENTE] filtros por grupo e busca reduzem as listas e "Limpar filtros" restaura', async () => {
@@ -347,7 +347,7 @@ describe('MesasView', { timeout: 30_000 }, () => {
     rotearFetch(fetchSimulado, ...rotasPadrao(mapaExemplo({ mesas: [], pessoas: [] })))
     await abrir()
 
-    expect(wrapper!.get('[data-teste="estado-vazio"]').text()).toContain(TEXTOS_MESAS.vazioMesasTitulo)
+    expect(wrapper!.get('[data-teste="estado-vazio"]').text()).toContain('Crie as mesas do casamento')
     expect(wrapper!.find('[data-teste="nova-mesa-vazio"]').exists()).toBe(true)
   })
 

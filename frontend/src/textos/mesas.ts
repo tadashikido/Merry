@@ -71,9 +71,8 @@ export const TEXTOS_MESAS = {
   formEditar: (rotulo: string) => `Editar ${rotulo}`,
   campoNumero: 'Número',
   campoNome: 'Nome (opcional)',
-  dicaNome: 'Ex.: Padrinhos, Amigos da faculdade',
+  dicaNomePara: (grupos: readonly string[]) => (grupos.length > 0 ? `Ex.: ${grupos.join(', ')}` : 'Ex.: Família, Amigos'),
   campoLugares: 'Lugares',
-  campoAnfitrioes: 'Mesa dos anfitriões',
   dicaAnfitrioes: 'Aparece primeiro na lista e na impressão.',
   criarMesa: 'Criar mesa',
   salvarMesa: 'Salvar mesa',
@@ -120,7 +119,8 @@ export const TEXTOS_MESAS = {
   divididoParteSemMesa: (quantidade: number) => `${formatarNumero(quantidade)} sem mesa`,
   crianca: 'Criança',
   acompanhante: 'Acompanhante',
-  vazioMesasTitulo: 'Crie as mesas da recepção',
+  vazioMesasTituloPara: (contracaoDe: string) => `Crie as mesas ${contracaoDe}`,
+  referenciaSemTipo: 'do evento',
   vazioMesasTexto: 'Cadastre cada mesa com o número e os lugares. Depois, sente os confirmados em poucos toques.',
   vazioConfirmadosTitulo: 'Ninguém confirmou presença ainda',
   vazioConfirmadosTexto: 'As pessoas aparecem aqui quando confirmam.',
@@ -129,6 +129,58 @@ export const TEXTOS_MESAS = {
   arquivado: 'Este evento está arquivado. Restaure para voltar a organizar as mesas.',
   acaoAbrir: 'Mesas',
   semMesa: 'Sem mesa',
+} as const
+
+function lugares(quantidade: number): string {
+  return `${formatarNumero(quantidade)} ${plural(quantidade, 'lugar', 'lugares')}`
+}
+
+export const TEXTOS_FECHAMENTO_MESAS = {
+  titulo: 'Para fechar as mesas',
+  numerosRotulo: 'Lugares e pessoas',
+  faltam: (quantidade: number) =>
+    `${plural(quantidade, 'Falta', 'Faltam')} ${lugares(quantidade)} para sentar todos os confirmados.`,
+  bastam: (semMesa: number) =>
+    `Os lugares livres bastam para ${plural(semMesa, 'o confirmado', `os ${formatarNumero(semMesa)} confirmados`)} sem mesa.`,
+  todosSentados: (sobram: number) =>
+    sobram > 0
+      ? `Todos os confirmados têm mesa. ${plural(sobram, 'Sobra', 'Sobram')} ${lugares(sobram)}.`
+      : 'Todos os confirmados têm mesa, sem lugar sobrando.',
+  semMesas: (confirmados: number) =>
+    `Ainda não há mesas para ${plural(confirmados, 'o confirmado', `os ${formatarNumero(confirmados)} confirmados`)}.`,
+  semConfirmados: (capacidade: number) =>
+    `As mesas somam ${lugares(capacidade)}. As pessoas aparecem aqui quando confirmam.`,
+  lugares: (quantidade: number) => plural(quantidade, 'lugar', 'lugares'),
+  lugaresAcessivel: (quantidade: number) => `${lugares(quantidade)} nas mesas`,
+  confirmados: (quantidade: number) => plural(quantidade, 'confirmado', 'confirmados'),
+  confirmadosAcessivel: (quantidade: number) =>
+    `${formatarNumero(quantidade)} ${plural(quantidade, 'pessoa confirmada', 'pessoas confirmadas')}`,
+  maximo: 'se todos que faltam vierem',
+  maximoAcessivel: (quantidade: number) => `${pessoas(quantidade)} se todos que faltam vierem`,
+  faltariam: (quantidade: number) => `Se todos que faltam vierem, ${plural(quantidade, 'faltaria', 'faltariam')} ${lugares(quantidade)}.`,
+  cabem: 'Mesmo que todos que faltam venham, os lugares bastam.',
+  observacoesRotulo: 'O que conferir nas mesas',
+  especialDefinida: (termo: string, ocupados: number, capacidade: number) =>
+    `${termo}: ${formatarNumero(ocupados)} de ${lugares(capacidade)} ${plural(capacidade, 'ocupado', 'ocupados')}.`,
+  especialDefinidaComNome: (termo: string, rotulo: string, ocupados: number, capacidade: number) =>
+    `${termo} (${rotulo}): ${formatarNumero(ocupados)} de ${lugares(capacidade)} ${plural(capacidade, 'ocupado', 'ocupados')}.`,
+  especialAusente: (termo: string) =>
+    `Ainda não há ${termo.charAt(0).toLocaleLowerCase('pt-BR')}${termo.slice(1)}. Ao criar ou editar uma mesa, marque “${termo}”.`,
+  completas: (quantidade: number) =>
+    `${formatarNumero(quantidade)} ${plural(quantidade, 'mesa completa', 'mesas completas')}`,
+  vazias: (quantidade: number) =>
+    `${formatarNumero(quantidade)} ${plural(quantidade, 'mesa ainda vazia', 'mesas ainda vazias')}`,
+  criancas: (quantidade: number) =>
+    `${formatarNumero(quantidade)} ${plural(quantidade, 'criança ainda sem mesa', 'crianças ainda sem mesa')}`,
+  divididos: (quantidade: number) =>
+    `${formatarNumero(quantidade)} ${plural(quantidade, 'convite dividido', 'convites divididos')} entre mesas`,
+} as const
+
+export const TEXTOS_GRUPOS_SEM_MESA = {
+  titulo: 'Por grupo',
+  grupoAcessivel: (grupo: string, quantidade: number) => `Ver só ${grupo}: ${formatarNumero(quantidade)} sem mesa`,
+  mais: (quantidade: number) => `e mais ${formatarNumero(quantidade)}`,
+  nota: 'Quem é do mesmo grupo costuma sentar junto.',
 } as const
 
 export const TEXTOS_IMPRESSAO_MESAS = {
