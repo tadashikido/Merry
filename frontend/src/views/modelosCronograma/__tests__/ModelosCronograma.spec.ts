@@ -1078,6 +1078,28 @@ describe('Formulários de modelo de cronograma', () => {
     expect(formulario.compareDocumentPosition(lateral.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
+  it('[INTEGRAÇÃO] salvar e adicionar outro leva o item salvo para a posição sem nova leitura do modelo', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())),
+      quando('POST', ROTA_ITENS, () =>
+        respostaJson(itemModeloCronograma({ id: 'novo', minutosDesdeCerimonia: 120, inicio: '18:00', duracaoMinutos: null, termino: null, atividade: 'Brinde' }), 201),
+      ),
+    )
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`)
+
+    await wrapper.get('#item-modelo-cronograma-atividade').setValue('Brinde')
+    await wrapper.get('#item-modelo-cronograma-inicio').setValue('18:00')
+    await wrapper.get('[data-teste="salvar-outro"]').trigger('click')
+    await flushPromises()
+
+    expect(chamadas(fetchSimulado, 'GET', ROTA_MODELO)).toHaveLength(1)
+    expect((wrapper.get('#item-modelo-cronograma-inicio').element as HTMLInputElement).value).toBe('18:00')
+    const lateral = wrapper.get('[data-teste="lateral-formulario-item"]')
+    expect(lateral.findAll('[data-teste="vizinho-item"]').map((linha) => linha.text())).toContain('Brinde18:00, 2 h depois da cerimônia')
+    expect(lateral.get('[data-teste="dia-item-DiaDoEvento"] [data-teste="contagem-dia-item"]').text()).toContain('4 itens')
+  })
+
   it.each([
     ['sem permissão', () => respostaProblema(403, { title: 'Proibido' }), `/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`],
     ['modelo não encontrado', () => respostaProblema(404, { title: 'Não encontrado' }), `/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`],

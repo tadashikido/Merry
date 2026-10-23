@@ -273,6 +273,9 @@ async function salvar(continuar: boolean) {
   notificacao.sucesso(edicao.value ? TEXTOS_ITEM_MODELO_CRONOGRAMA.toastAtualizado : TEXTOS_ITEM_MODELO_CRONOGRAMA.toastAdicionado)
 
   if (continuar && !props.itemId) {
+    if (modeloCarregado.value) {
+      modeloCarregado.value = { ...modeloCarregado.value, itens: [...modeloCarregado.value.itens, resultado.valor] }
+    }
     const dia = formulario.valores.dia
     const proximo = proximoInicioSugerido(formulario.valores.inicio.trim(), formulario.valores.termino.trim())
     formulario.redefinir()
