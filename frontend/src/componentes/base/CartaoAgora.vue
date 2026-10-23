@@ -15,6 +15,7 @@ const props = withDefaults(
     fornecedor?: string | null
     instrucoes?: string | null
     cerimonia?: boolean
+    rotuloMomento?: string | null
     idTitulo?: string
   }>(),
   {
@@ -25,6 +26,7 @@ const props = withDefaults(
     fornecedor: null,
     instrucoes: null,
     cerimonia: false,
+    rotuloMomento: null,
     idTitulo: 'cartao-agora-titulo',
   },
 )
@@ -58,6 +60,13 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
       data-teste="cartao-agora-atividade"
     >
       {{ atividade }}
+    </p>
+    <p
+      v-if="cerimonia && rotuloMomento"
+      class="cartao-agora__momento"
+      data-teste="cartao-agora-momento"
+    >
+      {{ rotuloMomento }}
     </p>
     <p class="cartao-agora__quando">
       {{ quando }}
@@ -145,6 +154,17 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
   font-weight: var(--p-fonte-peso-negrito);
   line-height: var(--p-fonte-entrelinha-titulo);
   overflow-wrap: anywhere;
+}
+
+.cartao-agora__momento {
+  align-self: flex-start;
+  margin: 0;
+  padding: var(--p-espaco-1) var(--p-espaco-3);
+  font-size: var(--p-fonte-tamanho-apoio);
+  font-weight: var(--p-fonte-peso-seminegrito);
+  color: var(--p-cor-operacao-cartao-texto);
+  border: 1px solid var(--p-cor-operacao-cartao-texto);
+  border-radius: var(--p-raio-total);
 }
 
 .cartao-agora__quando {

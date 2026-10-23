@@ -34,7 +34,7 @@ export const TEXTOS_CADASTRO = {
   recursoConvidadosTexto: 'Lista de convidados, link para confirmar presença e restrições alimentares.',
   recursoPlanejamentoTitulo: 'Checklist e cronograma',
   recursoPlanejamentoTexto: 'Tarefas, prazos e o roteiro do dia, a partir de modelos para cada tipo de evento.',
-  recursoDiaTitulo: 'Dia do evento',
+  recursoDiaTitulo: 'Grande Dia',
   recursoDiaTexto: 'Cronograma em andamento, mesas e fornecedores à mão da equipe.',
   anfitriaoTitulo: TITULO_CONVITE_ASSESSORIA,
   anfitriaoTexto: 'Você não precisa criar conta. Abra o link do e-mail para criar sua senha.',

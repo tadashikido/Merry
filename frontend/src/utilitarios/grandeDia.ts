@@ -2,9 +2,11 @@ import type { DataCalendario } from '@/tipos/eventos'
 import type { DiaCronograma } from '@/tipos/cronograma'
 import type {
   DistribuicaoPainel,
+  FornecedorDoDia,
   ItemGrandeDiaDto,
   ItemPainelGrandeDia,
   MomentoInterpolado,
+  MomentoPrincipal,
   SituacaoItemGrandeDia,
 } from '@/tipos/grandeDia'
 import type { ItemCronogramaPublicoDto } from '@/tipos/cronogramaPublico'
@@ -143,4 +145,76 @@ export function distribuirPainel(itens: ItemPainelGrandeDia[]): DistribuicaoPain
     semMarcar: comSituacao(itens, 'SemMarcar'),
     feitos: comSituacao(itens, 'Feito'),
   }
+}
+
+export function momentoPrincipal(minutoAtual: number, horarioCerimonia: string | null): MomentoPrincipal | null {
+  if (!horarioCerimonia || !PADRAO_HORARIO.test(horarioCerimonia)) {
+    return null
+  }
+  const horario = horarioCerimonia.slice(0, 5)
+  return { minutos: minutosDoHorario(horario) - minutoAtual, horario }
+}
+
+function chaveFornecedor(fornecedor: { nomeEmpresa: string; categoria: string }): string {
+  return `${fornecedor.nomeEmpresa}|${fornecedor.categoria}`
+}
+
+function grupoFornecedor(fornecedor: FornecedorDoDia): number {
+  if (fornecedor.encerrado) {
+    return 3
+  }
+  if (fornecedor.situacao === 'Agora') {
+    return 0
+  }
+  return fornecedor.situacao === 'Proximo' ? 1 : 2
+}
+
+export function fornecedoresDoDia(itens: ItemGrandeDiaDto[], idPrincipal: string | null = null): FornecedorDoDia[] {
+  const ordenados = [...itens].sort((a, b) => minutoDoItem(a) - minutoDoItem(b))
+  const porChave = new Map<string, { fornecedor: FornecedorDoDia; minuto: number }>()
+  for (const item of ordenados) {
+    if (!item.fornecedor) {
+      continue
+    }
+    const chave = chaveFornecedor(item.fornecedor)
+    const pendente = item.situacao !== 'Feito'
+    const situacao = item.situacao === 'Agora' || item.situacao === 'Proximo' ? item.situacao : null
+    const existente = porChave.get(chave)
+    if (!existente) {
+      porChave.set(chave, {
+        minuto: minutoDoItem(item),
+        fornecedor: {
+          chave,
+          nomeEmpresa: item.fornecedor.nomeEmpresa,
+          categoria: item.fornecedor.categoria,
+          contato: item.fornecedor.contato,
+          telefone: item.fornecedor.telefone,
+          inicio: item.inicio,
+          situacao,
+          encerrado: !pendente,
+          noCartaoAgora: item.id === idPrincipal,
+        },
+      })
+      continue
+    }
+    const atual = existente.fornecedor
+    if (pendente && atual.encerrado) {
+      atual.encerrado = false
+      atual.inicio = item.inicio
+      existente.minuto = minutoDoItem(item)
+    }
+    if (situacao === 'Agora' || (situacao === 'Proximo' && atual.situacao === null)) {
+      atual.situacao = situacao
+    }
+    atual.noCartaoAgora = atual.noCartaoAgora || item.id === idPrincipal
+    atual.telefone = atual.telefone ?? item.fornecedor.telefone
+    atual.contato = atual.contato ?? item.fornecedor.contato
+  }
+  return [...porChave.values()]
+    .sort((a, b) => grupoFornecedor(a.fornecedor) - grupoFornecedor(b.fornecedor) || a.minuto - b.minuto)
+    .map(({ fornecedor }) => fornecedor)
+}
+
+export function contatosDoMomento(fornecedores: FornecedorDoDia[]): FornecedorDoDia[] {
+  return fornecedores.filter((fornecedor) => fornecedor.situacao !== null && !fornecedor.noCartaoAgora)
 }

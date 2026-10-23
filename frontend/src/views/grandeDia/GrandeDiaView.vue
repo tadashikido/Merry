@@ -17,29 +17,37 @@ import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import PainelAgoraProximo from '@/componentes/base/PainelAgoraProximo.vue'
 import RelogioOperacao from '@/componentes/base/RelogioOperacao.vue'
 import SuperficieOperacao from '@/componentes/base/SuperficieOperacao.vue'
+import ConfirmadosGrandeDia from '@/componentes/grandeDia/ConfirmadosGrandeDia.vue'
+import ListaFornecedoresDia from '@/componentes/grandeDia/ListaFornecedoresDia.vue'
 import { useAtualizacaoPeriodica, useRelogioDispositivo } from '@/composables/useAtualizacaoPeriodica'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
+import { useConvidadosStore } from '@/stores/convidados'
 import { useGrandeDiaStore } from '@/stores/grandeDia'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { ItemPainelGrandeDia } from '@/tipos/grandeDia'
 import type { FalhaEvento } from '@/stores/eventos'
 import { agruparRoteiro, ehHorarioDaCerimonia, montarLocaisOperacao } from '@/utilitarios/cronogramaPublico'
 import { formatarHora, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import {
+  contatosDoMomento,
   distribuirPainel,
+  fornecedoresDoDia,
   horaLocalDoInstante,
   interpolarMomento,
   INTERVALO_ATUALIZACAO_INTERNO_MS,
   INTERVALO_RELOGIO_MS,
   itensPainelDoGrandeDia,
   minutoAtualNoRoteiro,
+  momentoPrincipal,
 } from '@/utilitarios/grandeDia'
 
 const props = defineProps<{ id: string }>()
 
 const autenticacao = useAutenticacaoStore()
 const store = useGrandeDiaStore()
+const convidados = useConvidadosStore()
 const notificacao = useNotificacao()
 const agoraDispositivo = useRelogioDispositivo(INTERVALO_RELOGIO_MS)
 
@@ -51,7 +59,22 @@ const podeMarcar = computed(() => dados.value !== null && !dados.value.somenteLe
 const itensPainel = computed(() => (dados.value ? itensPainelDoGrandeDia(dados.value.itens, dados.value.horarioCerimonia) : []))
 const distribuicao = computed(() => distribuirPainel(itensPainel.value))
 const grupos = computed(() => agruparRoteiro(dados.value?.itens ?? []))
-const temLateral = computed(() => distribuicao.value.semMarcar.length > 0 || distribuicao.value.feitos.length > 0)
+const vocabulario = computed(() => vocabularioOuNeutro(dados.value?.tipo))
+const rotuloMomento = computed(() => TEXTOS_GRANDE_DIA.rotuloMomento(vocabulario.value.momento.contracaoDe))
+const fornecedores = computed(() => fornecedoresDoDia(dados.value?.itens ?? [], noDia.value ? (distribuicao.value.principal?.chave ?? null) : null))
+const contatosAgora = computed(() => (noDia.value ? contatosDoMomento(fornecedores.value) : []))
+const mostrarFornecedores = computed(() => fornecedores.value.some((fornecedor) => !fornecedor.noCartaoAgora))
+const totaisConvidados = computed(() => {
+  const totais = convidados.eventoIdTotais === props.id ? convidados.totais : null
+  return totais && totais.pessoas > 0 ? totais : null
+})
+const temLateral = computed(() => {
+  if (!dados.value || dados.value.itens.length === 0) {
+    return false
+  }
+  const temConteudo = mostrarFornecedores.value || totaisConvidados.value !== null
+  return noDia.value ? temConteudo || distribuicao.value.semMarcar.length > 0 || distribuicao.value.feitos.length > 0 : temConteudo
+})
 const temAcaoPrincipal = computed(() => podeMarcar.value && distribuicao.value.principal !== null)
 const horaCarga = computed(() => (store.carregadoEm ? formatarHora(store.carregadoEm) : ''))
 
@@ -62,6 +85,23 @@ const momento = computed(() => {
   return interpolarMomento(dados.value.momento.agora, store.carregadoEm.getTime(), agoraDispositivo.value)
 })
 const minutoAtual = computed(() => (momento.value && dados.value ? minutoAtualNoRoteiro(momento.value, dados.value.data) : 0))
+
+const fraseMomento = computed(() => {
+  if (!noDia.value || !momento.value || !dados.value) {
+    return null
+  }
+  const principal = momentoPrincipal(minutoAtual.value, dados.value.horarioCerimonia)
+  if (!principal) {
+    return null
+  }
+  const nome = vocabulario.value.momento.artigo
+  if (principal.minutos > 0) {
+    return TEXTOS_GRANDE_DIA.momentoComeca(nome, TEXTOS_GRANDE_DIA.emMinutos(principal.minutos), principal.horario)
+  }
+  return principal.minutos === 0
+    ? TEXTOS_GRANDE_DIA.momentoComecaAgora(nome, principal.horario)
+    : TEXTOS_GRANDE_DIA.momentoComecou(nome, principal.horario)
+})
 
 const selo = computed(() => {
   const atual = dados.value?.momento
@@ -90,6 +130,7 @@ watch(
   () => props.id,
   (id) => {
     void store.carregar(id)
+    void convidados.carregarTotais(id)
   },
   { immediate: true },
 )
@@ -110,6 +151,7 @@ onBeforeUnmount(() => store.limpar())
 
 function atualizarAgora() {
   void store.atualizar(props.id)
+  void convidados.carregarTotais(props.id)
 }
 
 function focarAgora() {
@@ -197,7 +239,7 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
         v-else-if="dados"
         class="grande-dia"
         :class="{
-          'grande-dia--com-lateral': noDia && temLateral,
+          'grande-dia--com-lateral': temLateral,
           'grande-dia--com-acao': temAcaoPrincipal,
         }"
         data-teste="grande-dia"
@@ -219,6 +261,14 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
               :ao-vivo="noDia"
             />
           </div>
+
+          <p
+            v-if="fraseMomento"
+            class="grande-dia__momento"
+            data-teste="grande-dia-momento"
+          >
+            {{ fraseMomento }}
+          </p>
 
           <MensagemFormulario
             v-if="dados.arquivado"
@@ -256,125 +306,49 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
           </template>
         </EstadoVazio>
 
-        <template v-else-if="noDia">
-          <PainelAgoraProximo
-            class="grande-dia__painel"
-            :itens="itensPainel"
-            :minuto-atual="minutoAtual"
-            prefixo="grande-dia"
+        <PainelAgoraProximo
+          v-else-if="noDia"
+          class="grande-dia__painel"
+          :itens="itensPainel"
+          :minuto-atual="minutoAtual"
+          :rotulo-momento="rotuloMomento"
+          prefixo="grande-dia"
+        >
+          <template #contatos="{ item }">
+            <ContatoUmToque
+              v-if="item.contato"
+              :nome="item.contato.nome"
+              :telefone="item.contato.telefone"
+            />
+          </template>
+          <template
+            v-if="podeMarcar"
+            #acoes="{ item }"
           >
-            <template #contatos="{ item }">
-              <ContatoUmToque
-                v-if="item.contato"
-                :nome="item.contato.nome"
-                :telefone="item.contato.telefone"
-              />
-            </template>
-            <template
-              v-if="podeMarcar"
-              #acoes="{ item }"
-            >
-              <Button
-                :label="TEXTOS_GRANDE_DIA.marcarFeitoCurto"
-                :aria-label="TEXTOS_GRANDE_DIA.marcarFeitoAria(item.atividade)"
-                icon="ie ie-concluir"
-                severity="secondary"
-                outlined
-                size="small"
-                :loading="store.itemEmAcao === item.chave"
-                data-teste="grande-dia-feito-paralelo"
-                @click="concluir(item)"
-              />
-            </template>
-          </PainelAgoraProximo>
-
-          <div
-            v-if="temLateral"
-            class="grande-dia__lateral"
-          >
-            <section
-              v-if="distribuicao.semMarcar.length > 0"
-              class="grande-dia__bloco"
-              aria-labelledby="grande-dia-sem-marcar"
-              data-teste="grande-dia-sem-marcar"
-            >
-              <h2
-                id="grande-dia-sem-marcar"
-                class="grande-dia__titulo"
-              >
-                {{ TEXTOS_GRANDE_DIA.semMarcar(distribuicao.semMarcar.length) }}
-              </h2>
-              <ul class="grande-dia__lista">
-                <LinhaOperacao
-                  v-for="item in distribuicao.semMarcar"
-                  :key="item.chave"
-                  :inicio="item.inicio"
-                  :atividade="item.atividade"
-                >
-                  <template
-                    v-if="podeMarcar"
-                    #acoes
-                  >
-                    <Button
-                      :label="TEXTOS_GRANDE_DIA.marcarFeitoCurto"
-                      :aria-label="TEXTOS_GRANDE_DIA.marcarFeitoAria(item.atividade)"
-                      icon="ie ie-concluir"
-                      severity="secondary"
-                      outlined
-                      size="small"
-                      :loading="store.itemEmAcao === item.chave"
-                      data-teste="grande-dia-feito-pendente"
-                      @click="concluir(item)"
-                    />
-                  </template>
-                </LinhaOperacao>
-              </ul>
-            </section>
-
-            <details
-              v-if="distribuicao.feitos.length > 0"
-              class="grande-dia__feitos"
-              data-teste="grande-dia-feitos"
-            >
-              <summary class="grande-dia__resumo">
-                {{ TEXTOS_GRANDE_DIA.feitos(distribuicao.feitos.length) }}
-              </summary>
-              <ul class="grande-dia__lista">
-                <LinhaOperacao
-                  v-for="item in distribuicao.feitos"
-                  :key="item.chave"
-                  :inicio="item.inicio"
-                  :atividade="item.atividade"
-                  :detalhe="feitoAs(item)"
-                  concluido
-                >
-                  <template
-                    v-if="podeMarcar"
-                    #acoes
-                  >
-                    <Button
-                      :label="TEXTOS_GRANDE_DIA.reabrir"
-                      :aria-label="TEXTOS_GRANDE_DIA.reabrirAria(item.atividade)"
-                      severity="secondary"
-                      text
-                      size="small"
-                      :loading="store.itemEmAcao === item.chave"
-                      data-teste="grande-dia-reabrir"
-                      @click="reabrir(item)"
-                    />
-                  </template>
-                </LinhaOperacao>
-              </ul>
-            </details>
-          </div>
-        </template>
+            <Button
+              :label="TEXTOS_GRANDE_DIA.marcarFeitoCurto"
+              :aria-label="TEXTOS_GRANDE_DIA.marcarFeitoAria(item.atividade)"
+              icon="ie ie-concluir"
+              severity="secondary"
+              outlined
+              size="small"
+              :loading="store.itemEmAcao === item.chave"
+              data-teste="grande-dia-feito-paralelo"
+              @click="concluir(item)"
+            />
+          </template>
+        </PainelAgoraProximo>
 
         <div
           v-else
           class="grande-dia__painel grande-dia__fase"
         >
           <FaixaFaseDia
-            :titulo="fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.antesTitulo : TEXTOS_GRANDE_DIA.depoisTitulo"
+            :titulo="
+              fase === 'AntesDoDia'
+                ? TEXTOS_GRANDE_DIA.faseAntes(vocabulario.referencia.artigo)
+                : TEXTOS_GRANDE_DIA.faseDepois(vocabulario.referencia.artigo)
+            "
             :texto="fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.antesTexto : TEXTOS_GRANDE_DIA.depoisTexto"
           />
           <div class="grande-dia__roteiro">
@@ -405,10 +379,144 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
                   :instrucoes="item.instrucoes"
                   :concluido="item.status === 'Concluido'"
                   :cerimonia="ehHorarioDaCerimonia(item, dados.horarioCerimonia)"
+                  :rotulo-momento="rotuloMomento"
                 />
               </ol>
             </section>
           </div>
+        </div>
+
+        <div
+          v-if="temLateral"
+          class="grande-dia__lateral"
+          data-teste="grande-dia-lateral"
+        >
+          <section
+            v-if="noDia && distribuicao.semMarcar.length > 0"
+            class="grande-dia__bloco"
+            aria-labelledby="grande-dia-sem-marcar"
+            data-teste="grande-dia-sem-marcar"
+          >
+            <h2
+              id="grande-dia-sem-marcar"
+              class="grande-dia__titulo"
+            >
+              {{ TEXTOS_GRANDE_DIA.semMarcar(distribuicao.semMarcar.length) }}
+            </h2>
+            <ul class="grande-dia__lista">
+              <LinhaOperacao
+                v-for="item in distribuicao.semMarcar"
+                :key="item.chave"
+                :inicio="item.inicio"
+                :atividade="item.atividade"
+              >
+                <template
+                  v-if="podeMarcar"
+                  #acoes
+                >
+                  <Button
+                    :label="TEXTOS_GRANDE_DIA.marcarFeitoCurto"
+                    :aria-label="TEXTOS_GRANDE_DIA.marcarFeitoAria(item.atividade)"
+                    icon="ie ie-concluir"
+                    severity="secondary"
+                    outlined
+                    size="small"
+                    :loading="store.itemEmAcao === item.chave"
+                    data-teste="grande-dia-feito-pendente"
+                    @click="concluir(item)"
+                  />
+                </template>
+              </LinhaOperacao>
+            </ul>
+          </section>
+
+          <section
+            v-if="contatosAgora.length > 0"
+            class="grande-dia__bloco"
+            aria-labelledby="grande-dia-contatos-momento"
+            data-teste="grande-dia-contatos-momento"
+          >
+            <h2
+              id="grande-dia-contatos-momento"
+              class="grande-dia__titulo"
+            >
+              {{ TEXTOS_GRANDE_DIA.contatosMomentoTitulo }}
+            </h2>
+            <ListaFornecedoresDia
+              :fornecedores="contatosAgora"
+              mostrar-situacao
+            />
+          </section>
+
+          <ConfirmadosGrandeDia
+            v-if="totaisConvidados"
+            :totais="totaisConvidados"
+          />
+
+          <details
+            v-if="noDia && mostrarFornecedores"
+            class="grande-dia__recolhido"
+            data-teste="grande-dia-fornecedores"
+          >
+            <summary class="grande-dia__resumo">
+              {{ TEXTOS_GRANDE_DIA.fornecedoresDiaTitulo(fornecedores.length) }}
+            </summary>
+            <ListaFornecedoresDia
+              :fornecedores="fornecedores"
+              mostrar-situacao
+            />
+          </details>
+
+          <section
+            v-else-if="mostrarFornecedores"
+            class="grande-dia__bloco"
+            aria-labelledby="grande-dia-fornecedores-titulo"
+            data-teste="grande-dia-fornecedores"
+          >
+            <h2
+              id="grande-dia-fornecedores-titulo"
+              class="grande-dia__titulo"
+            >
+              {{ TEXTOS_GRANDE_DIA.fornecedoresDiaTitulo(fornecedores.length) }}
+            </h2>
+            <ListaFornecedoresDia :fornecedores="fornecedores" />
+          </section>
+
+          <details
+            v-if="noDia && distribuicao.feitos.length > 0"
+            class="grande-dia__recolhido"
+            data-teste="grande-dia-feitos"
+          >
+            <summary class="grande-dia__resumo">
+              {{ TEXTOS_GRANDE_DIA.feitos(distribuicao.feitos.length) }}
+            </summary>
+            <ul class="grande-dia__lista">
+              <LinhaOperacao
+                v-for="item in distribuicao.feitos"
+                :key="item.chave"
+                :inicio="item.inicio"
+                :atividade="item.atividade"
+                :detalhe="feitoAs(item)"
+                concluido
+              >
+                <template
+                  v-if="podeMarcar"
+                  #acoes
+                >
+                  <Button
+                    :label="TEXTOS_GRANDE_DIA.reabrir"
+                    :aria-label="TEXTOS_GRANDE_DIA.reabrirAria(item.atividade)"
+                    severity="secondary"
+                    text
+                    size="small"
+                    :loading="store.itemEmAcao === item.chave"
+                    data-teste="grande-dia-reabrir"
+                    @click="reabrir(item)"
+                  />
+                </template>
+              </LinhaOperacao>
+            </ul>
+          </details>
         </div>
 
         <footer class="grande-dia__rodape">
@@ -528,7 +636,7 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
   padding: 0;
 }
 
-.grande-dia__feitos {
+.grande-dia__recolhido {
   border-top: 1px solid var(--p-cor-operacao-divisoria);
 }
 
@@ -540,6 +648,17 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
   justify-content: space-between;
   padding-top: var(--p-ritmo-grupo);
   border-top: 1px solid var(--p-cor-operacao-divisoria);
+}
+
+.grande-dia__momento {
+  margin: 0;
+  padding-left: var(--p-espaco-4);
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-secao);
+  font-style: italic;
+  line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-operacao-texto);
+  border-left: var(--p-dimensao-fio-cronograma) solid var(--p-cor-operacao-destaque);
 }
 
 .grande-dia__atualizado {

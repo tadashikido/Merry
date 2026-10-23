@@ -92,3 +92,20 @@ export interface MomentoInterpolado {
   hora: string
   minutoDoDia: number
 }
+
+export interface MomentoPrincipal {
+  minutos: number
+  horario: string
+}
+
+export interface FornecedorDoDia {
+  chave: string
+  nomeEmpresa: string
+  categoria: string
+  contato: string | null
+  telefone: string | null
+  inicio: string
+  situacao: 'Agora' | 'Proximo' | null
+  encerrado: boolean
+  noCartaoAgora: boolean
+}

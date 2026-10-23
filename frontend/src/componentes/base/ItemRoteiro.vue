@@ -16,6 +16,7 @@ const props = withDefaults(
     instrucoes?: string | null
     concluido?: boolean
     cerimonia?: boolean
+    rotuloMomento?: string | null
   }>(),
   {
     termino: null,
@@ -26,6 +27,7 @@ const props = withDefaults(
     instrucoes: null,
     concluido: false,
     cerimonia: false,
+    rotuloMomento: null,
   },
 )
 
@@ -70,6 +72,11 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
         <p class="item-roteiro__atividade">
           {{ atividade }}
         </p>
+        <span
+          v-if="cerimonia && rotuloMomento"
+          class="item-roteiro__momento"
+          data-teste="item-roteiro-momento"
+        >{{ rotuloMomento }}</span>
         <BadgeStatus
           v-if="concluido"
           :texto="TEXTOS_CRONOGRAMA_PUBLICO.feito"
@@ -228,6 +235,15 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
 
 .item-roteiro--cerimonia .item-roteiro__atividade {
   color: var(--p-cor-operacao-destaque);
+}
+
+.item-roteiro__momento {
+  padding: var(--p-espaco-1) var(--p-espaco-3);
+  font-size: var(--p-fonte-tamanho-apoio);
+  font-weight: var(--p-fonte-peso-seminegrito);
+  color: var(--p-cor-operacao-destaque);
+  border: 1px solid var(--p-cor-operacao-borda);
+  border-radius: var(--p-raio-total);
 }
 
 .item-roteiro__local,

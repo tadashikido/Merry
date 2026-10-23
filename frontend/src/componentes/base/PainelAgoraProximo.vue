@@ -8,9 +8,13 @@ import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
 import type { ItemPainelGrandeDia } from '@/tipos/grandeDia'
 import { distribuirPainel, LIMITE_DEPOIS, minutosAte } from '@/utilitarios/grandeDia'
 
-const props = withDefaults(defineProps<{ itens: ItemPainelGrandeDia[]; minutoAtual: number; prefixo?: string }>(), {
-  prefixo: 'painel',
-})
+const props = withDefaults(
+  defineProps<{ itens: ItemPainelGrandeDia[]; minutoAtual: number; prefixo?: string; rotuloMomento?: string | null }>(),
+  {
+    prefixo: 'painel',
+    rotuloMomento: null,
+  },
+)
 
 defineSlots<{
   contatos?: (escopo: { item: ItemPainelGrandeDia }) => unknown
@@ -48,6 +52,7 @@ const quandoProximo = computed(() => {
       :fornecedor="distribuicao.principal.fornecedor"
       :instrucoes="distribuicao.principal.instrucoes"
       :cerimonia="distribuicao.principal.cerimonia"
+      :rotulo-momento="rotuloMomento"
     >
       <template
         v-if="$slots.contatos"

@@ -2,6 +2,10 @@ function plural(quantidade: number, singular: string, varios: string): string {
   return quantidade === 1 ? singular : varios
 }
 
+function primeiraMaiuscula(texto: string): string {
+  return texto.charAt(0).toLocaleUpperCase('pt-BR') + texto.slice(1)
+}
+
 export const TEXTOS_GRANDE_DIA = {
   titulo: 'Grande Dia',
   tituloDocumento: (nomes: string) => `Grande Dia · ${nomes}`,
@@ -56,8 +60,10 @@ export const TEXTOS_GRANDE_DIA = {
   whatsappAria: (nome: string) => `Abrir o WhatsApp de ${nome}`,
   contatos: (nome: string) => `Contato de ${nome}`,
   antesTitulo: 'O grande dia ainda não chegou',
+  faseAntes: (referencia: string) => `${primeiraMaiuscula(referencia)} ainda não chegou`,
   antesTexto: 'O roteiro abaixo é o planejado. No dia, esta tela mostra o que está acontecendo agora.',
   depoisTitulo: 'O grande dia já passou',
+  faseDepois: (referencia: string) => `${primeiraMaiuscula(referencia)} já passou`,
   depoisTexto: 'Este é o roteiro como ficou registrado.',
   vazioTitulo: 'O roteiro ainda está vazio',
   vazioTexto: 'Monte o cronograma do dia para acompanhar tudo por aqui.',
@@ -76,4 +82,18 @@ export const TEXTOS_GRANDE_DIA = {
   atualizando: 'Atualizando…',
   semConexao: (hora: string) => `Sem conexão. Mostrando a versão das ${hora}.`,
   roteiro: 'Roteiro do dia',
+  rotuloMomento: (contracaoMomento: string) => `Hora ${contracaoMomento}`,
+  momentoComeca: (momento: string, quando: string, horario: string) => `${primeiraMaiuscula(momento)} começa ${quando}, às ${horario}`,
+  momentoComecaAgora: (momento: string, horario: string) => `${primeiraMaiuscula(momento)} começa agora, às ${horario}`,
+  momentoComecou: (momento: string, horario: string) => `${primeiraMaiuscula(momento)} começou às ${horario}`,
+  contatosMomentoTitulo: 'Contatos do momento',
+  fornecedoresDiaTitulo: (quantidade: number) => `Fornecedores do dia (${quantidade.toLocaleString('pt-BR')})`,
+  situacaoAgora: 'Agora',
+  situacaoProximo: 'Próximo',
+  fornecedorAs: (horario: string) => `às ${horario}`,
+  fornecedorEncerrado: 'itens feitos',
+  semTelefone: 'Sem telefone no cadastro',
+  convidadosTitulo: 'Convidados',
+  confirmadas: (quantidade: number) => plural(quantidade, 'pessoa confirmada', 'pessoas confirmadas'),
+  semResposta: (quantidade: number) => `${quantidade.toLocaleString('pt-BR')} ainda sem resposta`,
 } as const

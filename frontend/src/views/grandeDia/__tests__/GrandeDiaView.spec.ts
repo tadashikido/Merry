@@ -255,7 +255,7 @@ describe('GrandeDiaView — leitura, fases e estados', () => {
     await abrir(SESSAO_EXEMPLO, () => respostaJson(antes))
 
     expect(texto('[data-teste="relogio-operacao-selo"]')).toBe('Faltam 12 dias')
-    expect(texto('[data-teste="faixa-fase-dia-titulo"]')).toBe(TEXTOS_GRANDE_DIA.antesTitulo)
+    expect(texto('[data-teste="faixa-fase-dia-titulo"]')).toBe('O casamento ainda não chegou')
     expect(wrapper!.find('[data-teste="grande-dia-roteiro-Vespera"]').exists()).toBe(true)
     expect(wrapper!.findAll('[data-teste="item-roteiro"]')).toHaveLength(2)
     expect(wrapper!.find('[data-teste="cartao-agora"]').exists()).toBe(false)
@@ -270,7 +270,7 @@ describe('GrandeDiaView — leitura, fases e estados', () => {
     await abrir(SESSAO_EXEMPLO, () => respostaJson(depois))
 
     expect(texto('[data-teste="relogio-operacao-selo"]')).toBe(TEXTOS_GRANDE_DIA.diaPassou)
-    expect(texto('[data-teste="faixa-fase-dia-titulo"]')).toBe(TEXTOS_GRANDE_DIA.depoisTitulo)
+    expect(texto('[data-teste="faixa-fase-dia-titulo"]')).toBe('O casamento já passou')
     expect(wrapper!.find('[data-teste="item-roteiro-feito"]').exists()).toBe(true)
   })
 
@@ -363,12 +363,12 @@ describe('GrandeDiaView — layout reestruturado', () => {
     expect(envelope.find('[data-teste="barra-acao-fixa"]').exists()).toBe(false)
   })
 
-  it('[COMPONENTE] antes do dia agrupa o roteiro por dia na grade, sem lateral', async () => {
+  it('[COMPONENTE] antes do dia, sem fornecedores nem convidados, agrupa o roteiro por dia na grade, sem lateral', async () => {
     const antes = grandeDia({
       momento: { agora: '2027-05-03T10:12:00', fase: 'AntesDoDia', diasParaOEvento: 12 },
       itens: [
-        itemGrandeDia({ id: 'e', dia: 'Vespera', data: '2027-05-14', inicio: '19:00', atividade: 'Ensaio', situacao: 'Depois' }),
-        itemGrandeDia({ id: 'c', situacao: 'Depois' }),
+        itemGrandeDia({ id: 'e', dia: 'Vespera', data: '2027-05-14', inicio: '19:00', atividade: 'Ensaio', fornecedor: null, situacao: 'Depois' }),
+        itemGrandeDia({ id: 'c', fornecedor: null, situacao: 'Depois' }),
       ],
     })
     await abrir(SESSAO_EXEMPLO, () => respostaJson(antes))
