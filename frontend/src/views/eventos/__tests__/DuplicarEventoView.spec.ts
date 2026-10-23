@@ -9,6 +9,7 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import { TEXTOS_DUPLICACAO_EVENTO } from '@/textos/duplicacaoEvento'
+import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import type { PreviaDuplicacaoDto } from '@/tipos/duplicacaoEvento'
 import { ID_EVENTO, RaizRotas, quando, resumoEvento, rotearFetch, type Rota } from './auxiliaresEventos'
 
@@ -92,7 +93,7 @@ describe('DuplicarEventoView no design system Celebri', () => {
     expect(formulario.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
     const secoes = formulario.findAll('fieldset')
     expect(secoes.map((secao) => secao.get('legend').text())).toEqual([
-      TEXTOS_DUPLICACAO_EVENTO.grupoNovoAnfitriao,
+      VOCABULARIO_TIPO_EVENTO.Casamento.homenageados.grupo,
       TEXTOS_EVENTOS.grupoQuando,
       TEXTOS_EVENTOS.grupoOnde,
       TEXTOS_DUPLICACAO_EVENTO.grupoLevar,
@@ -126,6 +127,22 @@ describe('DuplicarEventoView no design system Celebri', () => {
     expect(fica.get('h2').classes()).toContain('texto-rotulo')
     expect(fica.get('h2').text()).toBe('Fica com Ana & João')
     expect(reaproveitamento.element.nextElementSibling?.classList.contains('duplicar__acoes')).toBe(true)
+  })
+
+  it('[COMPONENTE] formulário vem antes da lateral de resumo, cada um no seu container', async () => {
+    rotearFetch(fetchSimulado, previaResponde(() => respostaJson(previa())))
+    await abrir()
+
+    expect(wrapper!.get('.duplicar').element.firstElementChild?.classList.contains('pagina-formulario')).toBe(true)
+    const filhos = Array.from(wrapper!.get('.duplicar__corpo').element.children)
+    expect(filhos[0]?.classList.contains('duplicar__principal')).toBe(true)
+    expect(filhos[1]?.getAttribute('data-teste')).toBe('lateral-duplicacao')
+    expect(filhos[0]?.querySelector('[data-teste="formulario-duplicacao"]')).not.toBeNull()
+    const lateral = wrapper!.get('[data-teste="lateral-duplicacao"]')
+    expect(lateral.find('[data-teste="resumo-duplicacao"]').exists()).toBe(true)
+    expect(lateral.find('[data-teste="lateral-formulario-evento"]').exists()).toBe(true)
+    expect(lateral.find('[data-teste="modelos-para-comecar"]').exists()).toBe(false)
+    expect(lateral.findAll('a, button, input')).toHaveLength(0)
   })
 
   it('[COMPONENTE] sem origem escolhida a lista do que vai ocupa a linha toda', async () => {
@@ -206,12 +223,15 @@ describe('DuplicarEventoView no design system Celebri', () => {
   it('[UNITÁRIO] estilos usam só o ritmo e tokens, sem largura própria nem valores soltos', () => {
     const fonte = readFileSync(resolve(__dirname, '../DuplicarEventoView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style scoped>'))
-    const semMedia = estilo.replace(/@media[^{]+\{/g, '').replace(/1px solid/g, '')
+    const semContainer = estilo.replace(/@container[^{]+\{/g, '').replace(/1px solid/g, '')
 
     expect(estilo).toContain('grid-template-columns: minmax(0, 3fr) minmax(0, 2fr)')
-    expect(estilo).not.toContain('max-width')
+    expect(estilo).not.toContain('@media')
+    expect(estilo).toContain('@container duplicar-campos (min-width: 36rem)')
+    expect(estilo).toContain('@container duplicar-campos (min-width: 40rem)')
+    expect(estilo).toContain('@container duplicar (min-width: 64rem)')
     expect(estilo).not.toContain('--p-espaco-')
-    expect(semMedia).not.toMatch(/\d+(px|rem|em)\b/)
+    expect(semContainer).not.toMatch(/\d+(px|rem|em)\b/)
     expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
     expect(estilo).not.toMatch(/margin[^:]*:\s*-/)
   })

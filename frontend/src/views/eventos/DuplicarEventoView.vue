@@ -16,6 +16,9 @@ import ListaNaoCopiado from '@/componentes/base/ListaNaoCopiado.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import NomesAnfitrioes from '@/componentes/base/NomesAnfitrioes.vue'
 import OpcaoCopia from '@/componentes/base/OpcaoCopia.vue'
+import OrientacaoAcesso from '@/componentes/base/OrientacaoAcesso.vue'
+import LateralFormularioEvento from '@/componentes/eventos/LateralFormularioEvento.vue'
+import ResumoDuplicacaoEvento from '@/componentes/eventos/ResumoDuplicacaoEvento.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
@@ -37,6 +40,7 @@ const props = defineProps<{ origem?: string }>()
 
 const ESPERA_PREVIA_MS = 300
 const PADRAO_ID = /^[0-9a-fA-F-]{36}$/
+const TIPO_SEM_ORIGEM: TipoEvento = 'Comemoracao'
 const CAMPOS = ['nomePrimeiraPessoa', 'nomeSegundaPessoa', 'data', 'horario', 'localCerimonia', 'localRecepcao'] as const
 type Campo = (typeof CAMPOS)[number]
 
@@ -93,6 +97,7 @@ const opcoesOrigem = computed(() =>
     valor: evento.id,
     rotulo: TEXTOS_DUPLICACAO_EVENTO.opcaoOrigem(
       formatarNomesAnfitrioes(evento.nomePrimeiraPessoa, evento.nomeSegundaPessoa),
+      vocabularioDoTipo(evento.tipo).rotulo,
       formatarDataCalendarioCurta(evento.data),
       evento.arquivado,
     ),
@@ -105,7 +110,7 @@ const nomesOrigem = computed(() =>
 )
 
 const tipoOrigem = computed<TipoEvento>(
-  () => origemDaPrevia.value?.tipo ?? origens.value?.find((evento) => evento.id === origemId.value)?.tipo ?? 'Casamento',
+  () => origemDaPrevia.value?.tipo ?? origens.value?.find((evento) => evento.id === origemId.value)?.tipo ?? TIPO_SEM_ORIGEM,
 )
 const vocabulario = computed<VocabularioTipoEvento>(() => vocabularioDoTipo(tipoOrigem.value))
 const temSegundoNome = computed<boolean>(() => aceitaSegundoNome(tipoOrigem.value))
@@ -143,7 +148,9 @@ const quantidadeCronograma = computed(() =>
 const semCronograma = computed(() => origemDaPrevia.value !== null && (previa.value?.itensCronograma ?? 0) === 0)
 const levaCronograma = computed(() => copiarCronograma.value && !semCronograma.value)
 const detalheCronograma = computed(() =>
-  semCronograma.value ? TEXTOS_DUPLICACAO_EVENTO.opcaoCronogramaVazia : TEXTOS_DUPLICACAO_EVENTO.opcaoCronogramaDetalhe,
+  semCronograma.value
+    ? TEXTOS_DUPLICACAO_EVENTO.opcaoCronogramaVazia
+    : TEXTOS_DUPLICACAO_EVENTO.opcaoCronogramaDetalhe(vocabulario.value.referencia.relativoAoMomento),
 )
 const complementoCronograma = computed(() =>
   !semCronograma.value && copiarCronograma.value && !copiarFornecedores.value
@@ -183,6 +190,13 @@ const avisoAtrasadas = computed(() => {
   const atrasadas = previa.value?.tarefasNascemAtrasadas ?? 0
   return atrasadas > 0 ? TEXTOS_DUPLICACAO_EVENTO.nascemAtrasadas(atrasadas) : null
 })
+
+const previaDoResumo = computed(() => (origemDaPrevia.value && !carregandoPrevia.value ? previa.value : null))
+const modulosLevados = computed(() => ({
+  tarefas: levaTarefas.value,
+  fornecedores: levaFornecedores.value,
+  cronograma: levaCronograma.value,
+}))
 
 const resumoAnunciado = computed(() => {
   const atual = previa.value
@@ -389,413 +403,477 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="pagina-formulario">
-      <CabecalhoPagina
-        :titulo="TEXTOS_DUPLICACAO_EVENTO.titulo"
-        :descricao="TEXTOS_DUPLICACAO_EVENTO.descricao"
-      />
-
-      <div class="pilha pilha--cartao">
-        <template v-if="falhaBloqueante">
-          <EstadoErro
-            v-if="falhaBloqueante.tipo === 'naoEncontrado'"
-            :titulo="TEXTOS_EVENTOS.naoEncontradoTitulo"
-            :mensagem="TEXTOS_EVENTOS.naoEncontradoTexto"
-            :pode-tentar-novamente="false"
-          />
-          <EstadoErro
-            v-else-if="falhaBloqueante.tipo === 'semPermissao'"
-            variante="semPermissao"
-            :titulo="TEXTOS_EVENTOS.erroCarregarUmTitulo"
-            :mensagem="TEXTOS_DUPLICACAO_EVENTO.semPermissao"
-            :pode-tentar-novamente="false"
-          />
-          <EstadoErro
-            v-else
-            :titulo="TEXTOS_EVENTOS.erroCarregarUmTitulo"
-            :mensagem="TEXTOS_EVENTOS.erroCarregarTexto"
-            @tentar-novamente="carregarPrevia"
-          />
-          <RouterLink
-            class="duplicar__voltar"
-            :to="{ name: 'eventos' }"
-            data-teste="voltar-eventos"
-          >
-            {{ TEXTOS_EVENTOS.voltarLista }}
-          </RouterLink>
-        </template>
-
-        <EstadoCarregando
-          v-else-if="origemId && !origemDaPrevia"
-          variante="formulario"
-          :linhas="4"
+    <div class="duplicar">
+      <div class="pagina-formulario duplicar__pagina">
+        <CabecalhoPagina
+          :titulo="TEXTOS_DUPLICACAO_EVENTO.titulo"
+          :descricao="TEXTOS_DUPLICACAO_EVENTO.descricao"
         />
 
-        <EstadoCarregando
-          v-else-if="!origemId && carregandoOrigens && !origens"
-          variante="formulario"
-          :linhas="2"
-        />
-
-        <EstadoErro
-          v-else-if="!origemId && falhaOrigens"
-          :titulo="TEXTOS_DUPLICACAO_EVENTO.erroOrigensTitulo"
-          :mensagem="TEXTOS_EVENTOS.erroCarregarTexto"
-          @tentar-novamente="carregarOrigens"
-        />
-
-        <EstadoVazio
-          v-else-if="!origemId && origens && origens.length === 0"
-          :titulo="TEXTOS_DUPLICACAO_EVENTO.vazioTitulo"
-          :descricao="TEXTOS_DUPLICACAO_EVENTO.vazioTexto"
-          icone="evento"
-        >
-          <template #acao>
-            <Button
-              :label="TEXTOS_EVENTOS.novoEvento"
-              icon="ie ie-mais"
-              data-teste="vazio-novo-evento"
-              @click="roteador.push({ name: 'evento-novo' })"
+        <div class="pilha pilha--cartao">
+          <template v-if="falhaBloqueante">
+            <EstadoErro
+              v-if="falhaBloqueante.tipo === 'naoEncontrado'"
+              :titulo="TEXTOS_EVENTOS.naoEncontradoTitulo"
+              :mensagem="TEXTOS_EVENTOS.naoEncontradoTexto"
+              :pode-tentar-novamente="false"
             />
+            <EstadoErro
+              v-else-if="falhaBloqueante.tipo === 'semPermissao'"
+              variante="semPermissao"
+              :titulo="TEXTOS_EVENTOS.erroCarregarUmTitulo"
+              :mensagem="TEXTOS_DUPLICACAO_EVENTO.semPermissao"
+              :pode-tentar-novamente="false"
+            />
+            <EstadoErro
+              v-else
+              :titulo="TEXTOS_EVENTOS.erroCarregarUmTitulo"
+              :mensagem="TEXTOS_EVENTOS.erroCarregarTexto"
+              @tentar-novamente="carregarPrevia"
+            />
+            <RouterLink
+              class="duplicar__voltar"
+              :to="{ name: 'eventos' }"
+              data-teste="voltar-eventos"
+            >
+              {{ TEXTOS_EVENTOS.voltarLista }}
+            </RouterLink>
           </template>
-        </EstadoVazio>
 
-        <template v-else>
-          <MensagemFormulario
-            v-if="mensagemErro"
-            :mensagem="mensagemErro"
-            data-teste="erro-formulario"
+          <EstadoCarregando
+            v-else-if="origemId && !origemDaPrevia"
+            variante="formulario"
+            :linhas="4"
           />
 
-          <form
-            class="pilha pilha--bloco"
-            novalidate
-            data-teste="formulario-duplicacao"
-            @submit.prevent="enviar"
+          <EstadoCarregando
+            v-else-if="!origemId && carregandoOrigens && !origens"
+            variante="formulario"
+            :linhas="2"
+          />
+
+          <EstadoErro
+            v-else-if="!origemId && falhaOrigens"
+            :titulo="TEXTOS_DUPLICACAO_EVENTO.erroOrigensTitulo"
+            :mensagem="TEXTOS_EVENTOS.erroCarregarTexto"
+            @tentar-novamente="carregarOrigens"
+          />
+
+          <EstadoVazio
+            v-else-if="!origemId && origens && origens.length === 0"
+            :titulo="TEXTOS_DUPLICACAO_EVENTO.vazioTitulo"
+            :descricao="TEXTOS_DUPLICACAO_EVENTO.vazioTexto"
+            icone="evento"
           >
-            <div
-              v-if="origemDaPrevia"
-              class="duplicar__origem cartao"
-              data-teste="resumo-origem"
-            >
-              <p class="duplicar__origem-texto">
-                <span class="duplicar__origem-rotulo texto-rotulo">{{ TEXTOS_DUPLICACAO_EVENTO.origemRotulo }}</span>
-                <NomesAnfitrioes
-                  :primeiro="origemDaPrevia.nomePrimeiraPessoa"
-                  :segundo="origemDaPrevia.nomeSegundaPessoa"
-                  tamanho="cartao"
-                />
-              </p>
-              <p class="duplicar__origem-detalhes">
-                <span data-teste="tipo-origem">{{ vocabulario.rotulo }}</span>
-                <span class="numeros-tabulares">{{ formatarDataCalendarioCurta(origemDaPrevia.data) }}</span>
-                <BadgeStatus
-                  v-if="origemDaPrevia.arquivado"
-                  :texto="TEXTOS_EVENTOS.statusArquivado"
-                  icone="arquivar"
-                />
-              </p>
+            <template #acao>
               <Button
-                v-if="!origemVeioDaRota"
-                class="duplicar__trocar"
-                :label="TEXTOS_DUPLICACAO_EVENTO.trocarOrigem"
-                :aria-label="TEXTOS_DUPLICACAO_EVENTO.trocarOrigemAcessivel"
-                severity="secondary"
-                text
-                size="small"
-                :disabled="enviando"
-                data-teste="trocar-origem"
-                @click="trocarOrigem"
+                :label="TEXTOS_EVENTOS.novoEvento"
+                icon="ie ie-mais"
+                data-teste="vazio-novo-evento"
+                @click="roteador.push({ name: 'evento-novo' })"
               />
-            </div>
+            </template>
+          </EstadoVazio>
 
-            <CampoFormulario
-              v-else
-              v-slot="{ id: idEntrada, invalido, descritoPor }"
-              :rotulo="TEXTOS_DUPLICACAO_EVENTO.seletorOrigem"
-              :id-campo="idCampo('origem')"
-              :dica="TEXTOS_DUPLICACAO_EVENTO.seletorOrigemDica"
-              obrigatorio
-              :erro="erroOrigem"
-            >
-              <Select
-                v-model="origemEscolhida"
-                :input-id="idEntrada"
-                :options="opcoesOrigem"
-                option-label="rotulo"
-                option-value="valor"
-                filter
-                :placeholder="TEXTOS_DUPLICACAO_EVENTO.seletorPlaceholder"
-                :invalid="invalido"
-                :aria-describedby="descritoPor"
-                :loading="carregandoOrigens"
-                data-teste="campo-origem"
+          <div
+            v-else
+            class="duplicar__corpo"
+          >
+            <div class="duplicar__principal pilha pilha--cartao">
+              <MensagemFormulario
+                v-if="mensagemErro"
+                :mensagem="mensagemErro"
+                data-teste="erro-formulario"
               />
-            </CampoFormulario>
 
-            <fieldset class="duplicar__grupo pilha pilha--grupo">
-              <legend class="duplicar__legenda texto-rotulo">
-                {{ TEXTOS_DUPLICACAO_EVENTO.grupoNovoAnfitriao }}
-              </legend>
-              <div class="duplicar__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="vocabulario.homenageados.primeiro"
-                  :id-campo="idCampo('nomePrimeiraPessoa')"
-                  obrigatorio
-                  :erro="formulario.erros.nomePrimeiraPessoa"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.nomePrimeiraPessoa"
-                    autocomplete="off"
-                    :maxlength="LIMITES_EVENTO.nomeMaximo"
-                    aria-required="true"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('nomePrimeiraPessoa')"
-                    @blur="formulario.validarAoSair('nomePrimeiraPessoa')"
-                  />
-                </CampoFormulario>
-                <CampoFormulario
-                  v-if="temSegundoNome"
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="vocabulario.homenageados.segundo ?? ''"
-                  :id-campo="idCampo('nomeSegundaPessoa')"
-                  :obrigatorio="vocabulario.homenageados.segundoObrigatorio"
-                  :erro="formulario.erros.nomeSegundaPessoa"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.nomeSegundaPessoa"
-                    autocomplete="off"
-                    :maxlength="LIMITES_EVENTO.nomeMaximo"
-                    :aria-required="vocabulario.homenageados.segundoObrigatorio"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('nomeSegundaPessoa')"
-                    @blur="formulario.validarAoSair('nomeSegundaPessoa')"
-                  />
-                </CampoFormulario>
-              </div>
-            </fieldset>
-
-            <fieldset class="duplicar__grupo pilha pilha--grupo">
-              <legend class="duplicar__legenda texto-rotulo">
-                {{ TEXTOS_EVENTOS.grupoQuando }}
-              </legend>
-              <div class="duplicar__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.data"
-                  :id-campo="idCampo('data')"
-                  obrigatorio
-                  :erro="formulario.erros.data"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.data"
-                    type="date"
-                    :min="LIMITES_EVENTO.dataMinima"
-                    :max="LIMITES_EVENTO.dataMaxima"
-                    aria-required="true"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('data')"
-                    @blur="formulario.validarAoSair('data')"
-                  />
-                </CampoFormulario>
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="vocabulario.horario"
-                  :id-campo="idCampo('horario')"
-                  :dica="TEXTOS_EVENTOS.horarioDica"
-                  :erro="formulario.erros.horario"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.horario"
-                    type="time"
-                    step="60"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('horario')"
-                    @blur="formulario.validarAoSair('horario')"
-                  />
-                </CampoFormulario>
-              </div>
-            </fieldset>
-
-            <fieldset class="duplicar__grupo pilha pilha--grupo">
-              <legend class="duplicar__legenda texto-rotulo">
-                {{ TEXTOS_EVENTOS.grupoOnde }}
-              </legend>
-              <div class="duplicar__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="vocabulario.locais.campoPrincipal"
-                  :id-campo="idCampo('localCerimonia')"
-                  :erro="formulario.erros.localCerimonia"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.localCerimonia"
-                    :maxlength="LIMITES_EVENTO.local"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('localCerimonia')"
-                    @blur="formulario.validarAoSair('localCerimonia')"
-                  />
-                </CampoFormulario>
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="vocabulario.locais.campoSecundario"
-                  :id-campo="idCampo('localRecepcao')"
-                  :dica="vocabulario.locais.dicaSecundario"
-                  :erro="formulario.erros.localRecepcao"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.localRecepcao"
-                    :maxlength="LIMITES_EVENTO.local"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('localRecepcao')"
-                    @blur="formulario.validarAoSair('localRecepcao')"
-                  />
-                </CampoFormulario>
-              </div>
-            </fieldset>
-
-            <div
-              class="duplicar__reaproveitamento"
-              :class="{ 'duplicar__reaproveitamento--par': Boolean(origemDaPrevia) }"
-              data-teste="reaproveitamento"
-            >
-              <fieldset
-                class="duplicar__grupo pilha pilha--grupo"
-                :disabled="!origemDaPrevia || enviando"
+              <form
+                class="pilha pilha--bloco"
+                novalidate
+                data-teste="formulario-duplicacao"
+                @submit.prevent="enviar"
               >
-                <legend class="duplicar__legenda texto-rotulo">
-                  {{ TEXTOS_DUPLICACAO_EVENTO.grupoLevar }}
-                </legend>
-                <ul
-                  class="duplicar__opcoes"
-                  data-teste="opcoes-copia"
+                <div
+                  v-if="origemDaPrevia"
+                  class="duplicar__origem cartao"
+                  data-teste="resumo-origem"
                 >
-                  <OpcaoCopia
-                    v-model="copiarTarefas"
-                    :id-campo="idCampo('copiarTarefas')"
-                    :titulo="TEXTOS_DUPLICACAO_EVENTO.opcaoTarefasTitulo"
-                    :descricao="detalheTarefas"
-                    :complemento="complementoTarefas"
-                    :quantidade="quantidadeTarefas"
-                    :rotulo-quantidade="TEXTOS_DUPLICACAO_EVENTO.quantidadeTarefas(quantidadeTarefas ?? 0)"
-                    :desabilitado="semTarefas"
-                    data-teste="opcao-tarefas"
-                  />
-                  <OpcaoCopia
-                    v-model="copiarFornecedores"
-                    :id-campo="idCampo('copiarFornecedores')"
-                    :titulo="TEXTOS_DUPLICACAO_EVENTO.opcaoFornecedoresTitulo"
-                    :descricao="detalheFornecedores"
-                    :complemento="complementoFornecedores"
-                    :quantidade="quantidadeFornecedores"
-                    :rotulo-quantidade="TEXTOS_DUPLICACAO_EVENTO.quantidadeFornecedores(quantidadeFornecedores ?? 0)"
-                    :desabilitado="semFornecedores"
-                    data-teste="opcao-fornecedores"
-                  />
-                  <OpcaoCopia
-                    v-model="copiarCronograma"
-                    :id-campo="idCampo('copiarCronograma')"
-                    :titulo="TEXTOS_DUPLICACAO_EVENTO.opcaoCronogramaTitulo"
-                    :descricao="detalheCronograma"
-                    :complemento="complementoCronograma"
-                    :quantidade="quantidadeCronograma"
-                    :rotulo-quantidade="TEXTOS_DUPLICACAO_EVENTO.quantidadeItensCronograma(quantidadeCronograma ?? 0)"
-                    :desabilitado="semCronograma"
-                    data-teste="opcao-cronograma"
-                  />
-                </ul>
-                <p
-                  v-if="avisoAtrasadas"
-                  class="duplicar__aviso"
-                  :class="{ 'duplicar__aviso--alerta': Boolean(dataValida) }"
-                  data-teste="aviso-previa"
-                >
-                  {{ avisoAtrasadas }}
-                </p>
-                <MensagemFormulario
-                  v-if="falhaPrevia && origemDaPrevia"
-                  variante="alerta"
-                  :mensagem="TEXTOS_DUPLICACAO_EVENTO.erroPrevia"
-                  data-teste="erro-previa"
-                >
+                  <p class="duplicar__origem-texto">
+                    <span class="duplicar__origem-rotulo texto-rotulo">{{ TEXTOS_DUPLICACAO_EVENTO.origemRotulo }}</span>
+                    <NomesAnfitrioes
+                      :primeiro="origemDaPrevia.nomePrimeiraPessoa"
+                      :segundo="origemDaPrevia.nomeSegundaPessoa"
+                      tamanho="cartao"
+                    />
+                  </p>
+                  <p class="duplicar__origem-detalhes">
+                    <span data-teste="tipo-origem">{{ vocabulario.rotulo }}</span>
+                    <span class="numeros-tabulares">{{ formatarDataCalendarioCurta(origemDaPrevia.data) }}</span>
+                    <BadgeStatus
+                      v-if="origemDaPrevia.arquivado"
+                      :texto="TEXTOS_EVENTOS.statusArquivado"
+                      icone="arquivar"
+                    />
+                  </p>
+                  <p
+                    class="duplicar__herdado"
+                    data-teste="tipo-herdado"
+                  >
+                    {{ TEXTOS_DUPLICACAO_EVENTO.tipoHerdado(vocabulario.referencia.indefinido) }}
+                  </p>
                   <Button
-                    :label="TEXTOS_DUPLICACAO_EVENTO.tentarDeNovo"
+                    v-if="!origemVeioDaRota"
+                    class="duplicar__trocar"
+                    :label="TEXTOS_DUPLICACAO_EVENTO.trocarOrigem"
+                    :aria-label="TEXTOS_DUPLICACAO_EVENTO.trocarOrigemAcessivel"
                     severity="secondary"
                     text
                     size="small"
-                    @click="carregarPrevia"
+                    :disabled="enviando"
+                    data-teste="trocar-origem"
+                    @click="trocarOrigem"
                   />
-                </MensagemFormulario>
-                <p
-                  class="somente-leitor-tela"
-                  aria-live="polite"
-                  data-teste="resumo-previa"
+                </div>
+
+                <CampoFormulario
+                  v-else
+                  v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  :rotulo="TEXTOS_DUPLICACAO_EVENTO.seletorOrigem"
+                  :id-campo="idCampo('origem')"
+                  :dica="TEXTOS_DUPLICACAO_EVENTO.seletorOrigemDica"
+                  obrigatorio
+                  :erro="erroOrigem"
                 >
-                  {{ resumoAnunciado }}
-                </p>
-              </fieldset>
+                  <Select
+                    v-model="origemEscolhida"
+                    :input-id="idEntrada"
+                    :options="opcoesOrigem"
+                    option-label="rotulo"
+                    option-value="valor"
+                    filter
+                    :placeholder="TEXTOS_DUPLICACAO_EVENTO.seletorPlaceholder"
+                    :invalid="invalido"
+                    :aria-describedby="descritoPor"
+                    :loading="carregandoOrigens"
+                    data-teste="campo-origem"
+                  />
+                </CampoFormulario>
 
-              <ListaNaoCopiado
-                v-if="origemDaPrevia"
-                :titulo="TEXTOS_DUPLICACAO_EVENTO.ficaCom(nomesOrigem)"
-                :itens="TEXTOS_DUPLICACAO_EVENTO.ficaItens"
-                id-titulo="duplicacao-fica-com"
-                class="duplicar__fica"
-              />
+                <fieldset class="duplicar__grupo pilha pilha--grupo">
+                  <legend class="duplicar__legenda texto-rotulo">
+                    {{ vocabulario.homenageados.grupo }}
+                  </legend>
+                  <div class="duplicar__colunas">
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="vocabulario.homenageados.primeiro"
+                      :id-campo="idCampo('nomePrimeiraPessoa')"
+                      obrigatorio
+                      :erro="formulario.erros.nomePrimeiraPessoa"
+                    >
+                      <InputText
+                        :id="idEntrada"
+                        v-model="formulario.valores.nomePrimeiraPessoa"
+                        autocomplete="off"
+                        :maxlength="LIMITES_EVENTO.nomeMaximo"
+                        aria-required="true"
+                        :invalid="invalido"
+                        :aria-invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :readonly="enviando"
+                        @update:model-value="formulario.revalidarAoDigitar('nomePrimeiraPessoa')"
+                        @blur="formulario.validarAoSair('nomePrimeiraPessoa')"
+                      />
+                    </CampoFormulario>
+                    <CampoFormulario
+                      v-if="temSegundoNome"
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="vocabulario.homenageados.segundo ?? ''"
+                      :id-campo="idCampo('nomeSegundaPessoa')"
+                      :obrigatorio="vocabulario.homenageados.segundoObrigatorio"
+                      :erro="formulario.erros.nomeSegundaPessoa"
+                    >
+                      <InputText
+                        :id="idEntrada"
+                        v-model="formulario.valores.nomeSegundaPessoa"
+                        autocomplete="off"
+                        :maxlength="LIMITES_EVENTO.nomeMaximo"
+                        :aria-required="vocabulario.homenageados.segundoObrigatorio"
+                        :invalid="invalido"
+                        :aria-invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :readonly="enviando"
+                        @update:model-value="formulario.revalidarAoDigitar('nomeSegundaPessoa')"
+                        @blur="formulario.validarAoSair('nomeSegundaPessoa')"
+                      />
+                    </CampoFormulario>
+                  </div>
+                </fieldset>
+
+                <fieldset class="duplicar__grupo pilha pilha--grupo">
+                  <legend class="duplicar__legenda texto-rotulo">
+                    {{ TEXTOS_EVENTOS.grupoQuando }}
+                  </legend>
+                  <div class="duplicar__colunas">
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="TEXTOS_EVENTOS.data"
+                      :id-campo="idCampo('data')"
+                      obrigatorio
+                      :erro="formulario.erros.data"
+                    >
+                      <InputText
+                        :id="idEntrada"
+                        v-model="formulario.valores.data"
+                        type="date"
+                        :min="LIMITES_EVENTO.dataMinima"
+                        :max="LIMITES_EVENTO.dataMaxima"
+                        aria-required="true"
+                        :invalid="invalido"
+                        :aria-invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :readonly="enviando"
+                        @update:model-value="formulario.revalidarAoDigitar('data')"
+                        @blur="formulario.validarAoSair('data')"
+                      />
+                    </CampoFormulario>
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="vocabulario.horario"
+                      :id-campo="idCampo('horario')"
+                      :dica="TEXTOS_EVENTOS.horarioDica"
+                      :erro="formulario.erros.horario"
+                    >
+                      <InputText
+                        :id="idEntrada"
+                        v-model="formulario.valores.horario"
+                        type="time"
+                        step="60"
+                        :invalid="invalido"
+                        :aria-invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :readonly="enviando"
+                        @update:model-value="formulario.revalidarAoDigitar('horario')"
+                        @blur="formulario.validarAoSair('horario')"
+                      />
+                    </CampoFormulario>
+                  </div>
+                </fieldset>
+
+                <fieldset class="duplicar__grupo pilha pilha--grupo">
+                  <legend class="duplicar__legenda texto-rotulo">
+                    {{ TEXTOS_EVENTOS.grupoOnde }}
+                  </legend>
+                  <div class="duplicar__colunas">
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="vocabulario.locais.campoPrincipal"
+                      :id-campo="idCampo('localCerimonia')"
+                      :erro="formulario.erros.localCerimonia"
+                    >
+                      <InputText
+                        :id="idEntrada"
+                        v-model="formulario.valores.localCerimonia"
+                        :maxlength="LIMITES_EVENTO.local"
+                        :invalid="invalido"
+                        :aria-invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :readonly="enviando"
+                        @update:model-value="formulario.revalidarAoDigitar('localCerimonia')"
+                        @blur="formulario.validarAoSair('localCerimonia')"
+                      />
+                    </CampoFormulario>
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="vocabulario.locais.campoSecundario"
+                      :id-campo="idCampo('localRecepcao')"
+                      :dica="vocabulario.locais.dicaSecundario"
+                      :erro="formulario.erros.localRecepcao"
+                    >
+                      <InputText
+                        :id="idEntrada"
+                        v-model="formulario.valores.localRecepcao"
+                        :maxlength="LIMITES_EVENTO.local"
+                        :invalid="invalido"
+                        :aria-invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :readonly="enviando"
+                        @update:model-value="formulario.revalidarAoDigitar('localRecepcao')"
+                        @blur="formulario.validarAoSair('localRecepcao')"
+                      />
+                    </CampoFormulario>
+                  </div>
+                </fieldset>
+
+                <div
+                  class="duplicar__reaproveitamento"
+                  :class="{ 'duplicar__reaproveitamento--par': Boolean(origemDaPrevia) }"
+                  data-teste="reaproveitamento"
+                >
+                  <fieldset
+                    class="duplicar__grupo pilha pilha--grupo"
+                    :disabled="!origemDaPrevia || enviando"
+                  >
+                    <legend class="duplicar__legenda texto-rotulo">
+                      {{ TEXTOS_DUPLICACAO_EVENTO.grupoLevar }}
+                    </legend>
+                    <ul
+                      class="duplicar__opcoes"
+                      data-teste="opcoes-copia"
+                    >
+                      <OpcaoCopia
+                        v-model="copiarTarefas"
+                        :id-campo="idCampo('copiarTarefas')"
+                        :titulo="TEXTOS_DUPLICACAO_EVENTO.opcaoTarefasTitulo"
+                        :descricao="detalheTarefas"
+                        :complemento="complementoTarefas"
+                        :quantidade="quantidadeTarefas"
+                        :rotulo-quantidade="TEXTOS_DUPLICACAO_EVENTO.quantidadeTarefas(quantidadeTarefas ?? 0)"
+                        :desabilitado="semTarefas"
+                        data-teste="opcao-tarefas"
+                      />
+                      <OpcaoCopia
+                        v-model="copiarFornecedores"
+                        :id-campo="idCampo('copiarFornecedores')"
+                        :titulo="TEXTOS_DUPLICACAO_EVENTO.opcaoFornecedoresTitulo"
+                        :descricao="detalheFornecedores"
+                        :complemento="complementoFornecedores"
+                        :quantidade="quantidadeFornecedores"
+                        :rotulo-quantidade="TEXTOS_DUPLICACAO_EVENTO.quantidadeFornecedores(quantidadeFornecedores ?? 0)"
+                        :desabilitado="semFornecedores"
+                        data-teste="opcao-fornecedores"
+                      />
+                      <OpcaoCopia
+                        v-model="copiarCronograma"
+                        :id-campo="idCampo('copiarCronograma')"
+                        :titulo="TEXTOS_DUPLICACAO_EVENTO.opcaoCronogramaTitulo"
+                        :descricao="detalheCronograma"
+                        :complemento="complementoCronograma"
+                        :quantidade="quantidadeCronograma"
+                        :rotulo-quantidade="TEXTOS_DUPLICACAO_EVENTO.quantidadeItensCronograma(quantidadeCronograma ?? 0)"
+                        :desabilitado="semCronograma"
+                        data-teste="opcao-cronograma"
+                      />
+                    </ul>
+                    <p
+                      v-if="avisoAtrasadas"
+                      class="duplicar__aviso"
+                      :class="{ 'duplicar__aviso--alerta': Boolean(dataValida) }"
+                      data-teste="aviso-previa"
+                    >
+                      {{ avisoAtrasadas }}
+                    </p>
+                    <MensagemFormulario
+                      v-if="falhaPrevia && origemDaPrevia"
+                      variante="alerta"
+                      :mensagem="TEXTOS_DUPLICACAO_EVENTO.erroPrevia"
+                      data-teste="erro-previa"
+                    >
+                      <Button
+                        :label="TEXTOS_DUPLICACAO_EVENTO.tentarDeNovo"
+                        severity="secondary"
+                        text
+                        size="small"
+                        @click="carregarPrevia"
+                      />
+                    </MensagemFormulario>
+                    <p
+                      class="somente-leitor-tela"
+                      aria-live="polite"
+                      data-teste="resumo-previa"
+                    >
+                      {{ resumoAnunciado }}
+                    </p>
+                  </fieldset>
+
+                  <ListaNaoCopiado
+                    v-if="origemDaPrevia"
+                    :titulo="TEXTOS_DUPLICACAO_EVENTO.ficaCom(nomesOrigem)"
+                    :itens="TEXTOS_DUPLICACAO_EVENTO.ficaItens"
+                    id-titulo="duplicacao-fica-com"
+                    class="duplicar__fica"
+                  />
+                </div>
+
+                <div class="duplicar__acoes">
+                  <Button
+                    type="submit"
+                    :label="TEXTOS_DUPLICACAO_EVENTO.acaoCriar"
+                    :loading="enviando"
+                    :aria-busy="enviando"
+                    :disabled="bloqueadoPorPermissao"
+                    data-teste="criar-evento"
+                  />
+                  <Button
+                    type="button"
+                    :label="ROTULOS_ACOES.cancelar"
+                    severity="secondary"
+                    text
+                    :disabled="enviando"
+                    data-teste="cancelar"
+                    @click="cancelar"
+                  />
+                </div>
+              </form>
             </div>
 
-            <div class="duplicar__acoes">
-              <Button
-                type="submit"
-                :label="TEXTOS_DUPLICACAO_EVENTO.acaoCriar"
-                :loading="enviando"
-                :aria-busy="enviando"
-                :disabled="bloqueadoPorPermissao"
-                data-teste="criar-evento"
-              />
-              <Button
-                type="button"
-                :label="ROTULOS_ACOES.cancelar"
-                severity="secondary"
-                text
-                :disabled="enviando"
-                data-teste="cancelar"
-                @click="cancelar"
+            <div
+              class="duplicar__lateral pilha pilha--bloco"
+              data-teste="lateral-duplicacao"
+            >
+              <template v-if="origemDaPrevia">
+                <ResumoDuplicacaoEvento
+                  :tipo="tipoOrigem"
+                  :data="dataValida"
+                  :previa="previaDoResumo"
+                  :leva="modulosLevados"
+                />
+                <LateralFormularioEvento
+                  :tipo="tipoOrigem"
+                  :mostrar-modelos="false"
+                />
+              </template>
+              <OrientacaoAcesso
+                v-else
+                id-titulo="titulo-como-funciona-duplicacao"
+                :titulo="TEXTOS_DUPLICACAO_EVENTO.comoFuncionaTitulo"
+                :itens="TEXTOS_DUPLICACAO_EVENTO.comoFuncionaItens"
+                data-teste="como-funciona-duplicacao"
               />
             </div>
-          </form>
-        </template>
+          </div>
+        </div>
       </div>
     </div>
   </LayoutPainelUsuario>
 </template>
 
 <style scoped>
+.duplicar {
+  container: duplicar / inline-size;
+}
+
+.duplicar__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'principal'
+    'lateral';
+  gap: var(--p-ritmo-bloco);
+}
+
+.duplicar__principal {
+  container: duplicar-campos / inline-size;
+  grid-area: principal;
+  min-width: 0;
+}
+
+.duplicar__lateral {
+  grid-area: lateral;
+  min-width: 0;
+  padding-top: var(--p-ritmo-bloco);
+  border-top: 1px solid var(--p-cor-borda);
+}
+
 .duplicar__origem {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -822,9 +900,17 @@ function cancelar() {
   color: var(--p-cor-texto-secundario);
 }
 
+.duplicar__herdado {
+  grid-column: 1;
+  margin: 0;
+  font-size: var(--p-fonte-tamanho-controle);
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--p-cor-texto-apoio);
+}
+
 .duplicar__trocar {
   grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-row: 1 / span 3;
 }
 
 .duplicar__grupo {
@@ -884,7 +970,7 @@ function cancelar() {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
-@media (min-width: 640px) {
+@container duplicar-campos (min-width: 36rem) {
   .duplicar__colunas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
@@ -896,7 +982,7 @@ function cancelar() {
   }
 }
 
-@media (min-width: 1024px) {
+@container duplicar-campos (min-width: 40rem) {
   .duplicar__reaproveitamento--par {
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }
@@ -904,6 +990,25 @@ function cancelar() {
   .duplicar__fica {
     padding-inline-start: var(--p-ritmo-cartao);
     border-inline-start: 1px solid var(--p-cor-divisoria);
+  }
+}
+
+@container duplicar (min-width: 64rem) {
+  .duplicar__pagina {
+    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
+  }
+
+  .duplicar__corpo {
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
+    grid-template-areas: 'principal lateral';
+    align-items: start;
+  }
+
+  .duplicar__lateral {
+    padding-top: 0;
+    padding-inline-start: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

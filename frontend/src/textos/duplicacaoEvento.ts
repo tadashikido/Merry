@@ -16,11 +16,12 @@ export const TEXTOS_DUPLICACAO_EVENTO = {
   trocarOrigem: 'Trocar',
   trocarOrigemAcessivel: 'Trocar o evento de origem',
   seletorOrigem: 'Evento de origem',
-  seletorOrigemDica: 'O novo evento leva as tarefas e os fornecedores dele.',
+  seletorOrigemDica: 'O evento novo leva as tarefas, os fornecedores e o cronograma dele, e é do mesmo tipo.',
   seletorPlaceholder: 'Escolha um evento',
-  opcaoOrigem: (nomes: string, data: string, arquivado: boolean) => (arquivado ? `${nomes}, ${data} (arquivado)` : `${nomes}, ${data}`),
+  opcaoOrigem: (nomes: string, tipo: string, data: string, arquivado: boolean) =>
+    arquivado ? `${nomes} (${tipo}, ${data}, arquivado)` : `${nomes} (${tipo}, ${data})`,
+  tipoHerdado: (indefinido: string) => `O evento novo será ${indefinido}, como o de origem.`,
   origemObrigatoria: 'Escolha o evento de origem.',
-  grupoNovoAnfitriao: 'Os novos anfitriões',
   grupoLevar: 'Vai para o evento novo',
   opcaoTarefasTitulo: 'Tarefas e checklist',
   opcaoTarefasDetalhe: (doChecklist: number) =>
@@ -38,7 +39,7 @@ export const TEXTOS_DUPLICACAO_EVENTO = {
       ? '1 fica de fora (cancelado ou arquivado).'
       : `${quantidade.toLocaleString('pt-BR')} ficam de fora (cancelados ou arquivados).`,
   opcaoCronogramaTitulo: 'Cronograma do dia',
-  opcaoCronogramaDetalhe: 'Mesmos horários em relação à cerimônia, sem notas internas.',
+  opcaoCronogramaDetalhe: (relativoAoMomento: string) => `Mesmos horários em relação ${relativoAoMomento}, sem notas internas.`,
   opcaoCronogramaVazia: 'Nenhum item no cronograma para levar.',
   cronogramaSemFornecedores: 'Sem "Fornecedores", os itens vão sem fornecedor vinculado.',
   quantidadeItensCronograma: (quantidade: number) => contar(quantidade, 'item do cronograma', 'itens do cronograma'),
@@ -82,4 +83,44 @@ export const TEXTOS_DUPLICACAO_EVENTO = {
   vazioTexto: 'Cadastre o primeiro evento; depois ele pode ser duplicado.',
   erroOrigensTitulo: 'Não foi possível carregar os eventos',
   semPermissao: 'Você não tem permissão para criar eventos.',
+  resumoTitulo: 'Como fica o evento novo',
+  resumoTipo: 'Tipo',
+  resumoTipoDetalhe: 'Herdado do evento de origem.',
+  resumoData: 'Data',
+  resumoTarefas: 'Tarefas',
+  resumoFornecedores: 'Fornecedores',
+  resumoCronograma: 'Cronograma',
+  resumoCalculando: 'Calculando',
+  vaoTarefas: (quantidade: number) => `${contar(quantidade, 'tarefa', 'tarefas')} ${quantidade === 1 ? 'vai' : 'vão'}`,
+  vaoFornecedores: (quantidade: number) => `${contar(quantidade, 'fornecedor', 'fornecedores')} ${quantidade === 1 ? 'vai' : 'vão'}`,
+  vaoItensCronograma: (quantidade: number) => `${contar(quantidade, 'item', 'itens')} ${quantidade === 1 ? 'vai' : 'vão'}`,
+  naoVao: 'Não vão',
+  nadaParaLevar: 'Nada para levar',
+  canceladasDeFora: (quantidade: number) =>
+    quantidade === 1 ? '1 cancelada fica de fora' : `${quantidade.toLocaleString('pt-BR')} canceladas ficam de fora`,
+  ignoradosDeFora: (quantidade: number) =>
+    quantidade === 1 ? '1 fica de fora' : `${quantidade.toLocaleString('pt-BR')} ficam de fora`,
+  atrasadasCurto: (quantidade: number) =>
+    quantidade === 1 ? '1 nasce atrasada' : `${quantidade.toLocaleString('pt-BR')} nascem atrasadas`,
+  comoFuncionaTitulo: 'Como a duplicação funciona',
+  comoFuncionaItens: [
+    {
+      chave: 'mesmo-tipo',
+      titulo: 'O mesmo tipo',
+      texto: 'O evento novo é do mesmo tipo do de origem: casamento gera casamento, festa de 15 anos gera festa de 15 anos.',
+      teste: 'como-funciona-tipo',
+    },
+    {
+      chave: 'o-que-vai',
+      titulo: 'O que vai',
+      texto: 'Tarefas e checklist, fornecedores e cronograma do dia. Você escolhe o que levar.',
+      teste: 'como-funciona-vai',
+    },
+    {
+      chave: 'o-que-fica',
+      titulo: 'O que fica',
+      texto: 'Convidados, respostas, acesso dos anfitriões e valores fechados continuam só no evento de origem.',
+      teste: 'como-funciona-fica',
+    },
+  ],
 } as const

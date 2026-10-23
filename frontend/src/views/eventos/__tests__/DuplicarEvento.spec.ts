@@ -119,7 +119,7 @@ describe('Duplicar evento', () => {
     expect(wrapper!.find('[data-teste="trocar-origem"]').exists()).toBe(false)
     const numeros = wrapper!.findAll('[data-teste="opcao-copia-quantidade"]').map((numero) => numero.text())
     expect(numeros).toEqual(['29', '3', '7'])
-    expect(wrapper!.get('[data-teste="opcao-cronograma"]').text()).toContain(TEXTOS_DUPLICACAO_EVENTO.opcaoCronogramaDetalhe)
+    expect(wrapper!.get('[data-teste="opcao-cronograma"]').text()).toContain(TEXTOS_DUPLICACAO_EVENTO.opcaoCronogramaDetalhe('à cerimônia'))
     expect(wrapper!.text()).toContain('26 do checklist')
     expect(wrapper!.text()).toContain(TEXTOS_DUPLICACAO_EVENTO.tarefasCanceladas(1))
     expect(wrapper!.text()).toContain(TEXTOS_DUPLICACAO_EVENTO.fornecedoresIgnorados(1))
