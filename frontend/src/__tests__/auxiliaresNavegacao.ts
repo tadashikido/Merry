@@ -45,6 +45,7 @@ function registrarNavegacao<T>(navegacao: Promise<T>): Promise<T> {
 }
 
 export function rastrearNavegacoes(roteador: Router): Router {
+  navegacoesPendentes.clear()
   const push = roteador.push.bind(roteador)
   const replace = roteador.replace.bind(roteador)
   roteador.push = (destino) => registrarNavegacao(push(destino))

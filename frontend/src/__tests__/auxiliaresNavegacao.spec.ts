@@ -69,6 +69,26 @@ describe('auxiliaresNavegacao', () => {
     await expect(aguardarRota(roteador, 'outra')).rejects.toThrow("expected 'inicio' to be 'outra'")
   })
 
+  it('[UNITÁRIO] navegação esquecida pendente por um roteador anterior não trava a espera do próximo', async () => {
+    const nuncaCarrega = promessaControlada<typeof Pagina>()
+    const anterior = criarRoteador([
+      { path: '/', name: 'inicio', component: Pagina },
+      { path: '/presa', name: 'presa', component: () => nuncaCarrega.promessa },
+    ])
+    await anterior.push('/')
+    void anterior.push('/presa')
+
+    const atual = criarRoteador([
+      { path: '/', name: 'inicio', component: Pagina },
+      { path: '/livre', name: 'livre', component: () => Promise.resolve(Pagina) },
+    ])
+    await atual.push('/')
+    void atual.push('/livre')
+
+    await aguardarRota(atual, 'livre')
+    expect(anterior.currentRoute.value.name).toBe('inicio')
+  })
+
   it('[UNITÁRIO] aguardarAte repete a verificação a cada ciclo até a condição valer', async () => {
     const estado = { pronto: false }
     void Promise.resolve()
