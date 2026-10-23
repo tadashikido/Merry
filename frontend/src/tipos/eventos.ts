@@ -1,6 +1,8 @@
 export type DataCalendario = string
 
-export type FaseEvento = 'Planejamento' | 'RetaFinal' | 'SemanaDoEvento' | 'DiaDoEvento' | 'Realizado'
+export const FASES_EVENTO = ['Planejamento', 'RetaFinal', 'SemanaDoEvento', 'DiaDoEvento', 'Realizado'] as const
+
+export type FaseEvento = (typeof FASES_EVENTO)[number]
 
 export type SituacaoListagemEventos = 'Ativos' | 'Arquivados'
 

@@ -1,5 +1,5 @@
 import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
-import { TIPOS_EVENTO, type EventoResumoDto, type TipoEvento } from '@/tipos/eventos'
+import { FASES_EVENTO, TIPOS_EVENTO, type EventoResumoDto, type FaseEvento, type TipoEvento } from '@/tipos/eventos'
 import { formatarNumero } from '@/utilitarios/formatacao'
 
 export const JANELA_SEMANA_DIAS = 7
@@ -8,6 +8,16 @@ export const JANELA_MES_DIAS = 30
 export interface QuantidadePorTipo {
   tipo: TipoEvento
   quantidade: number
+}
+
+export interface QuantidadePorFase {
+  fase: FaseEvento
+  quantidade: number
+}
+
+export interface FiltroEventos {
+  tipo: TipoEvento | null
+  fase: FaseEvento | null
 }
 
 export interface ResumoCarteira {
@@ -42,4 +52,24 @@ export function descreverCarteiraPorTipo(porTipo: readonly QuantidadePorTipo[]):
   })
   const ultima = partes.pop() ?? ''
   return partes.length > 0 ? `${partes.join(', ')} e ${ultima}` : ultima
+}
+
+export function contarPorTipo(eventos: readonly EventoResumoDto[]): QuantidadePorTipo[] {
+  return TIPOS_EVENTO.map((tipo) => ({
+    tipo,
+    quantidade: eventos.filter((evento) => evento.tipo === tipo).length,
+  })).filter((item) => item.quantidade > 0)
+}
+
+export function contarPorFase(eventos: readonly EventoResumoDto[]): QuantidadePorFase[] {
+  return FASES_EVENTO.map((fase) => ({
+    fase,
+    quantidade: eventos.filter((evento) => evento.fase === fase).length,
+  })).filter((item) => item.quantidade > 0)
+}
+
+export function filtrarEventos(eventos: readonly EventoResumoDto[], filtro: FiltroEventos): EventoResumoDto[] {
+  return eventos.filter(
+    (evento) => (filtro.tipo === null || evento.tipo === filtro.tipo) && (filtro.fase === null || evento.fase === filtro.fase),
+  )
 }

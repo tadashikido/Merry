@@ -1,6 +1,11 @@
 import type { VarianteStatus } from '@/componentes/base/tipos'
 import type { FaseEvento, SituacaoListagemEventos } from '@/tipos/eventos'
 import { NOME_PRODUTO } from '@/textos/rotulos'
+import { tiposEventoEmFrase } from '@/textos/tiposEvento'
+
+function primeiraMaiuscula(texto: string): string {
+  return texto.charAt(0).toLocaleUpperCase('pt-BR') + texto.slice(1)
+}
 
 export const TEXTOS_EVENTOS = {
   menu: 'Eventos',
@@ -16,16 +21,23 @@ export const TEXTOS_EVENTOS = {
   listaRotulo: 'Lista de eventos',
   placeholderBusca: 'Buscar pelo nome dos anfitriões',
   filtroSituacao: 'Situação',
+  filtroTipo: 'Tipo de evento',
+  filtroFase: 'Fase',
+  todosOsTipos: 'Todos os tipos',
+  todasAsFases: 'Todas as fases',
+  opcaoComQuantidade: (rotulo: string, quantidade: number) => `${rotulo} (${quantidade.toLocaleString('pt-BR')})`,
+  convidadosEstimados: (quantidade: number) =>
+    quantidade === 1 ? '1 convidado estimado' : `${quantidade.toLocaleString('pt-BR')} convidados estimados`,
   ativos: 'Ativos',
   arquivados: 'Arquivados',
   colunaAnfitriao: 'Anfitriões',
+  colunaEvento: 'Evento',
   colunaData: 'Data',
   colunaFase: 'Fase',
   colunaContagem: 'Contagem',
-  colunaTipo: 'Tipo',
   colunaLocal: 'Local',
   vazioAtivosTitulo: 'Nenhum evento por aqui ainda',
-  vazioAtivosTexto: 'Cadastre o primeiro evento para começar a organizar datas e convidados.',
+  vazioAtivosTexto: `${primeiraMaiuscula(tiposEventoEmFrase())}: cadastre o primeiro evento para organizar datas, convidados e pagamentos.`,
   vazioArquivadosTitulo: 'Nenhum evento arquivado',
   vazioArquivadosTexto: 'Eventos arquivados aparecem aqui e podem ser restaurados quando precisar.',
   editar: 'Editar',
