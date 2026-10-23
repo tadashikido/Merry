@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { TOKEN_CRONOGRAMA, cronogramaPublico, itemPublico } from '@/__tests__/auxiliaresCronogramaPublico'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -14,6 +15,8 @@ import { rotas } from '@/router'
 import { TEXTOS_CRONOGRAMA_PUBLICO } from '@/textos/cronogramaPublico'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
 import { RaizRotas, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('cronograma-publico')
 
 const ROTA_CONSULTA = '/api/cronograma-publico/consulta'
 
@@ -38,7 +41,7 @@ async function abrir(token = TOKEN_CRONOGRAMA) {
   return wrapper
 }
 
-describe('CronogramaPublicoView', { timeout: 20_000 }, () => {
+describe('CronogramaPublicoView', () => {
   it('[E2E] mostra o cabeçalho, o filtro, os locais e os itens agrupados no modo operação', async () => {
     rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(cronogramaPublico())))
 
@@ -165,7 +168,7 @@ describe('CronogramaPublicoView', { timeout: 20_000 }, () => {
   })
 })
 
-describe('CronogramaPublicoView — agora / próximo', { timeout: 20_000 }, () => {
+describe('CronogramaPublicoView — agora / próximo', () => {
   const NO_DIA = cronogramaPublico({
     momento: { agora: '2027-05-15T14:20:00', fase: 'NoDia', diasParaOEvento: 0 },
     itens: [
@@ -229,7 +232,7 @@ describe('CronogramaPublicoView — agora / próximo', { timeout: 20_000 }, () =
   })
 })
 
-describe('CronogramaPublicoView — estrutura da fundação', { timeout: 20_000 }, () => {
+describe('CronogramaPublicoView — estrutura da fundação', () => {
   const estiloView = readFileSync(resolve(__dirname, '../CronogramaPublicoView.vue'), 'utf-8').split('<style scoped>')[1] ?? ''
   const estiloLayout = readFileSync(resolve(__dirname, '../../../layouts/LayoutPublico.vue'), 'utf-8')
 

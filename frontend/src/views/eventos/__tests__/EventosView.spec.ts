@@ -4,11 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import Button from 'primevue/button'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_EVENTOS, resumoListaEventos } from '@/textos/eventos'
 import { ID_EVENTO, ID_OUTRO, RaizRotas, eventoCompleto, quando, resumoEvento, rotearFetch } from './auxiliaresEventos'
+
+await precarregarRotas('eventos')
 
 let fetchSimulado: ReturnType<typeof simularFetch>
 let wrapper: VueWrapper | undefined

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -9,6 +10,8 @@ import { TEXTOS_DADOS_SENSIVEIS } from '@/textos/dadosSensiveis'
 import type { ListaConvitesDto } from '@/tipos/convidados'
 import type { RelatorioRestricoesAlimentaresDto } from '@/tipos/dadosSensiveis'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('restricoes-alimentares')
 
 const ID_CONVITE = '33333333-3333-4333-8333-333333333333'
 const ID_LIA = '44444444-4444-4444-8444-444444444444'

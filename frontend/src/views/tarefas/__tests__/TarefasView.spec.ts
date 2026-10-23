@@ -14,6 +14,7 @@ import {
   respostaVazia,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { listaTarefas, pendenciasExemplo, tarefaExemplo } from '@/__tests__/auxiliaresTarefas'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -22,6 +23,8 @@ import { TEXTOS_TAREFAS } from '@/textos/tarefas'
 import type { SessaoDto } from '@/tipos/api'
 import type { ListaTarefasDto } from '@/tipos/tarefas'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, resumoEvento, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-tarefas', 'tarefa-editar', 'evento', 'tarefa-nova', 'nao-encontrado')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -158,7 +161,7 @@ describe('TarefasView — assessoria', () => {
     const todas = opcoes.find((opcao) => opcao.text() === 'Todas')!
     await todas.trigger('click')
     await flushPromises()
-    expect(montagem.roteador.currentRoute.value.query.situacao).toBe('todas')
+    await aguardarAte(() => expect(montagem.roteador.currentRoute.value.query.situacao).toBe('todas'))
     expect(wrapper.findAll('[data-teste="titulo-tarefa"]')).toHaveLength(4)
 
     const anfitriao = wrapper.get('[data-teste="filtro-responsavel"]').findAll('[role="radio"], button, [data-pc-section="pcbutton"]').find((opcao) => opcao.text() === 'Anfitriões')!
@@ -278,7 +281,7 @@ describe('TarefasView — assessoria', () => {
 
     const menuAtual = wrapper.findAllComponents({ name: 'MenuAcoes' }).find((item) => String(item.props('rotuloAcessivel')).includes('Confirmar buffet'))!
     menuAtual.vm.$emit('selecionar', 'editar')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('tarefa-editar'))
+    await aguardarRota(montagem.roteador, 'tarefa-editar')
     expect(montagem.roteador.currentRoute.value.params.tarefaId).toBe(ID_TAREFA)
   })
 
@@ -398,7 +401,7 @@ describe('TarefaFormularioView', () => {
       prazo: '2026-10-10',
     })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_TAREFAS.toastCriada)
-    expect(montagem.roteador.currentRoute.value.name).toBe('evento-tarefas')
+    await aguardarRota(montagem.roteador, 'evento-tarefas')
   })
 
   it('[SEGURANÇA] edição de tarefa inexistente ou de outro evento mostra não encontrada; id inválido cai no 404 da aplicação', async () => {

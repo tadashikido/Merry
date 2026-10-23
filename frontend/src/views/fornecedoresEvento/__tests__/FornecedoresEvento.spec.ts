@@ -14,6 +14,7 @@ import {
   respostaVazia,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { resumoFornecedor } from '@/__tests__/auxiliaresFornecedores'
 import { ID_VINCULO, arquivoPdf, florista, listaVinculos, vinculoExemplo } from '@/__tests__/auxiliaresFornecedoresEvento'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -21,6 +22,8 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CONTRATO, TEXTOS_FORNECEDORES_EVENTO, TEXTOS_RESUMO_ORCAMENTO } from '@/textos/fornecedoresEvento'
 import type { SessaoDto } from '@/tipos/api'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, resumoEvento, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-fornecedores', 'evento', 'fornecedor-evento-novo', 'fornecedor-evento-editar')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -452,7 +455,7 @@ describe('FornecedorEventoFormularioView', () => {
       notasInternas: null,
     })
     expect(notificacoes.sucesso).toHaveBeenCalledWith('Florista Jardim adicionado ao evento.')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento-fornecedores'))
+    await aguardarRota(montagem.roteador, 'evento-fornecedores')
   })
 
   it('[COMPONENTE] na edição Contratado sem valor é barrado no cliente e 422 do servidor aparece sob o campo', async () => {
@@ -495,11 +498,11 @@ describe('FornecedorEventoFormularioView', () => {
     const anexo = wrapper.getComponent({ name: 'AnexoContrato' })
     anexo.vm.$emit('selecionar', new File(['\u0089PNG'], 'foto.pdf', { type: 'application/pdf' }))
     await flushPromises()
-    await vi.waitFor(() => expect(wrapper.text()).toContain(TEXTOS_CONTRATO.erroFormato))
+    await aguardarAte(() => expect(wrapper.text()).toContain(TEXTOS_CONTRATO.erroFormato))
     expect(chamadas(fetchSimulado, 'PUT', `${ROTA_VINCULO}/contrato`)).toHaveLength(0)
 
     anexo.vm.$emit('selecionar', arquivoPdf())
-    await vi.waitFor(() => expect(chamadas(fetchSimulado, 'PUT', `${ROTA_VINCULO}/contrato`)).toHaveLength(1))
+    await aguardarAte(() => expect(chamadas(fetchSimulado, 'PUT', `${ROTA_VINCULO}/contrato`)).toHaveLength(1))
     await flushPromises()
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_CONTRATO.toastAnexado)
     expect(wrapper.get('[data-teste="contrato-nome"]').text()).toBe('contrato-buffet.pdf')

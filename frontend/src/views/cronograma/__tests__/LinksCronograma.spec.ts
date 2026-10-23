@@ -12,6 +12,7 @@ import {
   respostaVazia,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { cronogramaExemplo, itemCronograma } from '@/__tests__/auxiliaresCronograma'
 import { TOKEN_CRONOGRAMA, linksExemplo } from '@/__tests__/auxiliaresCronogramaPublico'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -20,6 +21,8 @@ import { TEXTOS_LINKS_CRONOGRAMA } from '@/textos/cronogramaPublico'
 import type { SessaoDto } from '@/tipos/api'
 import type { LinksCronogramaDto } from '@/tipos/cronogramaPublico'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-cronograma')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 

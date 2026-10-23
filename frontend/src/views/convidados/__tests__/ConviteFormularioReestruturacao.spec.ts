@@ -3,12 +3,15 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
 import type { ConviteDto, ListaConvitesDto } from '@/tipos/convidados'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('convite-novo', 'convite-editar', 'evento-convidados')
 
 const ID_CONVITE = '33333333-3333-4333-8333-333333333333'
 const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`

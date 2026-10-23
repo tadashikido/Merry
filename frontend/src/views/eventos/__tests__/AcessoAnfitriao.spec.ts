@@ -12,6 +12,7 @@ import {
   respostaVazia,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { painelExemplo } from '@/__tests__/auxiliaresConfirmacoes'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -21,6 +22,8 @@ import type { AcessoAnfitriaoDto, ConviteAcessoAnfitriaoDto } from '@/tipos/aces
 import type { SessaoDto } from '@/tipos/api'
 import type { ListaConvitesDto } from '@/tipos/convidados'
 import { ID_EVENTO, ID_OUTRO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from './auxiliaresEventos'
+
+await precarregarRotas('evento', 'eventos', 'evento-convidados', 'painel-confirmacoes', 'aceite-acesso-anfitriao')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -479,7 +482,7 @@ describe('AceiteAcessoAnfitriaoView', () => {
     await flushPromises()
 
     expect(corpoDaChamada(chamadas(fetchSimulado, 'POST', '/api/acesso-anfitriao/aceite')[0]!)).toEqual({ token: TOKEN_CONVITE, senha: 'anfitriaoFeliz2027' })
-    expect(montagem.roteador.currentRoute.value.name).toBe('evento')
+    await aguardarRota(montagem.roteador, 'evento')
     expect(montagem.roteador.currentRoute.value.params.id).toBe(ID_EVENTO)
     expect(notificado(TEXTOS_ACEITE_ANFITRIAO.boasVindas('Lívia'))).toBe(true)
   })

@@ -3,12 +3,15 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_DADOS_SENSIVEIS } from '@/textos/dadosSensiveis'
 import type { RelatorioRestricoesAlimentaresDto } from '@/tipos/dadosSensiveis'
 import { ID_EVENTO, RaizRotas, eventoCompleto, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('restricoes-alimentares')
 
 const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
 const ROTA_RELATORIO = `${ROTA_EVENTO}/restricoes-alimentares`

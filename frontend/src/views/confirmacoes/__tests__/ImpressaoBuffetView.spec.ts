@@ -4,12 +4,15 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { exportacaoExemplo } from '@/__tests__/auxiliaresConfirmacoes'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_FICHA_BUFFET } from '@/textos/confirmacoes'
 import { ID_EVENTO, RaizRotas, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('impressao-buffet')
 
 const ROTA_IMPRESSAO = `/api/eventos/${ID_EVENTO}/exportacao-buffet?formato=impressao`
 
@@ -35,7 +38,7 @@ async function abrir() {
   await flushPromises()
 }
 
-describe('ImpressaoBuffetView', { timeout: 20_000 }, () => {
+describe('ImpressaoBuffetView', () => {
   it('[COMPONENTE] monta a ficha com anfitriões, contagem, restrições e confirmados por convite', async () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_IMPRESSAO, () => respostaJson(exportacaoExemplo())))
     await abrir()

@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_PREVIA_RSVP } from '@/textos/confirmacoes'
 import type { RsvpPublicoDto } from '@/tipos/rsvp'
 import { RaizRotas, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('rsvp')
 
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
 const ROTA_CONSULTA = '/api/rsvp/consulta'
@@ -56,7 +59,7 @@ async function abrir(caminho: string) {
   await flushPromises()
 }
 
-describe('RsvpView — pré-visualização da assessoria', { timeout: 20_000 }, () => {
+describe('RsvpView — pré-visualização da assessoria', () => {
   it('[INTEGRAÇÃO] com previa=1 renova a sessão, envia o token de acesso e mostra a faixa', async () => {
     rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(dados(true))))
 

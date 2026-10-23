@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { SESSAO_EXEMPLO, corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { ID_ITEM, ID_MODELO, itemModelo, modeloCompleto, resumoModelo } from '@/__tests__/auxiliaresChecklist'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -10,6 +11,8 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_ITEM_MODELO, TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
 import { RaizRotas, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('modelos-checklist', 'modelo-checklist', 'modelo-checklist-novo', 'modelo-checklist-editar', 'item-modelo-novo', 'item-modelo-editar', 'evento')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -322,7 +325,7 @@ describe('Formulários de modelo e item', () => {
     const [chamada] = chamadas(fetchSimulado, 'POST', ROTA_MODELOS)
     expect(corpoDaChamada(chamada!)).toEqual({ nome: 'Campo', descricao: null })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_MODELOS_CHECKLIST.toastCriado)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('modelo-checklist'))
+    await aguardarRota(montagem.roteador, 'modelo-checklist')
   })
 
   it('[COMPONENTE] nome curto e nome repetido mostram erro', async () => {
@@ -378,7 +381,7 @@ describe('Formulários de modelo e item', () => {
     const [chamada] = chamadas(fetchSimulado, 'PUT', ROTA_MODELO)
     expect(corpoDaChamada(chamada!)).toEqual({ nome: 'Campo e praia', descricao: 'Ao ar livre' })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_MODELOS_CHECKLIST.toastSalvo)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('modelo-checklist'))
+    await aguardarRota(montagem.roteador, 'modelo-checklist')
   })
 
   it('[COMPONENTE] erro só aparece depois da primeira tentativa e some ao digitar um nome válido', async () => {
@@ -456,7 +459,7 @@ describe('Formulários de modelo e item', () => {
     const [chamada] = chamadas(fetchSimulado, 'POST', ROTA_ITENS)
     expect(corpoDaChamada(chamada!)).toMatchObject({ titulo: 'Enviar fotos para o álbum', diasAntesDoEvento: -15, responsavel: 'Assessoria', categoria: 'Geral' })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_ITEM_MODELO.toastCriado)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('modelo-checklist'))
+    await aguardarRota(montagem.roteador, 'modelo-checklist')
   })
 
   it('[COMPONENTE] edição preenche o item e mapeia erro do servidor para o campo Dias', async () => {
@@ -517,7 +520,7 @@ describe('Formulários de modelo e item', () => {
     await wrapper.get('[data-teste="formulario-item-modelo"]').trigger('submit')
     await flushPromises()
     expect(wrapper.text()).toContain('Preencha este campo.')
-    await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-titulo'))
+    await aguardarAte(() => expect(document.activeElement?.id).toBe('item-modelo-titulo'))
     expect(chamadas(fetchSimulado, 'POST', ROTA_ITENS)).toHaveLength(0)
 
     await campoTitulo.setValue('Provar o vestido')
@@ -540,7 +543,7 @@ describe('Formulários de modelo e item', () => {
     await wrapper.get('[data-teste="formulario-item-modelo"]').trigger('submit')
     await flushPromises()
     expect(wrapper.text()).toContain(TEXTOS_ITEM_MODELO.erroDias)
-    await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-dias'))
+    await aguardarAte(() => expect(document.activeElement?.id).toBe('item-modelo-dias'))
 
     await opcoes().find((opcao) => opcao.text() === 'antes do evento')!.trigger('click')
     await flushPromises()

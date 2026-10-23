@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CHECKLIST } from '@/textos/checklist'
 import { TEXTOS_RECALCULO_HORARIOS } from '@/textos/modelosCronograma'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from './auxiliaresEventos'
+
+await precarregarRotas('evento-editar', 'evento')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -81,7 +84,7 @@ describe('Recalcular horários do cronograma ao mudar o horário da cerimônia',
 
     const montagem = await editar({ horario: '17:30' })
 
-    await vi.waitFor(() => expect(dialogoHorarios()).not.toBeNull())
+    await aguardarAte(() => expect(dialogoHorarios()).not.toBeNull())
     expect(dialogoHorarios()!.textContent).toContain(TEXTOS_RECALCULO_HORARIOS.titulo)
     expect(dialogoHorarios()!.textContent).toContain('18 itens vieram de modelo')
     expect(dialogoHorarios()!.textContent).toContain('cerimônia das 17:30')
@@ -96,7 +99,7 @@ describe('Recalcular horários do cronograma ao mudar o horário da cerimônia',
 
     expect(chamadas(fetchSimulado, 'POST', ROTA_RECALCULO_HORARIOS)).toHaveLength(1)
     expect(notificacoes.sucesso).toHaveBeenCalledWith('Horários de 18 itens recalculados.')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'evento')
   })
 
   it('[COMPONENTE] manter horários só navega, sem recalcular', async () => {
@@ -108,12 +111,12 @@ describe('Recalcular horários do cronograma ao mudar o horário da cerimônia',
     )
 
     const montagem = await editar({ horario: '15:00' })
-    await vi.waitFor(() => expect(dialogoHorarios()).not.toBeNull())
+    await aguardarAte(() => expect(dialogoHorarios()).not.toBeNull())
     clicar('[data-teste="dialogo-confirmacao-cancelar"]')
     await flushPromises()
 
     expect(chamadas(fetchSimulado, 'POST', ROTA_RECALCULO_HORARIOS)).toHaveLength(0)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'evento')
   })
 
   it('[COMPONENTE] sem itens afetados, sem mudança de horário ou removendo o horário não pergunta', async () => {
@@ -125,7 +128,7 @@ describe('Recalcular horários do cronograma ao mudar o horário da cerimônia',
     )
     const montagem = await editar({ horario: '18:00' })
     expect(dialogoHorarios()).toBeNull()
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'evento')
     wrapper!.unmount()
     wrapper = undefined
 
@@ -163,21 +166,21 @@ describe('Recalcular horários do cronograma ao mudar o horário da cerimônia',
 
     const montagem = await editar({ data: '2027-06-30', horario: '17:00' })
 
-    await vi.waitFor(() => expect(document.body.querySelector('[data-teste="dialogo-recalculo"]')).not.toBeNull())
+    await aguardarAte(() => expect(document.body.querySelector('[data-teste="dialogo-recalculo"]')).not.toBeNull())
     expect(document.body.textContent).toContain(TEXTOS_CHECKLIST.recalculoTitulo)
     expect(dialogoHorarios()).toBeNull()
 
     clicar('[data-teste="dialogo-confirmacao-cancelar"]')
     await flushPromises()
 
-    await vi.waitFor(() => expect(dialogoHorarios()).not.toBeNull())
+    await aguardarAte(() => expect(dialogoHorarios()).not.toBeNull())
     expect(montagem.roteador.currentRoute.value.name).toBe('evento-editar')
     clicar('[data-teste="dialogo-confirmacao-confirmar"]')
     await flushPromises()
 
     expect(chamadas(fetchSimulado, 'POST', ROTA_RECALCULO_PRAZOS)).toHaveLength(0)
     expect(chamadas(fetchSimulado, 'POST', ROTA_RECALCULO_HORARIOS)).toHaveLength(1)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'evento')
   })
 
   it('[COMPONENTE] falha no recálculo mostra erro e segue para o evento', async () => {
@@ -190,11 +193,11 @@ describe('Recalcular horários do cronograma ao mudar o horário da cerimônia',
     )
 
     const montagem = await editar({ horario: '17:30' })
-    await vi.waitFor(() => expect(dialogoHorarios()).not.toBeNull())
+    await aguardarAte(() => expect(dialogoHorarios()).not.toBeNull())
     clicar('[data-teste="dialogo-confirmacao-confirmar"]')
     await flushPromises()
 
     expect(notificacoes.erro).toHaveBeenCalledWith(TEXTOS_RECALCULO_HORARIOS.erro)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'evento')
   })
 })

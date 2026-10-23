@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import type { Mock } from 'vitest'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import ListaDetalhes from '@/componentes/base/ListaDetalhes.vue'
 import { SESSAO_EXEMPLO, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { alertasExemplo } from '@/__tests__/auxiliaresFinanceiro'
@@ -12,6 +13,8 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import type { SessaoDto } from '@/tipos/api'
 import { ID_EVENTO, RaizRotas, eventoCompleto, quando, type Rota } from './auxiliaresEventos'
+
+await precarregarRotas('evento')
 
 const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
 const ROTA_ALERTAS = `${ROTA_EVENTO}/financeiro/alertas`

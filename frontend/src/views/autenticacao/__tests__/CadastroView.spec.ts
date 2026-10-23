@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import CadastroView from '@/views/autenticacao/CadastroView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CADASTRO } from '@/textos/autenticacao'
@@ -14,6 +15,8 @@ import {
   respostaProblema,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+
+await precarregarRotas('cadastro')
 
 describe('CadastroView', () => {
   let fetchSimulado: ReturnType<typeof simularFetch>
@@ -77,7 +80,7 @@ describe('CadastroView', () => {
       email: 'renata@exemplo.com',
       senha: 'senhaForte1',
     })
-    expect(roteador.currentRoute.value.name).toBe('inicio')
+    await aguardarRota(roteador, 'inicio')
   })
 
   it('[COMPONENTE] e-mail em uso mostra o erro no campo e os caminhos para entrar ou recuperar', async () => {

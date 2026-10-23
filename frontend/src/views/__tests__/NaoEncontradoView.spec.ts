@@ -5,9 +5,12 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import PrimeVue from 'primevue/config'
 
+import { aguardarAte, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { rotas } from '@/router'
 import { TEXTOS_NAO_ENCONTRADO } from '@/textos/naoEncontrado'
 import NaoEncontradoView from '@/views/NaoEncontradoView.vue'
+
+await precarregarRotas('nao-encontrado')
 
 const CAMINHO_INEXISTENTE = '/convite/<script>alert(1)</script>'
 
@@ -49,7 +52,7 @@ describe('NaoEncontradoView', () => {
     await wrapper.get('[data-teste="voltar-inicio"]').trigger('click')
     await flushPromises()
 
-    expect(roteador.currentRoute.value.path).not.toBe('/inexistente')
+    await aguardarAte(() => expect(roteador.currentRoute.value.path).not.toBe('/inexistente'))
     expect(roteador.currentRoute.value.matched[0]?.path).not.toBe('/:caminho(.*)*')
     wrapper.unmount()
   })

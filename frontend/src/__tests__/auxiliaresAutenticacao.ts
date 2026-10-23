@@ -6,6 +6,7 @@ import PrimeVue from 'primevue/config'
 import ToastService from 'primevue/toastservice'
 import type { Component } from 'vue'
 
+import { rastrearNavegacoes } from '@/__tests__/auxiliaresNavegacao'
 import { rotas } from '@/router'
 import { instalarGuardaAutenticacao } from '@/router/guardaAutenticacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
@@ -52,7 +53,7 @@ export interface Montagem {
 export async function prepararAplicacao(caminhoInicial: string): Promise<Montagem> {
   const pinia = createPinia()
   setActivePinia(pinia)
-  const roteador = createRouter({ history: createMemoryHistory(), routes: rotas })
+  const roteador = rastrearNavegacoes(createRouter({ history: createMemoryHistory(), routes: rotas }))
   instalarGuardaAutenticacao(roteador, useAutenticacaoStore(pinia))
   await roteador.push(caminhoInicial)
   await roteador.isReady()

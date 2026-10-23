@@ -1,11 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CHECKLIST } from '@/textos/checklist'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from './auxiliaresEventos'
+
+await precarregarRotas('evento-editar', 'evento')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -69,7 +72,7 @@ describe('Recalcular prazos ao mudar a data do evento', () => {
 
     const montagem = await editarData('2027-06-30')
 
-    await vi.waitFor(() => expect(dialogo()).not.toBeNull())
+    await aguardarAte(() => expect(dialogo()).not.toBeNull())
     expect(dialogo()!.textContent).toContain(TEXTOS_CHECKLIST.recalculoTitulo)
     expect(dialogo()!.textContent).toContain('A data mudou para 30/06/2027. 18 tarefas do checklist ainda abertas')
     expect(chamadas(fetchSimulado, 'POST', ROTA_RECALCULO)).toHaveLength(0)
@@ -81,7 +84,7 @@ describe('Recalcular prazos ao mudar a data do evento', () => {
 
     expect(chamadas(fetchSimulado, 'POST', ROTA_RECALCULO)).toHaveLength(1)
     expect(notificacoes.sucesso).toHaveBeenCalledWith('Prazos de 18 tarefas recalculados.')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'))
+    await aguardarRota(montagem.roteador, 'evento')
   })
 
   it('[COMPONENTE] manter prazos só navega, sem recalcular', async () => {
@@ -93,12 +96,12 @@ describe('Recalcular prazos ao mudar a data do evento', () => {
     )
 
     const montagem = await editarData('2027-06-30')
-    await vi.waitFor(() => expect(dialogo()).not.toBeNull())
+    await aguardarAte(() => expect(dialogo()).not.toBeNull())
     document.body.querySelector<HTMLButtonElement>('[data-teste="dialogo-confirmacao-cancelar"]')!.click()
     await flushPromises()
 
     expect(chamadas(fetchSimulado, 'POST', ROTA_RECALCULO)).toHaveLength(0)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'))
+    await aguardarRota(montagem.roteador, 'evento')
   })
 
   it('[COMPONENTE] sem tarefas afetadas ou sem checklist não pergunta', async () => {
@@ -110,7 +113,7 @@ describe('Recalcular prazos ao mudar a data do evento', () => {
     )
     const montagem = await editarData('2027-06-30')
     expect(dialogo()).toBeNull()
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'))
+    await aguardarRota(montagem.roteador, 'evento')
     wrapper!.unmount()
     wrapper = undefined
 

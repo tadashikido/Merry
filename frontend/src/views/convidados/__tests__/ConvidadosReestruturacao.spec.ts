@@ -12,6 +12,7 @@ import {
   respostaProblema,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CONVIDADOS } from '@/textos/convidados'
@@ -19,6 +20,8 @@ import { TEXTOS_ENVIO_CONVITE } from '@/textos/rsvp'
 import type { SessaoDto } from '@/tipos/api'
 import type { ConviteDto, ListaConvitesDto } from '@/tipos/convidados'
 import { ID_EVENTO, RaizRotas, eventoCompleto, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-convidados')
 
 const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
 const ROTA_CONVITES = `${ROTA_EVENTO}/convites`

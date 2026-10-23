@@ -1,6 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import EntrarView from '@/views/autenticacao/EntrarView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
@@ -14,6 +15,8 @@ import {
   respostaProblema,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+
+await precarregarRotas('entrar', 'esqueci-senha')
 
 describe('EntrarView', () => {
   let fetchSimulado: ReturnType<typeof simularFetch>
@@ -60,7 +63,7 @@ describe('EntrarView', () => {
 
     await preencherEEnviar('renata@exemplo.com', 'senhaForte1')
 
-    expect(roteador.currentRoute.value.fullPath).toBe('/?aba=convidados')
+    await aguardarAte(() => expect(roteador.currentRoute.value.fullPath).toBe('/?aba=convidados'))
   })
 
   it('[SEGURANÇA] ignora destino externo e vai para o painel', async () => {
@@ -69,7 +72,7 @@ describe('EntrarView', () => {
 
     await preencherEEnviar('renata@exemplo.com', 'senhaForte1')
 
-    expect(roteador.currentRoute.value.name).toBe('inicio')
+    await aguardarRota(roteador, 'inicio')
   })
 
   it('[COMPONENTE] mostra mensagem genérica de credenciais, limpa a senha e foca o campo', async () => {
@@ -113,7 +116,7 @@ describe('EntrarView', () => {
     await flushPromises()
 
     expect(useAutenticacaoStore().emailInformado).toBe('renata@exemplo.com')
-    await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('esqueci-senha'))
+    await aguardarRota(roteador, 'esqueci-senha')
   })
 
   it('[COMPONENTE] não mostra erro ao sair do e-mail vazio antes de enviar, para não deslocar o link', async () => {
@@ -168,7 +171,7 @@ describe('EntrarView', () => {
     await flushPromises()
 
     expect(fetchSimulado.mock.calls.length).toBe(chamadasAntes + 1)
-    expect(roteador.currentRoute.value.name).toBe('inicio')
+    await aguardarRota(roteador, 'inicio')
   })
 
   it('[COMPONENTE] depois de tentar enviar, o erro da senha some ao digitar e não aparece no blur antes do envio', async () => {

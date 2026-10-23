@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { painelExemplo } from '@/__tests__/auxiliaresConfirmacoes'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -8,6 +9,8 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_COBRANCA } from '@/textos/confirmacoes'
 import type { ConvitePendenteDto, PainelConfirmacoesDto } from '@/tipos/confirmacoes'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('painel-confirmacoes')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 

@@ -1,11 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { TEXTOS_RSVP } from '@/textos/rsvp'
 import type { RsvpPublicoDto } from '@/tipos/rsvp'
 import { RaizRotas, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('rsvp')
 
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
 const ROTA_CONSULTA = '/api/rsvp/consulta'
@@ -64,7 +67,7 @@ async function clicar(seletor: string) {
   await flushPromises()
 }
 
-describe('RsvpView', { timeout: 20_000 }, () => {
+describe('RsvpView', () => {
   it('[E2E] convite de uma pessoa no visual Celebri: abrir, Vou e Enviar resposta (3 toques)', async () => {
     const umaPessoa = dados({ nomeConvite: 'Helena Duarte', limiteAcompanhantes: 0, pessoas: [{ id: 'p1', nome: 'Helena Duarte', faixaEtaria: 'Adulto', resposta: 'Pendente', possuiRestricao: false }] })
     rotearFetch(

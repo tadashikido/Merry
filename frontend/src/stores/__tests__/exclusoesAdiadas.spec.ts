@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
+import { aguardarAte } from '@/__tests__/auxiliaresNavegacao'
 import { useExclusoesAdiadasStore } from '@/stores/exclusoesAdiadas'
 
 beforeEach(() => {
@@ -78,7 +79,7 @@ describe('useExclusoesAdiadasStore', () => {
     store.agendar({ escopo: 'convites:a', chave: 'c1', efetivar })
 
     window.dispatchEvent(new Event('pagehide'))
-    await vi.waitFor(() => expect(efetivar).toHaveBeenCalledTimes(1))
+    await aguardarAte(() => expect(efetivar).toHaveBeenCalledTimes(1))
     expect(store.pendente('convites:a', 'c1')).toBe(false)
   })
 })

@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import ItemTarefa from '@/componentes/base/ItemTarefa.vue'
 import BlocoPendenciasTarefas from '@/componentes/tarefas/BlocoPendenciasTarefas.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import { pendenciasExemplo, pendenteExemplo } from '@/__tests__/auxiliaresTarefas'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { rotas } from '@/router'
+
+await precarregarRotas('entrar')
 
 function montarItem(props: Record<string, unknown> = {}) {
   return mount(ItemTarefa, {

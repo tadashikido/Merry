@@ -12,6 +12,7 @@ import {
   respostaVazia,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { cronogramaExemplo, itemCronograma } from '@/__tests__/auxiliaresCronograma'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -20,6 +21,8 @@ import { TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import type { SessaoDto } from '@/tipos/api'
 import type { CronogramaDto } from '@/tipos/cronograma'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-cronograma')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 

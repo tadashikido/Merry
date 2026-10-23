@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import { avisoExemplo, mapaExemplo, MESA_PADRINHOS, MESA_TIOS } from '@/__tests__/auxiliaresMesas'
@@ -13,6 +14,8 @@ import type { ListaConvitesDto } from '@/tipos/convidados'
 import type { MapaMesasDto } from '@/tipos/mesas'
 import * as arquivo from '@/utilitarios/arquivo'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch, type Rota } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-mesas', 'impressao-mesas', 'evento-convidados')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 

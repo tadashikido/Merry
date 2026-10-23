@@ -12,12 +12,15 @@ import {
   respostaProblema,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { ID_VINCULO_FINANCEIRO, financeiroExemplo, fornecedorFinanceiro, resumoPagamentos } from '@/__tests__/auxiliaresFinanceiro'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_FINANCEIRO, TEXTOS_PARCELA } from '@/textos/financeiro'
 import type { SessaoDto } from '@/tipos/api'
 import { ID_EVENTO, RaizRotas, eventoCompleto, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-financeiro')
 
 vi.mock('@/composables/useNotificacao', () => ({
   useNotificacao: () => ({ sucesso: vi.fn(), erro: vi.fn() }),

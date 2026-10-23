@@ -11,6 +11,7 @@ import {
   respostaProblema,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { cronogramaExemplo, itemCronograma } from '@/__tests__/auxiliaresCronograma'
 import {
   ID_MODELO_CRONOGRAMA,
@@ -28,6 +29,8 @@ import {
 import type { SessaoDto } from '@/tipos/api'
 import type { CronogramaDto } from '@/tipos/cronograma'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-cronograma', 'modelo-cronograma')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -236,7 +239,7 @@ describe('Salvar como modelo e recalcular horários', () => {
 
     expect(corpoDaChamada(chamadas(fetchSimulado, 'POST', ROTA_SALVAR)[0]!)).toEqual({ nome: 'Roteiro da Ana', descricao: null })
     expect(notificacoes.sucesso).toHaveBeenCalledWith('Modelo “Roteiro da Ana” salvo.')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('modelo-cronograma'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'modelo-cronograma')
   })
 
   it('[COMPONENTE] salvar sem nome não envia e sem horário fica desabilitado', async () => {

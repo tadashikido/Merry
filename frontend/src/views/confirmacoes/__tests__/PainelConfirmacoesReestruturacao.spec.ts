@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { painelExemplo } from '@/__tests__/auxiliaresConfirmacoes'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -14,6 +15,8 @@ import { TEXTOS_COBRANCA, TEXTOS_CONFIRMACOES } from '@/textos/confirmacoes'
 import type { ConvitePendenteDto } from '@/tipos/confirmacoes'
 import type { RelatorioRestricoesAlimentaresDto } from '@/tipos/dadosSensiveis'
 import { ID_EVENTO, RaizRotas, eventoCompleto, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('painel-confirmacoes')
 
 const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
 const ROTA_PAINEL = `${ROTA_EVENTO}/painel-confirmacoes`

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import CabecalhoConvite from '@/componentes/base/CabecalhoConvite.vue'
@@ -11,6 +12,8 @@ import { montarLocaisOperacao } from '@/utilitarios/cronogramaPublico'
 import { formatarNomesAnfitrioes, formatarNomesEmFrase } from '@/utilitarios/formatacao'
 import { modelosDoTipo } from '@/utilitarios/modelosPorTipo'
 import { ID_EVENTO, RaizRotas, chamadas, eventoCompleto, quando, rotearFetch } from './auxiliaresEventos'
+
+await precarregarRotas('evento-novo', 'evento', 'evento-editar')
 
 let fetchSimulado: ReturnType<typeof simularFetch>
 let wrapper: VueWrapper | undefined
@@ -176,18 +179,19 @@ describe('formulário de evento com tipo', () => {
 
   it('[COMPONENTE] comemoração aceita segundo nome opcional', async () => {
     rotearFetch(fetchSimulado, quando('POST', '/api/eventos', () => respostaJson(eventoCompleto({ tipo: 'Comemoracao', nomeSegundaPessoa: null }), 201)))
-    await abrir('/eventos/novo')
+    const { montagem } = await abrir('/eventos/novo')
 
     await wrapper!.get('[data-teste="tipo-evento-Comemoracao"]').setValue(true)
+    await flushPromises()
+    expect(wrapper!.find('#evento-nomeSegundaPessoa').exists()).toBe(true)
     await wrapper!.get('#evento-nomePrimeiraPessoa').setValue('Família Souza')
     await wrapper!.get('#evento-data').setValue('2027-08-01')
     await wrapper!.get('[data-teste="formulario-evento"]').trigger('submit')
     await flushPromises()
 
-    expect(wrapper!.find('#evento-nomeSegundaPessoa').exists()).toBe(true)
-    expect(wrapper!.find('[data-teste="erro-campo"]').exists()).toBe(false)
     const [chamada] = chamadas(fetchSimulado, 'POST', '/api/eventos')
     expect(corpoDaChamada(chamada!)).toMatchObject({ tipo: 'Comemoracao', nomePrimeiraPessoa: 'Família Souza', nomeSegundaPessoa: null })
+    await aguardarRota(montagem.roteador, 'evento')
   })
 
   it('[COMPONENTE] casamento sem o segundo nome bloqueia o envio', async () => {

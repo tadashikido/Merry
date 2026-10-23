@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import {
   ID_ITEM_MODELO_CRONOGRAMA,
@@ -17,6 +18,8 @@ import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import { TEXTOS_ITEM_MODELO_CRONOGRAMA, TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
 import { RaizRotas, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('modelos-cronograma', 'modelo-cronograma', 'item-modelo-cronograma-editar', 'modelo-cronograma-novo', 'modelo-cronograma-editar', 'item-modelo-cronograma-novo')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -214,7 +217,7 @@ describe('ModeloCronogramaView', () => {
     await wrapper.findAll('[data-teste="linha-cronograma-conteudo"]')[1]!.trigger('click')
     await flushPromises()
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('item-modelo-cronograma-editar'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'item-modelo-cronograma-editar')
     expect(montagem.roteador.currentRoute.value.params.itemId).toBe(ID_ITEM_MODELO_CRONOGRAMA)
   })
 
@@ -366,7 +369,7 @@ describe('Formulários de modelo de cronograma', () => {
       horarioReferencia: '17:30',
     })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_MODELOS_CRONOGRAMA.toastCriado)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('modelo-cronograma'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'modelo-cronograma')
   })
 
   it('[COMPONENTE] nome repetido do servidor aparece sob o campo', async () => {
@@ -427,7 +430,7 @@ describe('Formulários de modelo de cronograma', () => {
     const [chamada] = chamadas(fetchSimulado, 'PUT', ROTA_MODELO)
     expect(corpoDaChamada(chamada!)).toEqual({ nome: 'Fazenda e praia', descricao: 'Ao ar livre', horarioReferencia: '16:30' })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_MODELOS_CRONOGRAMA.toastSalvo)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('modelo-cronograma'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'modelo-cronograma')
   })
 
   it('[COMPONENTE] erro só aparece depois da primeira tentativa e some ao digitar um nome válido', async () => {
@@ -527,7 +530,7 @@ describe('Formulários de modelo de cronograma', () => {
       instrucoes: null,
     })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_ITEM_MODELO_CRONOGRAMA.toastAdicionado)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('modelo-cronograma'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'modelo-cronograma')
     expect(montagem.roteador.currentRoute.value.query.item).toBe('novo')
   })
 
@@ -613,7 +616,7 @@ describe('Formulários de modelo de cronograma', () => {
   it('[COMPONENTE] erros do item só aparecem depois da tentativa, focam a atividade e somem ao digitar', async () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
     const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`)
-    await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-cronograma-atividade'))
+    await aguardarAte(() => expect(document.activeElement?.id).toBe('item-modelo-cronograma-atividade'))
 
     const atividade = wrapper.get('#item-modelo-cronograma-atividade')
     await atividade.trigger('blur')
@@ -624,7 +627,7 @@ describe('Formulários de modelo de cronograma', () => {
     await flushPromises()
     expect(wrapper.text()).toContain(TEXTOS_CRONOGRAMA.erroAtividade)
     expect(wrapper.text()).toContain(TEXTOS_CRONOGRAMA.erroInicio)
-    await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-cronograma-atividade'))
+    await aguardarAte(() => expect(document.activeElement?.id).toBe('item-modelo-cronograma-atividade'))
     expect(chamadas(fetchSimulado, 'POST', ROTA_ITENS)).toHaveLength(0)
 
     await atividade.setValue('Cortejo dos padrinhos')
@@ -645,7 +648,7 @@ describe('Formulários de modelo de cronograma', () => {
     await wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').trigger('submit')
     await flushPromises()
     expect(wrapper.text()).toContain(TEXTOS_CRONOGRAMA.erroTermino)
-    await vi.waitFor(() => expect(document.activeElement?.id).toBe('item-modelo-cronograma-termino'))
+    await aguardarAte(() => expect(document.activeElement?.id).toBe('item-modelo-cronograma-termino'))
     expect(chamadas(fetchSimulado, 'POST', ROTA_ITENS)).toHaveLength(0)
 
     await inicio.setValue('16:30')

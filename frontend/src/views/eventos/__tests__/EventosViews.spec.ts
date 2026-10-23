@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -19,6 +20,8 @@ import {
   resumoEvento,
   rotearFetch,
 } from './auxiliaresEventos'
+
+await precarregarRotas('entrar', 'nao-encontrado', 'eventos', 'evento-novo', 'evento', 'evento-editar')
 
 let fetchSimulado: ReturnType<typeof simularFetch>
 let wrapper: VueWrapper | undefined
@@ -112,7 +115,7 @@ describe('EventosView', () => {
     await opcao!.trigger('click')
     await flushPromises()
 
-    expect(montagem.roteador.currentRoute.value.query.situacao).toBe('arquivados')
+    await aguardarAte(() => expect(montagem.roteador.currentRoute.value.query.situacao).toBe('arquivados'))
     expect(chamadas(fetchSimulado, 'GET', '/api/eventos?situacao=Arquivados')).toHaveLength(1)
     expect(wrapper!.text()).toContain(TEXTOS_EVENTOS.vazioArquivadosTitulo)
   })
@@ -209,7 +212,7 @@ describe('EventoFormularioView', () => {
       observacoes: null,
       dataLimiteRsvp: null,
     })
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'))
+    await aguardarRota(montagem.roteador, 'evento')
     expect(montagem.roteador.currentRoute.value.params.id).toBe(ID_EVENTO)
   })
 
@@ -265,7 +268,7 @@ describe('EventoFormularioView', () => {
 
     const [chamada] = chamadas(fetchSimulado, 'PUT', `/api/eventos/${ID_EVENTO}`)
     expect(corpoDaChamada(chamada!)).toMatchObject({ nomeSegundaPessoa: 'Bruna', data: '2027-05-15', convidadosEstimados: 150 })
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'))
+    await aguardarRota(montagem.roteador, 'evento')
   })
 
   it('[COMPONENTE] evento arquivado: aviso e salvar desabilitado', async () => {

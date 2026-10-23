@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -15,6 +16,8 @@ import {
   quando,
   rotearFetch,
 } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-convidados', 'restricoes-alimentares', 'convite-novo', 'convidados-importar', 'convite-editar', 'nao-encontrado', 'evento')
 
 const ID_CONVITE = '33333333-3333-4333-8333-333333333333'
 const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
@@ -134,8 +137,8 @@ describe('ConvidadosView', { timeout: 20_000 }, () => {
     await wrapper!.get('[data-teste="abrir-restricoes"]').trigger('click')
     await flushPromises()
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('restricoes-alimentares'), { timeout: 5000 })
-  }, 20_000)
+    await aguardarRota(montagem.roteador, 'restricoes-alimentares')
+  })
 
   it('[COMPONENTE] filtro de resposta esconde pessoas de outra resposta sem nova requisição', async () => {
     rotearFetch(fetchSimulado, ...rotasPadrao())
@@ -309,8 +312,8 @@ describe('ConvidadosView', { timeout: 20_000 }, () => {
 
     await wrapper!.get('[data-teste="adicionar-convite"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('convite-novo'), { timeout: 5000 })
-  }, 20_000)
+    await aguardarRota(montagem.roteador, 'convite-novo')
+  })
 
   it('[COMPONENTE] importar planilha navega para a importação', async () => {
     rotearFetch(fetchSimulado, ...rotasPadrao())
@@ -318,8 +321,8 @@ describe('ConvidadosView', { timeout: 20_000 }, () => {
 
     await wrapper!.get('[data-teste="importar-planilha"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('convidados-importar'), { timeout: 5000 })
-  }, 20_000)
+    await aguardarRota(montagem.roteador, 'convidados-importar')
+  })
 
   it('[COMPONENTE] lista vazia oferece importar planilha e arquivado esconde a ação', async () => {
     rotearFetch(fetchSimulado, ...rotasPadrao(lista({ convites: [], totais: { ...TOTAIS, convites: 0, pessoas: 0 } })))
@@ -384,7 +387,7 @@ describe('ConviteFormularioView', { timeout: 20_000 }, () => {
         { id: null, nome: 'Pedro Souza', telefone: null, email: null, faixaEtaria: 'Crianca', resposta: 'Pendente' },
       ],
     })
-    expect(montagem.roteador.currentRoute.value.name).toBe('evento-convidados')
+    await aguardarRota(montagem.roteador, 'evento-convidados')
   })
 
   it('[INTEGRAÇÃO] depois de salvar, a lista de convites é buscada uma única vez', async () => {
@@ -398,7 +401,7 @@ describe('ConviteFormularioView', { timeout: 20_000 }, () => {
 
     await wrapper!.get('[data-teste="campo-nome-pessoa"]').setValue('Carla')
     await wrapper!.get('[data-teste="formulario-convite"]').trigger('submit')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento-convidados'))
+    await aguardarRota(montagem.roteador, 'evento-convidados')
     await flushPromises()
 
     expect(chamadas(fetchSimulado, 'GET', ROTA_CONVITES).length - antes).toBe(1)
@@ -498,10 +501,10 @@ describe('ConviteFormularioView', { timeout: 20_000 }, () => {
     const aviso = confirmacao.avisoAtual()
     expect(aviso.desfazer).toBeTypeOf('function')
     await confirmacao.confirmar()
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento-convidados'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'evento-convidados')
     await flushPromises()
 
-    await vi.waitFor(() => expect(wrapper!.text()).toContain('Marcos Lima'), { timeout: 5000 })
+    await aguardarAte(() => expect(wrapper!.text()).toContain('Marcos Lima'))
     expect(wrapper!.text()).not.toContain('Família Souza')
     expect(chamadas(fetchSimulado, 'DELETE', `${ROTA_CONVITES}/${ID_CONVITE}`)).toHaveLength(0)
 
@@ -555,7 +558,7 @@ describe('Bloco de convidados na página do evento', () => {
     expect(chamadas(fetchSimulado, 'GET', ROTA_CONVITES)).toHaveLength(0)
 
     await bloco.get('[data-teste="gerenciar-convidados"]').trigger('click')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento-convidados'))
+    await aguardarRota(montagem.roteador, 'evento-convidados')
   })
 
   it('[COMPONENTE] sem convites mostra estado vazio com "Adicionar convite"', async () => {

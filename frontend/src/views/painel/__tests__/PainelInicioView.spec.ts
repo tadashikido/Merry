@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import Button from 'primevue/button'
 
+import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import PainelInicioView from '@/views/painel/PainelInicioView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
@@ -16,6 +17,8 @@ import { alertasExemplo } from '@/__tests__/auxiliaresFinanceiro'
 import { TEXTOS_ALERTAS_PAGAMENTOS } from '@/textos/financeiro'
 import { pendenciasExemplo } from '@/__tests__/auxiliaresTarefas'
 import { ROTA_PENDENCIAS_TAREFAS } from '@/stores/tarefas'
+
+await precarregarRotas('evento-novo', 'entrar', 'eventos')
 
 const ROTA_ATIVOS = '/api/eventos?situacao=Ativos'
 
@@ -115,7 +118,7 @@ describe('PainelInicioView', () => {
 
     await wrapper.get('[data-teste="primeiro-acesso-continuar"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento-novo'), { timeout: 10000 })
+    await aguardarRota(montagem.roteador, 'evento-novo')
   })
 
   it('[INTEGRAÇÃO] com eventos, "Novo evento" no cabeçalho leva ao formulário', async () => {
@@ -126,7 +129,7 @@ describe('PainelInicioView', () => {
     expect(wrapper.find('[data-teste="estado-primeiro-acesso"]').exists()).toBe(false)
     await wrapper.get('[data-teste="novo-evento"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento-novo'), { timeout: 10000 })
+    await aguardarRota(montagem.roteador, 'evento-novo')
   })
 
   it('[INTEGRAÇÃO] sair revoga a sessão na API e leva para entrar', async () => {
@@ -142,7 +145,7 @@ describe('PainelInicioView', () => {
     await flushPromises()
 
     expect(chamadas(fetchSimulado, 'POST', '/api/autenticacao/sair')).toHaveLength(1)
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('entrar'), { timeout: 10000 })
+    await aguardarRota(montagem.roteador, 'entrar')
   })
 
   it('[COMPONENTE] o rail tem Dashboard e Eventos com rótulo acessível e Dashboard ativo', async () => {
@@ -237,7 +240,7 @@ describe('PainelInicioView', () => {
 
     await wrapper.get('[data-teste="ver-todos"]').trigger('click')
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('eventos'), { timeout: 10000 })
+    await aguardarRota(montagem.roteador, 'eventos')
   })
 
   it('[COMPONENTE] sem próximos eventos a legenda da seção não aparece', async () => {

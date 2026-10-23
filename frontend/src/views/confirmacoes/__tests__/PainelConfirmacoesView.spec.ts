@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch, type Montagem } from '@/__tests__/auxiliaresAutenticacao'
 import { exportacaoExemplo, painelExemplo } from '@/__tests__/auxiliaresConfirmacoes'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -9,6 +10,8 @@ import { TEXTOS_CONFIRMACOES, TEXTOS_PREVIA_RSVP } from '@/textos/confirmacoes'
 import type { RelatorioRestricoesAlimentaresDto } from '@/tipos/dadosSensiveis'
 import * as arquivo from '@/utilitarios/arquivo'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('painel-confirmacoes', 'impressao-buffet')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -224,7 +227,7 @@ describe('PainelConfirmacoesView', { timeout: 20_000 }, () => {
     await wrapper!.get('[data-teste="abrir-impressao"]').trigger('click')
     await flushPromises()
 
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('impressao-buffet'))
+    await aguardarRota(montagem.roteador, 'impressao-buffet')
   })
 
   it('[INTEGRAÇÃO] reenviar pelo WhatsApp a partir do pendente marca enviado e recarrega o painel', async () => {

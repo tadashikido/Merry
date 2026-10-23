@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -10,6 +11,8 @@ import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import { TEXTOS_DUPLICACAO_EVENTO } from '@/textos/duplicacaoEvento'
 import type { PreviaDuplicacaoDto } from '@/tipos/duplicacaoEvento'
 import { ID_EVENTO, RaizRotas, quando, resumoEvento, rotearFetch, type Rota } from './auxiliaresEventos'
+
+await precarregarRotas('evento-duplicar')
 
 const ROTA_PREVIA = `/api/eventos/${ID_EVENTO}/duplicacao/previa`
 const CAMINHO_TELA = `/eventos/novo/a-partir-de-outro?origem=${ID_EVENTO}`

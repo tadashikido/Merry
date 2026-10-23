@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import {
   DATA_EVENTO,
@@ -17,6 +18,8 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CHECKLIST } from '@/textos/checklist'
 import type { ChecklistEventoDto } from '@/tipos/checklist'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-checklist')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 

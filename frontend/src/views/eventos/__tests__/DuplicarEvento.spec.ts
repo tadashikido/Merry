@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -9,6 +10,8 @@ import { TEXTOS_DUPLICACAO_EVENTO } from '@/textos/duplicacaoEvento'
 import type { SessaoDto } from '@/tipos/api'
 import type { PreviaDuplicacaoDto } from '@/tipos/duplicacaoEvento'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, resumoEvento, rotearFetch, type Rota } from './auxiliaresEventos'
+
+await precarregarRotas('evento-duplicar', 'evento', 'evento-novo')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -19,6 +22,7 @@ vi.mock('@/composables/useNotificacao', () => ({
 }))
 
 const ID_NOVO = '33333333-3333-4333-8333-333333333333'
+const ESPERA_PREVIA_MS = 300
 const ROTA_DUPLICACAO = `/api/eventos/${ID_EVENTO}/duplicacao`
 const ROTA_PREVIA = `${ROTA_DUPLICACAO}/previa`
 const CAMINHO_TELA = `/eventos/novo/a-partir-de-outro?origem=${ID_EVENTO}`
@@ -79,6 +83,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.useRealTimers()
   wrapper?.unmount()
   wrapper = undefined
   document.body.innerHTML = ''
@@ -142,7 +147,7 @@ describe('Duplicar evento', () => {
       copiarCronograma: true,
     })
     expect(notificacoes.sucesso).toHaveBeenCalledWith('Evento criado com 29 tarefas, 3 fornecedores e 7 itens do cronograma.')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento'))
+    await aguardarRota(montagem.roteador, 'evento')
     expect(montagem.roteador.currentRoute.value.params.id).toBe(ID_NOVO)
   })
 
@@ -199,9 +204,11 @@ describe('Duplicar evento', () => {
     await abrir()
     expect(wrapper!.get('[data-teste="aviso-previa"]').text()).toBe(TEXTOS_DUPLICACAO_EVENTO.semData)
 
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     await wrapper!.get('#duplicacao-data').setValue('2026-10-20')
+    await vi.advanceTimersByTimeAsync(ESPERA_PREVIA_MS)
 
-    await vi.waitFor(() => expect(wrapper!.find('[data-teste="aviso-previa"]').text()).toBe(TEXTOS_DUPLICACAO_EVENTO.nascemAtrasadas(4)))
+    await aguardarAte(() => expect(wrapper!.find('[data-teste="aviso-previa"]').text()).toBe(TEXTOS_DUPLICACAO_EVENTO.nascemAtrasadas(4)))
     const urls = fetchSimulado.mock.calls.map(([url]) => String(url)).filter((url) => url.startsWith(ROTA_PREVIA))
     expect(urls).toEqual([ROTA_PREVIA, `${ROTA_PREVIA}?data=2026-10-20`])
     const anuncio = wrapper!.get('[data-teste="resumo-previa"]')
@@ -323,9 +330,11 @@ describe('Duplicar evento', () => {
     )
 
     await abrir()
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     await wrapper!.get('#duplicacao-data').setValue('2028-05-13')
+    await vi.advanceTimersByTimeAsync(ESPERA_PREVIA_MS)
 
-    await vi.waitFor(() => expect(wrapper!.find('[data-teste="erro-previa"]').exists()).toBe(true))
+    await aguardarAte(() => expect(wrapper!.find('[data-teste="erro-previa"]').exists()).toBe(true))
     expect(wrapper!.find('[data-teste="formulario-duplicacao"]').exists()).toBe(true)
     expect(wrapper!.get('[data-teste="criar-evento"]').attributes('disabled')).toBeUndefined()
   })
@@ -371,7 +380,7 @@ describe('Entradas da duplicação', () => {
     await botao.trigger('click')
     await flushPromises()
 
-    expect(montagem.roteador.currentRoute.value.name).toBe('evento-duplicar')
+    await aguardarRota(montagem.roteador, 'evento-duplicar')
     expect(montagem.roteador.currentRoute.value.query.origem).toBe(ID_EVENTO)
   })
 

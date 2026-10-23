@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import EsqueciSenhaView from '@/views/autenticacao/EsqueciSenhaView.vue'
 import RedefinirSenhaView from '@/views/autenticacao/RedefinirSenhaView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -16,6 +17,8 @@ import {
   respostaVazia,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+
+await precarregarRotas('esqueci-senha', 'redefinir-senha', 'entrar')
 
 describe('EsqueciSenhaView', () => {
   let fetchSimulado: ReturnType<typeof simularFetch>
@@ -201,7 +204,7 @@ describe('RedefinirSenhaView', () => {
     expect(wrapper!.get('h1').text()).toBe(TEXTOS_REDEFINIR_SENHA.linkInvalidoTitulo)
     await wrapper!.get('[data-teste="pedir-novo-link"]').trigger('click')
     await flushPromises()
-    expect(roteador.currentRoute.value.name).toBe('esqueci-senha')
+    await aguardarRota(roteador, 'esqueci-senha')
   })
 
   it('[SEGURANÇA] lê o token do fragmento e o remove da barra de endereços', async () => {
@@ -229,7 +232,7 @@ describe('RedefinirSenhaView', () => {
     await preencherEEnviar('senhaForte1', 'senhaForte1')
 
     expect(corpoDaChamada(fetchSimulado.mock.calls[0]!)).toEqual({ token: 'abc-123', novaSenha: 'senhaForte1' })
-    await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('entrar'))
+    await aguardarRota(roteador, 'entrar')
     expect(useAutenticacaoStore().avisoEntrada).toBe('senhaRedefinida')
   })
 

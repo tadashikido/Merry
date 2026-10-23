@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import ListaRepetivel from '@/componentes/base/ListaRepetivel.vue'
@@ -12,6 +13,8 @@ import LayoutPublico from '@/layouts/LayoutPublico.vue'
 import { TEXTOS_LISTA_ACOMPANHANTES, TEXTOS_RSVP } from '@/textos/rsvp'
 import type { RsvpPublicoDto } from '@/tipos/rsvp'
 import { RaizRotas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('rsvp')
 
 const TOKEN = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde'
 const ROTA_CONSULTA = '/api/rsvp/consulta'
@@ -68,7 +71,7 @@ async function abrir(token = TOKEN) {
   return wrapper
 }
 
-describe('RsvpView — estrutura da fundação', { timeout: 20_000 }, () => {
+describe('RsvpView — estrutura da fundação', () => {
   it('[COMPONENTE] com convite carregado usa a folha ampla e põe o convite antes do formulário', async () => {
     rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(dados())))
 

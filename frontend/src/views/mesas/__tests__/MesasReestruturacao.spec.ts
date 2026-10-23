@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { mapaExemplo } from '@/__tests__/auxiliaresMesas'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -11,6 +12,8 @@ import OcupacaoMesa from '@/componentes/base/OcupacaoMesa.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_MESAS } from '@/textos/mesas'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-mesas')
 
 vi.mock('@/composables/useNotificacao', () => ({
   useNotificacao: () => ({ sucesso: vi.fn(), erro: vi.fn() }),

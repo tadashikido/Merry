@@ -3,6 +3,7 @@ import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import { h } from 'vue'
 import { RouterView } from 'vue-router'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { listaTarefas, tarefaExemplo } from '@/__tests__/auxiliaresTarefas'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -13,6 +14,8 @@ import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { TEXTOS_ALTERACOES_NAO_SALVAS } from '@/textos/mensagens'
 import type { ConviteDto, ListaConvitesDto } from '@/tipos/convidados'
 import { ID_EVENTO, eventoCompleto, chamadas, quando, rotearFetch, type Rota } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('tarefa-nova', 'evento', 'evento-tarefas', 'tarefa-editar', 'entrar', 'convite-editar', 'convite-novo', 'esqueci-senha')
 
 const ID_TAREFA = '33333333-3333-4333-8333-333333333333'
 const ID_CONVITE = '44444444-4444-4444-8444-444444444444'
@@ -156,7 +159,7 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
     await wrapper!.get('[data-teste="cancelar"]').trigger('click')
     await flushPromises()
 
-    await vi.waitFor(() => expect(roteador.currentRoute.value.path).toBe(CAMINHO_LISTA_TAREFAS), { timeout: 10000 })
+    await aguardarAte(() => expect(roteador.currentRoute.value.path).toBe(CAMINHO_LISTA_TAREFAS))
     expect(dialogoAberto()).toBe(false)
   })
 
@@ -169,7 +172,7 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
     await flushPromises()
 
     expect(chamadas(fetchSimulado, 'POST', ROTA_TAREFAS)).toHaveLength(1)
-    await vi.waitFor(() => expect(roteador.currentRoute.value.path).toBe(CAMINHO_LISTA_TAREFAS), { timeout: 10000 })
+    await aguardarAte(() => expect(roteador.currentRoute.value.path).toBe(CAMINHO_LISTA_TAREFAS))
     expect(dialogoAberto()).toBe(false)
   })
 
@@ -226,7 +229,7 @@ describe('Proteção de alterações não salvas — formulário de tarefa', () 
     await useAutenticacaoStore().sair()
     await flushPromises()
 
-    await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('entrar'), { timeout: 10000 })
+    await aguardarRota(roteador, 'entrar')
     expect(dialogoAberto()).toBe(false)
   })
 

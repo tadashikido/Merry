@@ -4,12 +4,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import Button from 'primevue/button'
 
+import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { tarefaExemplo } from '@/__tests__/auxiliaresTarefas'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_TAREFAS } from '@/textos/tarefas'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('tarefa-nova', 'evento-tarefas', 'tarefa-editar')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -168,7 +171,7 @@ describe('TarefaFormularioView no design system Celebri', () => {
       prazo: null,
     })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_TAREFAS.toastCriada)
-    await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('evento-tarefas'), { timeout: 4000 })
+    await aguardarRota(roteador, 'evento-tarefas')
   })
 
   it('[COMPONENTE] editar preenche os campos, mostra a situação e salva com mudança de situação', async () => {
@@ -203,7 +206,7 @@ describe('TarefaFormularioView no design system Celebri', () => {
     expect(mudancas).toHaveLength(1)
     expect(corpoDaChamada(mudancas[0]!)).toMatchObject({ status: 'EmAndamento' })
     expect(notificacoes.sucesso).toHaveBeenCalledWith(TEXTOS_TAREFAS.toastSalva)
-    await vi.waitFor(() => expect(roteador.currentRoute.value.name).toBe('evento-tarefas'), { timeout: 4000 })
+    await aguardarRota(roteador, 'evento-tarefas')
   })
 
   it('[COMPONENTE] falha de rede ao salvar mantém os dados e mostra a mensagem geral', async () => {

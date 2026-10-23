@@ -3,12 +3,15 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { previaExemplo } from '@/__tests__/auxiliaresImportacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('convidados-importar')
 
 const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
 const ROTA_PREVIA = `${ROTA_EVENTO}/convites/importacao/pre-visualizacao`
@@ -64,7 +67,7 @@ async function escolherArquivo(arquivo: File = new File(['Nome\nAna'], 'lista.cs
   await flushPromises()
 }
 
-describe('ImportarConvidadosView — reestruturação da fundação', { timeout: 20_000 }, () => {
+describe('ImportarConvidadosView — reestruturação da fundação', () => {
   it('[COMPONENTE] etapa 1 agrupa envio e instruções em cartão na mesma grade', async () => {
     await abrir()
 

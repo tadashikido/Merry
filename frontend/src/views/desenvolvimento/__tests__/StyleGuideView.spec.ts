@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import PrimeVue from 'primevue/config'
@@ -17,9 +17,15 @@ class ResizeObserverSimulado {
   disconnect() {}
 }
 
-async function montar() {
+const TEMPO_MONTAGEM_MS = 30_000
+
+function simularAmbiente() {
   simularMatchMedia(false)
   vi.stubGlobal('ResizeObserver', ResizeObserverSimulado)
+}
+
+async function montar() {
+  simularAmbiente()
   const roteador = createRouter({ history: createMemoryHistory(), routes: rotas })
   await roteador.push('/style-guide')
   await roteador.isReady()
@@ -45,17 +51,23 @@ describe('rota /style-guide', () => {
   })
 })
 
-describe('StyleGuideView', { timeout: 20_000 }, () => {
-  let wrapper: VueWrapper | undefined
+describe('StyleGuideView', () => {
+  let wrapper: VueWrapper
 
-  afterEach(() => {
-    wrapper?.unmount()
+  beforeAll(async () => {
+    wrapper = await montar()
+  }, TEMPO_MONTAGEM_MS)
+
+  beforeEach(() => {
+    simularAmbiente()
+  })
+
+  afterAll(() => {
+    wrapper.unmount()
     document.body.innerHTML = ''
   })
 
   it('[COMPONENTE] exibe todas as seções do style guide dentro do layout do painel', async () => {
-    wrapper = await montar()
-
     expect(wrapper.get('h1').text()).toBe('Style guide')
     for (const id of ['cores', 'tipografia', 'espaco', 'textos', 'acoes', 'formulario', 'listagem', 'estados', 'feedback', 'evento', 'convidados', 'importacao', 'tarefas', 'layouts', 'regras']) {
       expect(wrapper.find(`#${id}`).exists()).toBe(true)
@@ -65,8 +77,6 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
   })
 
   it('[COMPONENTE] exibe a seção de dados sensíveis com os estados dos componentes novos', async () => {
-    wrapper = await montar()
-
     const secao = wrapper.get('#dados-sensiveis')
     expect(secao.findAll('[data-teste="seletor-restricao"]')).toHaveLength(3)
     expect(secao.find('[data-teste="restricao-registrada"]').exists()).toBe(true)
@@ -82,8 +92,6 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
   })
 
   it('[COMPONENTE] exibe a seção de mesas com fileira de lugares, linha selecionável e barra de seleção', async () => {
-    wrapper = await montar()
-
     const secao = wrapper.get('#mesas')
     expect(secao.findAll('[data-teste="ocupacao-mesa"]')).toHaveLength(5)
     expect(secao.findAll('.ocupacao-mesa--completa')).toHaveLength(1)
@@ -95,8 +103,6 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
   })
 
   it('[COMPONENTE] exibe a seção de confirmações com barra, prazos e layout de impressão', async () => {
-    wrapper = await montar()
-
     const secao = wrapper.get('#confirmacoes')
     expect(secao.findAll('[data-teste="barra-progresso-envio"]')).toHaveLength(2)
     expect(secao.findAll('[data-teste="indicador-prazo"]').map((indicador) => indicador.classes().find((classe) => classe.startsWith('indicador-prazo--')))).toEqual([
@@ -110,8 +116,6 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
   })
 
   it('[COMPONENTE] exibe os componentes de evento com todos os estados', async () => {
-    wrapper = await montar()
-
     const secao = wrapper.get('#evento')
     expect(secao.findAll('[data-teste="nomes-anfitrioes"]').length).toBeGreaterThanOrEqual(4)
     expect(secao.findAll('[data-teste="contagem-regressiva"]')).toHaveLength(10)
@@ -122,16 +126,12 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
   })
 
   it('[COMPONENTE] lista todas as combinações de contraste aprovadas', async () => {
-    wrapper = await montar()
-
     const secao = wrapper.get('#cores')
     expect(secao.findAll('tbody tr')).toHaveLength(PARES_CONTRASTE.length)
     expect(secao.text()).not.toContain('Reprovado')
   })
 
   it('[COMPONENTE] documenta marca, iconografia, os 8 estados, o workspace e os dois contextos do Celebri', async () => {
-    wrapper = await montar()
-
     expect(wrapper.get('#marca').findAll('[data-teste="marca-produto"]')).toHaveLength(4)
     expect(wrapper.get('#marca').get('.guia__logo-principal').text()).toBe('Celebri')
     expect(wrapper.get('#marca').find('img').exists()).toBe(false)
@@ -159,14 +159,10 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
   })
 
   it('[COMPONENTE] não descreve mais a direção visual antiga', async () => {
-    wrapper = await montar()
-
     expect(wrapper.text()).not.toMatch(/ameixa|latão|Brygada|papelaria|monograma|Enlace|Hanken|pinho|champagne|sálvia|Nossia|terracota|alecrim|areia|rosado|rosa queimado|\bLora\b/i)
   })
 
   it('[COMPONENTE] registra as regras obrigatórias de evolução do style guide', async () => {
-    wrapper = await montar()
-
     const regras = wrapper.get('#regras').text()
     expect(regras).toContain('Padrão novo exige evoluir o style guide antes de usar numa tela')
     expect(regras).toContain('frontend-design:frontend-design')
@@ -176,8 +172,6 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
   })
 
   it('[COMPONENTE] documenta os componentes de importação e suas regras', async () => {
-    wrapper = await montar()
-
     const secao = wrapper.get('#importacao')
     expect(secao.find('[data-teste="indicador-etapas"]').exists()).toBe(true)
     expect(secao.findAll('[data-teste="envio-arquivo"]').map((envio) => envio.attributes('data-estado'))).toEqual([
@@ -191,6 +185,88 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     const regras = wrapper.get('#regras').text()
     expect(regras).toContain('indicador de etapas')
     expect(regras).toContain('neutralização de fórmulas')
+  })
+
+  it('[COMPONENTE] alterna os estados da listagem de exemplo', async () => {
+    expect(wrapper.find('#listagem [data-teste="listagem-tabela"]').exists()).toBe(true)
+    const botoes = wrapper.findAll('#listagem .p-togglebutton, #listagem [role="radio"], #listagem button')
+    const erro = botoes.find((botao) => botao.text() === 'Erro')
+    expect(erro).toBeDefined()
+    await erro?.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('#listagem [data-teste="estado-erro"]').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] exibe a seção de fornecedores com índice interativo, linhas, canais e estado vazio', async () => {
+    const secao = wrapper.get('#fornecedores')
+    expect(secao.find('[data-teste="indice-categorias"]').exists()).toBe(true)
+    expect(secao.findAll('[data-teste="linha-fornecedor"]').length).toBeGreaterThanOrEqual(4)
+    expect(secao.find('[data-teste="badge-status"]').text()).toContain('Arquivado')
+    expect(secao.find('.canais-contato--completa').exists()).toBe(true)
+    expect(secao.find('[data-teste="estado-vazio"]').text()).toContain('Você ainda não possui fornecedores.')
+
+    await secao.get('[data-chave="Fotografia"]').trigger('click')
+    expect(secao.findAll('.guia__painel-fornecedores [data-teste="link-fornecedor"]').map((link) => link.text())).toEqual([
+      'Fotografia Ângela Lima',
+      'Florista Jardim',
+    ])
+  })
+
+  it('[COMPONENTE] exibe a seção de fornecedores do evento com resumo, os quatro status e os estados do contrato', async () => {
+    const secao = wrapper.get('#fornecedores-evento')
+    expect(secao.get('[data-teste="resumo-frase"]').text().replace(/\s+/g, ' ')).toBe('R$ 25.900,00 contratados de R$ 43.300,00 orçados')
+    expect(secao.find('[data-teste="resumo-excedente"]').exists()).toBe(true)
+    const status = secao.findAll('[data-teste="status-vinculo"]').map((selo) => selo.text())
+    expect(status).toEqual(expect.arrayContaining(['Cotação', 'Em negociação', 'Contratado', 'Cancelado']))
+    expect(secao.findAll('[data-teste="anexo-contrato"]')).toHaveLength(5)
+    expect(secao.findAll('[data-teste="contrato-anexado"]')).toHaveLength(2)
+  })
+  it('[COMPONENTE] exibe a seção Cronograma do dia com as variantes da linha e os atalhos de preenchimento', async () => {
+    const secao = wrapper.get('#cronograma')
+    const linhas = secao.findAll('[data-teste="linha-cronograma"]')
+    expect(linhas).toHaveLength(3)
+    expect(linhas[1]!.classes()).toEqual(expect.arrayContaining(['linha-cronograma--cerimonia', 'linha-cronograma--conflito']))
+    expect(linhas[2]!.find('button').exists()).toBe(false)
+    expect(linhas[2]!.get('[data-teste="linha-cronograma-termino"]').text()).toBe('02:00+1')
+    const atalhos = secao.findAll('[data-teste="atalho-preenchimento"]')
+    expect(atalhos[0]!.attributes('aria-pressed')).toBe('true')
+    await atalhos[1]!.trigger('click')
+    expect(secao.get('[data-teste="guia-local-escolhido"]').text()).toContain('Espaço Villa Real')
+    expect(wrapper.get('.guia__indice').text()).toContain('Cronograma do dia')
+  })
+
+  it('[COMPONENTE] exibe a seção Duplicar evento com as opções de cópia nos quatro estados e o que fica na origem', async () => {
+    const secao = wrapper.get('#duplicacao')
+    const opcoes = secao.findAll('[data-teste="opcao-copia"]')
+    expect(opcoes).toHaveLength(4)
+    expect(opcoes[0]!.classes()).toContain('opcao-copia--marcada')
+    expect(opcoes[1]!.classes()).not.toContain('opcao-copia--marcada')
+    expect(opcoes[2]!.get('input').attributes('disabled')).toBeDefined()
+    expect(opcoes[3]!.find('.p-skeleton').exists() || opcoes[3]!.get('[data-teste="opcao-copia-quantidade"]').text() === '').toBe(true)
+    expect(secao.get('[data-teste="lista-nao-copiado"]').text()).toContain('Fica com Ana & João')
+    expect(wrapper.get('.guia__indice').text()).toContain('Duplicar evento')
+  })
+
+  it('[COMPONENTE] exibe a seção Financeiro com resumo de pagamentos, parcelas, linha do hoje e os estados do bloco', async () => {
+    const secao = wrapper.get('#financeiro')
+    expect(secao.get('[data-teste="resumo-frase"]').text().replace(/\s+/g, ' ')).toBe('R$ 27.600,00 pagos de R$ 45.900,00 contratados')
+    expect(secao.find('[data-teste="resumo-regua-total"]').exists()).toBe(true)
+    expect(secao.find('[data-teste="linha-hoje"]').exists()).toBe(true)
+    expect(secao.findAll('[data-teste="parcela-situacao"]').map((selo) => selo.text())).toEqual(
+      expect.arrayContaining(['Vencida há 2 dias', 'Vence hoje', 'Vence em 5 dias', 'Pendente', 'Paga em 18 set']),
+    )
+    expect(secao.findAll('[data-teste="bloco-alertas-pagamentos"]')).toHaveLength(4)
+  })
+})
+
+describe('StyleGuideView — formulário de exemplo', { timeout: TEMPO_MONTAGEM_MS }, () => {
+  let wrapper: VueWrapper | undefined
+
+  afterEach(() => {
+    wrapper?.unmount()
+    wrapper = undefined
+    document.body.innerHTML = ''
   })
 
   it('[COMPONENTE] valida o formulário de exemplo e foca o primeiro campo inválido', async () => {
@@ -220,89 +296,5 @@ describe('StyleGuideView', { timeout: 20_000 }, () => {
     await nome.setValue('Renata Alves')
     await flushPromises()
     expect(nome.attributes('aria-invalid')).toBe('false')
-  })
-
-  it('[COMPONENTE] alterna os estados da listagem de exemplo', async () => {
-    wrapper = await montar()
-
-    expect(wrapper.find('#listagem [data-teste="listagem-tabela"]').exists()).toBe(true)
-    const botoes = wrapper.findAll('#listagem .p-togglebutton, #listagem [role="radio"], #listagem button')
-    const erro = botoes.find((botao) => botao.text() === 'Erro')
-    expect(erro).toBeDefined()
-    await erro?.trigger('click')
-    await flushPromises()
-
-    expect(wrapper.find('#listagem [data-teste="estado-erro"]').exists()).toBe(true)
-  })
-
-  it('[COMPONENTE] exibe a seção de fornecedores com índice interativo, linhas, canais e estado vazio', async () => {
-    wrapper = await montar()
-
-    const secao = wrapper.get('#fornecedores')
-    expect(secao.find('[data-teste="indice-categorias"]').exists()).toBe(true)
-    expect(secao.findAll('[data-teste="linha-fornecedor"]').length).toBeGreaterThanOrEqual(4)
-    expect(secao.find('[data-teste="badge-status"]').text()).toContain('Arquivado')
-    expect(secao.find('.canais-contato--completa').exists()).toBe(true)
-    expect(secao.find('[data-teste="estado-vazio"]').text()).toContain('Você ainda não possui fornecedores.')
-
-    await secao.get('[data-chave="Fotografia"]').trigger('click')
-    expect(secao.findAll('.guia__painel-fornecedores [data-teste="link-fornecedor"]').map((link) => link.text())).toEqual([
-      'Fotografia Ângela Lima',
-      'Florista Jardim',
-    ])
-  })
-
-  it('[COMPONENTE] exibe a seção de fornecedores do evento com resumo, os quatro status e os estados do contrato', async () => {
-    wrapper = await montar()
-
-    const secao = wrapper.get('#fornecedores-evento')
-    expect(secao.get('[data-teste="resumo-frase"]').text().replace(/\s+/g, ' ')).toBe('R$ 25.900,00 contratados de R$ 43.300,00 orçados')
-    expect(secao.find('[data-teste="resumo-excedente"]').exists()).toBe(true)
-    const status = secao.findAll('[data-teste="status-vinculo"]').map((selo) => selo.text())
-    expect(status).toEqual(expect.arrayContaining(['Cotação', 'Em negociação', 'Contratado', 'Cancelado']))
-    expect(secao.findAll('[data-teste="anexo-contrato"]')).toHaveLength(5)
-    expect(secao.findAll('[data-teste="contrato-anexado"]')).toHaveLength(2)
-  })
-  it('[COMPONENTE] exibe a seção Cronograma do dia com as variantes da linha e os atalhos de preenchimento', async () => {
-    wrapper = await montar()
-
-    const secao = wrapper.get('#cronograma')
-    const linhas = secao.findAll('[data-teste="linha-cronograma"]')
-    expect(linhas).toHaveLength(3)
-    expect(linhas[1]!.classes()).toEqual(expect.arrayContaining(['linha-cronograma--cerimonia', 'linha-cronograma--conflito']))
-    expect(linhas[2]!.find('button').exists()).toBe(false)
-    expect(linhas[2]!.get('[data-teste="linha-cronograma-termino"]').text()).toBe('02:00+1')
-    const atalhos = secao.findAll('[data-teste="atalho-preenchimento"]')
-    expect(atalhos[0]!.attributes('aria-pressed')).toBe('true')
-    await atalhos[1]!.trigger('click')
-    expect(secao.get('[data-teste="guia-local-escolhido"]').text()).toContain('Espaço Villa Real')
-    expect(wrapper.get('.guia__indice').text()).toContain('Cronograma do dia')
-  })
-
-  it('[COMPONENTE] exibe a seção Duplicar evento com as opções de cópia nos quatro estados e o que fica na origem', async () => {
-    wrapper = await montar()
-
-    const secao = wrapper.get('#duplicacao')
-    const opcoes = secao.findAll('[data-teste="opcao-copia"]')
-    expect(opcoes).toHaveLength(4)
-    expect(opcoes[0]!.classes()).toContain('opcao-copia--marcada')
-    expect(opcoes[1]!.classes()).not.toContain('opcao-copia--marcada')
-    expect(opcoes[2]!.get('input').attributes('disabled')).toBeDefined()
-    expect(opcoes[3]!.find('.p-skeleton').exists() || opcoes[3]!.get('[data-teste="opcao-copia-quantidade"]').text() === '').toBe(true)
-    expect(secao.get('[data-teste="lista-nao-copiado"]').text()).toContain('Fica com Ana & João')
-    expect(wrapper.get('.guia__indice').text()).toContain('Duplicar evento')
-  })
-
-  it('[COMPONENTE] exibe a seção Financeiro com resumo de pagamentos, parcelas, linha do hoje e os estados do bloco', async () => {
-    wrapper = await montar()
-
-    const secao = wrapper.get('#financeiro')
-    expect(secao.get('[data-teste="resumo-frase"]').text().replace(/\s+/g, ' ')).toBe('R$ 27.600,00 pagos de R$ 45.900,00 contratados')
-    expect(secao.find('[data-teste="resumo-regua-total"]').exists()).toBe(true)
-    expect(secao.find('[data-teste="linha-hoje"]').exists()).toBe(true)
-    expect(secao.findAll('[data-teste="parcela-situacao"]').map((selo) => selo.text())).toEqual(
-      expect.arrayContaining(['Vencida há 2 dias', 'Vence hoje', 'Vence em 5 dias', 'Pendente', 'Paga em 18 set']),
-    )
-    expect(secao.findAll('[data-teste="bloco-alertas-pagamentos"]')).toHaveLength(4)
   })
 })

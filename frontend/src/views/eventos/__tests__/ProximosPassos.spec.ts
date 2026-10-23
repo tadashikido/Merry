@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import type { Mock } from 'vitest'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { SESSAO_EXEMPLO, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
@@ -12,6 +13,8 @@ import type { SessaoDto } from '@/tipos/api'
 import type { ProximosPassosEventoDto } from '@/tipos/proximosPassos'
 import { CHAVE_DISPENSA_PROXIMOS_PASSOS } from '@/utilitarios/dispensaProximosPassos'
 import { ID_EVENTO, ID_OUTRO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from './auxiliaresEventos'
+
+await precarregarRotas('evento')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 

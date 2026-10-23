@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import type { Mock } from 'vitest'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { SESSAO_EXEMPLO, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { grandeDia, itemGrandeDia } from '@/__tests__/auxiliaresGrandeDia'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -12,6 +13,8 @@ import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
 import type { SessaoDto } from '@/tipos/api'
 import type { GrandeDiaDto } from '@/tipos/grandeDia'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-grande-dia')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -97,7 +100,7 @@ function texto(seletor: string): string {
   return wrapper!.get(seletor).text()
 }
 
-describe('GrandeDiaView — assessoria no dia', { timeout: 20_000 }, () => {
+describe('GrandeDiaView — assessoria no dia', () => {
   it('[COMPONENTE] mostra relógio ao vivo, Agora com contatos, Próximo, Depois, sem marcar, feitos e a ação no rodapé', async () => {
     await abrir(SESSAO_EXEMPLO, () => respostaJson(grandeDia()))
 
@@ -229,7 +232,7 @@ describe('GrandeDiaView — assessoria no dia', { timeout: 20_000 }, () => {
   })
 })
 
-describe('GrandeDiaView — leitura, fases e estados', { timeout: 20_000 }, () => {
+describe('GrandeDiaView — leitura, fases e estados', () => {
   it('[SEGURANÇA] anfitriões veem Agora e contatos, sem nenhuma ação de marcar ou reabrir', async () => {
     await abrir(SESSAO_ANFITRIAO, () => respostaJson(grandeDia({ somenteLeitura: true })))
 
@@ -322,7 +325,7 @@ const cssView = (() => {
   return fonte.slice(fonte.indexOf('<style scoped>'))
 })()
 
-describe('GrandeDiaView — layout reestruturado', { timeout: 20_000 }, () => {
+describe('GrandeDiaView — layout reestruturado', () => {
   it('[COMPONENTE] no dia, com pendências, usa a superfície ampla com painel, lateral e a ação como último bloco', async () => {
     await abrir(SESSAO_EXEMPLO, () => respostaJson(grandeDia()))
 

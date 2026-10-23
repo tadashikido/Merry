@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { previaExemplo } from '@/__tests__/auxiliaresImportacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -8,6 +9,8 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
 import type { PreVisualizacaoImportacaoDto } from '@/tipos/importacaoConvidados'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('convidados-importar', 'evento-convidados')
 
 const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
 const ROTA_PREVIA = `${ROTA_EVENTO}/convites/importacao/pre-visualizacao`
@@ -109,7 +112,7 @@ describe('ImportarConvidadosView', { timeout: 20_000 }, () => {
     expect(corpo.get('somenteValidos')).toBe('false')
     expect(wrapper!.get('[data-teste="importacao-concluida"]').text()).toContain('2 convites e 3 pessoas foram adicionados a Ana Beatriz & Bruno.')
     await wrapper!.get('[data-teste="ver-convidados"]').trigger('click')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('evento-convidados'), { timeout: 5000 })
+    await aguardarRota(montagem.roteador, 'evento-convidados')
   })
 
   it('[COMPONENTE] com problemas exige confirmação explícita e envia somenteValidos', async () => {

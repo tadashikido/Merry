@@ -12,12 +12,15 @@ import {
   respostaVazia,
   simularFetch,
 } from '@/__tests__/auxiliaresAutenticacao'
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { HOJE_TESTE, ID_VINCULO_FINANCEIRO, financeiroExemplo, fornecedorFinanceiro, parcelaExemplo } from '@/__tests__/auxiliaresFinanceiro'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_FINANCEIRO, TEXTOS_GERADOR_PARCELAS, TEXTOS_PAGAMENTO, TEXTOS_PARCELA } from '@/textos/financeiro'
 import type { SessaoDto } from '@/tipos/api'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, type Rota } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('evento-financeiro')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 

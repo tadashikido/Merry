@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { ID_FORNECEDOR, ID_FORNECEDOR_2, fornecedorCompleto, resumoFornecedor } from '@/__tests__/auxiliaresFornecedores'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -11,6 +12,8 @@ import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
 import { RaizRotas, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('fornecedores', 'fornecedor-novo', 'fornecedor', 'fornecedor-editar')
 
 const notificacoes = vi.hoisted(() => ({ sucesso: vi.fn(), erro: vi.fn() }))
 
@@ -121,7 +124,7 @@ describe('FornecedoresView', () => {
     expect(wrapper.text()).toContain('Você ainda não possui fornecedores.')
     expect(wrapper.find('[data-teste="adicionar-fornecedor"]').exists()).toBe(false)
     await wrapper.get('[data-teste="adicionar-fornecedor-vazio"]').trigger('click')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('fornecedor-novo'))
+    await aguardarRota(montagem.roteador, 'fornecedor-novo')
   })
 
   it('[COMPONENTE] erro de rede permite tentar de novo e 403 mostra sem permissão', async () => {
@@ -399,7 +402,7 @@ describe('FornecedorFormularioView', () => {
       observacoes: null,
     })
     expect(notificacoes.sucesso).toHaveBeenCalledWith('Buffet São João adicionado.')
-    await vi.waitFor(() => expect(montagem.roteador.currentRoute.value.name).toBe('fornecedor'))
+    await aguardarRota(montagem.roteador, 'fornecedor')
   })
 
   it('[COMPONENTE] nome repetido aparece sob o campo e 409 avisa com toast mantendo os dados', async () => {
@@ -687,7 +690,7 @@ describe('FornecedorFormularioView — reestruturação da fundação', () => {
     await flushPromises()
     expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.erroSite)
     expect(wrapper.text()).toContain(TEXTOS_FORNECEDORES.erroTelefone)
-    await vi.waitFor(() => expect(document.activeElement?.id).toBe('fornecedor-site'))
+    await aguardarAte(() => expect(document.activeElement?.id).toBe('fornecedor-site'))
 
     await wrapper.get('[data-teste="campo-site"]').setValue('buffetsol.com.br')
     await flushPromises()

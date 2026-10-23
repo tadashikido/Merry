@@ -3,12 +3,15 @@ import { flushPromises, type VueWrapper } from '@vue/test-utils'
 import type { Mock } from 'vitest'
 import Select from 'primevue/select'
 
+import { aguardarAte, aguardarRota, precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { SESSAO_EXEMPLO, montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import type { SessaoDto } from '@/tipos/api'
 import type { ListaConvitesDto } from '@/tipos/convidados'
 import { ID_EVENTO, ID_OUTRO, RaizRotas, eventoCompleto, chamadas, resumoEvento } from './auxiliaresEventos'
+
+await precarregarRotas('evento-convidados', 'convite-novo', 'evento')
 
 vi.mock('@/composables/useNotificacao', () => ({
   useNotificacao: () => ({ sucesso: vi.fn(), erro: vi.fn() }),
@@ -125,9 +128,9 @@ describe('Navegação entre eventos', () => {
     pagina.get('[data-teste="workspace-evento"]').findComponent(Select).vm.$emit('update:modelValue', ID_OUTRO)
     await flushPromises()
 
-    expect(montagem.roteador.currentRoute.value.name).toBe('evento-convidados')
+    await aguardarRota(montagem.roteador, 'evento-convidados')
     expect(montagem.roteador.currentRoute.value.params.id).toBe(ID_OUTRO)
-    await vi.waitFor(() => expect(pagina.get('[data-teste="workspace-evento"] [data-teste="seletor-evento"]').text()).toContain('Carla'))
+    await aguardarAte(() => expect(pagina.get('[data-teste="workspace-evento"] [data-teste="seletor-evento"]').text()).toContain('Carla'))
     expect(chamadas(fetchSimulado, 'GET', ROTA_ATIVOS)).toHaveLength(1)
   }, 20_000)
 
@@ -149,7 +152,7 @@ describe('Navegação entre eventos', () => {
     pagina.get('[data-teste="workspace-evento"]').findComponent(Select).vm.$emit('update:modelValue', ID_OUTRO)
     await flushPromises()
 
-    expect(montagem.roteador.currentRoute.value.fullPath).toBe(`/eventos/${ID_OUTRO}/convidados`)
+    await aguardarAte(() => expect(montagem.roteador.currentRoute.value.fullPath).toBe(`/eventos/${ID_OUTRO}/convidados`))
   }, 20_000)
 
   it('[INTEGRAÇÃO] falha ao carregar os ativos mantém o cabeçalho estático sem quebrar a página', async () => {

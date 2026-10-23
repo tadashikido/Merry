@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
 
+import { precarregarRotas } from '@/__tests__/auxiliaresNavegacao'
 import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { mapaExemplo, mesaExemplo, MESA_ANFITRIOES } from '@/__tests__/auxiliaresMesas'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
@@ -12,6 +13,8 @@ import { TEXTOS_IMPRESSAO_MESAS, TEXTOS_MESAS } from '@/textos/mesas'
 import type { EventoDto } from '@/tipos/eventos'
 import type { MapaMesasDto } from '@/tipos/mesas'
 import { ID_EVENTO, RaizRotas, eventoCompleto, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+
+await precarregarRotas('impressao-mesas')
 
 const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
 const ROTA_MESAS = `${ROTA_EVENTO}/mesas`
@@ -43,7 +46,7 @@ async function abrir(evento: Partial<EventoDto> = {}, mapa: MapaMesasDto = mapaE
   await flushPromises()
 }
 
-describe('ImpressaoMesasView reestruturada', { timeout: 30_000 }, () => {
+describe('ImpressaoMesasView reestruturada', () => {
   it('[COMPONENTE] cabeçalho timbrado identifica documento, geração, anfitriões, data e local', async () => {
     await abrir({ localRecepcao: 'Villa Giardino' })
 
