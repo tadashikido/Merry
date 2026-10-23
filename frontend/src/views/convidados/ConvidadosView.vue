@@ -15,6 +15,7 @@ import ListagemDados from '@/componentes/base/ListagemDados.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import ResumoContagem from '@/componentes/base/ResumoContagem.vue'
+import AcompanhamentoConvites from '@/componentes/convidados/AcompanhamentoConvites.vue'
 import type { ColunaListagem } from '@/componentes/base/tipos'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
@@ -32,7 +33,10 @@ import {
   ROTULOS_STATUS_ENVIO,
   TEXTOS_CONVIDADOS,
   VARIANTE_RESPOSTA,
+  gruposSugeridos,
+  referenciaDoEvento,
 } from '@/textos/convidados'
+import { ehTipoEvento } from '@/textos/tiposEvento'
 import { TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
 import { TEXTOS_ENVIO_CONVITE, VARIANTE_STATUS_ENVIO } from '@/textos/rsvp'
 import { RESPOSTAS_RSVP, type ConviteDto, type RespostaRsvp } from '@/tipos/convidados'
@@ -47,6 +51,8 @@ import { formatarData, formatarDataCalendarioComDiaSemana, formatarNomesAnfitrio
 import { primeiroTelefone } from '@/utilitarios/rsvp'
 import { complementoResumoConvidados, itensResumoConvidados } from '@/utilitarios/resumoConvidados'
 import { rotuloMesaPorId } from '@/utilitarios/mesas'
+import { contarConvitesPorGrupo } from '@/utilitarios/acompanhamentoConvites'
+import type { DadosPrazoConfirmacao } from '@/utilitarios/prazoConfirmacao'
 
 type FiltroResposta = RespostaRsvp | 'Todas'
 
@@ -109,12 +115,34 @@ const lista = computed(() => (store.eventoId === props.id ? store.lista : null))
 const falha = computed(() => (store.eventoId === props.id ? store.falha : null))
 const arquivado = computed(() => lista.value?.eventoArquivado ?? evento.value?.arquivado ?? false)
 
+const tipoEvento = computed(() => (ehTipoEvento(evento.value?.tipo) ? evento.value.tipo : null))
+
+const prazoConfirmacao = computed<DadosPrazoConfirmacao | null>(() =>
+  evento.value
+    ? {
+        data: evento.value.data,
+        diasRestantes: evento.value.diasRestantes,
+        dataLimiteRsvpEfetiva: evento.value.dataLimiteRsvpEfetiva,
+      }
+    : null,
+)
+
+const descricaoVazio = computed(() =>
+  TEXTOS_CONVIDADOS.vazioTextoPara(referenciaDoEvento(tipoEvento.value), gruposSugeridos(tipoEvento.value)),
+)
+
 const opcoesGrupo = computed(() => {
-  const { grupos, temSemGrupo } = listarGrupos(lista.value?.convites ?? [])
+  const convites = lista.value?.convites ?? []
+  const { grupos, temSemGrupo } = listarGrupos(convites)
+  const contagem = contarConvitesPorGrupo(convites)
+  const comQuantidade = (chave: string, rotulo: string) => ({
+    chave,
+    rotulo: TEXTOS_CONVIDADOS.opcaoGrupo(rotulo, contagem.get(chave) ?? 0),
+  })
   return [
     { chave: GRUPO_TODOS, rotulo: TEXTOS_CONVIDADOS.todosGrupos },
-    ...grupos,
-    ...(temSemGrupo ? [{ chave: GRUPO_NENHUM, rotulo: TEXTOS_CONVIDADOS.semGrupo }] : []),
+    ...grupos.map((opcao) => comQuantidade(opcao.chave, opcao.rotulo)),
+    ...(temSemGrupo ? [comQuantidade(GRUPO_NENHUM, TEXTOS_CONVIDADOS.semGrupo)] : []),
   ]
 })
 
@@ -187,6 +215,14 @@ watch(opcoesGrupo, (opcoes) => {
     grupo.value = GRUPO_TODOS
   }
 })
+
+function filtrarPendentes() {
+  resposta.value = 'Pendente'
+}
+
+function filtrarGrupo(chave: string) {
+  grupo.value = chave
+}
 
 function limparFiltros() {
   grupo.value = GRUPO_TODOS
@@ -280,53 +316,66 @@ function excluir(convite: ConviteDto) {
           v-if="exibirVisao"
           class="convidados__visao pilha pilha--grupo"
         >
-          <EstadoCarregando
-            v-if="store.carregando && !lista"
-            variante="cartao"
-            :linhas="1"
-          />
-          <ResumoContagem
-            v-else-if="lista && lista.totais.convites > 0"
-            :itens="itensResumoConvidados(lista.totais)"
-            :rotulo="TEXTOS_CONVIDADOS.resumoRotulo"
-          >
-            <template #rodape>
-              {{ complementoResumoConvidados(lista.totais, lista.convidadosEstimados) }}
-            </template>
-          </ResumoContagem>
+          <div class="convidados__panorama pilha pilha--grupo">
+            <EstadoCarregando
+              v-if="store.carregando && !lista"
+              variante="cartao"
+              :linhas="1"
+            />
+            <ResumoContagem
+              v-else-if="lista && lista.totais.convites > 0"
+              :itens="itensResumoConvidados(lista.totais)"
+              :rotulo="TEXTOS_CONVIDADOS.resumoRotulo"
+            >
+              <template #rodape>
+                {{ complementoResumoConvidados(lista.totais, lista.convidadosEstimados) }}
+              </template>
+            </ResumoContagem>
 
-          <nav
-            v-if="!mensagemErroLista"
-            class="convidados__atalhos"
-            :aria-label="TEXTOS_CONVIDADOS.atalhosRotulo"
-            data-teste="atalhos-convidados"
-          >
-            <Button
-              :label="TEXTOS_CONFIRMACOES.acaoAbrir"
-              icon="ie ie-confirmacoes"
-              severity="secondary"
-              text
-              data-teste="abrir-confirmacoes"
-              @click="abrirPainel"
-            />
-            <Button
-              :label="TEXTOS_MESAS.acaoAbrir"
-              icon="ie ie-mesa"
-              severity="secondary"
-              text
-              data-teste="abrir-mesas"
-              @click="abrirMesas"
-            />
-            <Button
-              v-if="!autenticacao.ehAnfitriao"
-              :label="TEXTOS_DADOS_SENSIVEIS.acaoLista"
-              icon="ie ie-checklist"
-              severity="secondary"
-              text
-              data-teste="abrir-restricoes"
-              @click="abrirRestricoes"
-            />
-          </nav>
+            <nav
+              v-if="!mensagemErroLista"
+              class="convidados__atalhos"
+              :aria-label="TEXTOS_CONVIDADOS.atalhosRotulo"
+              data-teste="atalhos-convidados"
+            >
+              <Button
+                :label="TEXTOS_CONFIRMACOES.acaoAbrir"
+                icon="ie ie-confirmacoes"
+                severity="secondary"
+                text
+                data-teste="abrir-confirmacoes"
+                @click="abrirPainel"
+              />
+              <Button
+                :label="TEXTOS_MESAS.acaoAbrir"
+                icon="ie ie-mesa"
+                severity="secondary"
+                text
+                data-teste="abrir-mesas"
+                @click="abrirMesas"
+              />
+              <Button
+                v-if="!autenticacao.ehAnfitriao"
+                :label="TEXTOS_DADOS_SENSIVEIS.acaoLista"
+                icon="ie ie-checklist"
+                severity="secondary"
+                text
+                data-teste="abrir-restricoes"
+                @click="abrirRestricoes"
+              />
+            </nav>
+          </div>
+
+          <AcompanhamentoConvites
+            v-if="lista && lista.totais.convites > 0 && !mensagemErroLista"
+            class="convidados__acompanhamento"
+            :convites="lista.convites"
+            :pessoas-pendentes="lista.totais.pendentes.total"
+            :tipo="tipoEvento"
+            :prazo="prazoConfirmacao"
+            @filtrar-pendentes="filtrarPendentes"
+            @filtrar-grupo="filtrarGrupo"
+          />
         </div>
 
         <div class="convidados__lista pilha pilha--grupo">
@@ -341,7 +390,7 @@ function excluir(convite: ConviteDto) {
             :placeholder-busca="TEXTOS_CONVIDADOS.buscaPlaceholder"
             :filtros-ativos="temFiltros"
             :titulo-vazio="TEXTOS_CONVIDADOS.vazioTitulo"
-            :descricao-vazio="TEXTOS_CONVIDADOS.vazioTexto"
+            :descricao-vazio="descricaoVazio"
             @tentar-novamente="store.carregar(id)"
             @limpar-filtros="limparFiltros"
           >
@@ -537,6 +586,11 @@ function excluir(convite: ConviteDto) {
 <style scoped>
 .convidados {
   container: convidados / inline-size;
+}
+
+.convidados__panorama,
+.convidados__acompanhamento {
+  min-width: 0;
 }
 
 .convidados__atalhos {

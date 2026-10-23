@@ -2,6 +2,8 @@ import type { VarianteStatus } from '@/componentes/base/tipos'
 import type { FaixaEtaria, RespostaRsvp, StatusEnvioConvite } from '@/tipos/convidados'
 import { formatarNumero } from '@/utilitarios/formatacao'
 import { NOME_PRODUTO } from '@/textos/rotulos'
+import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
+import type { TipoEvento } from '@/tipos/eventos'
 
 function plural(quantidade: number, singular: string, varias: string): string {
   return quantidade === 1 ? singular : varias
@@ -9,6 +11,21 @@ function plural(quantidade: number, singular: string, varias: string): string {
 
 function contar(quantidade: number, singular: string, varias: string): string {
   return `${formatarNumero(quantidade)} ${plural(quantidade, singular, varias)}`
+}
+
+function emFrase(itens: readonly string[]): string {
+  if (itens.length <= 1) {
+    return itens[0] ?? ''
+  }
+  return `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`
+}
+
+export function referenciaDoEvento(tipo: TipoEvento | null | undefined): string {
+  return ehTipoEvento(tipo) ? vocabularioOuNeutro(tipo).referencia.artigo : 'o evento'
+}
+
+export function gruposSugeridos(tipo: TipoEvento | null | undefined): readonly string[] {
+  return vocabularioOuNeutro(tipo).gruposConvidados
 }
 
 export const TEXTOS_CONVIDADOS = {
@@ -61,6 +78,9 @@ export const TEXTOS_CONVIDADOS = {
   avisoArquivado: 'Este evento está arquivado. Restaure para voltar a editar os convidados.',
   vazioTitulo: 'Nenhum convite cadastrado',
   vazioTexto: 'Comece pela família de um dos anfitriões. Cada convite reúne as pessoas que recebem o mesmo convite.',
+  vazioTextoPara: (referencia: string, grupos: readonly string[]) =>
+    `Cada convite reúne as pessoas que recebem o mesmo convite, como uma família. Para ${referencia}, costuma ajudar separar em grupos como ${emFrase(grupos)}.`,
+  opcaoGrupo: (rotulo: string, quantidade: number) => `${rotulo} (${formatarNumero(quantidade)})`,
   blocoVazioTitulo: 'Nenhum convidado ainda',
   blocoVazioTexto: 'Cadastre as famílias e grupos para acompanhar quem vem.',
   erroCarregarTitulo: 'Não foi possível carregar os convidados',
@@ -103,6 +123,23 @@ export const TEXTOS_CONVIDADOS = {
       : contar(convites, 'convite', 'convites'),
   comparacaoEstimativa: (pessoas: number, estimados: number) =>
     `${formatarNumero(pessoas)} de ${formatarNumero(estimados)} estimados`,
+} as const
+
+export const TEXTOS_ACOMPANHAMENTO_CONVITES = {
+  titulo: 'Envio e respostas',
+  trilhaRotulo: 'Situação dos convites',
+  aEnviar: 'a enviar',
+  aguardando: 'aguardando resposta',
+  respondidos: (quantidade: number) => plural(quantidade, 'respondido', 'respondidos'),
+  numeroAcessivel: (quantidade: number, legenda: string) =>
+    `${contar(quantidade, 'convite', 'convites')} ${legenda}`,
+  verPendentes: (pessoas: number) => `Ver quem não respondeu (${formatarNumero(pessoas)})`,
+  gruposSemEnvioTitulo: 'Grupos sem nenhum convite enviado',
+  filtrarGrupo: (grupo: string) => `Filtrar pelo grupo ${grupo}`,
+  maisGrupos: (quantidade: number) => `e mais ${contar(quantidade, 'grupo', 'grupos')}`,
+  todosRespondidos: 'Todos os convites já foram respondidos.',
+  orientacaoGrupos: (grupos: readonly string[]) =>
+    `Grupos como ${emFrase(grupos)} ajudam a filtrar e a enviar por partes.`,
 } as const
 
 export const ROTULOS_FAIXA_ETARIA: Record<FaixaEtaria, string> = {
