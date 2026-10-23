@@ -21,6 +21,5 @@ export const TEXTOS_MODELOS_POR_TIPO = {
   comEspecificos: (quantidade: number) => `Inclui ${numero(quantidade)} só deste tipo.`,
   soQualquer: 'Só os modelos para qualquer tipo.',
   nenhum: 'Nenhum modelo. Um modelo novo vale para todos os tipos.',
-  coberturaAcessivel: (tipo: string, quantidade: number, apoio: string) => `${tipo}: ${contar(quantidade, 'modelo', 'modelos')}. ${apoio}`,
   reaproveitamentoTitulo: 'Como os modelos são reaproveitados',
 } as const
