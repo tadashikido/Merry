@@ -10,6 +10,7 @@ import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import DialogoConfirmacao from '@/componentes/base/DialogoConfirmacao.vue'
 import EscolhaTipoEvento from '@/componentes/eventos/EscolhaTipoEvento.vue'
+import LateralFormularioEvento from '@/componentes/eventos/LateralFormularioEvento.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
@@ -367,13 +368,13 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="pagina-formulario">
-      <CabecalhoPagina
-        :titulo="titulo"
-        :descricao="descricao"
-      />
+    <div class="formulario-evento">
+      <div class="pagina-formulario formulario-evento__pagina">
+        <CabecalhoPagina
+          :titulo="titulo"
+          :descricao="descricao"
+        />
 
-      <div class="pilha pilha--cartao">
         <EstadoCarregando
           v-if="carregandoEdicao && !eventoEditado"
           variante="formulario"
@@ -395,291 +396,302 @@ function cancelar() {
           @tentar-novamente="carregar"
         />
 
-        <template v-else>
-          <p
-            v-if="!edicao"
-            class="formulario-evento__alternativa"
-          >
-            <RouterLink
-              :to="{ name: 'evento-duplicar' }"
-              data-teste="a-partir-de-outro"
+        <div
+          v-else
+          class="formulario-evento__corpo"
+        >
+          <div class="formulario-evento__principal pilha pilha--cartao">
+            <p
+              v-if="!edicao"
+              class="formulario-evento__alternativa"
             >
-              <span
-                class="ie ie-copiar"
-                aria-hidden="true"
-              />
-              {{ TEXTOS_DUPLICACAO_EVENTO.acaoAPartirDeOutro }}
-            </RouterLink>
-          </p>
-          <MensagemFormulario
-            v-if="arquivado"
-            variante="informacao"
-            :mensagem="TEXTOS_EVENTOS.avisoArquivado"
-            data-teste="aviso-arquivado"
-          />
-          <MensagemFormulario
-            v-if="mensagemErro"
-            :mensagem="mensagemErro"
-            data-teste="erro-formulario"
-          />
-
-          <form
-            class="pilha pilha--bloco"
-            novalidate
-            data-teste="formulario-evento"
-            @submit.prevent="enviar"
-          >
-            <EscolhaTipoEvento
-              v-model="formulario.valores.tipo"
-              :id-campo="idCampo('tipo')"
-              :desabilitado="enviando"
-              :erro="formulario.erros.tipo"
+              <RouterLink
+                :to="{ name: 'evento-duplicar' }"
+                data-teste="a-partir-de-outro"
+              >
+                <span
+                  class="ie ie-copiar"
+                  aria-hidden="true"
+                />
+                {{ TEXTOS_DUPLICACAO_EVENTO.acaoAPartirDeOutro }}
+              </RouterLink>
+            </p>
+            <MensagemFormulario
+              v-if="arquivado"
+              variante="informacao"
+              :mensagem="TEXTOS_EVENTOS.avisoArquivado"
+              data-teste="aviso-arquivado"
+            />
+            <MensagemFormulario
+              v-if="mensagemErro"
+              :mensagem="mensagemErro"
+              data-teste="erro-formulario"
             />
 
-            <fieldset class="formulario-evento__grupo pilha pilha--grupo">
-              <legend
-                class="formulario-evento__legenda texto-rotulo"
-                data-teste="legenda-homenageados"
-              >
-                {{ vocabulario.homenageados.grupo }}
-              </legend>
-              <div class="formulario-evento__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="vocabulario.homenageados.primeiro"
-                  :id-campo="idCampo('nomePrimeiraPessoa')"
-                  :dica="vocabulario.homenageados.dicaPrimeiro ?? undefined"
-                  obrigatorio
-                  :erro="formulario.erros.nomePrimeiraPessoa"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.nomePrimeiraPessoa"
-                    autocomplete="off"
-                    :maxlength="LIMITES_EVENTO.nomeMaximo"
-                    aria-required="true"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('nomePrimeiraPessoa')"
-                    @blur="formulario.validarAoSair('nomePrimeiraPessoa')"
-                  />
-                </CampoFormulario>
-                <CampoFormulario
-                  v-if="temSegundoNome"
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="vocabulario.homenageados.segundo ?? ''"
-                  :id-campo="idCampo('nomeSegundaPessoa')"
-                  :obrigatorio="vocabulario.homenageados.segundoObrigatorio"
-                  :erro="formulario.erros.nomeSegundaPessoa"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.nomeSegundaPessoa"
-                    autocomplete="off"
-                    :maxlength="LIMITES_EVENTO.nomeMaximo"
-                    :aria-required="vocabulario.homenageados.segundoObrigatorio"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('nomeSegundaPessoa')"
-                    @blur="formulario.validarAoSair('nomeSegundaPessoa')"
-                  />
-                </CampoFormulario>
-              </div>
-            </fieldset>
+            <form
+              class="pilha pilha--bloco"
+              novalidate
+              data-teste="formulario-evento"
+              @submit.prevent="enviar"
+            >
+              <EscolhaTipoEvento
+                v-model="formulario.valores.tipo"
+                :id-campo="idCampo('tipo')"
+                :desabilitado="enviando"
+                :erro="formulario.erros.tipo"
+              />
 
-            <fieldset class="formulario-evento__grupo pilha pilha--grupo">
-              <legend class="formulario-evento__legenda texto-rotulo">
-                {{ TEXTOS_EVENTOS.grupoQuando }}
-              </legend>
-              <div class="formulario-evento__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.data"
-                  :id-campo="idCampo('data')"
-                  obrigatorio
-                  :erro="formulario.erros.data"
+              <fieldset class="formulario-evento__grupo pilha pilha--grupo">
+                <legend
+                  class="formulario-evento__legenda texto-rotulo"
+                  data-teste="legenda-homenageados"
                 >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.data"
-                    type="date"
-                    :min="LIMITES_EVENTO.dataMinima"
-                    :max="LIMITES_EVENTO.dataMaxima"
-                    aria-required="true"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('data')"
-                    @blur="formulario.validarAoSair('data')"
-                  />
-                </CampoFormulario>
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="vocabulario.horario"
-                  :id-campo="idCampo('horario')"
-                  :dica="TEXTOS_EVENTOS.horarioDica"
-                  :erro="formulario.erros.horario"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.horario"
-                    type="time"
-                    step="60"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('horario')"
-                    @blur="formulario.validarAoSair('horario')"
-                  />
-                </CampoFormulario>
-              </div>
-              <div class="formulario-evento__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.dataLimiteRsvp"
-                  :id-campo="idCampo('dataLimiteRsvp')"
-                  :dica="dicaDataLimite"
-                  :erro="formulario.erros.dataLimiteRsvp"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.dataLimiteRsvp"
-                    type="date"
-                    :min="LIMITES_EVENTO.dataMinima"
-                    :max="formulario.valores.data || LIMITES_EVENTO.dataMaxima"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    data-teste="campo-data-limite-rsvp"
-                    @update:model-value="formulario.revalidarAoDigitar('dataLimiteRsvp')"
-                    @blur="formulario.validarAoSair('dataLimiteRsvp')"
-                  />
-                </CampoFormulario>
-              </div>
-            </fieldset>
+                  {{ vocabulario.homenageados.grupo }}
+                </legend>
+                <div class="formulario-evento__colunas">
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="vocabulario.homenageados.primeiro"
+                    :id-campo="idCampo('nomePrimeiraPessoa')"
+                    :dica="vocabulario.homenageados.dicaPrimeiro ?? undefined"
+                    obrigatorio
+                    :erro="formulario.erros.nomePrimeiraPessoa"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.nomePrimeiraPessoa"
+                      autocomplete="off"
+                      :maxlength="LIMITES_EVENTO.nomeMaximo"
+                      aria-required="true"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      @update:model-value="formulario.revalidarAoDigitar('nomePrimeiraPessoa')"
+                      @blur="formulario.validarAoSair('nomePrimeiraPessoa')"
+                    />
+                  </CampoFormulario>
+                  <CampoFormulario
+                    v-if="temSegundoNome"
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="vocabulario.homenageados.segundo ?? ''"
+                    :id-campo="idCampo('nomeSegundaPessoa')"
+                    :obrigatorio="vocabulario.homenageados.segundoObrigatorio"
+                    :erro="formulario.erros.nomeSegundaPessoa"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.nomeSegundaPessoa"
+                      autocomplete="off"
+                      :maxlength="LIMITES_EVENTO.nomeMaximo"
+                      :aria-required="vocabulario.homenageados.segundoObrigatorio"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      @update:model-value="formulario.revalidarAoDigitar('nomeSegundaPessoa')"
+                      @blur="formulario.validarAoSair('nomeSegundaPessoa')"
+                    />
+                  </CampoFormulario>
+                </div>
+              </fieldset>
 
-            <fieldset class="formulario-evento__grupo pilha pilha--grupo">
-              <legend class="formulario-evento__legenda texto-rotulo">
-                {{ TEXTOS_EVENTOS.grupoOnde }}
-              </legend>
-              <div class="formulario-evento__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="vocabulario.locais.campoPrincipal"
-                  :id-campo="idCampo('localCerimonia')"
-                  :erro="formulario.erros.localCerimonia"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.localCerimonia"
-                    :maxlength="LIMITES_EVENTO.local"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('localCerimonia')"
-                    @blur="formulario.validarAoSair('localCerimonia')"
-                  />
-                </CampoFormulario>
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="vocabulario.locais.campoSecundario"
-                  :id-campo="idCampo('localRecepcao')"
-                  :dica="vocabulario.locais.dicaSecundario"
-                  :erro="formulario.erros.localRecepcao"
-                >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.localRecepcao"
-                    :maxlength="LIMITES_EVENTO.local"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('localRecepcao')"
-                    @blur="formulario.validarAoSair('localRecepcao')"
-                  />
-                </CampoFormulario>
-              </div>
-            </fieldset>
+              <fieldset class="formulario-evento__grupo pilha pilha--grupo">
+                <legend class="formulario-evento__legenda texto-rotulo">
+                  {{ TEXTOS_EVENTOS.grupoQuando }}
+                </legend>
+                <div class="formulario-evento__colunas">
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_EVENTOS.data"
+                    :id-campo="idCampo('data')"
+                    obrigatorio
+                    :erro="formulario.erros.data"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.data"
+                      type="date"
+                      :min="LIMITES_EVENTO.dataMinima"
+                      :max="LIMITES_EVENTO.dataMaxima"
+                      aria-required="true"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      @update:model-value="formulario.revalidarAoDigitar('data')"
+                      @blur="formulario.validarAoSair('data')"
+                    />
+                  </CampoFormulario>
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="vocabulario.horario"
+                    :id-campo="idCampo('horario')"
+                    :dica="TEXTOS_EVENTOS.horarioDica"
+                    :erro="formulario.erros.horario"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.horario"
+                      type="time"
+                      step="60"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      @update:model-value="formulario.revalidarAoDigitar('horario')"
+                      @blur="formulario.validarAoSair('horario')"
+                    />
+                  </CampoFormulario>
+                </div>
+                <div class="formulario-evento__colunas">
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_EVENTOS.dataLimiteRsvp"
+                    :id-campo="idCampo('dataLimiteRsvp')"
+                    :dica="dicaDataLimite"
+                    :erro="formulario.erros.dataLimiteRsvp"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.dataLimiteRsvp"
+                      type="date"
+                      :min="LIMITES_EVENTO.dataMinima"
+                      :max="formulario.valores.data || LIMITES_EVENTO.dataMaxima"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-data-limite-rsvp"
+                      @update:model-value="formulario.revalidarAoDigitar('dataLimiteRsvp')"
+                      @blur="formulario.validarAoSair('dataLimiteRsvp')"
+                    />
+                  </CampoFormulario>
+                </div>
+              </fieldset>
 
-            <fieldset class="formulario-evento__grupo pilha pilha--grupo">
-              <legend class="formulario-evento__legenda texto-rotulo">
-                {{ TEXTOS_EVENTOS.grupoPlanejamento }}
-              </legend>
-              <div class="formulario-evento__colunas">
+              <fieldset class="formulario-evento__grupo pilha pilha--grupo">
+                <legend class="formulario-evento__legenda texto-rotulo">
+                  {{ TEXTOS_EVENTOS.grupoOnde }}
+                </legend>
+                <div class="formulario-evento__colunas">
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="vocabulario.locais.campoPrincipal"
+                    :id-campo="idCampo('localCerimonia')"
+                    :erro="formulario.erros.localCerimonia"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.localCerimonia"
+                      :maxlength="LIMITES_EVENTO.local"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      @update:model-value="formulario.revalidarAoDigitar('localCerimonia')"
+                      @blur="formulario.validarAoSair('localCerimonia')"
+                    />
+                  </CampoFormulario>
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="vocabulario.locais.campoSecundario"
+                    :id-campo="idCampo('localRecepcao')"
+                    :dica="vocabulario.locais.dicaSecundario"
+                    :erro="formulario.erros.localRecepcao"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.localRecepcao"
+                      :maxlength="LIMITES_EVENTO.local"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      @update:model-value="formulario.revalidarAoDigitar('localRecepcao')"
+                      @blur="formulario.validarAoSair('localRecepcao')"
+                    />
+                  </CampoFormulario>
+                </div>
+              </fieldset>
+
+              <fieldset class="formulario-evento__grupo pilha pilha--grupo">
+                <legend class="formulario-evento__legenda texto-rotulo">
+                  {{ TEXTOS_EVENTOS.grupoPlanejamento }}
+                </legend>
+                <div class="formulario-evento__colunas">
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_EVENTOS.convidados"
+                    :id-campo="idCampo('convidadosEstimados')"
+                    :dica="TEXTOS_EVENTOS.convidadosDica"
+                    :erro="formulario.erros.convidadosEstimados"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.convidadosEstimados"
+                      inputmode="numeric"
+                      maxlength="4"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      @update:model-value="formulario.revalidarAoDigitar('convidadosEstimados')"
+                      @blur="formulario.validarAoSair('convidadosEstimados')"
+                    />
+                  </CampoFormulario>
+                </div>
                 <CampoFormulario
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_EVENTOS.convidados"
-                  :id-campo="idCampo('convidadosEstimados')"
-                  :dica="TEXTOS_EVENTOS.convidadosDica"
-                  :erro="formulario.erros.convidadosEstimados"
+                  :rotulo="TEXTOS_EVENTOS.observacoes"
+                  :id-campo="idCampo('observacoes')"
+                  :dica="TEXTOS_EVENTOS.contadorObservacoes(quantidadeObservacoes, LIMITES_EVENTO.observacoes)"
+                  :erro="formulario.erros.observacoes"
                 >
-                  <InputText
+                  <Textarea
                     :id="idEntrada"
-                    v-model="formulario.valores.convidadosEstimados"
-                    inputmode="numeric"
-                    maxlength="4"
+                    v-model="formulario.valores.observacoes"
+                    rows="4"
+                    auto-resize
+                    :maxlength="LIMITES_EVENTO.observacoes"
                     :invalid="invalido"
                     :aria-invalid="invalido"
                     :aria-describedby="descritoPor"
                     :readonly="enviando"
-                    @update:model-value="formulario.revalidarAoDigitar('convidadosEstimados')"
-                    @blur="formulario.validarAoSair('convidadosEstimados')"
+                    @update:model-value="formulario.revalidarAoDigitar('observacoes')"
+                    @blur="formulario.validarAoSair('observacoes')"
                   />
                 </CampoFormulario>
-              </div>
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_EVENTOS.observacoes"
-                :id-campo="idCampo('observacoes')"
-                :dica="TEXTOS_EVENTOS.contadorObservacoes(quantidadeObservacoes, LIMITES_EVENTO.observacoes)"
-                :erro="formulario.erros.observacoes"
-              >
-                <Textarea
-                  :id="idEntrada"
-                  v-model="formulario.valores.observacoes"
-                  rows="4"
-                  auto-resize
-                  :maxlength="LIMITES_EVENTO.observacoes"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  @update:model-value="formulario.revalidarAoDigitar('observacoes')"
-                  @blur="formulario.validarAoSair('observacoes')"
+              </fieldset>
+
+              <div class="formulario-evento__acoes">
+                <Button
+                  type="submit"
+                  :label="rotuloSalvar"
+                  :loading="enviando"
+                  :aria-busy="enviando"
+                  :disabled="arquivado || bloqueadoPorPermissao"
+                  data-teste="salvar-evento"
                 />
-              </CampoFormulario>
-            </fieldset>
+                <Button
+                  type="button"
+                  :label="ROTULOS_ACOES.cancelar"
+                  severity="secondary"
+                  text
+                  :disabled="enviando"
+                  data-teste="cancelar"
+                  @click="cancelar"
+                />
+              </div>
+            </form>
+          </div>
 
-            <div class="formulario-evento__acoes">
-              <Button
-                type="submit"
-                :label="rotuloSalvar"
-                :loading="enviando"
-                :aria-busy="enviando"
-                :disabled="arquivado || bloqueadoPorPermissao"
-                data-teste="salvar-evento"
-              />
-              <Button
-                type="button"
-                :label="ROTULOS_ACOES.cancelar"
-                severity="secondary"
-                text
-                :disabled="enviando"
-                data-teste="cancelar"
-                @click="cancelar"
-              />
-            </div>
-          </form>
-        </template>
+          <LateralFormularioEvento
+            class="formulario-evento__lateral"
+            :tipo="formulario.valores.tipo"
+            :mostrar-modelos="!edicao"
+          />
+        </div>
       </div>
     </div>
 
@@ -710,6 +722,31 @@ function cancelar() {
 </template>
 
 <style scoped>
+.formulario-evento {
+  container: formulario-evento / inline-size;
+}
+
+.formulario-evento__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'principal'
+    'lateral';
+  gap: var(--p-ritmo-bloco);
+}
+
+.formulario-evento__principal {
+  container: formulario-evento-campos / inline-size;
+  grid-area: principal;
+  min-width: 0;
+}
+
+.formulario-evento__lateral {
+  grid-area: lateral;
+  padding-top: var(--p-ritmo-bloco);
+  border-top: 1px solid var(--p-cor-borda);
+}
+
 .formulario-evento__alternativa {
   margin: 0;
   font-size: var(--p-fonte-tamanho-controle);
@@ -723,6 +760,7 @@ function cancelar() {
 }
 
 .formulario-evento__grupo {
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
@@ -749,7 +787,7 @@ function cancelar() {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
-@media (min-width: 640px) {
+@container formulario-evento-campos (min-width: 36rem) {
   .formulario-evento__colunas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
@@ -758,6 +796,25 @@ function cancelar() {
   .formulario-evento__acoes {
     flex-direction: row;
     gap: var(--p-ritmo-grupo);
+  }
+}
+
+@container formulario-evento (min-width: 64rem) {
+  .formulario-evento__pagina {
+    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
+  }
+
+  .formulario-evento__corpo {
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
+    grid-template-areas: 'principal lateral';
+    align-items: start;
+  }
+
+  .formulario-evento__lateral {
+    padding-top: 0;
+    padding-inline-start: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

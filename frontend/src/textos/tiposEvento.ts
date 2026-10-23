@@ -4,6 +4,7 @@ export interface VocabularioTipoEvento {
   rotulo: string
   rotuloPlural: string
   descricao: string
+  comoCostumaSer: string
   contagem: {
     singular: string
     plural: string
@@ -40,6 +41,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: 'Casamento',
     rotuloPlural: 'Casamentos',
     descricao: 'Dois nomes, cerimônia e recepção',
+    comoCostumaSer: 'Cerimônia e recepção, às vezes em lugares diferentes, com padrinhos, mesa dos noivos e um roteiro do dia com horários marcados.',
     contagem: {
       singular: 'casamento',
       plural: 'casamentos',
@@ -74,6 +76,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: '15 anos',
     rotuloPlural: 'Festas de 15 anos',
     descricao: 'A festa da debutante',
+    comoCostumaSer: 'Uma festa com valsa, homenagens e mesa da debutante; às vezes com missa ou cerimônia antes, em outro endereço.',
     contagem: {
       singular: 'festa de 15 anos',
       plural: 'festas de 15 anos',
@@ -108,6 +111,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: 'Aniversário',
     rotuloPlural: 'Aniversários',
     descricao: 'Para quem faz aniversário',
+    comoCostumaSer: 'Uma festa, quase sempre num lugar só, com parabéns, mesa do aniversariante e uma lista de convidados mais próxima.',
     contagem: {
       singular: 'aniversário',
       plural: 'aniversários',
@@ -142,6 +146,7 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: 'Comemoração',
     rotuloPlural: 'Comemorações',
     descricao: 'Bodas, chá, encontro de família',
+    comoCostumaSer: 'Bodas, chá ou encontro de família: um ou mais homenageados, um local principal e um roteiro simples.',
     contagem: {
       singular: 'comemoração',
       plural: 'comemorações',

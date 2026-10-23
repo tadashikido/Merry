@@ -155,3 +155,25 @@ export const MENSAGENS_VALIDACAO_EVENTO = {
   convidadosFaixa: 'Informe um número entre 1 e 5.000.',
   observacoesTamanho: 'Use até 2.000 caracteres.',
 } as const
+
+function contar(quantidade: number, singular: string, plural: string): string {
+  return `${quantidade.toLocaleString('pt-BR')} ${quantidade === 1 ? singular : plural}`
+}
+
+export const TEXTOS_FORMULARIO_EVENTO = {
+  orientacaoTitulo: (artigo: string) => `Como organizar ${artigo}`,
+  costumaTer: 'O que costuma ter',
+  usoHomenageados: 'É como o evento aparece no convite digital, na confirmação de presença e na lista de eventos.',
+  usoHorario: 'Os modelos de cronograma calculam os horários do dia a partir dele. Se ainda não souber, deixe para depois.',
+  usoLocal: 'O convite digital mostra esse endereço. Se ainda não estiver fechado, preencha depois.',
+  modelosTitulo: 'Modelos para começar',
+  modelosTexto: (contracaoDe: string) =>
+    `Depois de salvar, aplique um modelo no checklist e no cronograma ${contracaoDe}. Nada é criado automaticamente.`,
+  checklist: 'Checklist',
+  cronograma: 'Cronograma',
+  tarefas: (quantidade: number) => contar(quantidade, 'tarefa', 'tarefas'),
+  itens: (quantidade: number) => contar(quantidade, 'item', 'itens'),
+  outrosModelos: (quantidade: number) => `mais ${contar(quantidade, 'modelo disponível', 'modelos disponíveis')}`,
+  semModeloChecklist: 'Nenhum modelo de checklist para este tipo ainda. Crie um em Modelos de checklist.',
+  semModeloCronograma: 'Nenhum modelo de cronograma para este tipo ainda. Crie um em Modelos de cronograma.',
+} as const
