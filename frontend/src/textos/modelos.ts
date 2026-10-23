@@ -4,6 +4,7 @@ import {
   ehTipoEvento,
   vocabularioOuNeutro,
   type ExemploItemChecklist,
+  type ExemploItemCronograma,
   type VocabularioTipoEvento,
 } from '@/textos/tiposEvento'
 
@@ -140,4 +141,34 @@ export function exemplosItemChecklist(tipo: TipoEvento | null | undefined): Exem
 
 export function exemploTituloItem(tipo: TipoEvento | null | undefined): string {
   return ehTipoEvento(tipo) ? (VOCABULARIO_TIPO_EVENTO[tipo].exemplosItemChecklist[0]?.titulo ?? EXEMPLO_ITEM_NEUTRO.titulo) : EXEMPLO_ITEM_NEUTRO.titulo
+}
+
+export const EXEMPLO_ATIVIDADE_NEUTRO = 'Recepção dos convidados'
+
+export interface ExemploItemModeloCronograma extends ExemploItemCronograma {
+  chave: string
+  tipoRotulo: string | null
+  contracaoMomento: string
+}
+
+export function exemplosItemCronograma(tipo: TipoEvento | null | undefined): ExemploItemModeloCronograma[] {
+  if (ehTipoEvento(tipo)) {
+    const vocabulario = VOCABULARIO_TIPO_EVENTO[tipo]
+    return vocabulario.exemplosItemCronograma.map((exemplo, indice) => ({
+      ...exemplo,
+      chave: `${tipo}-${indice}`,
+      tipoRotulo: null,
+      contracaoMomento: vocabulario.momento.contracaoDe,
+    }))
+  }
+  return TIPOS_EVENTO.map((cada) => ({
+    ...VOCABULARIO_TIPO_EVENTO[cada].exemplosItemCronograma[1]!,
+    chave: cada,
+    tipoRotulo: VOCABULARIO_TIPO_EVENTO[cada].rotulo,
+    contracaoMomento: VOCABULARIO_TIPO_EVENTO[cada].momento.contracaoDe,
+  }))
+}
+
+export function exemploAtividadeItem(tipo: TipoEvento | null | undefined): string {
+  return ehTipoEvento(tipo) ? (VOCABULARIO_TIPO_EVENTO[tipo].exemplosItemCronograma[1]?.titulo ?? EXEMPLO_ATIVIDADE_NEUTRO) : EXEMPLO_ATIVIDADE_NEUTRO
 }

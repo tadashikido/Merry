@@ -888,7 +888,7 @@ describe('Formulários de modelo de cronograma', () => {
 
     const pagina = wrapper.get('.pagina-formulario')
     expect(pagina.get('h1').text()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.novo)
-    expect(pagina.get('.cabecalho-pagina__descricao').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00'))
+    expect(pagina.get('.cabecalho-pagina__descricao').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00', 'a cerimônia'))
     expect(wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
 
     const grupoAtividade = pagina.get('[data-teste="grupo-atividade"]')
@@ -990,13 +990,116 @@ describe('Formulários de modelo de cronograma', () => {
     expect(wrapper.find('[data-teste="formulario-item-modelo-cronograma"]').exists()).toBe(false)
   })
 
+  it.each([
+    ['Casamento', 'a cerimônia', 'Ex.: Entrada dos padrinhos', ['Local da cerimônia', 'Local da recepção', 'Outro'], '30 min antes da cerimônia', 'de um casamento'],
+    ['QuinzeAnos', 'a festa', 'Ex.: Valsa com a corte', ['Local da festa', 'Outro local', 'Outro'], '30 min antes da festa', 'de uma festa de 15 anos'],
+    ['Aniversario', 'a festa', 'Ex.: Abertura da festa', ['Local da festa', 'Outro local', 'Outro'], '30 min antes da festa', 'de um aniversário'],
+    ['Comemoracao', 'o evento', 'Ex.: Brinde de homenagem', ['Local do evento', 'Outro local', 'Outro'], '30 min antes do evento', 'de uma comemoração'],
+  ] as const)('[COMPONENTE] item de modelo %s fala do momento principal no cabeçalho, locais, dica e lateral', async (tipo, artigo, placeholder, locais, previa, apoio) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ tipoEvento: tipo }))))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`)
+
+    expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00', artigo))
+    expect(wrapper.get('#item-modelo-cronograma-atividade').attributes('placeholder')).toBe(placeholder)
+    expect(wrapper.get('[data-teste="campo-opcao-local"]').findAll('button').map((opcao) => opcao.text())).toEqual(locais)
+    expect(wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').text()).toContain(TEXTOS_ITEM_MODELO_CRONOGRAMA.dicaInicioPara(artigo, '16:00'))
+
+    await wrapper.get('#item-modelo-cronograma-atividade').setValue('Chegada')
+    await wrapper.get('#item-modelo-cronograma-inicio').setValue('15:30')
+    expect(wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').text()).toContain(previa)
+    const lateral = wrapper.get('[data-teste="lateral-formulario-item"]')
+    expect(lateral.get('[data-teste="previa-horario-item"]').text()).toBe(previa)
+    const dia = lateral.get('[data-teste="dia-item-DiaDoEvento"]')
+    expect(dia.classes()).toContain('posicao-cronograma__dia--atual')
+    expect(dia.text()).toContain(TEXTOS_ITEM_MODELO_CRONOGRAMA.esteItemEntraAqui)
+    expect(dia.get('[data-teste="contagem-dia-item"]').text()).toBe('3 itens, das 10:00 às 17:00')
+    expect(dia.findAll('[data-teste="itens-dia-atual"] > li').map((linha) => linha.attributes('data-teste'))).toEqual(['vizinho-item', 'este-item', 'vizinho-item'])
+    expect(lateral.get('[data-teste="este-item"]').text()).toContain('Chegada (este item)')
+    expect(lateral.get('[data-teste="apoio-exemplos-item"]').text()).toContain(apoio)
+    expect(lateral.findAll('[data-teste="exemplo-item"]')).toHaveLength(3)
+  })
+
+  it.each([
+    ['nulo', null],
+    ['desconhecido', 'Formatura' as unknown as TipoEvento],
+  ] as const)('[COMPONENTE] item de modelo com tipo %s fala do evento no formulário e na posição', async (_, tipo) => {
+    const itens = modeloCronogramaCompleto().itens.map((item, indice) => ({ ...item, atividade: `Item ${indice + 1}` }))
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ tipoEvento: tipo, itens }))))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`)
+
+    expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00', 'o evento'))
+    expect(wrapper.get('#item-modelo-cronograma-atividade').attributes('placeholder')).toBe('Ex.: Recepção dos convidados')
+    expect(wrapper.get('[data-teste="campo-opcao-local"]').findAll('button').map((opcao) => opcao.text())).toEqual(['Local principal', 'Outro local', 'Outro'])
+    await wrapper.get('#item-modelo-cronograma-inicio').setValue('19:00')
+
+    expect(wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').text()).toContain('3 h depois do evento')
+    expect(wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').text()).not.toMatch(/casamento|comemoração|cerimônia/i)
+    const posicao = wrapper.get('[data-teste="posicao-item-modelo-cronograma"]')
+    expect(posicao.get('[data-teste="previa-horario-item"]').text()).toBe('3 h depois do evento')
+    expect(posicao.text()).not.toMatch(/casamento|comemoração|cerimônia/i)
+    expect(wrapper.findAll('[data-teste="tipo-exemplo-item"]')).toHaveLength(4)
+  })
+
+  it('[COMPONENTE] prévia acompanha dia e início e some com início inválido', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ tipoEvento: 'QuinzeAnos' }))))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`)
+
+    const previa = () => wrapper.get('[data-teste="previa-horario-item"]').text()
+    expect(previa()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.posicaoSemInicio)
+    expect(wrapper.find('.posicao-cronograma__dia--atual').exists()).toBe(false)
+
+    await wrapper.get('#item-modelo-cronograma-inicio').setValue('16:00')
+    expect(previa()).toBe('Hora da festa')
+
+    const dias = wrapper.get('[data-teste="campo-dia"]').findAll('button')
+    await dias.find((opcao) => opcao.text() === 'Véspera')!.trigger('click')
+    expect(previa()).toBe('24 h antes da festa')
+    expect(wrapper.get('[data-teste="dia-item-Vespera"]').classes()).toContain('posicao-cronograma__dia--atual')
+    expect(wrapper.get('[data-teste="nota-alcance-item"]').text()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.ampliaComeco)
+
+    await wrapper.get('#item-modelo-cronograma-inicio').setValue('')
+    expect(previa()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.posicaoSemInicio)
+    expect(wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').text()).toContain(TEXTOS_ITEM_MODELO_CRONOGRAMA.dicaInicioPara('a festa', '16:00'))
+  })
+
+  it('[COMPONENTE] edição não mostra o próprio item como vizinho e o formulário vem antes da lateral', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
+    const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/${ID_ITEM_MODELO_CRONOGRAMA}/editar`)
+
+    expect(wrapper.get('.formulario-item-tela__pagina').classes()).toContain('formulario-item-tela__pagina--com-lateral')
+    const lateral = wrapper.get('[data-teste="lateral-formulario-item"]')
+    expect(lateral.get('[data-teste="previa-horario-item"]').text()).toBe('6 h antes da cerimônia')
+    expect(lateral.findAll('[data-teste="vizinho-item"]').map((linha) => linha.text())).toEqual(['Cerimônia16:00, hora da cerimônia'])
+    expect(lateral.get('[data-teste="este-item"]').text()).toContain('Making of da noiva (este item)')
+    expect(lateral.get('[data-teste="dia-item-DiaDoEvento"] [data-teste="contagem-dia-item"]').text()).toBe('2 itens, das 10:00 às 17:00')
+    expect(lateral.find('a, button').exists()).toBe(false)
+
+    const formulario = wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').element
+    expect(formulario.compareDocumentPosition(lateral.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it.each([
+    ['sem permissão', () => respostaProblema(403, { title: 'Proibido' }), `/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`],
+    ['modelo não encontrado', () => respostaProblema(404, { title: 'Não encontrado' }), `/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`],
+    ['item inexistente', () => respostaJson(modeloCronogramaCompleto({ itens: [] })), `/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/${ID_ITEM_MODELO_CRONOGRAMA}/editar`],
+  ] as const)('[COMPONENTE] item com %s não mostra a lateral nem alarga a página', async (_, resposta, caminho) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, resposta))
+    const { wrapper } = await abrir(caminho)
+
+    expect(wrapper.find('[data-teste="lateral-formulario-item"]').exists()).toBe(false)
+    expect(wrapper.get('.formulario-item-tela__pagina').classes()).not.toContain('formulario-item-tela__pagina--com-lateral')
+  })
+
   it('[UNITÁRIO] estilo do formulário de item usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ItemModeloCronogramaFormularioView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(fonte).toContain('class="pagina-formulario"')
+    expect(fonte).toContain('class="pagina-formulario formulario-item-tela__pagina"')
     expect(estilo).toContain('container: formulario-item-cronograma / inline-size')
     expect(estilo).toContain('@container formulario-item-cronograma (min-width: 40rem)')
+    expect(estilo).toContain('container: formulario-item-tela / inline-size')
+    expect(estilo).toContain('@container formulario-item-tela (min-width: 64rem)')
     expect(estilo).toContain('flex: 1 1 auto')
+    expect(estilo).not.toContain('sticky')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')

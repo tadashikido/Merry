@@ -10,6 +10,7 @@ import {
   minutosDesdeCerimonia,
   opcaoLocalDoItem,
   posicaoDe,
+  posicaoItemNoModeloCronograma,
   posicaoNaReferencia,
   regraDescricaoModeloCronograma,
   regraHorarioReferencia,
@@ -114,5 +115,61 @@ describe('utilitários de modelos de cronograma', () => {
     expect(equipe.responsaveis).toEqual(['Assessoria', 'equipe de beleza'])
     expect(equipe.semNinguem).toBe(2)
     expect(equipeDoModelo([])).toEqual({ categorias: [], responsaveis: [], semNinguem: 0 })
+  })
+
+  it('[UNITÁRIO] posição do item agrupa por dia com o item incluído e vizinhos por horário', () => {
+    const itens = [
+      itemModeloCronograma({ id: 'v', minutosDesdeCerimonia: -1260, dia: 'Vespera', inicio: '19:00', duracaoMinutos: 60, termino: '20:00' }),
+      itemModeloCronograma({ id: 'a', minutosDesdeCerimonia: -360, inicio: '10:00', duracaoMinutos: 240, termino: '14:00' }),
+      itemModeloCronograma({ id: 'b', minutosDesdeCerimonia: -60, inicio: '15:00', duracaoMinutos: null, termino: null }),
+      itemModeloCronograma({ id: 'c', minutosDesdeCerimonia: 0, inicio: '16:00', duracaoMinutos: 60, termino: '17:00' }),
+      itemModeloCronograma({ id: 'd', minutosDesdeCerimonia: 300, inicio: '21:00', duracaoMinutos: null, termino: null }),
+    ]
+    const posicao = posicaoItemNoModeloCronograma(
+      itens,
+      { dia: 'DiaDoEvento', minutos: 420, inicio: '23:00', termino: '01:00', terminaEmOutroDia: true },
+      null,
+      2,
+    )
+
+    expect(posicao.dia).toBe('DiaDoEvento')
+    expect(posicao.dias).toEqual([
+      { dia: 'Vespera', quantidade: 1, intervalo: 'das 19:00 às 20:00', atual: false },
+      { dia: 'DiaDoEvento', quantidade: 5, intervalo: 'das 10:00 às 01:00 do dia seguinte', atual: true },
+    ])
+    expect(posicao.vizinhos.map((item) => item.id)).toEqual(['c', 'd'])
+    expect(posicao.maisNoDia).toBe(2)
+    expect(posicao.ampliaFim).toBe(true)
+    expect(posicao.ampliaComeco).toBe(false)
+    expect(posicao.outrosItens).toBe(5)
+  })
+
+  it('[UNITÁRIO] posição exclui o item em edição, cria o dia novo e sem início não marca dia', () => {
+    const itens = [
+      itemModeloCronograma({ id: 'a', minutosDesdeCerimonia: -360, inicio: '10:00', duracaoMinutos: null, termino: null }),
+      itemModeloCronograma({ id: 'b', minutosDesdeCerimonia: 0, inicio: '16:00', duracaoMinutos: null, termino: null }),
+    ]
+    const vespera = posicaoItemNoModeloCronograma(
+      itens,
+      { dia: 'Vespera', minutos: -1260, inicio: '19:00', termino: null, terminaEmOutroDia: false },
+      'b',
+    )
+    expect(vespera.dias.map((dia) => [dia.dia, dia.quantidade, dia.atual])).toEqual([
+      ['Vespera', 1, true],
+      ['DiaDoEvento', 1, false],
+    ])
+    expect(vespera.vizinhos).toEqual([])
+    expect(vespera.ampliaComeco).toBe(true)
+    expect(vespera.outrosItens).toBe(1)
+
+    const semInicio = posicaoItemNoModeloCronograma(itens, null)
+    expect(semInicio.dia).toBeNull()
+    expect(semInicio.dias.every((dia) => !dia.atual)).toBe(true)
+    expect(semInicio.vizinhos).toEqual([])
+    expect(semInicio.ampliaComeco || semInicio.ampliaFim).toBe(false)
+
+    const vazio = posicaoItemNoModeloCronograma([], { dia: 'DiaDoEvento', minutos: 0, inicio: '16:00', termino: null, terminaEmOutroDia: false })
+    expect(vazio.outrosItens).toBe(0)
+    expect(vazio.dias).toEqual([{ dia: 'DiaDoEvento', quantidade: 1, intervalo: 'às 16:00', atual: true }])
   })
 })

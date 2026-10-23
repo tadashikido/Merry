@@ -5,6 +5,8 @@ import {
   REFERENCIA_QUALQUER_EVENTO,
   TEXTOS_MODELOS_POR_TIPO,
   abrirEventoDoModelo,
+  exemploAtividadeItem,
+  exemplosItemCronograma,
   MOMENTO_QUALQUER_EVENTO,
   exemplosNomeModelo,
   momentoDoModelo,
@@ -164,5 +166,31 @@ describe('textos de modelos por tipo', () => {
     expect(TEXTOS_MODELOS_CRONOGRAMA.depoisDeCriarItens).not.toMatch(/cerimônia|casamento/i)
     expect(TEXTOS_MODELOS_CRONOGRAMA.depoisDeCriarAplicar).toContain('Aplicar modelo')
     expect(TEXTOS_MODELOS_CRONOGRAMA.depoisDeCriarAplicar).not.toMatch(/cerimônia|casamento/i)
+  })
+
+  it.each([
+    ['Casamento', 'Entrada dos padrinhos', 'da cerimônia'],
+    ['QuinzeAnos', 'Valsa com a corte', 'da festa'],
+    ['Aniversario', 'Abertura da festa', 'da festa'],
+    ['Comemoracao', 'Brinde de homenagem', 'do evento'],
+  ] as const)('[UNITÁRIO] exemplos de item de cronograma de %s vêm do vocabulário com o momento do tipo', (tipo, atividade, contracao) => {
+    const exemplos = exemplosItemCronograma(tipo)
+    expect(exemplos).toHaveLength(3)
+    expect(exemplos.every((exemplo) => exemplo.tipoRotulo === null && exemplo.contracaoMomento === contracao)).toBe(true)
+    expect(exemploAtividadeItem(tipo)).toBe(atividade)
+  })
+
+  it.each(['QuinzeAnos', 'Aniversario', 'Comemoracao'] as const)('[UNITÁRIO] exemplos de cronograma de %s não falam de noivos nem padrinhos', (tipo) => {
+    expect(exemplosItemCronograma(tipo).map((exemplo) => exemplo.titulo).join(' ')).not.toMatch(/noiv|padrinh|casamento/i)
+  })
+
+  it.each([
+    ['nulo', null],
+    ['desconhecido', TIPO_DESCONHECIDO],
+  ] as const)('[UNITÁRIO] sem tipo %s os exemplos de cronograma trazem um por tipo e a atividade é neutra', (_, tipo) => {
+    const exemplos = exemplosItemCronograma(tipo)
+    expect(exemplos.map((exemplo) => exemplo.tipoRotulo)).toEqual(['Casamento', '15 anos', 'Aniversário', 'Comemoração'])
+    expect(exemplos.map((exemplo) => exemplo.contracaoMomento)).toEqual(['da cerimônia', 'da festa', 'da festa', 'do evento'])
+    expect(exemploAtividadeItem(tipo)).toBe('Recepção dos convidados')
   })
 })

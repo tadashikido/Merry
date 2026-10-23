@@ -1,8 +1,8 @@
 import { TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
-import type { DiaCronograma } from '@/tipos/cronograma'
+import { DIAS_CRONOGRAMA, type DiaCronograma } from '@/tipos/cronograma'
 import type { CategoriaFornecedor } from '@/tipos/fornecedores'
 import type { ItemModeloCronogramaDto, OpcaoLocalModelo } from '@/tipos/modelosCronograma'
-import { horarioParaMinutos, minutosParaHorario, MINUTOS_POR_DIA } from '@/utilitarios/cronograma'
+import { horarioParaMinutos, minutosParaHorario, MINUTOS_POR_DIA, resumirDias } from '@/utilitarios/cronograma'
 import type { RegraValidacao } from '@/utilitarios/validacao'
 
 export const LIMITES_MODELO_CRONOGRAMA = {
@@ -140,6 +140,72 @@ export function equipeDoModelo(
     categorias,
     responsaveis: [...responsaveis.values()].sort((a, b) => a.localeCompare(b, 'pt-BR')),
     semNinguem,
+  }
+}
+
+export interface ItemNaPosicao {
+  dia: DiaCronograma
+  minutos: number
+  inicio: string
+  termino: string | null
+  terminaEmOutroDia: boolean
+}
+
+export interface DiaDoModelo {
+  dia: DiaCronograma
+  quantidade: number
+  intervalo: string
+  atual: boolean
+}
+
+export interface PosicaoItemNoModeloCronograma {
+  dia: DiaCronograma | null
+  dias: DiaDoModelo[]
+  vizinhos: ItemModeloCronogramaDto[]
+  maisNoDia: number
+  ampliaComeco: boolean
+  ampliaFim: boolean
+  outrosItens: number
+}
+
+export function posicaoItemNoModeloCronograma(
+  itens: readonly ItemModeloCronogramaDto[],
+  atual: ItemNaPosicao | null,
+  itemId: string | null = null,
+  limite = 4,
+): PosicaoItemNoModeloCronograma {
+  const outros = itens.filter((item) => item.id !== itemId)
+  const grupos = DIAS_CRONOGRAMA.map((dia) => {
+    const doDia: Pick<ItemModeloCronogramaDto, 'inicio' | 'termino' | 'terminaEmOutroDia'>[] = outros.filter((item) => item.dia === dia)
+    return { dia, itens: atual?.dia === dia ? [...doDia, atual] : doDia }
+  })
+  const dias = resumirDias(grupos).map((resumo) => ({
+    dia: resumo.dia,
+    quantidade: resumo.quantidade,
+    intervalo: resumo.intervalo,
+    atual: resumo.dia === atual?.dia,
+  }))
+
+  const doDia = atual === null ? [] : outros.filter((item) => item.dia === atual.dia)
+  const vizinhos =
+    atual === null
+      ? []
+      : [...doDia]
+          .sort((a, b) => Math.abs(a.minutosDesdeCerimonia - atual.minutos) - Math.abs(b.minutosDesdeCerimonia - atual.minutos))
+          .slice(0, limite)
+          .sort((a, b) => a.minutosDesdeCerimonia - b.minutosDesdeCerimonia)
+
+  const posicoes = outros.map((item) => item.minutosDesdeCerimonia)
+  const primeiro = posicoes.length > 0 ? Math.min(...posicoes) : null
+  const ultimo = posicoes.length > 0 ? Math.max(...posicoes) : null
+  return {
+    dia: atual?.dia ?? null,
+    dias,
+    vizinhos,
+    maisNoDia: doDia.length - vizinhos.length,
+    ampliaComeco: atual !== null && primeiro !== null && atual.minutos < primeiro,
+    ampliaFim: atual !== null && ultimo !== null && atual.minutos > ultimo,
+    outrosItens: outros.length,
   }
 }
 

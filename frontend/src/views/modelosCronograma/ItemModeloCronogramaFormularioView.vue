@@ -13,6 +13,8 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import ExemplosItemModelo from '@/componentes/modelos/ExemplosItemModelo.vue'
+import PosicaoItemModeloCronograma from '@/componentes/modelos/PosicaoItemModeloCronograma.vue'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
@@ -21,14 +23,11 @@ import type { FalhaEvento } from '@/stores/eventos'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
 import { ROTULOS_DIA_CRONOGRAMA, TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
-import {
-  ROTULOS_LOCAL_MODELO,
-  TEXTOS_ITEM_MODELO_CRONOGRAMA,
-  TEXTOS_MODELOS_CRONOGRAMA,
-} from '@/textos/modelosCronograma'
+import { exemploAtividadeItem, momentoDoModelo } from '@/textos/modelos'
+import { TEXTOS_ITEM_MODELO_CRONOGRAMA, TEXTOS_MODELOS_CRONOGRAMA, rotuloLocalModelo } from '@/textos/modelosCronograma'
 import { DIAS_CRONOGRAMA, type DiaCronograma } from '@/tipos/cronograma'
 import { CATEGORIAS_FORNECEDOR, type CategoriaFornecedor } from '@/tipos/fornecedores'
-import type { OpcaoLocalModelo, SalvarItemModeloCronogramaRequest } from '@/tipos/modelosCronograma'
+import type { ModeloCronogramaDto, OpcaoLocalModelo, SalvarItemModeloCronogramaRequest } from '@/tipos/modelosCronograma'
 import {
   descreverRelativoCerimonia,
   duracaoEntre,
@@ -42,7 +41,12 @@ import {
   terminoDe,
 } from '@/utilitarios/cronograma'
 import { focarElemento } from '@/utilitarios/foco'
-import { HORARIO_REFERENCIA_PADRAO, minutosDesdeCerimonia, opcaoLocalDoItem } from '@/utilitarios/modelosCronograma'
+import {
+  HORARIO_REFERENCIA_PADRAO,
+  minutosDesdeCerimonia,
+  opcaoLocalDoItem,
+  type ItemNaPosicao,
+} from '@/utilitarios/modelosCronograma'
 import { tamanhoMaximo } from '@/utilitarios/validacao'
 
 const CAMPOS = ['atividade', 'responsavel', 'categoriaFornecedor', 'instrucoes', 'inicio', 'termino', 'local'] as const
@@ -72,6 +76,7 @@ const falhaCarga = ref<FalhaEvento | null>(null)
 const itemInexistente = ref(false)
 const nomeModelo = ref('')
 const referencia = ref(HORARIO_REFERENCIA_PADRAO)
+const modeloCarregado = ref<ModeloCronogramaDto | null>(null)
 const enviando = ref(false)
 const mensagemErro = ref<string | null>(null)
 const opcaoLocal = ref<OpcaoLocalModelo>('Outro')
@@ -106,15 +111,45 @@ lerInicio = () => formulario.valores.inicio
 const idCampo = (campo: Campo) => `item-modelo-cronograma-${campo}`
 const titulo = computed(() => (edicao.value ? TEXTOS_ITEM_MODELO_CRONOGRAMA.editar : TEXTOS_ITEM_MODELO_CRONOGRAMA.novo))
 const opcoesDia = DIAS_CRONOGRAMA.map((valor) => ({ valor, rotulo: ROTULOS_DIA_CRONOGRAMA[valor] }))
-const opcoesLocal = (['Cerimonia', 'Recepcao', 'Outro'] as const).map((valor) => ({ valor, rotulo: ROTULOS_LOCAL_MODELO[valor] }))
+const mostrarLateral = computed(
+  () => !carregando.value && !falhaCarga.value && !itemInexistente.value && modeloCarregado.value !== null,
+)
+const tipoModelo = computed(() => modeloCarregado.value?.tipoEvento ?? null)
+const momento = computed(() => momentoDoModelo(tipoModelo.value))
+const placeholderAtividade = computed(() =>
+  TEXTOS_ITEM_MODELO_CRONOGRAMA.campoAtividadePlaceholderPara(exemploAtividadeItem(tipoModelo.value)),
+)
+const opcoesLocal = computed(() =>
+  (['Cerimonia', 'Recepcao', 'Outro'] as const).map((valor) => ({ valor, rotulo: rotuloLocalModelo(valor, tipoModelo.value) })),
+)
 const opcoesCategoria = [
   { valor: null as CategoriaFornecedor | null, rotulo: TEXTOS_ITEM_MODELO_CRONOGRAMA.nenhumaCategoria },
   ...CATEGORIAS_FORNECEDOR.map((valor) => ({ valor: valor as CategoriaFornecedor | null, rotulo: ROTULOS_CATEGORIA_FORNECEDOR[valor] })),
 ]
 
 const minutos = computed(() => minutosDesdeCerimonia(formulario.valores.dia, formulario.valores.inicio.trim(), referencia.value))
-const dicaInicio = computed(() => descreverRelativoCerimonia(minutos.value) ?? undefined)
+const minutosPrevia = computed(() => (regraInicio(formulario.valores.inicio) === null ? minutos.value : null))
+const dicaInicio = computed(
+  () =>
+    descreverRelativoCerimonia(minutosPrevia.value, momento.value.contracaoDe) ??
+    TEXTOS_ITEM_MODELO_CRONOGRAMA.dicaInicioPara(momento.value.artigo, referencia.value),
+)
 const duracao = computed(() => duracaoEntre(formulario.valores.inicio.trim(), formulario.valores.termino.trim()))
+const itemNaPosicao = computed<ItemNaPosicao | null>(() => {
+  if (minutosPrevia.value === null) {
+    return null
+  }
+  const inicio = formulario.valores.inicio.trim()
+  const termino = formulario.valores.termino.trim()
+  const comTermino = duracao.value !== null
+  return {
+    dia: formulario.valores.dia,
+    minutos: minutosPrevia.value,
+    inicio,
+    termino: comTermino ? termino : null,
+    terminaEmOutroDia: comTermino && terminaNoDiaSeguinte(inicio, termino),
+  }
+})
 const dicaTermino = computed(() => {
   if (duracao.value === null) {
     return undefined
@@ -137,6 +172,7 @@ async function carregar() {
   }
   nomeModelo.value = resultado.valor.nome
   referencia.value = resultado.valor.horarioReferencia
+  modeloCarregado.value = resultado.valor
   if (!props.itemId) {
     return
   }
@@ -293,328 +329,375 @@ function excluir() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="pagina-formulario">
-      <CabecalhoPagina
-        :titulo="titulo"
-        :descricao="nomeModelo ? TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia(referencia) : undefined"
-        :rotulos-trilha="{ 'modelo-cronograma': nomeModelo || TEXTOS_MODELOS_CRONOGRAMA.titulo }"
-      />
-
-      <div class="formulario-item-cronograma pilha pilha--cartao">
-        <EstadoCarregando
-          v-if="carregando"
-          variante="formulario"
-          :linhas="5"
+    <div class="formulario-item-tela">
+      <div
+        class="pagina-formulario formulario-item-tela__pagina"
+        :class="{ 'formulario-item-tela__pagina--com-lateral': mostrarLateral }"
+      >
+        <CabecalhoPagina
+          :titulo="titulo"
+          :descricao="nomeModelo ? TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia(referencia, momento.artigo) : undefined"
+          :rotulos-trilha="{ 'modelo-cronograma': nomeModelo || TEXTOS_MODELOS_CRONOGRAMA.titulo }"
         />
 
-        <EstadoErro
-          v-else-if="itemInexistente"
-          :titulo="TEXTOS_ITEM_MODELO_CRONOGRAMA.naoEncontradoTitulo"
-          :mensagem="TEXTOS_ITEM_MODELO_CRONOGRAMA.naoEncontradoTexto"
-          :pode-tentar-novamente="false"
-        />
+        <div class="formulario-item-tela__corpo">
+          <div class="formulario-item-cronograma pilha pilha--cartao">
+            <EstadoCarregando
+              v-if="carregando"
+              variante="formulario"
+              :linhas="5"
+            />
 
-        <EstadoErro
-          v-else-if="falhaCarga?.tipo === 'naoEncontrado'"
-          :titulo="TEXTOS_MODELOS_CRONOGRAMA.naoEncontradoTitulo"
-          :mensagem="TEXTOS_MODELOS_CRONOGRAMA.naoEncontradoTexto"
-          :pode-tentar-novamente="false"
-        />
+            <EstadoErro
+              v-else-if="itemInexistente"
+              :titulo="TEXTOS_ITEM_MODELO_CRONOGRAMA.naoEncontradoTitulo"
+              :mensagem="TEXTOS_ITEM_MODELO_CRONOGRAMA.naoEncontradoTexto"
+              :pode-tentar-novamente="false"
+            />
 
-        <EstadoErro
-          v-else-if="falhaCarga"
-          :titulo="TEXTOS_MODELOS_CRONOGRAMA.erroTitulo"
-          :mensagem="falhaCarga.tipo === 'semPermissao' ? TEXTOS_MODELOS_CRONOGRAMA.semAcesso : TEXTOS_MODELOS_CRONOGRAMA.erroTexto"
-          :pode-tentar-novamente="falhaCarga.tipo !== 'semPermissao'"
-          :variante="falhaCarga.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
-          @tentar-novamente="carregar"
-        />
+            <EstadoErro
+              v-else-if="falhaCarga?.tipo === 'naoEncontrado'"
+              :titulo="TEXTOS_MODELOS_CRONOGRAMA.naoEncontradoTitulo"
+              :mensagem="TEXTOS_MODELOS_CRONOGRAMA.naoEncontradoTexto"
+              :pode-tentar-novamente="false"
+            />
 
-        <template v-else>
-          <MensagemFormulario
-            v-if="mensagemErro"
-            :mensagem="mensagemErro"
-            data-teste="erro-formulario"
-          />
+            <EstadoErro
+              v-else-if="falhaCarga"
+              :titulo="TEXTOS_MODELOS_CRONOGRAMA.erroTitulo"
+              :mensagem="falhaCarga.tipo === 'semPermissao' ? TEXTOS_MODELOS_CRONOGRAMA.semAcesso : TEXTOS_MODELOS_CRONOGRAMA.erroTexto"
+              :pode-tentar-novamente="falhaCarga.tipo !== 'semPermissao'"
+              :variante="falhaCarga.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
+              @tentar-novamente="carregar"
+            />
 
-          <form
-            class="pilha pilha--bloco"
-            novalidate
-            data-teste="formulario-item-modelo-cronograma"
-            @submit.prevent="salvar(false)"
-          >
-            <fieldset
-              class="formulario-item-cronograma__grupo pilha pilha--grupo"
-              data-teste="grupo-atividade"
-            >
-              <legend class="formulario-item-cronograma__legenda texto-rotulo">
-                {{ TEXTOS_ITEM_MODELO_CRONOGRAMA.grupoAtividade }}
-              </legend>
+            <template v-else>
+              <MensagemFormulario
+                v-if="mensagemErro"
+                :mensagem="mensagemErro"
+                data-teste="erro-formulario"
+              />
 
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_CRONOGRAMA.campoAtividade"
-                :id-campo="idCampo('atividade')"
-                obrigatorio
-                :erro="formulario.erros.atividade"
+              <form
+                class="pilha pilha--bloco"
+                novalidate
+                data-teste="formulario-item-modelo-cronograma"
+                @submit.prevent="salvar(false)"
               >
-                <InputText
-                  :id="idEntrada"
-                  v-model="formulario.valores.atividade"
-                  autocomplete="off"
-                  :placeholder="TEXTOS_CRONOGRAMA.placeholderAtividade"
-                  :maxlength="LIMITES_CRONOGRAMA.atividadeMaximo"
-                  aria-required="true"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-atividade"
-                  @update:model-value="formulario.revalidarAoDigitar('atividade')"
-                  @blur="formulario.validarAoSair('atividade')"
-                />
-              </CampoFormulario>
-
-              <div class="formulario-item-cronograma__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_CRONOGRAMA.campoResponsavel"
-                  :id-campo="idCampo('responsavel')"
-                  :dica="TEXTOS_CRONOGRAMA.dicaResponsavel"
-                  :erro="formulario.erros.responsavel"
+                <fieldset
+                  class="formulario-item-cronograma__grupo pilha pilha--grupo"
+                  data-teste="grupo-atividade"
                 >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.responsavel"
-                    autocomplete="off"
-                    :maxlength="LIMITES_CRONOGRAMA.responsavel"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    data-teste="campo-responsavel"
-                    @update:model-value="formulario.revalidarAoDigitar('responsavel')"
-                    @blur="formulario.validarAoSair('responsavel')"
-                  />
-                </CampoFormulario>
+                  <legend class="formulario-item-cronograma__legenda texto-rotulo">
+                    {{ TEXTOS_ITEM_MODELO_CRONOGRAMA.grupoAtividade }}
+                  </legend>
 
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_ITEM_MODELO_CRONOGRAMA.campoCategoria"
-                  :id-campo="idCampo('categoriaFornecedor')"
-                  :dica="TEXTOS_ITEM_MODELO_CRONOGRAMA.dicaCategoria"
-                  :erro="formulario.erros.categoriaFornecedor"
-                >
-                  <Select
-                    v-model="formulario.valores.categoriaFornecedor"
-                    :input-id="idEntrada"
-                    :options="opcoesCategoria"
-                    option-label="rotulo"
-                    option-value="valor"
-                    :invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :disabled="enviando"
-                    data-teste="campo-categoria"
-                  />
-                </CampoFormulario>
-              </div>
-
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_CRONOGRAMA.campoInstrucoes"
-                :id-campo="idCampo('instrucoes')"
-                :dica="TEXTOS_CRONOGRAMA.dicaInstrucoes"
-                :erro="formulario.erros.instrucoes"
-              >
-                <Textarea
-                  :id="idEntrada"
-                  v-model="formulario.valores.instrucoes"
-                  rows="3"
-                  auto-resize
-                  :maxlength="LIMITES_CRONOGRAMA.texto"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-instrucoes"
-                  @update:model-value="formulario.revalidarAoDigitar('instrucoes')"
-                  @blur="formulario.validarAoSair('instrucoes')"
-                />
-              </CampoFormulario>
-            </fieldset>
-
-            <fieldset
-              class="formulario-item-cronograma__grupo pilha pilha--grupo"
-              data-teste="grupo-horario-local"
-            >
-              <legend class="formulario-item-cronograma__legenda texto-rotulo">
-                {{ TEXTOS_ITEM_MODELO_CRONOGRAMA.grupoHorarioLocal }}
-              </legend>
-
-              <fieldset
-                class="formulario-item-cronograma__quando pilha pilha--grupo"
-                data-teste="campo-quando"
-              >
-                <legend class="formulario-item-cronograma__legenda-campo">
-                  {{ TEXTOS_ITEM_MODELO_CRONOGRAMA.campoQuando }}
-                </legend>
-
-                <div class="formulario-item-cronograma__campo">
-                  <span
-                    id="item-modelo-cronograma-dia-rotulo"
-                    class="formulario-item-cronograma__rotulo"
-                  >{{ TEXTOS_CRONOGRAMA.campoDia }}</span>
-                  <SelectButton
-                    v-model="formulario.valores.dia"
-                    class="formulario-item-cronograma__opcoes"
-                    :options="opcoesDia"
-                    option-label="rotulo"
-                    option-value="valor"
-                    :allow-empty="false"
-                    aria-labelledby="item-modelo-cronograma-dia-rotulo"
-                    :disabled="enviando"
-                    data-teste="campo-dia"
-                  />
-                </div>
-
-                <div class="formulario-item-cronograma__colunas">
                   <CampoFormulario
                     v-slot="{ id: idEntrada, invalido, descritoPor }"
-                    :rotulo="TEXTOS_CRONOGRAMA.campoInicio"
-                    :id-campo="idCampo('inicio')"
+                    :rotulo="TEXTOS_CRONOGRAMA.campoAtividade"
+                    :id-campo="idCampo('atividade')"
                     obrigatorio
-                    :dica="dicaInicio"
-                    :erro="formulario.erros.inicio"
+                    :erro="formulario.erros.atividade"
                   >
                     <InputText
                       :id="idEntrada"
-                      v-model="formulario.valores.inicio"
-                      type="time"
+                      v-model="formulario.valores.atividade"
+                      autocomplete="off"
+                      :placeholder="placeholderAtividade"
+                      :maxlength="LIMITES_CRONOGRAMA.atividadeMaximo"
                       aria-required="true"
                       :invalid="invalido"
                       :aria-invalid="invalido"
                       :aria-describedby="descritoPor"
                       :readonly="enviando"
-                      data-teste="campo-inicio"
-                      @update:model-value="alterarInicio"
-                      @blur="sairInicio"
+                      data-teste="campo-atividade"
+                      @update:model-value="formulario.revalidarAoDigitar('atividade')"
+                      @blur="formulario.validarAoSair('atividade')"
                     />
                   </CampoFormulario>
+
+                  <div class="formulario-item-cronograma__colunas">
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="TEXTOS_CRONOGRAMA.campoResponsavel"
+                      :id-campo="idCampo('responsavel')"
+                      :dica="TEXTOS_CRONOGRAMA.dicaResponsavel"
+                      :erro="formulario.erros.responsavel"
+                    >
+                      <InputText
+                        :id="idEntrada"
+                        v-model="formulario.valores.responsavel"
+                        autocomplete="off"
+                        :maxlength="LIMITES_CRONOGRAMA.responsavel"
+                        :invalid="invalido"
+                        :aria-invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :readonly="enviando"
+                        data-teste="campo-responsavel"
+                        @update:model-value="formulario.revalidarAoDigitar('responsavel')"
+                        @blur="formulario.validarAoSair('responsavel')"
+                      />
+                    </CampoFormulario>
+
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="TEXTOS_ITEM_MODELO_CRONOGRAMA.campoCategoria"
+                      :id-campo="idCampo('categoriaFornecedor')"
+                      :dica="TEXTOS_ITEM_MODELO_CRONOGRAMA.dicaCategoria"
+                      :erro="formulario.erros.categoriaFornecedor"
+                    >
+                      <Select
+                        v-model="formulario.valores.categoriaFornecedor"
+                        :input-id="idEntrada"
+                        :options="opcoesCategoria"
+                        option-label="rotulo"
+                        option-value="valor"
+                        :invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :disabled="enviando"
+                        data-teste="campo-categoria"
+                      />
+                    </CampoFormulario>
+                  </div>
+
                   <CampoFormulario
                     v-slot="{ id: idEntrada, invalido, descritoPor }"
-                    :rotulo="TEXTOS_CRONOGRAMA.campoTermino"
-                    :id-campo="idCampo('termino')"
-                    :dica="dicaTermino"
-                    :erro="formulario.erros.termino"
+                    :rotulo="TEXTOS_CRONOGRAMA.campoInstrucoes"
+                    :id-campo="idCampo('instrucoes')"
+                    :dica="TEXTOS_CRONOGRAMA.dicaInstrucoes"
+                    :erro="formulario.erros.instrucoes"
                   >
-                    <InputText
+                    <Textarea
                       :id="idEntrada"
-                      v-model="formulario.valores.termino"
-                      type="time"
+                      v-model="formulario.valores.instrucoes"
+                      rows="3"
+                      auto-resize
+                      :maxlength="LIMITES_CRONOGRAMA.texto"
                       :invalid="invalido"
                       :aria-invalid="invalido"
                       :aria-describedby="descritoPor"
                       :readonly="enviando"
-                      data-teste="campo-termino"
-                      @update:model-value="formulario.revalidarAoDigitar('termino')"
-                      @blur="formulario.validarAoSair('termino')"
+                      data-teste="campo-instrucoes"
+                      @update:model-value="formulario.revalidarAoDigitar('instrucoes')"
+                      @blur="formulario.validarAoSair('instrucoes')"
                     />
                   </CampoFormulario>
+                </fieldset>
+
+                <fieldset
+                  class="formulario-item-cronograma__grupo pilha pilha--grupo"
+                  data-teste="grupo-horario-local"
+                >
+                  <legend class="formulario-item-cronograma__legenda texto-rotulo">
+                    {{ TEXTOS_ITEM_MODELO_CRONOGRAMA.grupoHorarioLocal }}
+                  </legend>
+
+                  <fieldset
+                    class="formulario-item-cronograma__quando pilha pilha--grupo"
+                    data-teste="campo-quando"
+                  >
+                    <legend class="formulario-item-cronograma__legenda-campo">
+                      {{ TEXTOS_ITEM_MODELO_CRONOGRAMA.campoQuando }}
+                    </legend>
+
+                    <div class="formulario-item-cronograma__campo">
+                      <span
+                        id="item-modelo-cronograma-dia-rotulo"
+                        class="formulario-item-cronograma__rotulo"
+                      >{{ TEXTOS_CRONOGRAMA.campoDia }}</span>
+                      <SelectButton
+                        v-model="formulario.valores.dia"
+                        class="formulario-item-cronograma__opcoes"
+                        :options="opcoesDia"
+                        option-label="rotulo"
+                        option-value="valor"
+                        :allow-empty="false"
+                        aria-labelledby="item-modelo-cronograma-dia-rotulo"
+                        :disabled="enviando"
+                        data-teste="campo-dia"
+                      />
+                    </div>
+
+                    <div class="formulario-item-cronograma__colunas">
+                      <CampoFormulario
+                        v-slot="{ id: idEntrada, invalido, descritoPor }"
+                        :rotulo="TEXTOS_CRONOGRAMA.campoInicio"
+                        :id-campo="idCampo('inicio')"
+                        obrigatorio
+                        :dica="dicaInicio"
+                        :erro="formulario.erros.inicio"
+                      >
+                        <InputText
+                          :id="idEntrada"
+                          v-model="formulario.valores.inicio"
+                          type="time"
+                          aria-required="true"
+                          :invalid="invalido"
+                          :aria-invalid="invalido"
+                          :aria-describedby="descritoPor"
+                          :readonly="enviando"
+                          data-teste="campo-inicio"
+                          @update:model-value="alterarInicio"
+                          @blur="sairInicio"
+                        />
+                      </CampoFormulario>
+                      <CampoFormulario
+                        v-slot="{ id: idEntrada, invalido, descritoPor }"
+                        :rotulo="TEXTOS_CRONOGRAMA.campoTermino"
+                        :id-campo="idCampo('termino')"
+                        :dica="dicaTermino"
+                        :erro="formulario.erros.termino"
+                      >
+                        <InputText
+                          :id="idEntrada"
+                          v-model="formulario.valores.termino"
+                          type="time"
+                          :invalid="invalido"
+                          :aria-invalid="invalido"
+                          :aria-describedby="descritoPor"
+                          :readonly="enviando"
+                          data-teste="campo-termino"
+                          @update:model-value="formulario.revalidarAoDigitar('termino')"
+                          @blur="formulario.validarAoSair('termino')"
+                        />
+                      </CampoFormulario>
+                    </div>
+                  </fieldset>
+
+                  <div class="formulario-item-cronograma__campo">
+                    <span
+                      id="item-modelo-cronograma-local-rotulo"
+                      class="formulario-item-cronograma__rotulo"
+                    >{{ TEXTOS_ITEM_MODELO_CRONOGRAMA.campoLocal }}</span>
+                    <SelectButton
+                      v-model="opcaoLocal"
+                      class="formulario-item-cronograma__opcoes"
+                      :options="opcoesLocal"
+                      option-label="rotulo"
+                      option-value="valor"
+                      :allow-empty="false"
+                      aria-labelledby="item-modelo-cronograma-local-rotulo"
+                      :disabled="enviando"
+                      data-teste="campo-opcao-local"
+                    />
+                  </div>
+
+                  <CampoFormulario
+                    v-if="opcaoLocal === 'Outro'"
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_ITEM_MODELO_CRONOGRAMA.campoLocalOutro"
+                    :id-campo="idCampo('local')"
+                    :erro="formulario.erros.local"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.local"
+                      autocomplete="off"
+                      :maxlength="LIMITES_CRONOGRAMA.local"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-local"
+                      @update:model-value="formulario.revalidarAoDigitar('local')"
+                      @blur="formulario.validarAoSair('local')"
+                    />
+                  </CampoFormulario>
+                </fieldset>
+
+                <div class="formulario-item-cronograma__rodape">
+                  <div class="formulario-item-cronograma__acoes">
+                    <Button
+                      type="submit"
+                      :label="TEXTOS_ITEM_MODELO_CRONOGRAMA.salvar"
+                      :loading="enviando"
+                      :aria-busy="enviando"
+                      data-teste="salvar-item"
+                    />
+                    <Button
+                      v-if="!edicao"
+                      type="button"
+                      :label="TEXTOS_ITEM_MODELO_CRONOGRAMA.salvarOutro"
+                      severity="secondary"
+                      outlined
+                      :disabled="enviando"
+                      data-teste="salvar-outro"
+                      @click="salvar(true)"
+                    />
+                    <Button
+                      type="button"
+                      :label="TEXTOS_ITEM_MODELO_CRONOGRAMA.cancelar"
+                      severity="secondary"
+                      text
+                      :disabled="enviando"
+                      data-teste="cancelar"
+                      @click="cancelar"
+                    />
+                  </div>
+                  <Button
+                    v-if="edicao"
+                    type="button"
+                    :label="TEXTOS_ITEM_MODELO_CRONOGRAMA.excluir"
+                    icon="ie ie-excluir"
+                    severity="danger"
+                    text
+                    :disabled="enviando"
+                    data-teste="excluir-item"
+                    @click="excluir"
+                  />
                 </div>
-              </fieldset>
+              </form>
+            </template>
+          </div>
 
-              <div class="formulario-item-cronograma__campo">
-                <span
-                  id="item-modelo-cronograma-local-rotulo"
-                  class="formulario-item-cronograma__rotulo"
-                >{{ TEXTOS_ITEM_MODELO_CRONOGRAMA.campoLocal }}</span>
-                <SelectButton
-                  v-model="opcaoLocal"
-                  class="formulario-item-cronograma__opcoes"
-                  :options="opcoesLocal"
-                  option-label="rotulo"
-                  option-value="valor"
-                  :allow-empty="false"
-                  aria-labelledby="item-modelo-cronograma-local-rotulo"
-                  :disabled="enviando"
-                  data-teste="campo-opcao-local"
-                />
-              </div>
-
-              <CampoFormulario
-                v-if="opcaoLocal === 'Outro'"
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_ITEM_MODELO_CRONOGRAMA.campoLocalOutro"
-                :id-campo="idCampo('local')"
-                :erro="formulario.erros.local"
-              >
-                <InputText
-                  :id="idEntrada"
-                  v-model="formulario.valores.local"
-                  autocomplete="off"
-                  :maxlength="LIMITES_CRONOGRAMA.local"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-local"
-                  @update:model-value="formulario.revalidarAoDigitar('local')"
-                  @blur="formulario.validarAoSair('local')"
-                />
-              </CampoFormulario>
-            </fieldset>
-
-            <div class="formulario-item-cronograma__rodape">
-              <div class="formulario-item-cronograma__acoes">
-                <Button
-                  type="submit"
-                  :label="TEXTOS_ITEM_MODELO_CRONOGRAMA.salvar"
-                  :loading="enviando"
-                  :aria-busy="enviando"
-                  data-teste="salvar-item"
-                />
-                <Button
-                  v-if="!edicao"
-                  type="button"
-                  :label="TEXTOS_ITEM_MODELO_CRONOGRAMA.salvarOutro"
-                  severity="secondary"
-                  outlined
-                  :disabled="enviando"
-                  data-teste="salvar-outro"
-                  @click="salvar(true)"
-                />
-                <Button
-                  type="button"
-                  :label="TEXTOS_ITEM_MODELO_CRONOGRAMA.cancelar"
-                  severity="secondary"
-                  text
-                  :disabled="enviando"
-                  data-teste="cancelar"
-                  @click="cancelar"
-                />
-              </div>
-              <Button
-                v-if="edicao"
-                type="button"
-                :label="TEXTOS_ITEM_MODELO_CRONOGRAMA.excluir"
-                icon="ie ie-excluir"
-                severity="danger"
-                text
-                :disabled="enviando"
-                data-teste="excluir-item"
-                @click="excluir"
-              />
-            </div>
-          </form>
-        </template>
+          <div
+            v-if="mostrarLateral && modeloCarregado"
+            class="formulario-item-tela__lateral pilha pilha--bloco"
+            data-teste="lateral-formulario-item"
+          >
+            <PosicaoItemModeloCronograma
+              :itens="modeloCarregado.itens"
+              :atual="itemNaPosicao"
+              :atividade="formulario.valores.atividade"
+              :item-id="itemId ?? null"
+              :tipo="tipoModelo"
+            />
+            <ExemplosItemModelo
+              :tipo="tipoModelo"
+              recurso="cronograma"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </LayoutPainelUsuario>
 </template>
 
 <style scoped>
+.formulario-item-tela {
+  container: formulario-item-tela / inline-size;
+}
+
+.formulario-item-tela__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'principal'
+    'lateral';
+  gap: var(--p-ritmo-bloco);
+}
+
 .formulario-item-cronograma {
   container: formulario-item-cronograma / inline-size;
+  grid-area: principal;
+  min-width: 0;
+}
+
+.formulario-item-tela__lateral {
+  grid-area: lateral;
+  min-width: 0;
+  padding-top: var(--p-ritmo-bloco);
+  border-top: 1px solid var(--p-cor-borda);
 }
 
 .formulario-item-cronograma__grupo,
@@ -703,6 +786,25 @@ function excluir() {
     flex-direction: row;
     flex-wrap: wrap;
     gap: var(--p-ritmo-grupo);
+  }
+}
+
+@container formulario-item-tela (min-width: 64rem) {
+  .formulario-item-tela__pagina--com-lateral {
+    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
+  }
+
+  .formulario-item-tela__pagina--com-lateral .formulario-item-tela__corpo {
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
+    grid-template-areas: 'principal lateral';
+    align-items: start;
+  }
+
+  .formulario-item-tela__lateral {
+    padding-top: 0;
+    padding-inline-start: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

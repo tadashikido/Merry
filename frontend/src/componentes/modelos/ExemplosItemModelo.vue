@@ -2,26 +2,42 @@
 import { computed, useId } from 'vue'
 
 import { TEXTOS_ITEM_MODELO } from '@/textos/checklist'
-import { exemplosItemChecklist, referenciaDoModelo } from '@/textos/modelos'
+import { exemplosItemChecklist, exemplosItemCronograma, referenciaDoModelo } from '@/textos/modelos'
+import { TEXTOS_ITEM_MODELO_CRONOGRAMA } from '@/textos/modelosCronograma'
 import { ehTipoEvento } from '@/textos/tiposEvento'
 import type { TipoEvento } from '@/tipos/eventos'
+import { descreverRelativoCerimonia } from '@/utilitarios/cronograma'
 import { descreverPrazoAproximado } from '@/utilitarios/prazoModelo'
 
-const props = withDefaults(defineProps<{ tipo?: TipoEvento | null }>(), { tipo: null })
+const props = withDefaults(defineProps<{ tipo?: TipoEvento | null; recurso?: 'checklist' | 'cronograma' }>(), {
+  tipo: null,
+  recurso: 'checklist',
+})
 
 const idTitulo = useId()
 const idApoio = useId()
 
 const doTipo = computed(() => ehTipoEvento(props.tipo))
 const referencia = computed(() => referenciaDoModelo(props.tipo))
+const cronograma = computed(() => props.recurso === 'cronograma')
+const textos = computed(() => (cronograma.value ? TEXTOS_ITEM_MODELO_CRONOGRAMA : TEXTOS_ITEM_MODELO))
 const apoio = computed(() =>
-  doTipo.value ? TEXTOS_ITEM_MODELO.exemplosApoioTipo(referencia.value.indefinido) : TEXTOS_ITEM_MODELO.exemplosApoioQualquer,
+  doTipo.value ? textos.value.exemplosApoioTipo(referencia.value.indefinido) : textos.value.exemplosApoioQualquer,
 )
 const exemplos = computed(() =>
-  exemplosItemChecklist(props.tipo).map((exemplo) => ({
-    ...exemplo,
-    prazo: descreverPrazoAproximado(exemplo.dias, referencia.value.contracaoDe),
-  })),
+  cronograma.value
+    ? exemplosItemCronograma(props.tipo).map((exemplo) => ({
+        chave: exemplo.chave,
+        tipoRotulo: exemplo.tipoRotulo,
+        titulo: exemplo.titulo,
+        prazo: descreverRelativoCerimonia(exemplo.minutos, exemplo.contracaoMomento) ?? '',
+      }))
+    : exemplosItemChecklist(props.tipo).map((exemplo) => ({
+        chave: exemplo.chave,
+        tipoRotulo: exemplo.tipoRotulo,
+        titulo: exemplo.titulo,
+        prazo: descreverPrazoAproximado(exemplo.dias, referencia.value.contracaoDe),
+      })),
 )
 </script>
 
@@ -35,7 +51,7 @@ const exemplos = computed(() =>
       :id="idTitulo"
       class="exemplos-item__titulo texto-rotulo"
     >
-      {{ TEXTOS_ITEM_MODELO.exemplosTitulo }}
+      {{ textos.exemplosTitulo }}
     </h2>
     <p
       :id="idApoio"

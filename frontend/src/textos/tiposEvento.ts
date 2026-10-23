@@ -6,6 +6,11 @@ export interface ExemploItemChecklist {
   dias: number
 }
 
+export interface ExemploItemCronograma {
+  titulo: string
+  minutos: number
+}
+
 export interface VocabularioTipoEvento {
   rotulo: string
   rotuloPlural: string
@@ -13,6 +18,7 @@ export interface VocabularioTipoEvento {
   comoCostumaSer: string
   exemploNomeModelo: string
   exemplosItemChecklist: readonly ExemploItemChecklist[]
+  exemplosItemCronograma: readonly ExemploItemCronograma[]
   contagem: {
     singular: string
     plural: string
@@ -67,6 +73,11 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
       { titulo: 'Fechar a lista de padrinhos', dias: 180 },
       { titulo: 'Fazer a prova final dos trajes', dias: 15 },
     ],
+    exemplosItemCronograma: [
+      { titulo: 'Making of dos noivos', minutos: -240 },
+      { titulo: 'Entrada dos padrinhos', minutos: -10 },
+      { titulo: 'Corte do bolo', minutos: 240 },
+    ],
     contagem: {
       singular: 'casamento',
       plural: 'casamentos',
@@ -118,6 +129,11 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
       { titulo: 'Escolher o vestido da valsa', dias: 180 },
       { titulo: 'Ensaiar a valsa com a corte', dias: 30 },
       { titulo: 'Fechar a playlist da festa', dias: 15 },
+    ],
+    exemplosItemCronograma: [
+      { titulo: 'Fotos da debutante', minutos: -120 },
+      { titulo: 'Valsa com a corte', minutos: 60 },
+      { titulo: 'Parabéns e bolo', minutos: 180 },
     ],
     contagem: {
       singular: 'festa de 15 anos',
@@ -171,6 +187,11 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
       { titulo: 'Encomendar o bolo e os docinhos', dias: 30 },
       { titulo: 'Confirmar a lista de convidados', dias: 7 },
     ],
+    exemplosItemCronograma: [
+      { titulo: 'Montagem da decoração', minutos: -180 },
+      { titulo: 'Abertura da festa', minutos: 0 },
+      { titulo: 'Parabéns', minutos: 120 },
+    ],
     contagem: {
       singular: 'aniversário',
       plural: 'aniversários',
@@ -222,6 +243,11 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
       { titulo: 'Reservar o espaço', dias: 120 },
       { titulo: 'Fechar o cardápio com o buffet', dias: 30 },
       { titulo: 'Confirmar os convidados de honra', dias: 10 },
+    ],
+    exemplosItemCronograma: [
+      { titulo: 'Recepção dos convidados', minutos: -30 },
+      { titulo: 'Brinde de homenagem', minutos: 60 },
+      { titulo: 'Encerramento', minutos: 240 },
     ],
     contagem: {
       singular: 'comemoração',

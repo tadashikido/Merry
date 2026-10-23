@@ -35,12 +35,6 @@ export const ROTULOS_DIA_CURTO: Record<DiaCronograma, string> = {
   DiaSeguinte: 'Dia seguinte',
 }
 
-export const ROTULOS_LOCAL_MODELO: Record<OpcaoLocalModelo, string> = {
-  Cerimonia: 'Local da cerimônia',
-  Recepcao: 'Local da recepção',
-  Outro: 'Outro',
-}
-
 export const TEXTOS_ABAS_MODELOS = {
   rotulo: 'Tipos de modelo',
   checklist: 'Checklist',
@@ -189,6 +183,22 @@ export const TEXTOS_ITEM_MODELO_CRONOGRAMA = {
   erroSalvar: 'Não foi possível salvar o item. Verifique a conexão e tente de novo.',
   naoEncontradoTitulo: 'Item não encontrado',
   naoEncontradoTexto: 'Ele pode ter sido excluído. Volte para o modelo.',
+  campoAtividadePlaceholderPara: (exemplo: string) => `Ex.: ${exemplo}`,
+  dicaInicioPara: (artigoMomento: string, horario: string) => `Com ${artigoMomento} às ${horario}, a distância aparece aqui.`,
+  posicaoTitulo: 'Onde o item entra',
+  posicaoSemInicio: 'Informe o início para ver onde o item entra no roteiro.',
+  esteItem: 'Este item',
+  esteItemEntraAqui: 'Este item entra aqui',
+  maisNoDia: (quantidade: number) => `e mais ${numero(quantidade)} neste dia`,
+  primeiroItem: 'É o primeiro item do modelo.',
+  sozinhoNoDia: 'Nenhum outro item neste dia ainda.',
+  ampliaComeco: 'Passa a ser o primeiro horário do modelo.',
+  ampliaFim: 'Passa a ser o último horário do modelo.',
+  diasRotulo: 'Dias do roteiro',
+  horarioComDistancia: (inicio: string, distancia: string) => `${inicio}, ${distancia.charAt(0).toLocaleLowerCase('pt-BR')}${distancia.slice(1)}`,
+  exemplosTitulo: 'Exemplos de itens',
+  exemplosApoioTipo: (indefinido: string) => `Itens que costumam entrar no roteiro de ${indefinido}:`,
+  exemplosApoioQualquer: 'Um exemplo por tipo de evento:',
 } as const
 
 export const TEXTOS_APLICAR_MODELO_CRONOGRAMA = {
