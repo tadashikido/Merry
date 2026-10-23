@@ -60,7 +60,7 @@ export const TEXTOS_ESQUECI_SENHA = {
   maisDeUmPedidoTexto: 'Use o e-mail mais recente. Cada pedido novo cancela o link anterior.',
   depoisTitulo: 'Depois de criar a nova senha',
   depoisTexto: 'As sessões abertas em outros aparelhos são encerradas. Entre de novo com a nova senha.',
-  anfitriaoNotaTitulo: 'Convidado por uma assessoria?',
+  anfitriaoNotaTitulo: 'Recebeu um convite da assessoria?',
   anfitriaoNotaTexto: 'O e-mail de recuperação só vale para quem já criou a senha. Antes disso, use o link do convite.',
 } as const
 

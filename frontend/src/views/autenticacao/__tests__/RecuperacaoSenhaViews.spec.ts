@@ -6,7 +6,7 @@ import EsqueciSenhaView from '@/views/autenticacao/EsqueciSenhaView.vue'
 import RedefinirSenhaView from '@/views/autenticacao/RedefinirSenhaView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { DETALHE_LINK_INVALIDO, useAutenticacaoStore } from '@/stores/autenticacao'
-import { MENSAGENS_AUTENTICACAO, TEXTOS_ESQUECI_SENHA, TEXTOS_REDEFINIR_SENHA } from '@/textos/autenticacao'
+import { MENSAGENS_AUTENTICACAO, TEXTOS_ENTRAR, TEXTOS_ESQUECI_SENHA, TEXTOS_REDEFINIR_SENHA } from '@/textos/autenticacao'
 import { tiposEventoEmFrase } from '@/textos/tiposEvento'
 import { MENSAGENS_VALIDACAO } from '@/utilitarios/validacao'
 import {
@@ -209,7 +209,7 @@ describe('EsqueciSenhaView', () => {
     ])
     expect(regiao.get('[data-teste="orientacao-assunto"] p').text()).toBe('“Redefinição de senha — Celebri”. Pode levar alguns minutos.')
     const nota = regiao.get('[data-teste="nota-anfitriao"]')
-    expect(nota.get('strong').text()).toBe(TEXTOS_ESQUECI_SENHA.anfitriaoNotaTitulo)
+    expect(nota.get('strong').text()).toBe(TEXTOS_ENTRAR.anfitriaoTitulo)
     expect(nota.text()).toContain(TEXTOS_ESQUECI_SENHA.anfitriaoNotaTexto)
     expect(regiao.find('a').exists()).toBe(false)
     expect(document.activeElement?.id).toBe('autenticacao-titulo')
