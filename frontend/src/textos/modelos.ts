@@ -1,4 +1,4 @@
-import type { TipoEvento } from '@/tipos/eventos'
+import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import { VOCABULARIO_TIPO_EVENTO, ehTipoEvento, vocabularioOuNeutro, type VocabularioTipoEvento } from '@/textos/tiposEvento'
 
 function numero(valor: number): string {
@@ -26,9 +26,16 @@ export const TEXTOS_MODELOS_POR_TIPO = {
   nenhum: 'Nenhum modelo. Um modelo novo vale para todos os tipos.',
   reaproveitamentoTitulo: 'Como os modelos são reaproveitados',
   comoAplicarTitulo: 'Como aplicar num evento',
-  abrirEventoDoTipo: (indefinido: string) => `Abra ${indefinido} e entre em Checklist.`,
-  abrirQualquerEvento: 'Abra qualquer evento e entre em Checklist.',
-  abrirEventoOutroTipo: 'Abra um evento desse tipo e entre em Checklist.',
+  abrirEventoDoTipo: (indefinido: string, destino = 'Checklist') => `Abra ${indefinido} e entre em ${destino}.`,
+  abrirQualquerEvento: (destino = 'Checklist') => `Abra qualquer evento e entre em ${destino}.`,
+  abrirEventoOutroTipo: (destino = 'Checklist') => `Abra um evento desse tipo e entre em ${destino}.`,
+  ondeTitulo: 'Onde o modelo aparece',
+  novoParaQualquerTipo: 'Os sugeridos já vêm separados por tipo de evento; os modelos da assessoria valem para todos.',
+  edicaoNaoMudaAplicados: (recurso: string) => `Mudar o nome ou a descrição não altera o ${recurso} dos eventos que já aplicaram este modelo.`,
+  bomModeloTitulo: 'Para um bom modelo',
+  exemplosApoio: 'Um nome que diga o tipo e o estilo do evento, como:',
+  exemplosRotulo: 'Exemplos de nome por tipo de evento',
+  depoisDeCriarTitulo: 'Depois de criar',
 } as const
 
 export type ReferenciaModelo = Pick<VocabularioTipoEvento['referencia'], 'artigo' | 'contracaoDe' | 'indefinido'>
@@ -54,9 +61,23 @@ export function ondeApareceModelo(tipo: TipoEvento | null | undefined, recurso: 
   return tipo === null || tipo === undefined ? TEXTOS_MODELOS_POR_TIPO.notaQualquer(recurso) : TEXTOS_MODELOS_POR_TIPO.notaOutros
 }
 
-export function abrirEventoDoModelo(tipo: TipoEvento | null | undefined): string {
+export function abrirEventoDoModelo(tipo: TipoEvento | null | undefined, destino = 'Checklist'): string {
   if (ehTipoEvento(tipo)) {
-    return TEXTOS_MODELOS_POR_TIPO.abrirEventoDoTipo(VOCABULARIO_TIPO_EVENTO[tipo].referencia.indefinido)
+    return TEXTOS_MODELOS_POR_TIPO.abrirEventoDoTipo(VOCABULARIO_TIPO_EVENTO[tipo].referencia.indefinido, destino)
   }
-  return tipo === null || tipo === undefined ? TEXTOS_MODELOS_POR_TIPO.abrirQualquerEvento : TEXTOS_MODELOS_POR_TIPO.abrirEventoOutroTipo
+  return tipo === null || tipo === undefined ? TEXTOS_MODELOS_POR_TIPO.abrirQualquerEvento(destino) : TEXTOS_MODELOS_POR_TIPO.abrirEventoOutroTipo(destino)
+}
+
+export interface ExemploNomeModelo {
+  tipo: TipoEvento
+  rotulo: string
+  exemplo: string
+}
+
+export function exemplosNomeModelo(): ExemploNomeModelo[] {
+  return TIPOS_EVENTO.map((tipo) => ({
+    tipo,
+    rotulo: VOCABULARIO_TIPO_EVENTO[tipo].rotulo,
+    exemplo: VOCABULARIO_TIPO_EVENTO[tipo].exemploNomeModelo,
+  }))
 }

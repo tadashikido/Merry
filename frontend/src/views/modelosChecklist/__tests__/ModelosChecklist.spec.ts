@@ -402,7 +402,7 @@ describe('ModeloChecklistView', () => {
     expect(wrapper.get('[data-teste="marco-trintaDias"] h2').text()).toContain('antes do evento')
     expect(wrapper.get('[data-teste="primeiro-prazo-modelo"]').text()).toBe('30 dias antes do evento')
     expect(wrapper.find('[data-teste="ultimo-prazo-modelo"]').exists()).toBe(false)
-    expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(TEXTOS_MODELOS_POR_TIPO.abrirQualquerEvento)
+    expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(TEXTOS_MODELOS_POR_TIPO.abrirQualquerEvento())
     expect(wrapper.get('main').text()).not.toMatch(/casamento|comemoração/i)
   })
 
@@ -416,7 +416,7 @@ describe('ModeloChecklistView', () => {
     expect(resumo.text()).not.toContain('Sugerido para')
     expect(wrapper.get('[data-teste="onde-aparece-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.notaOutros)
     expect(wrapper.get('[data-teste="primeiro-prazo-modelo"]').text()).toBe('No dia do evento')
-    expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(TEXTOS_MODELOS_POR_TIPO.abrirEventoOutroTipo)
+    expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(TEXTOS_MODELOS_POR_TIPO.abrirEventoOutroTipo())
     expect(wrapper.get('main').text()).not.toMatch(/casamento|comemoração/i)
   })
 
@@ -582,13 +582,85 @@ describe('Formulários de modelo e item', () => {
   it('[UNITÁRIO] estilo do formulário de modelo usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModeloChecklistFormularioView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(fonte).toContain('class="pagina-formulario"')
+    expect(fonte).toContain('class="pagina-formulario formulario-modelo-tela__pagina"')
     expect(estilo).toContain('container: formulario-modelo / inline-size')
     expect(estilo).toContain('@container formulario-modelo (min-width: 40rem)')
+    expect(estilo).toContain('container: formulario-modelo-tela / inline-size')
+    expect(estilo).toContain('@container formulario-modelo-tela (min-width: 64rem)')
+    expect(estilo).not.toContain('sticky')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')
     expect(fonte).not.toContain("validarCampo('")
+  })
+
+  it('[COMPONENTE] criação mostra lateral para qualquer evento, exemplos dos 4 tipos e Depois de criar', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/modelos-checklist/novo')
+
+    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).toContain('formulario-modelo-tela__pagina--com-lateral')
+    const lateral = wrapper.get('[data-teste="lateral-formulario-modelo"]')
+    expect(lateral.get('[data-teste="selo-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.origemAssessoria)
+    expect(lateral.get('[data-teste="onde-aparece-modelo"]').text()).toBe('Na lista ao aplicar o checklist de qualquer evento.')
+    expect(lateral.findAll('[data-teste="exemplos-nome-modelo"] dd')).toHaveLength(4)
+    expect(lateral.get('[data-teste="dicas-modelo"]').text()).toContain('data do evento')
+    const passos = lateral.findAll('[data-teste="passo-aplicar-modelo"]').map((passo) => passo.text())
+    expect(passos).toHaveLength(3)
+    expect(passos[0]).toContain(TEXTOS_MODELOS_CHECKLIST.depoisDeCriarItens)
+    expect(passos[1]).toContain(TEXTOS_MODELOS_POR_TIPO.abrirQualquerEvento())
+    expect(passos[2]).toContain('Aplicar checklist ou Aplicar outro modelo')
+    expect(lateral.get('[data-teste="como-aplicar-modelo"] h2').text()).toBe(TEXTOS_MODELOS_POR_TIPO.depoisDeCriarTitulo)
+    expect(lateral.find('a, button').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] formulário vem antes da lateral no DOM', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/modelos-checklist/novo')
+
+    const formulario = wrapper.get('[data-teste="formulario-modelo"]').element
+    const lateral = wrapper.get('[data-teste="lateral-formulario-modelo"]').element
+    expect(formulario.compareDocumentPosition(lateral) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it.each([
+    ['Casamento', 'Sugerido para casamento', 'de cada casamento', 'data do casamento'],
+    ['QuinzeAnos', 'Sugerido para festa de 15 anos', 'de cada festa de 15 anos', 'data da festa de 15 anos'],
+    ['Aniversario', 'Sugerido para aniversário', 'de cada aniversário', 'data do aniversário'],
+    ['Comemoracao', 'Sugerido para comemoração', 'de cada comemoração', 'data da comemoração'],
+  ] as const)('[COMPONENTE] edição de sugerido %s mostra o tipo na lateral, sem Depois de criar', async (tipo, selo, onde, data) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([itemModelo(), itemModelo()], { tipoEvento: tipo }))))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/editar`)
+
+    const lateral = wrapper.get('[data-teste="lateral-formulario-modelo"]')
+    expect(lateral.get('[data-teste="selo-modelo"]').text()).toBe(selo)
+    expect(lateral.get('[data-teste="onde-aparece-modelo"]').text()).toContain(onde)
+    expect(lateral.get('[data-teste="contagem-modelo"]').text()).toBe(TEXTOS_MODELOS_CHECKLIST.resumoItens(2))
+    expect(lateral.get('[data-teste="dicas-modelo"]').text()).toContain(data)
+    expect(lateral.find('[data-teste="como-aplicar-modelo"]').exists()).toBe(false)
+  })
+
+  it.each([
+    ['nulo', null, TEXTOS_MODELOS_POR_TIPO.origemAssessoria, false],
+    ['desconhecido', 'Formatura' as unknown as TipoEvento, 'Sugerido', true],
+  ] as const)('[COMPONENTE] edição de modelo com tipo %s não cai em casamento nem comemoração', async (_, tipo, selo, sugerido) => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([], { tipoEvento: tipo, sugerido, nome: 'Evento no campo' }))),
+    )
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/editar`)
+
+    const lateral = wrapper.get('[data-teste="lateral-formulario-modelo"]')
+    expect(lateral.get('[data-teste="selo-modelo"]').text()).toBe(selo)
+    expect(lateral.get('[data-teste="onde-modelo"]').text()).not.toMatch(/casamento|comemoração/i)
+    expect(lateral.get('[data-teste="dicas-modelo"]').text()).toContain('data do evento')
+  })
+
+  it('[COMPONENTE] não encontrado e sem permissão não mostram a lateral nem alargam a página', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaProblema(403, { title: 'Proibido' })))
+    const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/editar`)
+
+    expect(wrapper.find('[data-teste="lateral-formulario-modelo"]').exists()).toBe(false)
+    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).not.toContain('formulario-modelo-tela__pagina--com-lateral')
   })
 
   it('[COMPONENTE] item com "depois do evento" envia dias negativos', async () => {

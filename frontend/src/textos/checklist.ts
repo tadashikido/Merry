@@ -115,6 +115,13 @@ export const TEXTOS_MODELOS_CHECKLIST = {
     `Cada item vira uma tarefa com prazo contado a partir da data ${contracaoDe}. O que já passou entra atrasado.`,
   ],
   notaAplicar: 'Itens já aplicados não se repetem, e editar o modelo não muda as tarefas já criadas.',
+  dicasModelo: (contracaoDe: string) => [
+    'Na descrição, conte quando usar: porte, estilo ou local.',
+    `Os itens entram no detalhe do modelo, cada um com prazo em dias antes ou depois da data ${contracaoDe}.`,
+  ],
+  depoisDeCriarItens: 'Adicione os itens no detalhe do modelo, que abre ao criar.',
+  depoisDeCriarAplicar: (contracaoDe: string) =>
+    `Em Aplicar checklist ou Aplicar outro modelo, escolha este modelo. Cada item vira uma tarefa com prazo contado a partir da data ${contracaoDe}.`,
 } as const
 
 export function complementoMarcoModelo(marco: MarcoChecklist, contracaoDe: string): string | null {

@@ -5,6 +5,7 @@ import {
   REFERENCIA_QUALQUER_EVENTO,
   TEXTOS_MODELOS_POR_TIPO,
   abrirEventoDoModelo,
+  exemplosNomeModelo,
   ondeApareceModelo,
   referenciaDoModelo,
   rotuloSugeridoDoModelo,
@@ -31,14 +32,14 @@ describe('textos de modelos por tipo', () => {
     expect(referenciaDoModelo(null).contracaoDe).toBe('do evento')
     expect(rotuloSugeridoDoModelo(null, 'Sugerido')).toBe('Sugerido')
     expect(ondeApareceModelo(null, 'checklist')).toBe(TEXTOS_MODELOS_POR_TIPO.notaQualquer('checklist'))
-    expect(abrirEventoDoModelo(null)).toBe(TEXTOS_MODELOS_POR_TIPO.abrirQualquerEvento)
+    expect(abrirEventoDoModelo(null)).toBe(TEXTOS_MODELOS_POR_TIPO.abrirQualquerEvento())
   })
 
   it('[UNITÁRIO] tipo desconhecido usa referência neutra e o texto de tipo não reconhecido', () => {
     expect(referenciaDoModelo(TIPO_DESCONHECIDO).contracaoDe).toBe('do evento')
     expect(rotuloSugeridoDoModelo(TIPO_DESCONHECIDO, 'Sugerido')).toBe('Sugerido')
     expect(ondeApareceModelo(TIPO_DESCONHECIDO, 'checklist')).toBe(TEXTOS_MODELOS_POR_TIPO.notaOutros)
-    expect(abrirEventoDoModelo(TIPO_DESCONHECIDO)).toBe(TEXTOS_MODELOS_POR_TIPO.abrirEventoOutroTipo)
+    expect(abrirEventoDoModelo(TIPO_DESCONHECIDO)).toBe(TEXTOS_MODELOS_POR_TIPO.abrirEventoOutroTipo())
   })
 
   it('[UNITÁRIO] complemento do marco fala da data do tipo', () => {
@@ -61,5 +62,35 @@ describe('textos de modelos por tipo', () => {
       'Em Aplicar checklist ou Aplicar outro modelo, escolha “Essencial”. A prévia mostra quantas tarefas serão criadas.',
       'Cada item vira uma tarefa com prazo contado a partir da data da comemoração. O que já passou entra atrasado.',
     ])
+  })
+
+  it('[UNITÁRIO] destino do passo de abrir o evento é parametrizável com Checklist como padrão', () => {
+    expect(abrirEventoDoModelo('QuinzeAnos', 'Cronograma')).toBe('Abra uma festa de 15 anos e entre em Cronograma.')
+    expect(abrirEventoDoModelo('Aniversario', 'Cronograma')).toBe('Abra um aniversário e entre em Cronograma.')
+    expect(abrirEventoDoModelo(null, 'Cronograma')).toBe('Abra qualquer evento e entre em Cronograma.')
+    expect(abrirEventoDoModelo(TIPO_DESCONHECIDO, 'Cronograma')).toBe('Abra um evento desse tipo e entre em Cronograma.')
+    expect(abrirEventoDoModelo(null)).toBe('Abra qualquer evento e entre em Checklist.')
+  })
+
+  it('[UNITÁRIO] exemplos de nome cobrem os 4 tipos na ordem do vocabulário', () => {
+    expect(exemplosNomeModelo()).toEqual([
+      { tipo: 'Casamento', rotulo: 'Casamento', exemplo: 'Casamento no campo' },
+      { tipo: 'QuinzeAnos', rotulo: '15 anos', exemplo: '15 anos com baile' },
+      { tipo: 'Aniversario', rotulo: 'Aniversário', exemplo: 'Aniversário infantil' },
+      { tipo: 'Comemoracao', rotulo: 'Comemoração', exemplo: 'Bodas de prata' },
+    ])
+  })
+
+  it('[UNITÁRIO] dicas e próximos passos do formulário falam da data do tipo', () => {
+    expect(TEXTOS_MODELOS_CHECKLIST.dicasModelo('da festa de 15 anos')[1]).toBe(
+      'Os itens entram no detalhe do modelo, cada um com prazo em dias antes ou depois da data da festa de 15 anos.',
+    )
+    expect(TEXTOS_MODELOS_CHECKLIST.dicasModelo('do evento')[1]).toContain('data do evento')
+    expect(TEXTOS_MODELOS_CHECKLIST.depoisDeCriarAplicar('do evento')).toBe(
+      'Em Aplicar checklist ou Aplicar outro modelo, escolha este modelo. Cada item vira uma tarefa com prazo contado a partir da data do evento.',
+    )
+    expect(TEXTOS_MODELOS_POR_TIPO.edicaoNaoMudaAplicados('checklist')).toBe(
+      'Mudar o nome ou a descrição não altera o checklist dos eventos que já aplicaram este modelo.',
+    )
   })
 })

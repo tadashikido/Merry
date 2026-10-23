@@ -11,13 +11,16 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import ComoAplicarModelo from '@/componentes/modelos/ComoAplicarModelo.vue'
+import OrientacaoFormularioModelo from '@/componentes/modelos/OrientacaoFormularioModelo.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import type { FalhaEvento } from '@/stores/eventos'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
-import type { SalvarModeloChecklistRequest } from '@/tipos/checklist'
+import { TEXTOS_MODELOS_POR_TIPO, abrirEventoDoModelo, referenciaDoModelo } from '@/textos/modelos'
+import type { ModeloChecklistDto, SalvarModeloChecklistRequest } from '@/tipos/checklist'
 import { LIMITES_CHECKLIST, descricaoModelo, nomeModelo } from '@/utilitarios/checklist'
 import { focarElemento } from '@/utilitarios/foco'
 import { obrigatorio } from '@/utilitarios/validacao'
@@ -37,6 +40,7 @@ const falhaCarga = ref<FalhaEvento | null>(null)
 const enviando = ref(false)
 const mensagemErro = ref<string | null>(null)
 const nomeCarregado = ref('')
+const modeloCarregado = ref<ModeloChecklistDto | null>(null)
 
 const formulario = useFormulario(
   { nome: '', descricao: '' },
@@ -53,6 +57,17 @@ const descricaoCabecalho = computed(() => {
   return nomeCarregado.value || undefined
 })
 
+const mostrarLateral = computed(() => !carregando.value && !falhaCarga.value && (!edicao.value || modeloCarregado.value !== null))
+const tipoModelo = computed(() => modeloCarregado.value?.tipoEvento ?? null)
+const contracaoModelo = computed(() => referenciaDoModelo(tipoModelo.value).contracaoDe)
+const dicasModelo = computed(() => TEXTOS_MODELOS_CHECKLIST.dicasModelo(contracaoModelo.value))
+const contagemItens = computed(() => (modeloCarregado.value ? TEXTOS_MODELOS_CHECKLIST.resumoItens(modeloCarregado.value.itens.length) : null))
+const passosDepoisDeCriar = computed(() => [
+  TEXTOS_MODELOS_CHECKLIST.depoisDeCriarItens,
+  abrirEventoDoModelo(null),
+  TEXTOS_MODELOS_CHECKLIST.depoisDeCriarAplicar(contracaoModelo.value),
+])
+
 async function carregar() {
   if (!props.modeloId) {
     return
@@ -65,6 +80,7 @@ async function carregar() {
     falhaCarga.value = resultado.falha
     return
   }
+  modeloCarregado.value = resultado.valor
   nomeCarregado.value = resultado.valor.nome
   formulario.valores.nome = resultado.valor.nome
   formulario.valores.descricao = resultado.valor.descricao ?? ''
@@ -136,133 +152,185 @@ function cancelar() {
 }
 </script>
 
+
 <template>
   <LayoutPainelUsuario>
-    <div class="pagina-formulario">
-      <CabecalhoPagina
-        :titulo="titulo"
-        :descricao="descricaoCabecalho"
-      />
-
-      <div class="formulario-modelo pilha pilha--cartao">
-        <EstadoCarregando
-          v-if="carregando"
-          variante="formulario"
-          :linhas="2"
+    <div class="formulario-modelo-tela">
+      <div
+        class="pagina-formulario formulario-modelo-tela__pagina"
+        :class="{ 'formulario-modelo-tela__pagina--com-lateral': mostrarLateral }"
+      >
+        <CabecalhoPagina
+          :titulo="titulo"
+          :descricao="descricaoCabecalho"
         />
 
-        <EstadoErro
-          v-else-if="falhaCarga?.tipo === 'naoEncontrado'"
-          :titulo="TEXTOS_MODELOS_CHECKLIST.naoEncontradoTitulo"
-          :mensagem="TEXTOS_MODELOS_CHECKLIST.naoEncontradoTexto"
-          :pode-tentar-novamente="false"
-        />
+        <div class="formulario-modelo-tela__corpo">
+          <div class="formulario-modelo pilha pilha--cartao">
+            <EstadoCarregando
+              v-if="carregando"
+              variante="formulario"
+              :linhas="2"
+            />
 
-        <EstadoErro
-          v-else-if="falhaCarga"
-          :titulo="TEXTOS_MODELOS_CHECKLIST.erroTitulo"
-          :mensagem="falhaCarga.tipo === 'semPermissao' ? TEXTOS_MODELOS_CHECKLIST.semAcesso : TEXTOS_MODELOS_CHECKLIST.erroTexto"
-          :pode-tentar-novamente="falhaCarga.tipo !== 'semPermissao'"
-          :variante="falhaCarga.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
-          @tentar-novamente="carregar"
-        />
+            <EstadoErro
+              v-else-if="falhaCarga?.tipo === 'naoEncontrado'"
+              :titulo="TEXTOS_MODELOS_CHECKLIST.naoEncontradoTitulo"
+              :mensagem="TEXTOS_MODELOS_CHECKLIST.naoEncontradoTexto"
+              :pode-tentar-novamente="false"
+            />
 
-        <template v-else>
-          <MensagemFormulario
-            v-if="mensagemErro"
-            :mensagem="mensagemErro"
-            data-teste="erro-formulario"
-          />
+            <EstadoErro
+              v-else-if="falhaCarga"
+              :titulo="TEXTOS_MODELOS_CHECKLIST.erroTitulo"
+              :mensagem="falhaCarga.tipo === 'semPermissao' ? TEXTOS_MODELOS_CHECKLIST.semAcesso : TEXTOS_MODELOS_CHECKLIST.erroTexto"
+              :pode-tentar-novamente="falhaCarga.tipo !== 'semPermissao'"
+              :variante="falhaCarga.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
+              @tentar-novamente="carregar"
+            />
 
-          <form
-            class="pilha pilha--bloco"
-            novalidate
-            data-teste="formulario-modelo"
-            @submit.prevent="enviar"
+            <template v-else>
+              <MensagemFormulario
+                v-if="mensagemErro"
+                :mensagem="mensagemErro"
+                data-teste="erro-formulario"
+              />
+
+              <form
+                class="pilha pilha--bloco"
+                novalidate
+                data-teste="formulario-modelo"
+                @submit.prevent="enviar"
+              >
+                <fieldset
+                  class="formulario-modelo__grupo pilha pilha--grupo"
+                  data-teste="grupo-modelo"
+                >
+                  <legend class="formulario-modelo__legenda texto-rotulo">
+                    {{ TEXTOS_MODELOS_CHECKLIST.grupoModelo }}
+                  </legend>
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_MODELOS_CHECKLIST.campoNome"
+                    :id-campo="idCampo('nome')"
+                    obrigatorio
+                    :erro="formulario.erros.nome"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.nome"
+                      autocomplete="off"
+                      :maxlength="LIMITES_CHECKLIST.nomeMaximo"
+                      :placeholder="TEXTOS_MODELOS_CHECKLIST.campoNomePlaceholder"
+                      aria-required="true"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-nome"
+                      @update:model-value="formulario.revalidarAoDigitar('nome')"
+                      @blur="formulario.validarAoSair('nome')"
+                    />
+                  </CampoFormulario>
+
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_MODELOS_CHECKLIST.campoDescricao"
+                    :id-campo="idCampo('descricao')"
+                    :dica="TEXTOS_MODELOS_CHECKLIST.campoDescricaoDica(formulario.valores.descricao.length, LIMITES_CHECKLIST.descricaoModeloMaximo)"
+                    :erro="formulario.erros.descricao"
+                  >
+                    <Textarea
+                      :id="idEntrada"
+                      v-model="formulario.valores.descricao"
+                      rows="4"
+                      auto-resize
+                      :maxlength="LIMITES_CHECKLIST.descricaoModeloMaximo"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-descricao"
+                      @update:model-value="formulario.revalidarAoDigitar('descricao')"
+                      @blur="formulario.validarAoSair('descricao')"
+                    />
+                  </CampoFormulario>
+                </fieldset>
+
+                <div class="formulario-modelo__acoes">
+                  <Button
+                    type="submit"
+                    :label="edicao ? TEXTOS_MODELOS_CHECKLIST.salvar : TEXTOS_MODELOS_CHECKLIST.criar"
+                    :loading="enviando"
+                    :aria-busy="enviando"
+                    data-teste="salvar-modelo"
+                  />
+                  <Button
+                    type="button"
+                    :label="TEXTOS_MODELOS_CHECKLIST.cancelar"
+                    severity="secondary"
+                    text
+                    :disabled="enviando"
+                    data-teste="cancelar"
+                    @click="cancelar"
+                  />
+                </div>
+              </form>
+            </template>
+          </div>
+
+          <div
+            v-if="mostrarLateral"
+            class="formulario-modelo-tela__lateral pilha pilha--bloco"
+            data-teste="lateral-formulario-modelo"
           >
-            <fieldset
-              class="formulario-modelo__grupo pilha pilha--grupo"
-              data-teste="grupo-modelo"
-            >
-              <legend class="formulario-modelo__legenda texto-rotulo">
-                {{ TEXTOS_MODELOS_CHECKLIST.grupoModelo }}
-              </legend>
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_MODELOS_CHECKLIST.campoNome"
-                :id-campo="idCampo('nome')"
-                obrigatorio
-                :erro="formulario.erros.nome"
-              >
-                <InputText
-                  :id="idEntrada"
-                  v-model="formulario.valores.nome"
-                  autocomplete="off"
-                  :maxlength="LIMITES_CHECKLIST.nomeMaximo"
-                  :placeholder="TEXTOS_MODELOS_CHECKLIST.campoNomePlaceholder"
-                  aria-required="true"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-nome"
-                  @update:model-value="formulario.revalidarAoDigitar('nome')"
-                  @blur="formulario.validarAoSair('nome')"
-                />
-              </CampoFormulario>
-
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_MODELOS_CHECKLIST.campoDescricao"
-                :id-campo="idCampo('descricao')"
-                :dica="TEXTOS_MODELOS_CHECKLIST.campoDescricaoDica(formulario.valores.descricao.length, LIMITES_CHECKLIST.descricaoModeloMaximo)"
-                :erro="formulario.erros.descricao"
-              >
-                <Textarea
-                  :id="idEntrada"
-                  v-model="formulario.valores.descricao"
-                  rows="4"
-                  auto-resize
-                  :maxlength="LIMITES_CHECKLIST.descricaoModeloMaximo"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-descricao"
-                  @update:model-value="formulario.revalidarAoDigitar('descricao')"
-                  @blur="formulario.validarAoSair('descricao')"
-                />
-              </CampoFormulario>
-            </fieldset>
-
-            <div class="formulario-modelo__acoes">
-              <Button
-                type="submit"
-                :label="edicao ? TEXTOS_MODELOS_CHECKLIST.salvar : TEXTOS_MODELOS_CHECKLIST.criar"
-                :loading="enviando"
-                :aria-busy="enviando"
-                data-teste="salvar-modelo"
-              />
-              <Button
-                type="button"
-                :label="TEXTOS_MODELOS_CHECKLIST.cancelar"
-                severity="secondary"
-                text
-                :disabled="enviando"
-                data-teste="cancelar"
-                @click="cancelar"
-              />
-            </div>
-          </form>
-        </template>
+            <OrientacaoFormularioModelo
+              :recurso="TEXTOS_MODELOS_CHECKLIST.recurso"
+              :rotulo-sugerido="TEXTOS_MODELOS_CHECKLIST.sugerido"
+              :dicas="dicasModelo"
+              :edicao="edicao"
+              :tipo="tipoModelo"
+              :sugerido="modeloCarregado?.sugerido ?? false"
+              :contagem="contagemItens"
+            />
+            <ComoAplicarModelo
+              v-if="!edicao"
+              :titulo="TEXTOS_MODELOS_POR_TIPO.depoisDeCriarTitulo"
+              :passos="passosDepoisDeCriar"
+              :nota="TEXTOS_MODELOS_CHECKLIST.notaAplicar"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </LayoutPainelUsuario>
 </template>
 
 <style scoped>
+.formulario-modelo-tela {
+  container: formulario-modelo-tela / inline-size;
+}
+
+.formulario-modelo-tela__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'principal'
+    'lateral';
+  gap: var(--p-ritmo-bloco);
+}
+
 .formulario-modelo {
   container: formulario-modelo / inline-size;
+  grid-area: principal;
+  min-width: 0;
+}
+
+.formulario-modelo-tela__lateral {
+  grid-area: lateral;
+  min-width: 0;
+  padding-top: var(--p-ritmo-bloco);
+  border-top: 1px solid var(--p-cor-borda);
 }
 
 .formulario-modelo__grupo {
@@ -291,6 +359,25 @@ function cancelar() {
   .formulario-modelo__acoes {
     flex-direction: row;
     gap: var(--p-ritmo-grupo);
+  }
+}
+
+@container formulario-modelo-tela (min-width: 64rem) {
+  .formulario-modelo-tela__pagina--com-lateral {
+    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
+  }
+
+  .formulario-modelo-tela__pagina--com-lateral .formulario-modelo-tela__corpo {
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
+    grid-template-areas: 'principal lateral';
+    align-items: start;
+  }
+
+  .formulario-modelo-tela__lateral {
+    padding-top: 0;
+    padding-inline-start: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>
