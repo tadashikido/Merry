@@ -23,6 +23,7 @@ const propsPadrao: {
   acoes: ItemMenuAcoes[]
   rotuloAcoes: string
   rotuloAcessivelAcoes: string
+  nivelTitulo?: 2 | 3
 } = {
   nome: 'Evento no campo',
   descricao: 'Cerimônia ao ar livre com tenda.',
@@ -74,6 +75,13 @@ describe('CartaoModelo', () => {
     expect(wrapper.text()).toContain('Sugerido')
     expect(wrapper.get('[data-teste="contagem-modelo"]').text()).toBe('18 itens')
     expect(wrapper.get('[data-teste="menu-acoes"]').attributes('aria-label')).toBe('Mais ações para Evento no campo')
+  })
+
+  it('[COMPONENTE] nivelTitulo 3 rende o nome em h3 para caber sob o título do grupo', async () => {
+    const { wrapper } = await montar({ nivelTitulo: 3 })
+
+    expect(wrapper.find('h2').exists()).toBe(false)
+    expect(wrapper.get('h3').get('[data-teste="link-modelo"]').text()).toBe('Evento no campo')
   })
 
   it('[COMPONENTE] sem descrição e não sugerido omite os dois blocos', async () => {

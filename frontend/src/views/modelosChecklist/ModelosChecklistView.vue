@@ -10,13 +10,17 @@ import CartaoModelo from '@/componentes/base/CartaoModelo.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
+import CoberturaModelosPorTipo from '@/componentes/modelos/CoberturaModelosPorTipo.vue'
+import GruposModelosPorTipo from '@/componentes/modelos/GruposModelosPorTipo.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { ABAS_MODELOS } from '@/layouts/abasModelos'
 import { TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
+import { TEXTOS_MODELOS_POR_TIPO } from '@/textos/modelos'
 import { TEXTOS_ABAS_MODELOS } from '@/textos/modelosCronograma'
+import { VOCABULARIO_TIPO_EVENTO, ehTipoEvento } from '@/textos/tiposEvento'
 import type { ModeloChecklistResumoDto } from '@/tipos/checklist'
 
 const store = useModelosChecklistStore()
@@ -35,6 +39,12 @@ onMounted(() => {
   document.title = TEXTOS_MODELOS_CHECKLIST.tituloDocumento
   void store.listar()
 })
+
+function rotuloSugerido(modelo: ModeloChecklistResumoDto): string {
+  return ehTipoEvento(modelo.tipoEvento)
+    ? TEXTOS_MODELOS_POR_TIPO.sugeridoPara(VOCABULARIO_TIPO_EVENTO[modelo.tipoEvento].contagem.singular)
+    : TEXTOS_MODELOS_CHECKLIST.sugerido
+}
 
 function novoModelo() {
   void roteador.push({ name: 'modelo-checklist-novo' })
@@ -137,31 +147,51 @@ function executarAcao(modelo: ModeloChecklistResumoDto, chave: string) {
         </template>
       </EstadoVazio>
 
-      <ul
+      <div
         v-else-if="store.lista"
-        class="grade grade--larga modelos__grade"
-        :aria-label="TEXTOS_MODELOS_CHECKLIST.listaRotulo"
+        class="modelos__corpo"
         data-teste="lista-modelos"
       >
-        <li
-          v-for="modelo in store.lista"
-          :key="modelo.id"
-          data-teste="modelo-checklist"
+        <GruposModelosPorTipo
+          class="modelos__principal"
+          :modelos="store.lista"
+          :recurso="TEXTOS_MODELOS_CHECKLIST.recurso"
+          teste-item="modelo-checklist"
         >
-          <CartaoModelo
-            :nome="modelo.nome"
-            :descricao="modelo.descricao"
-            :rota="{ name: 'modelo-checklist', params: { modeloId: modelo.id } }"
-            :contagem="TEXTOS_MODELOS_CHECKLIST.itens(modelo.quantidadeItens)"
-            :sugerido="modelo.sugerido"
-            :rotulo-sugerido="TEXTOS_MODELOS_CHECKLIST.sugerido"
-            :acoes="acoes"
-            :rotulo-acoes="TEXTOS_MODELOS_CHECKLIST.maisAcoes"
-            :rotulo-acessivel-acoes="TEXTOS_MODELOS_CHECKLIST.maisAcoesAria(modelo.nome)"
-            @selecionar="executarAcao(modelo, $event)"
-          />
-        </li>
-      </ul>
+          <template #modelo="{ modelo }">
+            <CartaoModelo
+              :nome="modelo.nome"
+              :descricao="modelo.descricao"
+              :rota="{ name: 'modelo-checklist', params: { modeloId: modelo.id } }"
+              :contagem="TEXTOS_MODELOS_CHECKLIST.itens(modelo.quantidadeItens)"
+              :sugerido="modelo.sugerido"
+              :rotulo-sugerido="rotuloSugerido(modelo)"
+              :acoes="acoes"
+              :rotulo-acoes="TEXTOS_MODELOS_CHECKLIST.maisAcoes"
+              :rotulo-acessivel-acoes="TEXTOS_MODELOS_CHECKLIST.maisAcoesAria(modelo.nome)"
+              :nivel-titulo="3"
+              @selecionar="executarAcao(modelo, $event)"
+            >
+              <template
+                v-if="!modelo.sugerido"
+                #detalhes
+              >
+                <span
+                  class="modelos__origem"
+                  data-teste="origem-modelo"
+                >{{ TEXTOS_MODELOS_POR_TIPO.origemAssessoria }}</span>
+              </template>
+            </CartaoModelo>
+          </template>
+        </GruposModelosPorTipo>
+
+        <CoberturaModelosPorTipo
+          class="modelos__lateral"
+          :modelos="store.lista"
+          :recurso="TEXTOS_MODELOS_CHECKLIST.recurso"
+          :reaproveitamento="TEXTOS_MODELOS_CHECKLIST.reaproveitamento"
+        />
+      </div>
     </div>
   </LayoutPainelUsuario>
 </template>
@@ -171,15 +201,28 @@ function executarAcao(modelo: ModeloChecklistResumoDto, chave: string) {
   container: modelos / inline-size;
 }
 
-.modelos__grade {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.modelos__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
 }
 
-@container modelos (max-width: 39.99rem) {
-  .modelos__grade {
-    --grade-espaco: var(--p-ritmo-grupo);
+.modelos__principal,
+.modelos__lateral {
+  min-width: 0;
+}
+
+.modelos__origem {
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-controle);
+  font-style: italic;
+  color: var(--p-cor-texto-secundario);
+}
+
+@container modelos (min-width: 64rem) {
+  .modelos__corpo {
+    grid-template-columns: minmax(0, 1fr) 20rem;
   }
 }
 </style>

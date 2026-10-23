@@ -5,17 +5,21 @@ import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 
-defineProps<{
-  nome: string
-  descricao: string | null
-  rota: RouteLocationRaw
-  contagem: string
-  sugerido: boolean
-  rotuloSugerido: string
-  acoes: ItemMenuAcoes[]
-  rotuloAcoes: string
-  rotuloAcessivelAcoes: string
-}>()
+withDefaults(
+  defineProps<{
+    nome: string
+    descricao: string | null
+    rota: RouteLocationRaw
+    contagem: string
+    sugerido: boolean
+    rotuloSugerido: string
+    acoes: ItemMenuAcoes[]
+    rotuloAcoes: string
+    rotuloAcessivelAcoes: string
+    nivelTitulo?: 2 | 3
+  }>(),
+  { nivelTitulo: 2 },
+)
 
 const emit = defineEmits<{ selecionar: [chave: string] }>()
 </script>
@@ -25,7 +29,10 @@ const emit = defineEmits<{ selecionar: [chave: string] }>()
     <div class="cartao-modelo__corpo">
       <div class="cartao-modelo__textos">
         <div class="cartao-modelo__topo">
-          <h2 class="cartao-modelo__nome">
+          <component
+            :is="`h${nivelTitulo}`"
+            class="cartao-modelo__nome"
+          >
             <RouterLink
               :to="rota"
               class="cartao-modelo__link"
@@ -33,7 +40,7 @@ const emit = defineEmits<{ selecionar: [chave: string] }>()
             >
               {{ nome }}
             </RouterLink>
-          </h2>
+          </component>
           <div class="cartao-modelo__menu">
             <MenuAcoes
               :itens="acoes"
@@ -179,6 +186,10 @@ const emit = defineEmits<{ selecionar: [chave: string] }>()
   flex-wrap: wrap;
   align-items: center;
   gap: var(--p-ritmo-campo);
+}
+
+.cartao-modelo__selos :deep(.badge-status) {
+  white-space: normal;
 }
 
 .cartao-modelo__selos:empty {

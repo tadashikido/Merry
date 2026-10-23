@@ -10,6 +10,8 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
 import { TEXTOS_ITEM_MODELO, TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
+import { TEXTOS_MODELOS_POR_TIPO } from '@/textos/modelos'
+import type { TipoEvento } from '@/tipos/eventos'
 import { RaizRotas, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
 
 await precarregarRotas('modelos-checklist', 'modelo-checklist', 'modelo-checklist-novo', 'modelo-checklist-editar', 'item-modelo-novo', 'item-modelo-editar', 'evento')
@@ -76,16 +78,19 @@ describe('ModelosChecklistView', () => {
   })
 
   it('[COMPONENTE] cartões em grade larga com resumo no cabeçalho e aba Checklist ativa', async () => {
-    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo(), resumoModelo({ id: 'm2', nome: 'Destination wedding', descricao: null, sugerido: false, quantidadeItens: 1 })])))
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo(), resumoModelo({ id: 'm2', nome: 'Destination wedding', descricao: null, sugerido: false, quantidadeItens: 1, tipoEvento: null })])))
 
     const { wrapper } = await abrir('/modelos-checklist')
 
     expect(wrapper.get('[data-teste="resumo-modelos"]').text()).toBe(TEXTOS_MODELOS_CHECKLIST.resumo(2))
     expect(wrapper.get('[data-teste="resumo-modelos"]').attributes('aria-live')).toBe('polite')
     const lista = wrapper.get('[data-teste="lista-modelos"]')
-    expect(lista.element.tagName).toBe('UL')
-    expect(lista.classes()).toEqual(expect.arrayContaining(['grade', 'grade--larga']))
-    expect(lista.attributes('aria-label')).toBe(TEXTOS_MODELOS_CHECKLIST.listaRotulo)
+    const grades = lista.findAll('ul.grade')
+    expect(grades).toHaveLength(2)
+    for (const grade of grades) {
+      expect(grade.classes()).toEqual(expect.arrayContaining(['grade', 'grade--larga']))
+      expect(grade.attributes('aria-labelledby')).toBeTruthy()
+    }
     expect(wrapper.findAllComponents({ name: 'CartaoModelo' })).toHaveLength(2)
     const cartoes = wrapper.findAll('[data-teste="modelo-checklist"]')
     expect(cartoes[0]!.find('[data-teste="descricao-modelo"]').exists()).toBe(true)
@@ -120,11 +125,72 @@ describe('ModelosChecklistView', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModelosChecklistView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
     expect(estilo).toContain('container: modelos / inline-size')
-    expect(estilo).toContain('@container modelos')
+    expect(estilo).toContain('@container modelos (min-width: 64rem)')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')
     expect(fonte).toContain('class="modelos pilha pilha--cartao"')
+  })
+
+  it('[COMPONENTE] agrupa por tipo com selo do tipo, modelo da assessoria e tipo desconhecido neutro', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_MODELOS, () =>
+        respostaJson([
+          resumoModelo({ id: 'm1', nome: 'Essencial casamento', tipoEvento: 'Casamento' }),
+          resumoModelo({ id: 'm2', nome: 'Essencial 15 anos', tipoEvento: 'QuinzeAnos' }),
+          resumoModelo({ id: 'm3', nome: 'Essencial aniversário', tipoEvento: 'Aniversario' }),
+          resumoModelo({ id: 'm4', nome: 'Essencial comemoração', tipoEvento: 'Comemoracao' }),
+          resumoModelo({ id: 'm5', nome: 'Formatura', tipoEvento: 'Formatura' as unknown as TipoEvento }),
+          resumoModelo({ id: 'm6', nome: 'Evento no campo', sugerido: false, tipoEvento: null }),
+        ]),
+      ),
+    )
+
+    const { wrapper } = await abrir('/modelos-checklist')
+
+    const grupos = wrapper.findAll('[data-teste="grupo-modelos"]')
+    expect(grupos.map((grupo) => grupo.get('h2').text())).toEqual(['Casamentos', 'Festas de 15 anos', 'Aniversários', 'Comemorações', 'Para qualquer tipo de evento', 'Outros tipos de evento'])
+    const selo = (nome: string) => {
+      const cartao = wrapper.findAll('[data-teste="modelo-checklist"]').find((item) => item.text().includes(nome))!
+      return cartao.find('[data-teste="badge-status"]').exists() ? cartao.get('[data-teste="badge-status"]').text() : cartao.get('[data-teste="origem-modelo"]').text()
+    }
+    expect(selo('Essencial casamento')).toBe('Sugerido para casamento')
+    expect(selo('Essencial 15 anos')).toBe('Sugerido para festa de 15 anos')
+    expect(selo('Essencial aniversário')).toBe('Sugerido para aniversário')
+    expect(selo('Essencial comemoração')).toBe('Sugerido para comemoração')
+    expect(selo('Formatura')).toBe(TEXTOS_MODELOS_CHECKLIST.sugerido)
+    expect(selo('Evento no campo')).toBe(TEXTOS_MODELOS_POR_TIPO.origemAssessoria)
+    expect(wrapper.findAll('[data-teste="modelo-checklist"] h3')).toHaveLength(6)
+    expect(wrapper.find('[data-teste="modelo-checklist"] h2').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] lateral mostra o que cada tipo recebe ao aplicar o checklist e como reaproveitar', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaJson([resumoModelo(), resumoModelo({ id: 'm2', nome: 'Evento no campo', sugerido: false, tipoEvento: null })])))
+
+    const { wrapper } = await abrir('/modelos-checklist')
+
+    const lateral = wrapper.get('[data-teste="cobertura-modelos"]')
+    const textos = lateral.findAll('[data-teste="cobertura-tipo"]').map((linha) => linha.text().replace(/\s+/g, ' '))
+    expect(textos[0]).toContain('Casamentos')
+    expect(textos[0]).toContain('2 modelos')
+    expect(textos[0]).toContain('Inclui o sugerido para casamento.')
+    expect(textos[1]).toContain('Festas de 15 anos')
+    expect(textos[1]).toContain('1 modelo')
+    expect(textos[1]).toContain(TEXTOS_MODELOS_POR_TIPO.soQualquer)
+    expect(lateral.get('[data-teste="reaproveitamento-modelos"]').findAll('li')).toHaveLength(TEXTOS_MODELOS_CHECKLIST.reaproveitamento.length)
+    const corpo = wrapper.get('[data-teste="lista-modelos"]').element
+    expect(corpo.lastElementChild).toBe(lateral.element)
+  })
+
+  it('[COMPONENTE] vazio ensina reaproveitamento e não mostra lateral', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELOS, () => respostaJson([])))
+
+    const { wrapper } = await abrir('/modelos-checklist')
+
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.vazioTexto)
+    expect(wrapper.find('[data-teste="cobertura-modelos"]').exists()).toBe(false)
+    expect(TEXTOS_MODELOS_CHECKLIST.vazioTexto).not.toMatch(/casamento|casal/i)
   })
 
   it('[COMPONENTE] estado vazio e erro', async () => {
