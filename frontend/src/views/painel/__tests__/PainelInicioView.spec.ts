@@ -11,16 +11,27 @@ import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import { TEXTOS_PAINEL } from '@/textos/autenticacao'
 import { PASSOS_ONBOARDING, PASSOS_PRIMEIRO_ACESSO } from '@/textos/proximosPassos'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
-import { montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
+import { SESSAO_EXEMPLO, montarView, prepararAplicacao, respostaJson, respostaProblema, respostaVazia, simularFetch } from '@/__tests__/auxiliaresAutenticacao'
 import { ID_EVENTO, chamadas, quando, resumoEvento, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 import { alertasExemplo } from '@/__tests__/auxiliaresFinanceiro'
 import { TEXTOS_ALERTAS_PAGAMENTOS } from '@/textos/financeiro'
 import { pendenciasExemplo } from '@/__tests__/auxiliaresTarefas'
 import { ROTA_PENDENCIAS_TAREFAS } from '@/stores/tarefas'
+import { TEXTOS_PAINEL_INICIO } from '@/textos/painelInicio'
+import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
+import { TIPOS_EVENTO } from '@/tipos/eventos'
+import type { SessaoDto } from '@/tipos/api'
 
 await precarregarRotas('evento-novo', 'entrar', 'eventos')
 
 const ROTA_ATIVOS = '/api/eventos?situacao=Ativos'
+
+const SESSAO_ANFITRIAO_SEM_EVENTO: SessaoDto = {
+  ...SESSAO_EXEMPLO,
+  usuario: { ...SESSAO_EXEMPLO.usuario, nome: 'Lívia Moraes', papel: 'Anfitriao', eventoId: null },
+}
+
+const idDe = (indice: number) => `${indice}`.padStart(8, '0') + ID_EVENTO.slice(8)
 
 const lerFonte = (caminho: string) => readFileSync(resolve(__dirname, '../../..', caminho), 'utf-8')
 const estiloDe = (fonte: string) => fonte.slice(fonte.indexOf('<style'))
@@ -76,7 +87,7 @@ describe('PainelInicioView', () => {
     expect(cartoes).toHaveLength(6)
     expect(cartoes[0]?.text()).toContain('Pessoa 0')
     expect(cartoes[0]?.text()).toContain('É hoje')
-    expect(wrapper.text()).not.toContain('Realizado')
+    expect(cartoes.map((cartao) => cartao.text()).join(' ')).not.toContain('Realizado')
     expect(wrapper.get('[data-teste="ver-todos"]').attributes('href')).toBe('/eventos')
   })
 
@@ -87,6 +98,8 @@ describe('PainelInicioView', () => {
     wrapper = await montarView(PainelInicioView, montagem)
 
     expect(wrapper.text()).toContain(TEXTOS_EVENTOS.painelVazioTitulo)
+    expect(wrapper.text()).toContain(TEXTOS_EVENTOS.painelVazioTexto)
+    expect(TEXTOS_EVENTOS.painelVazioTexto).not.toMatch(/em breve|casamento/i)
     expect(wrapper.find('[data-teste="ver-todos"]').exists()).toBe(true)
   })
 
@@ -258,8 +271,12 @@ describe('PainelInicioView', () => {
 
     expect(estilo).not.toMatch(/--p-espaco-/)
     expect(estilo).not.toMatch(/margin-bottom/)
-    const declaracoes = estilo.split('\n').filter((linha) => !linha.trim().startsWith('@media'))
-    expect(declaracoes.join('\n')).not.toMatch(/\b\d+px\b/)
+    expect(estilo).not.toMatch(/@media/)
+    expect(estilo).not.toMatch(/\b\d+px\b/)
+    expect(estilo).toContain('container: painel-inicio / inline-size')
+    expect(estilo).toContain('@container painel-inicio (max-width: 39.99rem)')
+    expect(estilo).toContain('@container painel-inicio (min-width: 48rem)')
+    expect(estilo).toContain('@container painel-inicio (min-width: 56rem)')
     expect(estilo).not.toMatch(/#[0-9a-f]{3,8}\b/i)
     expect(estilo).toContain('var(--p-ritmo-cartao)')
     expect(estilo).toContain('var(--p-fonte-peso-leve)')
@@ -277,5 +294,125 @@ describe('PainelInicioView', () => {
     expect(tarefas).toContain('container-type: inline-size')
     expect(tarefas).toMatch(/@container \(min-width: 52rem\)/)
     expect(tarefas).not.toMatch(/@media \(min-width: 1280px\)/)
+  })
+
+  it('[COMPONENTE] cada cartão mostra o tipo do evento para os 4 tipos', async () => {
+    const lista = TIPOS_EVENTO.map((tipo, indice) => resumoEvento({ id: idDe(indice), tipo, nomeSegundaPessoa: null, diasRestantes: indice + 1 }))
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson(lista)))
+    const montagem = await prepararAplicacao('/')
+
+    wrapper = await montarView(PainelInicioView, montagem)
+
+    const tipos = wrapper.findAll('[data-teste="cartao-evento"] [data-teste="tipo-evento"]').map((tipo) => tipo.text())
+    expect(tipos).toEqual(['Casamento', '15 anos', 'Aniversário', 'Comemoração'])
+  })
+
+  it('[INTEGRAÇÃO] o resumo da carteira conta eventos pela frente por tipo, janelas de 7 e 30 dias e realizados para arquivar', async () => {
+    const lista = [
+      resumoEvento({ id: idDe(0), tipo: 'Casamento', diasRestantes: 3, fase: 'SemanaDoEvento' }),
+      resumoEvento({ id: idDe(1), tipo: 'Casamento', diasRestantes: 90 }),
+      resumoEvento({ id: idDe(2), tipo: 'QuinzeAnos', diasRestantes: 20 }),
+      resumoEvento({ id: idDe(3), tipo: 'Aniversario', diasRestantes: -5, fase: 'Realizado' }),
+    ]
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_ATIVOS, () => respostaJson(lista)),
+      quando('GET', ROTA_PENDENCIAS_TAREFAS, () => respostaJson(pendenciasExemplo())),
+      quando('GET', '/api/financeiro/alertas', () => respostaJson(alertasExemplo())),
+    )
+    const montagem = await prepararAplicacao('/')
+
+    wrapper = await montarView(PainelInicioView, montagem)
+    await flushPromises()
+
+    const resumo = wrapper.get('[data-teste="resumo-carteira"]')
+    expect(resumo.attributes('aria-label')).toBe(TEXTOS_PAINEL_INICIO.resumoRotulo)
+    const pelaFrente = resumo.get('[data-teste="contagem-pela-frente"]')
+    expect(pelaFrente.text()).toContain('3')
+    expect(pelaFrente.text()).toContain(TEXTOS_PAINEL_INICIO.pelaFrente)
+    expect(pelaFrente.text()).toContain('2 casamentos e 1 festa de 15 anos')
+    const semana = resumo.get('[data-teste="contagem-proximos-7-dias"]')
+    expect(semana.text()).toContain('1')
+    expect(semana.classes()).toContain('resumo-contagem__item--destaque')
+    expect(resumo.get('[data-teste="contagem-proximos-30-dias"]').text()).toContain('2')
+    const realizados = resumo.get('[data-teste="contagem-realizados"]')
+    expect(realizados.text()).toContain('1')
+    expect(realizados.text()).toContain(TEXTOS_PAINEL_INICIO.realizadosDetalhe)
+    expect(resumo.text()).not.toMatch(/Ana Beatriz|Bruno/)
+    const ordem = wrapper.findAll('[data-teste="resumo-carteira"], .painel-inicio__pendencias, section[aria-labelledby="titulo-proximos"]')
+    expect(ordem).toHaveLength(3)
+    expect(ordem[0]?.attributes('data-teste')).toBe('resumo-carteira')
+    expect(chamadas(fetchSimulado, 'GET', ROTA_ATIVOS)).toHaveLength(1)
+  })
+
+  it('[COMPONENTE] sem eventos à frente o resumo não destaca a semana nem detalha tipos', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([resumoEvento({ diasRestantes: -10, fase: 'Realizado' })])))
+    const montagem = await prepararAplicacao('/')
+
+    wrapper = await montarView(PainelInicioView, montagem)
+
+    const resumo = wrapper.get('[data-teste="resumo-carteira"]')
+    expect(resumo.get('[data-teste="contagem-pela-frente"]').find('.resumo-contagem__detalhe').exists()).toBe(false)
+    expect(resumo.get('[data-teste="contagem-proximos-7-dias"]').classes()).not.toContain('resumo-contagem__item--destaque')
+  })
+
+  it('[COMPONENTE] o primeiro acesso vem antes de tudo, sem a seção de próximos eventos, e ensina os 4 tipos', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_ATIVOS, () => respostaJson([])))
+    const montagem = await prepararAplicacao('/')
+
+    wrapper = await montarView(PainelInicioView, montagem)
+
+    expect(wrapper.find('#titulo-proximos').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="resumo-carteira"]').exists()).toBe(false)
+    const bloco = wrapper.get('[data-teste="secao-primeiro-acesso"]')
+    expect(bloco.get('[data-teste="estado-primeiro-acesso"]').text()).toContain(
+      'O Celebri organiza casamentos, festas de 15 anos, aniversários e comemorações.',
+    )
+    const tipos = bloco.get('[data-teste="tipos-organizar"]')
+    expect(tipos.element.tagName).toBe('ASIDE')
+    expect(tipos.attributes('aria-labelledby')).toBe('titulo-tipos-organizar')
+    expect(tipos.get('h2#titulo-tipos-organizar').text()).toBe(TEXTOS_PAINEL_INICIO.tiposTitulo)
+    for (const tipo of TIPOS_EVENTO) {
+      const item = tipos.get(`[data-teste="tipo-organizar-${tipo}"]`)
+      expect(item.get('h3').text()).toBe(VOCABULARIO_TIPO_EVENTO[tipo].rotulo)
+      expect(item.text()).toContain(VOCABULARIO_TIPO_EVENTO[tipo].descricao)
+    }
+    expect(tipos.text()).toContain(TEXTOS_PAINEL_INICIO.tiposNota)
+    expect(tipos.find('a, button').exists()).toBe(false)
+    expect(wrapper.findAll('h1')).toHaveLength(1)
+  })
+
+  it('[SEGURANÇA] anfitrião sem evento vinculado vê estado neutro, sem ações nem dados da assessoria', async () => {
+    fetchSimulado.mockImplementation(async (entrada) => {
+      const url = String(entrada)
+      if (url === '/api/autenticacao/renovar') {
+        return respostaJson(SESSAO_ANFITRIAO_SEM_EVENTO)
+      }
+      if (url === ROTA_ATIVOS) {
+        return respostaJson([])
+      }
+      return respostaProblema(404)
+    })
+    const montagem = await prepararAplicacao('/')
+
+    wrapper = await montarView(PainelInicioView, montagem)
+
+    const vazio = wrapper.get('[data-teste="anfitriao-sem-evento"]')
+    expect(vazio.text()).toContain(TEXTOS_PAINEL_INICIO.anfitriaoVazioTitulo)
+    expect(vazio.text()).toContain(TEXTOS_PAINEL_INICIO.anfitriaoVazioTexto)
+    expect(vazio.find('button, a').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="novo-evento"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="ver-todos"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="estado-primeiro-acesso"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="resumo-carteira"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="bloco-pendencias-tarefas"]').exists()).toBe(false)
+    expect(chamadas(fetchSimulado, 'GET', ROTA_PENDENCIAS_TAREFAS)).toHaveLength(0)
+    expect(chamadas(fetchSimulado, 'GET', '/api/financeiro/alertas')).toHaveLength(0)
+  })
+
+  it('[UNITÁRIO] o título do primeiro acesso (componente compartilhado) usa o peso leve dos títulos', () => {
+    const estilo = estiloDe(lerFonte('componentes/base/EstadoPrimeiroAcesso.vue'))
+
+    expect(estilo).toMatch(/\.primeiro-acesso__titulo \{[^}]*font-weight: var\(--p-fonte-peso-leve\)/)
   })
 })

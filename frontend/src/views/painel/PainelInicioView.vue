@@ -9,7 +9,9 @@ import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoPrimeiroAcesso from '@/componentes/base/EstadoPrimeiroAcesso.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
-import type { PassoPrimeiroAcesso } from '@/componentes/base/tipos'
+import OrientacaoAcesso, { type ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
+import ResumoContagem from '@/componentes/base/ResumoContagem.vue'
+import type { ItemContagem, PassoPrimeiroAcesso } from '@/componentes/base/tipos'
 import CartaoEvento from '@/componentes/eventos/CartaoEvento.vue'
 import BlocoAlertasPagamentos from '@/componentes/base/BlocoAlertasPagamentos.vue'
 import BlocoPendenciasTarefas from '@/componentes/tarefas/BlocoPendenciasTarefas.vue'
@@ -19,7 +21,11 @@ import { useFinanceiroStore } from '@/stores/financeiro'
 import { useTarefasStore } from '@/stores/tarefas'
 import { TEXTOS_PAINEL } from '@/textos/autenticacao'
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
+import { TEXTOS_PAINEL_INICIO } from '@/textos/painelInicio'
 import { PASSOS_PRIMEIRO_ACESSO } from '@/textos/proximosPassos'
+import { VOCABULARIO_TIPO_EVENTO, tiposEventoEmFrase } from '@/textos/tiposEvento'
+import { TIPOS_EVENTO } from '@/tipos/eventos'
+import { descreverCarteiraPorTipo, resumirCarteira } from '@/utilitarios/carteiraEventos'
 import { primeiroNome } from '@/utilitarios/formatacao'
 
 const autenticacao = useAutenticacaoStore()
@@ -30,12 +36,51 @@ const roteador = useRouter()
 
 const nomeUsuario = computed(() => autenticacao.usuario?.nome ?? '')
 const nomeOrganizacao = computed(() => autenticacao.usuario?.organizacao.nome ?? '')
+const ehAssessoria = computed(() => !autenticacao.ehAnfitriao)
 const semPermissao = computed(() => eventos.falha?.tipo === 'semPermissao')
-const primeiroAcesso = computed(() => eventos.carregado && !eventos.falha && eventos.itens.length === 0)
+const listaCarregada = computed(() => eventos.carregado && !eventos.falha)
+const semEventos = computed(() => listaCarregada.value && eventos.itens.length === 0)
+const primeiroAcesso = computed(() => ehAssessoria.value && semEventos.value)
+const anfitriaoSemEvento = computed(() => autenticacao.ehAnfitriao && semEventos.value)
 const temRealizados = computed(() => eventos.itens.length > eventos.proximos.length)
-const exibirPendencias = computed(
-  () => !autenticacao.ehAnfitriao && eventos.carregado && !eventos.falha && eventos.itens.length > 0,
-)
+const exibirPendencias = computed(() => ehAssessoria.value && listaCarregada.value && eventos.itens.length > 0)
+const exibirVerTodos = computed(() => ehAssessoria.value && (eventos.proximos.length > 0 || temRealizados.value))
+
+const carteira = computed(() => resumirCarteira(eventos.itens))
+
+const indicadoresCarteira = computed<ItemContagem[]>(() => {
+  const resumo = carteira.value
+  return [
+    {
+      chave: 'pela-frente',
+      valor: resumo.pelaFrente,
+      rotulo: TEXTOS_PAINEL_INICIO.pelaFrente,
+      detalhe: resumo.porTipo.length > 0 ? descreverCarteiraPorTipo(resumo.porTipo) : undefined,
+    },
+    {
+      chave: 'proximos-7-dias',
+      valor: resumo.proximos7Dias,
+      rotulo: TEXTOS_PAINEL_INICIO.proximos7Dias,
+      destaque: resumo.proximos7Dias > 0,
+    },
+    { chave: 'proximos-30-dias', valor: resumo.proximos30Dias, rotulo: TEXTOS_PAINEL_INICIO.proximos30Dias },
+    {
+      chave: 'realizados',
+      valor: resumo.realizados,
+      rotulo: TEXTOS_PAINEL_INICIO.realizados,
+      detalhe: resumo.realizados > 0 ? TEXTOS_PAINEL_INICIO.realizadosDetalhe : undefined,
+    },
+  ]
+})
+
+const tiposParaOrganizar: ItemOrientacaoAcesso[] = TIPOS_EVENTO.map((tipo) => ({
+  chave: tipo,
+  titulo: VOCABULARIO_TIPO_EVENTO[tipo].rotulo,
+  texto: VOCABULARIO_TIPO_EVENTO[tipo].descricao,
+  teste: `tipo-organizar-${tipo}`,
+}))
+
+const textoPrimeiroAcesso = TEXTOS_PAINEL.primeiroAcessoTexto(tiposEventoEmFrase())
 
 const passosPrimeiroAcesso: PassoPrimeiroAcesso[] = PASSOS_PRIMEIRO_ACESSO.map((rotulo, indice) => ({
   chave: `passo-${indice}`,
@@ -49,7 +94,7 @@ function carregar() {
 }
 
 function carregarPendencias() {
-  if (!autenticacao.ehAnfitriao) {
+  if (ehAssessoria.value) {
     void tarefas.carregarPendencias()
     void financeiro.carregarAlertasOrganizacao()
   }
@@ -73,7 +118,7 @@ onMounted(carregar)
       :descricao="nomeOrganizacao"
     >
       <template
-        v-if="!primeiroAcesso"
+        v-if="ehAssessoria && !primeiroAcesso"
         #acoes
       >
         <Button
@@ -85,7 +130,37 @@ onMounted(carregar)
       </template>
     </CabecalhoPagina>
 
-    <div class="pilha pilha--secao">
+    <div class="painel-inicio pilha pilha--secao">
+      <div
+        v-if="primeiroAcesso"
+        class="painel-inicio__primeiro-acesso"
+        data-teste="secao-primeiro-acesso"
+      >
+        <EstadoPrimeiroAcesso
+          :titulo="TEXTOS_PAINEL.primeiroAcessoTitulo"
+          :descricao="textoPrimeiroAcesso"
+          :passos="passosPrimeiroAcesso"
+          :rotulo-acao="TEXTOS_EVENTOS.novoEvento"
+          @continuar="novoEvento"
+        />
+        <OrientacaoAcesso
+          id-titulo="titulo-tipos-organizar"
+          :titulo="TEXTOS_PAINEL_INICIO.tiposTitulo"
+          :itens="tiposParaOrganizar"
+          data-teste="tipos-organizar"
+        >
+          {{ TEXTOS_PAINEL_INICIO.tiposNota }}
+        </OrientacaoAcesso>
+      </div>
+
+      <ResumoContagem
+        v-if="exibirPendencias"
+        :itens="indicadoresCarteira"
+        :rotulo="TEXTOS_PAINEL_INICIO.resumoRotulo"
+        variante="indicadores"
+        data-teste="resumo-carteira"
+      />
+
       <div
         v-if="exibirPendencias"
         class="painel-inicio__pendencias"
@@ -106,6 +181,7 @@ onMounted(carregar)
       </div>
 
       <section
+        v-if="!primeiroAcesso"
         class="pilha pilha--cartao"
         aria-labelledby="titulo-proximos"
       >
@@ -125,7 +201,7 @@ onMounted(carregar)
             </p>
           </div>
           <Button
-            v-if="eventos.proximos.length > 0 || temRealizados"
+            v-if="exibirVerTodos"
             :as="RouterLink"
             :to="{ name: 'eventos' }"
             :label="TEXTOS_EVENTOS.verTodos"
@@ -157,13 +233,12 @@ onMounted(carregar)
           @tentar-novamente="carregar"
         />
 
-        <EstadoPrimeiroAcesso
-          v-else-if="primeiroAcesso"
-          :titulo="TEXTOS_PAINEL.primeiroAcessoTitulo"
-          :descricao="TEXTOS_PAINEL.primeiroAcessoTexto"
-          :passos="passosPrimeiroAcesso"
-          :rotulo-acao="TEXTOS_EVENTOS.novoEvento"
-          @continuar="novoEvento"
+        <EstadoVazio
+          v-else-if="anfitriaoSemEvento"
+          icone="calendario"
+          :titulo="TEXTOS_PAINEL_INICIO.anfitriaoVazioTitulo"
+          :descricao="TEXTOS_PAINEL_INICIO.anfitriaoVazioTexto"
+          data-teste="anfitriao-sem-evento"
         />
 
         <EstadoVazio
@@ -172,7 +247,10 @@ onMounted(carregar)
           :titulo="TEXTOS_EVENTOS.painelVazioTitulo"
           :descricao="TEXTOS_EVENTOS.painelVazioTexto"
         >
-          <template #acao>
+          <template
+            v-if="ehAssessoria"
+            #acao
+          >
             <Button
               :label="TEXTOS_EVENTOS.novoEvento"
               severity="secondary"
@@ -200,6 +278,21 @@ onMounted(carregar)
 </template>
 
 <style scoped>
+.painel-inicio {
+  container: painel-inicio / inline-size;
+}
+
+.painel-inicio :deep(.resumo-contagem--indicadores .resumo-contagem__itens.grade) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.painel-inicio__primeiro-acesso {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
+}
+
 .painel-inicio__pendencias {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -223,14 +316,24 @@ onMounted(carregar)
   text-decoration: none;
 }
 
-@media (max-width: 639px) {
+@container painel-inicio (max-width: 39.99rem) {
   .painel-inicio__ver-todos {
     width: 100%;
     min-height: var(--p-dimensao-alvo-toque);
   }
 }
 
-@media (min-width: 1024px) {
+@container painel-inicio (min-width: 48rem) {
+  .painel-inicio :deep(.resumo-contagem--indicadores .resumo-contagem__itens.grade) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .painel-inicio__primeiro-acesso {
+    grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
+  }
+}
+
+@container painel-inicio (min-width: 56rem) {
   .painel-inicio__pendencias {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

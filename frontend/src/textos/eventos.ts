@@ -9,7 +9,8 @@ export const TEXTOS_EVENTOS = {
   proximosTitulo: 'Próximos eventos',
   proximosLegenda: 'Os eventos mais próximos, em ordem de data.',
   painelVazioTitulo: 'Nenhum evento pela frente',
-  painelVazioTexto: 'Cadastre um evento para acompanhar a data, os locais e, em breve, a lista de convidados.',
+  painelVazioTexto:
+    'Os eventos que já aconteceram estão na lista de eventos. Cadastre o próximo para acompanhar datas, tarefas, convidados e pagamentos.',
   listaTitulo: 'Eventos',
   listaDescricao: 'Os eventos que sua assessoria acompanha, dos mais próximos aos já realizados.',
   listaRotulo: 'Lista de eventos',

@@ -4,6 +4,10 @@ export interface VocabularioTipoEvento {
   rotulo: string
   rotuloPlural: string
   descricao: string
+  contagem: {
+    singular: string
+    plural: string
+  }
   referencia: {
     artigo: string
     contracaoDe: string
@@ -36,6 +40,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: 'Casamento',
     rotuloPlural: 'Casamentos',
     descricao: 'Dois nomes, cerimônia e recepção',
+    contagem: {
+      singular: 'casamento',
+      plural: 'casamentos',
+    },
     referencia: {
       artigo: 'o casamento',
       contracaoDe: 'do casamento',
@@ -66,6 +74,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: '15 anos',
     rotuloPlural: 'Festas de 15 anos',
     descricao: 'A festa da debutante',
+    contagem: {
+      singular: 'festa de 15 anos',
+      plural: 'festas de 15 anos',
+    },
     referencia: {
       artigo: 'a festa de 15 anos',
       contracaoDe: 'da festa de 15 anos',
@@ -96,6 +108,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: 'Aniversário',
     rotuloPlural: 'Aniversários',
     descricao: 'Para quem faz aniversário',
+    contagem: {
+      singular: 'aniversário',
+      plural: 'aniversários',
+    },
     referencia: {
       artigo: 'o aniversário',
       contracaoDe: 'do aniversário',
@@ -126,6 +142,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     rotulo: 'Comemoração',
     rotuloPlural: 'Comemorações',
     descricao: 'Bodas, chá, encontro de família',
+    contagem: {
+      singular: 'comemoração',
+      plural: 'comemorações',
+    },
     referencia: {
       artigo: 'a comemoração',
       contracaoDe: 'da comemoração',
