@@ -10,6 +10,7 @@ import Textarea from 'primevue/textarea'
 import LayoutPainelUsuario from '@/layouts/LayoutPainelUsuario.vue'
 import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
+import CalendarioPrazoTarefa from '@/componentes/tarefas/CalendarioPrazoTarefa.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
@@ -24,6 +25,7 @@ import {
   ROTULOS_STATUS_TAREFA,
   TEXTOS_TAREFAS,
 } from '@/textos/tarefas'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import {
   CATEGORIAS_TAREFA,
   RESPONSAVEIS_TAREFA,
@@ -36,6 +38,7 @@ import {
 } from '@/tipos/tarefas'
 import { focarElemento } from '@/utilitarios/foco'
 import { formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
+import { descreverPrazoNoEvento, posicaoPrazoNoEvento } from '@/utilitarios/prazoTarefaEvento'
 import { LIMITES_TAREFA, descricaoTarefa, prazoTarefa, tituloTarefa } from '@/utilitarios/tarefas'
 import { obrigatorio } from '@/utilitarios/validacao'
 
@@ -82,6 +85,15 @@ const nomes = computed(() =>
 )
 const arquivado = computed(() => evento.value?.arquivado === true)
 const titulo = computed(() => (edicao.value ? TEXTOS_TAREFAS.formEditar : TEXTOS_TAREFAS.formNova))
+const prazoValido = computed(() => (prazoTarefa(formulario.valores.prazo) === null ? formulario.valores.prazo : ''))
+const dicaPrazo = computed(() => {
+  const atual = evento.value
+  const posicao = atual ? posicaoPrazoNoEvento(prazoValido.value, atual) : null
+  return atual && posicao
+    ? descreverPrazoNoEvento(posicao, vocabularioOuNeutro(atual.tipo))
+    : TEXTOS_TAREFAS.campoPrazoDica
+})
+const mostrarCalendario = computed(() => evento.value !== null && !carregandoTarefa.value && !falhaTarefa.value)
 const rotuloSalvar = computed(() => (edicao.value ? TEXTOS_TAREFAS.salvar : TEXTOS_TAREFAS.criar))
 
 const opcoesResponsavel = RESPONSAVEIS_TAREFA.map((valor) => ({ valor, rotulo: ROTULOS_RESPONSAVEL_TAREFA[valor] }))
@@ -211,229 +223,269 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="pagina-formulario">
-      <CabecalhoPagina
-        :titulo="titulo"
-        :descricao="nomes || undefined"
-      />
-
-      <div class="pilha pilha--cartao">
-        <EstadoCarregando
-          v-if="carregandoTarefa"
-          variante="formulario"
-          :linhas="4"
+    <div class="formulario-tarefa">
+      <div
+        class="pagina-formulario formulario-tarefa__pagina"
+        :class="{ 'formulario-tarefa__pagina--com-lateral': mostrarCalendario }"
+      >
+        <CabecalhoPagina
+          :titulo="titulo"
+          :descricao="nomes || undefined"
         />
 
-        <EstadoErro
-          v-else-if="falhaTarefa?.tipo === 'naoEncontrado'"
-          :titulo="TEXTOS_TAREFAS.tarefaNaoEncontradaTitulo"
-          :mensagem="TEXTOS_TAREFAS.tarefaNaoEncontradaTexto"
-          :pode-tentar-novamente="false"
-        />
+        <div class="formulario-tarefa__corpo">
+          <div class="formulario-tarefa__principal pilha pilha--cartao">
+            <EstadoCarregando
+              v-if="carregandoTarefa"
+              variante="formulario"
+              :linhas="4"
+            />
 
-        <EstadoErro
-          v-else-if="falhaTarefa"
-          :titulo="TEXTOS_TAREFAS.erroTitulo"
-          :mensagem="falhaTarefa.tipo === 'semPermissao' ? TEXTOS_TAREFAS.semAcesso : TEXTOS_TAREFAS.erroTexto"
-          :pode-tentar-novamente="falhaTarefa.tipo !== 'semPermissao'"
-          :variante="falhaTarefa.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
-          @tentar-novamente="carregarTarefa"
-        />
+            <EstadoErro
+              v-else-if="falhaTarefa?.tipo === 'naoEncontrado'"
+              :titulo="TEXTOS_TAREFAS.tarefaNaoEncontradaTitulo"
+              :mensagem="TEXTOS_TAREFAS.tarefaNaoEncontradaTexto"
+              :pode-tentar-novamente="false"
+            />
 
-        <template v-else>
-          <MensagemFormulario
-            v-if="arquivado"
-            variante="alerta"
-            :mensagem="TEXTOS_TAREFAS.arquivado"
-            data-teste="aviso-arquivado"
-          />
-          <MensagemFormulario
-            v-if="mensagemErro"
-            :mensagem="mensagemErro"
-            data-teste="erro-formulario"
-          />
+            <EstadoErro
+              v-else-if="falhaTarefa"
+              :titulo="TEXTOS_TAREFAS.erroTitulo"
+              :mensagem="falhaTarefa.tipo === 'semPermissao' ? TEXTOS_TAREFAS.semAcesso : TEXTOS_TAREFAS.erroTexto"
+              :pode-tentar-novamente="falhaTarefa.tipo !== 'semPermissao'"
+              :variante="falhaTarefa.tipo === 'semPermissao' ? 'semPermissao' : 'erro'"
+              @tentar-novamente="carregarTarefa"
+            />
 
-          <form
-            class="pilha pilha--bloco"
-            novalidate
-            data-teste="formulario-tarefa"
-            @submit.prevent="enviar"
-          >
-            <fieldset
-              class="formulario-tarefa__grupo pilha pilha--grupo"
-              data-teste="grupo-tarefa"
-            >
-              <legend class="formulario-tarefa__legenda texto-rotulo">
-                {{ TEXTOS_TAREFAS.grupoTarefa }}
-              </legend>
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_TAREFAS.campoTitulo"
-                :id-campo="idCampo('titulo')"
-                obrigatorio
-                :erro="formulario.erros.titulo"
+            <template v-else>
+              <MensagemFormulario
+                v-if="arquivado"
+                variante="alerta"
+                :mensagem="TEXTOS_TAREFAS.arquivado"
+                data-teste="aviso-arquivado"
+              />
+              <MensagemFormulario
+                v-if="mensagemErro"
+                :mensagem="mensagemErro"
+                data-teste="erro-formulario"
+              />
+
+              <form
+                class="pilha pilha--bloco"
+                novalidate
+                data-teste="formulario-tarefa"
+                @submit.prevent="enviar"
               >
-                <InputText
-                  :id="idEntrada"
-                  v-model="formulario.valores.titulo"
-                  autocomplete="off"
-                  :maxlength="LIMITES_TAREFA.tituloMaximo"
-                  :placeholder="TEXTOS_TAREFAS.campoTituloPlaceholder"
-                  aria-required="true"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-titulo"
-                  @update:model-value="formulario.revalidarAoDigitar('titulo')"
-                  @blur="formulario.validarAoSair('titulo')"
-                />
-              </CampoFormulario>
-
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_TAREFAS.campoDescricao"
-                :id-campo="idCampo('descricao')"
-                :dica="TEXTOS_TAREFAS.campoDescricaoDica(formulario.valores.descricao.length, LIMITES_TAREFA.descricaoMaximo)"
-                :erro="formulario.erros.descricao"
-              >
-                <Textarea
-                  :id="idEntrada"
-                  v-model="formulario.valores.descricao"
-                  rows="4"
-                  auto-resize
-                  :maxlength="LIMITES_TAREFA.descricaoMaximo"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando"
-                  data-teste="campo-descricao"
-                  @update:model-value="formulario.revalidarAoDigitar('descricao')"
-                  @blur="formulario.validarAoSair('descricao')"
-                />
-              </CampoFormulario>
-            </fieldset>
-
-            <fieldset
-              class="formulario-tarefa__grupo pilha pilha--grupo"
-              data-teste="grupo-organizacao"
-            >
-              <legend class="formulario-tarefa__legenda texto-rotulo">
-                {{ TEXTOS_TAREFAS.grupoOrganizacao }}
-              </legend>
-              <CampoFormulario
-                v-slot="{ id: idEntrada, descritoPor }"
-                :rotulo="TEXTOS_TAREFAS.campoResponsavel"
-                :id-campo="idCampo('responsavel')"
-                :dica="TEXTOS_TAREFAS.campoResponsavelDica"
-                :erro="formulario.erros.responsavel"
-              >
-                <SelectButton
-                  :id="idEntrada"
-                  v-model="formulario.valores.responsavel"
-                  :options="opcoesResponsavel"
-                  option-label="rotulo"
-                  option-value="valor"
-                  :allow-empty="false"
-                  :aria-label="TEXTOS_TAREFAS.campoResponsavel"
-                  :aria-describedby="descritoPor"
-                  :disabled="enviando"
-                  data-teste="campo-responsavel"
-                />
-              </CampoFormulario>
-
-              <div class="formulario-tarefa__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_TAREFAS.campoPrazo"
-                  :id-campo="idCampo('prazo')"
-                  :dica="TEXTOS_TAREFAS.campoPrazoDica"
-                  :erro="formulario.erros.prazo"
+                <fieldset
+                  class="formulario-tarefa__grupo pilha pilha--grupo"
+                  data-teste="grupo-tarefa"
                 >
-                  <InputText
-                    :id="idEntrada"
-                    v-model="formulario.valores.prazo"
-                    type="date"
-                    :min="LIMITES_TAREFA.prazoMinimo"
-                    :max="LIMITES_TAREFA.prazoMaximo"
-                    :invalid="invalido"
-                    :aria-invalid="invalido"
-                    :aria-describedby="descritoPor"
-                    :readonly="enviando"
-                    data-teste="campo-prazo"
-                    @update:model-value="formulario.revalidarAoDigitar('prazo')"
-                    @blur="formulario.validarAoSair('prazo')"
-                  />
-                </CampoFormulario>
+                  <legend class="formulario-tarefa__legenda texto-rotulo">
+                    {{ TEXTOS_TAREFAS.grupoTarefa }}
+                  </legend>
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_TAREFAS.campoTitulo"
+                    :id-campo="idCampo('titulo')"
+                    obrigatorio
+                    :erro="formulario.erros.titulo"
+                  >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="formulario.valores.titulo"
+                      autocomplete="off"
+                      :maxlength="LIMITES_TAREFA.tituloMaximo"
+                      :placeholder="TEXTOS_TAREFAS.campoTituloPlaceholder"
+                      aria-required="true"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-titulo"
+                      @update:model-value="formulario.revalidarAoDigitar('titulo')"
+                      @blur="formulario.validarAoSair('titulo')"
+                    />
+                  </CampoFormulario>
 
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, descritoPor }"
-                  :rotulo="TEXTOS_TAREFAS.campoCategoria"
-                  :id-campo="idCampo('categoria')"
-                  :erro="formulario.erros.categoria"
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_TAREFAS.campoDescricao"
+                    :id-campo="idCampo('descricao')"
+                    :dica="TEXTOS_TAREFAS.campoDescricaoDica(formulario.valores.descricao.length, LIMITES_TAREFA.descricaoMaximo)"
+                    :erro="formulario.erros.descricao"
+                  >
+                    <Textarea
+                      :id="idEntrada"
+                      v-model="formulario.valores.descricao"
+                      rows="4"
+                      auto-resize
+                      :maxlength="LIMITES_TAREFA.descricaoMaximo"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando"
+                      data-teste="campo-descricao"
+                      @update:model-value="formulario.revalidarAoDigitar('descricao')"
+                      @blur="formulario.validarAoSair('descricao')"
+                    />
+                  </CampoFormulario>
+                </fieldset>
+
+                <fieldset
+                  class="formulario-tarefa__grupo pilha pilha--grupo"
+                  data-teste="grupo-organizacao"
                 >
-                  <Select
-                    v-model="formulario.valores.categoria"
-                    :input-id="idEntrada"
-                    :options="opcoesCategoria"
-                    option-label="rotulo"
-                    option-value="valor"
-                    :aria-describedby="descritoPor"
-                    :disabled="enviando"
-                    data-teste="campo-categoria"
-                  />
-                </CampoFormulario>
-              </div>
+                  <legend class="formulario-tarefa__legenda texto-rotulo">
+                    {{ TEXTOS_TAREFAS.grupoOrganizacao }}
+                  </legend>
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, descritoPor }"
+                    :rotulo="TEXTOS_TAREFAS.campoResponsavel"
+                    :id-campo="idCampo('responsavel')"
+                    :dica="TEXTOS_TAREFAS.campoResponsavelDica"
+                    :erro="formulario.erros.responsavel"
+                  >
+                    <SelectButton
+                      :id="idEntrada"
+                      v-model="formulario.valores.responsavel"
+                      :options="opcoesResponsavel"
+                      option-label="rotulo"
+                      option-value="valor"
+                      :allow-empty="false"
+                      :aria-label="TEXTOS_TAREFAS.campoResponsavel"
+                      :aria-describedby="descritoPor"
+                      :disabled="enviando"
+                      data-teste="campo-responsavel"
+                    />
+                  </CampoFormulario>
 
-              <CampoFormulario
-                v-if="edicao"
-                v-slot="{ id: idEntrada }"
-                :rotulo="TEXTOS_TAREFAS.campoSituacao"
-                :id-campo="idCampo('status')"
-              >
-                <div class="formulario-tarefa__trilho">
-                  <SelectButton
-                    :id="idEntrada"
-                    v-model="status"
-                    :options="opcoesStatus"
-                    option-label="rotulo"
-                    option-value="valor"
-                    :allow-empty="false"
-                    :aria-label="TEXTOS_TAREFAS.campoSituacao"
+                  <div class="formulario-tarefa__colunas">
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="TEXTOS_TAREFAS.campoPrazo"
+                      :id-campo="idCampo('prazo')"
+                      :dica="dicaPrazo"
+                      :erro="formulario.erros.prazo"
+                    >
+                      <InputText
+                        :id="idEntrada"
+                        v-model="formulario.valores.prazo"
+                        type="date"
+                        :min="LIMITES_TAREFA.prazoMinimo"
+                        :max="LIMITES_TAREFA.prazoMaximo"
+                        :invalid="invalido"
+                        :aria-invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :readonly="enviando"
+                        data-teste="campo-prazo"
+                        @update:model-value="formulario.revalidarAoDigitar('prazo')"
+                        @blur="formulario.validarAoSair('prazo')"
+                      />
+                    </CampoFormulario>
+
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, descritoPor }"
+                      :rotulo="TEXTOS_TAREFAS.campoCategoria"
+                      :id-campo="idCampo('categoria')"
+                      :erro="formulario.erros.categoria"
+                    >
+                      <Select
+                        v-model="formulario.valores.categoria"
+                        :input-id="idEntrada"
+                        :options="opcoesCategoria"
+                        option-label="rotulo"
+                        option-value="valor"
+                        :aria-describedby="descritoPor"
+                        :disabled="enviando"
+                        data-teste="campo-categoria"
+                      />
+                    </CampoFormulario>
+                  </div>
+
+                  <CampoFormulario
+                    v-if="edicao"
+                    v-slot="{ id: idEntrada }"
+                    :rotulo="TEXTOS_TAREFAS.campoSituacao"
+                    :id-campo="idCampo('status')"
+                  >
+                    <div class="formulario-tarefa__trilho">
+                      <SelectButton
+                        :id="idEntrada"
+                        v-model="status"
+                        :options="opcoesStatus"
+                        option-label="rotulo"
+                        option-value="valor"
+                        :allow-empty="false"
+                        :aria-label="TEXTOS_TAREFAS.campoSituacao"
+                        :disabled="enviando"
+                        data-teste="campo-status"
+                      />
+                    </div>
+                  </CampoFormulario>
+                </fieldset>
+
+                <div class="formulario-tarefa__acoes">
+                  <Button
+                    type="submit"
+                    :label="rotuloSalvar"
+                    :loading="enviando"
+                    :aria-busy="enviando"
+                    :disabled="arquivado"
+                    data-teste="salvar-tarefa"
+                  />
+                  <Button
+                    type="button"
+                    :label="TEXTOS_TAREFAS.cancelar"
+                    severity="secondary"
+                    text
                     :disabled="enviando"
-                    data-teste="campo-status"
+                    data-teste="cancelar"
+                    @click="cancelar"
                   />
                 </div>
-              </CampoFormulario>
-            </fieldset>
+              </form>
+            </template>
+          </div>
 
-            <div class="formulario-tarefa__acoes">
-              <Button
-                type="submit"
-                :label="rotuloSalvar"
-                :loading="enviando"
-                :aria-busy="enviando"
-                :disabled="arquivado"
-                data-teste="salvar-tarefa"
-              />
-              <Button
-                type="button"
-                :label="TEXTOS_TAREFAS.cancelar"
-                severity="secondary"
-                text
-                :disabled="enviando"
-                data-teste="cancelar"
-                @click="cancelar"
-              />
-            </div>
-          </form>
-        </template>
+          <CalendarioPrazoTarefa
+            v-if="mostrarCalendario && evento"
+            class="formulario-tarefa__lateral"
+            :evento="evento"
+            :prazo="prazoValido"
+            :gerada-de-modelo="original?.geradaDeModelo === true"
+          />
+        </div>
       </div>
     </div>
   </LayoutPainelUsuario>
 </template>
 
 <style scoped>
+.formulario-tarefa {
+  container: formulario-tarefa / inline-size;
+}
+
+.formulario-tarefa__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'principal'
+    'lateral';
+  gap: var(--p-ritmo-bloco);
+}
+
+.formulario-tarefa__principal {
+  container: formulario-tarefa-campos / inline-size;
+  grid-area: principal;
+  min-width: 0;
+}
+
+.formulario-tarefa__lateral {
+  grid-area: lateral;
+  padding-top: var(--p-ritmo-bloco);
+  border-top: 1px solid var(--p-cor-borda);
+}
+
 .formulario-tarefa__grupo {
   min-width: 0;
   margin: 0;
@@ -467,7 +519,7 @@ function cancelar() {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
-@media (min-width: 640px) {
+@container formulario-tarefa-campos (min-width: 36rem) {
   .formulario-tarefa__colunas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
@@ -476,6 +528,25 @@ function cancelar() {
   .formulario-tarefa__acoes {
     flex-direction: row;
     gap: var(--p-ritmo-grupo);
+  }
+}
+
+@container formulario-tarefa (min-width: 64rem) {
+  .formulario-tarefa__pagina--com-lateral {
+    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
+  }
+
+  .formulario-tarefa__pagina--com-lateral .formulario-tarefa__corpo {
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
+    grid-template-areas: 'principal lateral';
+    align-items: start;
+  }
+
+  .formulario-tarefa__lateral {
+    padding-top: 0;
+    padding-inline-start: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

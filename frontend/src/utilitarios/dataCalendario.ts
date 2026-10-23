@@ -53,3 +53,11 @@ export function diferencaEmDias(inicio: DataCalendario, fim: DataCalendario): nu
   }
   return Math.round((instanteFim.getTime() - instanteInicio.getTime()) / MILISSEGUNDOS_DIA)
 }
+
+export function somarDias(data: DataCalendario, dias: number): DataCalendario | null {
+  const instante = paraInstanteUtc(data)
+  if (!instante) {
+    return null
+  }
+  return new Date(instante.getTime() + dias * MILISSEGUNDOS_DIA).toISOString().slice(0, 10)
+}

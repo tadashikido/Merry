@@ -10,6 +10,7 @@ import { tarefaExemplo } from '@/__tests__/auxiliaresTarefas'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_TAREFAS } from '@/textos/tarefas'
+import { TIPOS_EVENTO, type EventoDto, type TipoEvento } from '@/tipos/eventos'
 import { ID_EVENTO, RaizRotas, eventoCompleto, chamadas, quando, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
 
 await precarregarRotas('tarefa-nova', 'evento-tarefas', 'tarefa-editar')
@@ -248,5 +249,131 @@ describe('TarefaFormularioView no design system Celebri', () => {
     expect(estilo).not.toMatch(/(gap|margin[\w-]*|padding[\w-]*):[^;]*\d+px/)
     expect(estilo).not.toMatch(/margin[\w-]*:\s*-/)
     expect(fonte).not.toMatch(/validarCampo\(/)
+  })
+})
+
+const REFERENCIAS: Record<TipoEvento, string> = {
+  Casamento: 'do casamento',
+  QuinzeAnos: 'da festa de 15 anos',
+  Aniversario: 'do aniversário',
+  Comemoracao: 'da comemoração',
+}
+
+async function abrirComEvento(caminho: string, dadosEvento: Partial<EventoDto>, tarefa = TAREFA) {
+  rotearFetch(
+    fetchSimulado,
+    quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ data: '2027-03-20', diasRestantes: 40, dataLimiteRsvpEfetiva: '2027-02-18', ...dadosEvento }))),
+    quando('GET', ROTA_TAREFA, () => respostaJson(tarefa)),
+    quando('POST', ROTA_TAREFAS, () => respostaJson(tarefaExemplo({ id: 't2', titulo: 'Nova' }))),
+  )
+  const montagem = await prepararAplicacao(caminho)
+  wrapper = await montarView(RaizRotas, montagem)
+  await flushPromises()
+  return montagem
+}
+
+function dicaDoPrazo() {
+  return wrapper!.get('#tarefa-prazo-dica').text()
+}
+
+describe('TarefaFormularioView para eventos', () => {
+  it('[COMPONENTE] a dica do prazo mostra a distância até o evento nos 4 tipos', async () => {
+    for (const tipo of TIPOS_EVENTO) {
+      await abrirComEvento(CAMINHO_NOVA, { tipo })
+      expect(dicaDoPrazo()).toBe(TEXTOS_TAREFAS.campoPrazoDica)
+
+      await wrapper!.get('#tarefa-prazo').setValue('2027-03-10')
+      await flushPromises()
+      expect(dicaDoPrazo()).toBe(`10 dias antes ${REFERENCIAS[tipo]}.`)
+      expect(wrapper!.get('#tarefa-prazo').attributes('aria-describedby')).toContain('tarefa-prazo-dica')
+      expect(wrapper!.get('[data-teste="calendario-prazo"] h2').text()).toBe(`Calendário ${REFERENCIAS[tipo]}`)
+      expect(/casamento/i.test(wrapper!.text())).toBe(tipo === 'Casamento')
+      expect(wrapper!.text()).not.toMatch(/casal/i)
+
+      wrapper!.unmount()
+      wrapper = undefined
+    }
+  })
+
+  it('[COMPONENTE] prazo no dia e depois do evento são descritos sem bloquear o envio', async () => {
+    await abrirComEvento(CAMINHO_NOVA, { tipo: 'Aniversario' })
+
+    await wrapper!.get('#tarefa-prazo').setValue('2027-03-20')
+    await flushPromises()
+    expect(dicaDoPrazo()).toBe('No dia do aniversário.')
+
+    await wrapper!.get('#tarefa-prazo').setValue('2027-03-23')
+    await wrapper!.get('#tarefa-titulo').setValue('Enviar agradecimentos')
+    await flushPromises()
+    expect(dicaDoPrazo()).toBe('3 dias depois do aniversário.')
+    const marcos = wrapper!.findAll('[data-teste="calendario-prazo"] ol > li').map((item) => item.attributes('data-teste'))
+    expect(marcos[marcos.length - 1]).toBe('marco-prazo')
+
+    await wrapper!.get('[data-teste="formulario-tarefa"]').trigger('submit')
+    await flushPromises()
+    const envios = chamadas(fetchSimulado, 'POST', ROTA_TAREFAS)
+    expect(envios).toHaveLength(1)
+    expect(corpoDaChamada(envios[0]!)).toMatchObject({ prazo: '2027-03-23' })
+  })
+
+  it('[COMPONENTE] prazo inválido mantém só o erro do campo, sem dica de distância', async () => {
+    await abrirComEvento(CAMINHO_NOVA, { tipo: 'QuinzeAnos' })
+
+    await wrapper!.get('#tarefa-prazo').setValue('1999-12-31')
+    await flushPromises()
+    expect(dicaDoPrazo()).toBe(TEXTOS_TAREFAS.campoPrazoDica)
+    expect(wrapper!.find('[data-teste="marco-prazo"]').exists()).toBe(false)
+
+    await wrapper!.get('#tarefa-titulo').setValue('Provar o bolo')
+    await wrapper!.get('[data-teste="formulario-tarefa"]').trigger('submit')
+    await flushPromises()
+
+    expect(erroDe('prazo').text()).toContain(TEXTOS_TAREFAS.erroPrazo)
+    expect(wrapper!.text()).not.toContain('antes da festa de 15 anos')
+    expect(chamadas(fetchSimulado, 'POST', ROTA_TAREFAS)).toHaveLength(0)
+  })
+
+  it('[COMPONENTE] edição de tarefa do checklist com prazo vencido mostra origem e alerta na lateral', async () => {
+    await abrirComEvento(CAMINHO_EDITAR, { tipo: 'Comemoracao' }, { ...TAREFA, prazo: '2027-02-01', geradaDeModelo: true })
+
+    const lateral = wrapper!.get('[data-teste="calendario-prazo"]')
+    expect(lateral.get('[data-teste="calendario-origem"]').text()).toBe(TEXTOS_TAREFAS.calendarioOrigemChecklist)
+    expect(lateral.get('[data-teste="prazo-passou"]').text()).toBe(TEXTOS_TAREFAS.calendarioPrazoPassou)
+    expect(lateral.get('[data-teste="calendario-falta"]').text()).toBe('Faltam 40 dias para a comemoração.')
+    expect(dicaDoPrazo()).toBe('47 dias antes da comemoração.')
+  })
+
+  it('[COMPONENTE] sem evento carregado o formulário funciona sem lateral e com a dica padrão', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_EVENTO, () => respostaProblema(500, { title: 'Erro' })))
+    const montagem = await prepararAplicacao(CAMINHO_NOVA)
+    wrapper = await montarView(RaizRotas, montagem)
+    await flushPromises()
+
+    expect(wrapper.find('[data-teste="calendario-prazo"]').exists()).toBe(false)
+    expect(wrapper.get('.formulario-tarefa__pagina').classes()).not.toContain('formulario-tarefa__pagina--com-lateral')
+    await wrapper.get('#tarefa-prazo').setValue('2027-03-10')
+    await flushPromises()
+    expect(dicaDoPrazo()).toBe(TEXTOS_TAREFAS.campoPrazoDica)
+  })
+
+  it('[COMPONENTE] a dica do responsável explica onde a tarefa aparece, sem "casal"', async () => {
+    await abrirComEvento(CAMINHO_NOVA, { tipo: 'QuinzeAnos' })
+
+    const dica = wrapper!.get('#tarefa-responsavel-dica').text()
+    expect(dica).toBe(TEXTOS_TAREFAS.campoResponsavelDica)
+    expect(dica).toMatch(/anfitriões/)
+    expect(dica).not.toMatch(/casal|noiv/i)
+  })
+
+  it('[ESTILO] lateral e pares de campos só por @container, sem @media', () => {
+    const fonte = readFileSync(resolve(__dirname, '../TarefaFormularioView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(estilo).not.toMatch(/@media/)
+    expect(estilo).toMatch(/container: formulario-tarefa \/ inline-size/)
+    expect(estilo).toMatch(/@container formulario-tarefa-campos \(min-width: 36rem\)/)
+    expect(estilo).toMatch(/@container formulario-tarefa \(min-width: 64rem\)/)
+    expect(fonte).toMatch(/validarAoSair\('prazo'\)/)
+    expect(fonte).toMatch(/revalidarAoDigitar\('prazo'\)/)
+    expect(fonte).toMatch(/useAlteracoesNaoSalvas\(/)
   })
 })

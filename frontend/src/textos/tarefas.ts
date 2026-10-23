@@ -7,6 +7,10 @@ import type {
   StatusTarefa,
 } from '@/tipos/tarefas'
 
+function maiuscula(texto: string): string {
+  return texto.charAt(0).toLocaleUpperCase('pt-BR') + texto.slice(1)
+}
+
 function plural(quantidade: number, singular: string, varios: string): string {
   return quantidade === 1 ? singular : varios
 }
@@ -145,9 +149,27 @@ export const TEXTOS_TAREFAS = {
   campoTitulo: 'Título',
   campoTituloPlaceholder: 'Ex.: Confirmar horário do DJ',
   campoResponsavel: 'Quem faz',
-  campoResponsavelDica: 'Os anfitriões veem e concluem as tarefas marcadas como deles.',
+  campoResponsavelDica: 'As tarefas dos anfitriões aparecem na área deles, onde podem concluí-las. As da assessoria ficam só com a equipe.',
   campoPrazo: 'Prazo',
   campoPrazoDica: 'Deixe em branco se não houver data.',
+  prazoAntesDoEvento: (dias: number, contracaoDe: string) => `${dias} ${plural(dias, 'dia', 'dias')} antes ${contracaoDe}.`,
+  prazoNoDiaDoEvento: (contracaoDe: string) => `No dia ${contracaoDe}.`,
+  prazoDepoisDoEvento: (dias: number, contracaoDe: string) => `${dias} ${plural(dias, 'dia', 'dias')} depois ${contracaoDe}.`,
+  calendarioTitulo: (contracaoDe: string) => `Calendário ${contracaoDe}`,
+  calendarioFalta: (dias: number, artigo: string) => `${plural(dias, 'Falta', 'Faltam')} ${dias} ${plural(dias, 'dia', 'dias')} para ${artigo}.`,
+  calendarioHoje: (artigo: string) => `${maiuscula(artigo)} é hoje.`,
+  calendarioPassou: (artigo: string) => `${maiuscula(artigo)} já aconteceu.`,
+  marcoHoje: 'Hoje',
+  marcoPrazo: 'Esta tarefa',
+  marcoConfirmacoes: 'Fim das confirmações',
+  marcoEvento: (contracaoDe: string) => `Dia ${contracaoDe}`,
+  distanciaHoje: 'hoje',
+  distanciaAmanha: 'amanhã',
+  distanciaFutura: (dias: number) => `em ${dias} dias`,
+  distanciaPassada: (dias: number) => `há ${dias} ${plural(dias, 'dia', 'dias')}`,
+  calendarioSemPrazo: (contracaoDe: string) => `Sem prazo. Escolha uma data para ver onde ela cai no calendário ${contracaoDe}.`,
+  calendarioPrazoPassou: 'Este prazo já passou.',
+  calendarioOrigemChecklist: 'Veio do checklist do evento.',
   campoCategoria: 'Categoria',
   campoDescricao: 'Descrição',
   campoDescricaoDica: (usados: number, limite: number) => `Detalhes que ajudam quem vai fazer. ${usados}/${limite}`,
