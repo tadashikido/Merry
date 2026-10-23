@@ -54,6 +54,42 @@ describe('CoberturaModelosPorTipo', () => {
     expect(wrapper.find('[data-teste="cobertura-tipo"][data-tipo="Casamento"]').classes()).toContain('cobertura__tipo--sem-modelo')
   })
 
+  it('[COMPONENTE] situação comum a todos os tipos vira uma frase só, mantendo a quantidade de cada tipo', () => {
+    const wrapper = montar([
+      { tipoEvento: 'Casamento', sugerido: true },
+      { tipoEvento: 'QuinzeAnos', sugerido: true },
+      { tipoEvento: 'Aniversario', sugerido: true },
+      { tipoEvento: 'Comemoracao', sugerido: true },
+      { tipoEvento: null, sugerido: false },
+    ])
+
+    const tipos = wrapper.findAll('[data-teste="cobertura-tipo"]')
+    expect(tipos).toHaveLength(4)
+    expect(tipos.map((linha) => linha.get('[data-teste="cobertura-quantidade"]').text())).toEqual(['2 modelos', '2 modelos', '2 modelos', '2 modelos'])
+    expect(wrapper.findAll('[data-teste="cobertura-apoio"]')).toHaveLength(0)
+    expect(wrapper.get('[data-teste="cobertura-apoio-comum"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.comumComSugerido)
+    expect(wrapper.get('dl').classes()).toContain('cobertura__tipos--comum')
+  })
+
+  it('[COMPONENTE] frase comum para só modelos de qualquer tipo, para específicos e sem nenhum modelo', () => {
+    expect(montar([{ tipoEvento: null, sugerido: false }]).get('[data-teste="cobertura-apoio-comum"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.comumSoQualquer)
+    const especificos = montar([
+      { tipoEvento: 'Casamento', sugerido: false },
+      { tipoEvento: 'QuinzeAnos', sugerido: false },
+      { tipoEvento: 'Aniversario', sugerido: false },
+      { tipoEvento: 'Comemoracao', sugerido: false },
+    ])
+    expect(especificos.get('[data-teste="cobertura-apoio-comum"]').text()).toBe('Cada tipo inclui 1 só dele.')
+    expect(montar([{ tipoEvento: TIPO_DESCONHECIDO, sugerido: true }]).get('[data-teste="cobertura-apoio-comum"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.nenhum)
+  })
+
+  it('[COMPONENTE] situação diferente entre tipos mantém a frase de cada tipo', () => {
+    const wrapper = montar([{ tipoEvento: 'Casamento', sugerido: true }])
+    expect(wrapper.find('[data-teste="cobertura-apoio-comum"]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-teste="cobertura-apoio"]')).toHaveLength(4)
+    expect(wrapper.get('dl').classes()).not.toContain('cobertura__tipos--comum')
+  })
+
   it('[COMPONENTE] bloco de reaproveitamento com título e frases do recurso; some sem frases', () => {
     const wrapper = montar([{ tipoEvento: null, sugerido: false }])
     const bloco = wrapper.get('[data-teste="reaproveitamento-modelos"]')

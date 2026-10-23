@@ -49,6 +49,8 @@ describe('GruposModelosPorTipo', () => {
       expect(grupo.get('[data-teste="grupo-modelos-quantidade"]').text()).toBe('1 modelo')
       expect(grupo.get('[data-teste="grupo-modelos-nota"]').text()).toBe(NOTAS[tipo])
       expect(grupo.attributes('aria-labelledby')).toBe(grupo.get('h2').attributes('id'))
+      expect(grupo.get('ul').attributes('aria-labelledby')).toBeUndefined()
+      expect(grupo.findAll('[aria-labelledby]')).toHaveLength(0)
       expect(grupo.get('[data-teste="modelo-teste"]').text()).toBe(`Modelo ${tipo}`)
       expect(grupo.classes()).not.toContain('grupos-modelos__grupo--varios')
     })

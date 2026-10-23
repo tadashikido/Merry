@@ -3,7 +3,7 @@ import { computed, useId } from 'vue'
 
 import { TEXTOS_MODELOS_POR_TIPO } from '@/textos/modelos'
 import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
-import { coberturaPorTipo, type CoberturaTipoModelos, type ModeloComTipoESugestao } from '@/utilitarios/modelosPorTipo'
+import { coberturaPorTipo, situacaoComumCobertura, type CoberturaTipoModelos, type ModeloComTipoESugestao } from '@/utilitarios/modelosPorTipo'
 
 const props = defineProps<{
   modelos: readonly ModeloComTipoESugestao[]
@@ -14,8 +14,15 @@ const props = defineProps<{
 const idTitulo = useId()
 const idReaproveitamento = useId()
 
+const coberturas = computed(() => coberturaPorTipo(props.modelos))
+
+const apoioComum = computed(() => {
+  const comum = situacaoComumCobertura(coberturas.value)
+  return comum ? apoioDaSituacaoComum(comum) : null
+})
+
 const tipos = computed(() =>
-  coberturaPorTipo(props.modelos).map((cobertura) => {
+  coberturas.value.map((cobertura) => {
     const vocabulario = VOCABULARIO_TIPO_EVENTO[cobertura.tipo]
     return {
       ...cobertura,
@@ -24,6 +31,16 @@ const tipos = computed(() =>
     }
   }),
 )
+
+function apoioDaSituacaoComum(cobertura: CoberturaTipoModelos): string {
+  if (cobertura.temSugerido) {
+    return TEXTOS_MODELOS_POR_TIPO.comumComSugerido
+  }
+  if (cobertura.especificos > 0) {
+    return TEXTOS_MODELOS_POR_TIPO.comumComEspecificos(cobertura.especificos)
+  }
+  return cobertura.disponiveis > 0 ? TEXTOS_MODELOS_POR_TIPO.comumSoQualquer : TEXTOS_MODELOS_POR_TIPO.nenhum
+}
 
 function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): string {
   if (cobertura.temSugerido) {
@@ -54,7 +71,10 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
       </p>
     </div>
 
-    <dl class="cobertura__tipos">
+    <dl
+      class="cobertura__tipos"
+      :class="{ 'cobertura__tipos--comum': apoioComum }"
+    >
       <div
         v-for="item in tipos"
         :key="item.tipo"
@@ -72,12 +92,21 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
             data-teste="cobertura-quantidade"
           >{{ TEXTOS_MODELOS_POR_TIPO.quantidade(item.disponiveis) }}</span>
           <span
+            v-if="!apoioComum"
             class="cobertura__nota"
             data-teste="cobertura-apoio"
           >{{ item.apoio }}</span>
         </dd>
       </div>
     </dl>
+
+    <p
+      v-if="apoioComum"
+      class="cobertura__nota cobertura__comum"
+      data-teste="cobertura-apoio-comum"
+    >
+      {{ apoioComum }}
+    </p>
 
     <div
       v-if="reaproveitamento.length > 0"
@@ -182,6 +211,19 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
   font-variant-numeric: lining-nums;
   line-height: var(--p-fonte-entrelinha-leitura);
   color: var(--p-cor-texto-secundario);
+}
+
+.cobertura__tipos--comum .cobertura__tipo {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: var(--p-ritmo-grupo);
+  padding-block: var(--p-ritmo-campo);
+}
+
+.cobertura__comum {
+  margin: 0;
 }
 
 .cobertura__reaproveitamento {

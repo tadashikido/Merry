@@ -10,12 +10,15 @@ import CartaoModelo from '@/componentes/base/CartaoModelo.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
+import CoberturaModelosPorTipo from '@/componentes/modelos/CoberturaModelosPorTipo.vue'
+import GruposModelosPorTipo from '@/componentes/modelos/GruposModelosPorTipo.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
 import { ABAS_MODELOS } from '@/layouts/abasModelos'
-import { TEXTOS_ABAS_MODELOS, TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
+import { TEXTOS_MODELOS_POR_TIPO, rotuloSugeridoDoModelo } from '@/textos/modelos'
+import { TEXTOS_ABAS_MODELOS, TEXTOS_MODELOS_CRONOGRAMA, referenciaHorarioModelo } from '@/textos/modelosCronograma'
 import type { ModeloCronogramaResumoDto } from '@/tipos/modelosCronograma'
 
 const store = useModelosCronogramaStore()
@@ -34,6 +37,10 @@ onMounted(() => {
   document.title = TEXTOS_MODELOS_CRONOGRAMA.tituloDocumento
   void store.listar()
 })
+
+function rotuloSugerido(modelo: ModeloCronogramaResumoDto): string {
+  return rotuloSugeridoDoModelo(modelo.tipoEvento, TEXTOS_MODELOS_CRONOGRAMA.sugerido)
+}
 
 function novoModelo() {
   void roteador.push({ name: 'modelo-cronograma-novo' })
@@ -136,38 +143,53 @@ function executarAcao(modelo: ModeloCronogramaResumoDto, chave: string) {
         </template>
       </EstadoVazio>
 
-      <ul
+      <div
         v-else-if="store.lista"
-        class="grade grade--larga modelos__grade"
-        :aria-label="TEXTOS_MODELOS_CRONOGRAMA.listaRotulo"
+        class="modelos__corpo"
         data-teste="lista-modelos"
       >
-        <li
-          v-for="modelo in store.lista"
-          :key="modelo.id"
-          data-teste="modelo-cronograma"
+        <GruposModelosPorTipo
+          class="modelos__principal"
+          :modelos="store.lista"
+          :recurso="TEXTOS_MODELOS_CRONOGRAMA.recurso"
+          teste-item="modelo-cronograma"
         >
-          <CartaoModelo
-            :nome="modelo.nome"
-            :descricao="modelo.descricao"
-            :rota="{ name: 'modelo-cronograma', params: { modeloId: modelo.id } }"
-            :contagem="TEXTOS_MODELOS_CRONOGRAMA.itens(modelo.quantidadeItens)"
-            :sugerido="modelo.sugerido"
-            :rotulo-sugerido="TEXTOS_MODELOS_CRONOGRAMA.sugerido"
-            :acoes="acoes"
-            :rotulo-acoes="TEXTOS_MODELOS_CRONOGRAMA.maisAcoes"
-            :rotulo-acessivel-acoes="TEXTOS_MODELOS_CRONOGRAMA.maisAcoesAria(modelo.nome)"
-            @selecionar="executarAcao(modelo, $event)"
-          >
-            <template #detalhes>
-              <span
-                class="texto-legenda numeros-tabulares"
-                data-teste="referencia-modelo"
-              >{{ TEXTOS_MODELOS_CRONOGRAMA.referencia(modelo.horarioReferencia) }}</span>
-            </template>
-          </CartaoModelo>
-        </li>
-      </ul>
+          <template #modelo="{ modelo }">
+            <CartaoModelo
+              :nome="modelo.nome"
+              :descricao="modelo.descricao"
+              :rota="{ name: 'modelo-cronograma', params: { modeloId: modelo.id } }"
+              :contagem="TEXTOS_MODELOS_CRONOGRAMA.itens(modelo.quantidadeItens)"
+              :sugerido="modelo.sugerido"
+              :rotulo-sugerido="rotuloSugerido(modelo)"
+              :acoes="acoes"
+              :rotulo-acoes="TEXTOS_MODELOS_CRONOGRAMA.maisAcoes"
+              :rotulo-acessivel-acoes="TEXTOS_MODELOS_CRONOGRAMA.maisAcoesAria(modelo.nome)"
+              :nivel-titulo="3"
+              @selecionar="executarAcao(modelo, $event)"
+            >
+              <template #detalhes>
+                <span
+                  v-if="!modelo.sugerido"
+                  class="modelos__origem"
+                  data-teste="origem-modelo"
+                >{{ TEXTOS_MODELOS_POR_TIPO.origemAssessoria }}</span>
+                <span
+                  class="texto-legenda numeros-tabulares"
+                  data-teste="referencia-modelo"
+                >{{ referenciaHorarioModelo(modelo.horarioReferencia, modelo.tipoEvento) }}</span>
+              </template>
+            </CartaoModelo>
+          </template>
+        </GruposModelosPorTipo>
+
+        <CoberturaModelosPorTipo
+          class="modelos__lateral"
+          :modelos="store.lista"
+          :recurso="TEXTOS_MODELOS_CRONOGRAMA.recurso"
+          :reaproveitamento="TEXTOS_MODELOS_CRONOGRAMA.reaproveitamento"
+        />
+      </div>
     </div>
   </LayoutPainelUsuario>
 </template>
@@ -177,15 +199,28 @@ function executarAcao(modelo: ModeloCronogramaResumoDto, chave: string) {
   container: modelos / inline-size;
 }
 
-.modelos__grade {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.modelos__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+  align-items: start;
 }
 
-@container modelos (max-width: 39.99rem) {
-  .modelos__grade {
-    --grade-espaco: var(--p-ritmo-grupo);
+.modelos__principal,
+.modelos__lateral {
+  min-width: 0;
+}
+
+.modelos__origem {
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-controle);
+  font-style: italic;
+  color: var(--p-cor-texto-secundario);
+}
+
+@container modelos (min-width: 64rem) {
+  .modelos__corpo {
+    grid-template-columns: minmax(0, 1fr) 20rem;
   }
 }
 </style>

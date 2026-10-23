@@ -70,10 +70,7 @@ function notaDoGrupo(grupo: GrupoModelos<T>): string {
         >
           {{ grupo.nota }}
         </p>
-        <ul
-          class="grade grade--larga grupos-modelos__grade"
-          :aria-labelledby="grupo.id"
-        >
+        <ul class="grade grade--larga grupos-modelos__grade">
           <li
             v-for="modelo in grupo.modelos"
             :key="modelo.id"

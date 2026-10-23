@@ -1,5 +1,7 @@
 import type { DiaCronograma } from '@/tipos/cronograma'
+import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import type { OpcaoLocalModelo } from '@/tipos/modelosCronograma'
+import { VOCABULARIO_TIPO_EVENTO, vocabularioOuNeutro } from '@/textos/tiposEvento'
 
 function numero(valor: number): string {
   return valor.toLocaleString('pt-BR')
@@ -7,6 +9,23 @@ function numero(valor: number): string {
 
 function contar(quantidade: number, singular: string, plural: string): string {
   return `${numero(quantidade)} ${quantidade === 1 ? singular : plural}`
+}
+
+function emFrase(partes: readonly string[]): string {
+  const inicio = partes.slice(0, -1)
+  const ultimo = partes[partes.length - 1] ?? ''
+  return inicio.length > 0 ? `${inicio.join(', ')} e ${ultimo}` : ultimo
+}
+
+export function momentosPrincipaisEmFrase(): string {
+  const porMomento = new Map<string, string[]>()
+  for (const tipo of TIPOS_EVENTO) {
+    const vocabulario = VOCABULARIO_TIPO_EVENTO[tipo]
+    const tipos = porMomento.get(vocabulario.momento.artigo) ?? []
+    tipos.push(vocabulario.contagem.plural)
+    porMomento.set(vocabulario.momento.artigo, tipos)
+  }
+  return [...porMomento].map(([momento, tipos]) => `${momento} em ${emFrase(tipos)}`).join('; ')
 }
 
 export const ROTULOS_DIA_CURTO: Record<DiaCronograma, string> = {
@@ -30,17 +49,23 @@ export const TEXTOS_ABAS_MODELOS = {
 export const TEXTOS_MODELOS_CRONOGRAMA = {
   titulo: 'Modelos de cronograma',
   tituloDocumento: 'Modelos de cronograma',
-  subtitulo: 'Roteiros com horários relativos à cerimônia.',
+  subtitulo: 'Roteiros do dia com horários contados a partir do momento principal de cada evento.',
   novo: 'Novo modelo',
   sugerido: 'Sugerido',
   itens: (quantidade: number) => contar(quantidade, 'item', 'itens'),
-  referencia: (horario: string) => `Referência: cerimônia às ${horario}`,
+  referencia: (horario: string, momento = 'cerimônia') => `Referência: ${momento} às ${horario}`,
   apoioReferencia: (horario: string) =>
     `Horários com cerimônia às ${horario}. Ao aplicar, tudo acompanha o horário real.`,
-  listaRotulo: 'Modelos de cronograma da assessoria',
   resumo: (quantidade: number) => contar(quantidade, 'modelo', 'modelos'),
   vazioTitulo: 'Nenhum modelo de cronograma',
-  vazioTexto: 'Crie um modelo ou salve o cronograma de um evento como modelo.',
+  vazioTexto:
+    'Monte uma vez o roteiro que se repete e aplique no cronograma de cada evento, com horários contados a partir do momento principal dele. Também dá para salvar o cronograma de um evento como modelo.',
+  recurso: 'cronograma',
+  reaproveitamento: [
+    'Monte uma vez e aplique pelo Cronograma de cada evento, ou salve o cronograma de um evento como modelo.',
+    `Os horários contam a partir do momento principal: ${momentosPrincipaisEmFrase()}.`,
+    'Ao aplicar, o roteiro acompanha o horário marcado no evento. Os sugeridos são da sua assessoria: edite ou exclua o que não usar.',
+  ],
   erroTitulo: 'Não foi possível carregar os modelos.',
   erroTexto: 'Verifique a conexão e tente de novo.',
   semAcesso: 'Só a assessoria gerencia modelos de cronograma.',
@@ -89,6 +114,10 @@ export const TEXTOS_MODELOS_CRONOGRAMA = {
   rotuloTermina: 'Termina',
   resumoDia: (quantidade: number, intervalo: string) => `${contar(quantidade, 'item', 'itens')}, ${intervalo}`,
 } as const
+
+export function referenciaHorarioModelo(horario: string, tipo: TipoEvento | null | undefined): string {
+  return TEXTOS_MODELOS_CRONOGRAMA.referencia(horario, vocabularioOuNeutro(tipo).momentoPrincipal)
+}
 
 export const TEXTOS_ITEM_MODELO_CRONOGRAMA = {
   novo: 'Novo item',

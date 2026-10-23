@@ -89,7 +89,8 @@ describe('ModelosChecklistView', () => {
     expect(grades).toHaveLength(2)
     for (const grade of grades) {
       expect(grade.classes()).toEqual(expect.arrayContaining(['grade', 'grade--larga']))
-      expect(grade.attributes('aria-labelledby')).toBeTruthy()
+      expect(grade.attributes('aria-labelledby')).toBeUndefined()
+      expect(grade.element.closest('section')?.getAttribute('aria-labelledby')).toBeTruthy()
     }
     expect(wrapper.findAllComponents({ name: 'CartaoModelo' })).toHaveLength(2)
     const cartoes = wrapper.findAll('[data-teste="modelo-checklist"]')

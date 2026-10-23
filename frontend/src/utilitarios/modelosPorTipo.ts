@@ -54,3 +54,17 @@ export function coberturaPorTipo<T extends ModeloComTipoESugestao>(lista: readon
     }
   })
 }
+
+export function situacaoComumCobertura(coberturas: readonly CoberturaTipoModelos[]): CoberturaTipoModelos | null {
+  const [primeira, ...demais] = coberturas
+  if (!primeira || demais.length === 0) {
+    return null
+  }
+  const iguais = demais.every(
+    (cobertura) =>
+      cobertura.disponiveis === primeira.disponiveis &&
+      cobertura.especificos === primeira.especificos &&
+      cobertura.temSugerido === primeira.temSugerido,
+  )
+  return iguais ? primeira : null
+}

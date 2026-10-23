@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { TipoEvento } from '@/tipos/eventos'
-import { agruparModelosPorTipo, coberturaPorTipo, modelosDoTipo } from '@/utilitarios/modelosPorTipo'
+import { agruparModelosPorTipo, coberturaPorTipo, modelosDoTipo, situacaoComumCobertura } from '@/utilitarios/modelosPorTipo'
 
 interface Modelo {
   id: string
@@ -69,5 +69,19 @@ describe('coberturaPorTipo', () => {
 
   it('[UNITÁRIO] sem modelos todos os tipos ficam zerados', () => {
     expect(coberturaPorTipo([]).every((item) => item.disponiveis === 0 && !item.temSugerido)).toBe(true)
+  })
+})
+
+describe('situacaoComumCobertura', () => {
+  it('[UNITÁRIO] devolve a situação quando todos os tipos coincidem e nulo quando algum difere', () => {
+    const iguais = coberturaPorTipo([modelo('c', 'Casamento', true), modelo('q', 'QuinzeAnos', true), modelo('a', 'Aniversario', true), modelo('m', 'Comemoracao', true), modelo('p', null)])
+    expect(situacaoComumCobertura(iguais)).toEqual({ tipo: 'Casamento', disponiveis: 2, especificos: 1, temSugerido: true })
+
+    const diferentes = coberturaPorTipo([modelo('c', 'Casamento', true), modelo('p', null)])
+    expect(situacaoComumCobertura(diferentes)).toBeNull()
+
+    const soQualquer = coberturaPorTipo([modelo('p', null), modelo('f', TIPO_DESCONHECIDO)])
+    expect(situacaoComumCobertura(soQualquer)).toMatchObject({ disponiveis: 1, especificos: 0, temSugerido: false })
+    expect(situacaoComumCobertura([])).toBeNull()
   })
 })
