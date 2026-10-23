@@ -41,6 +41,9 @@ export interface VocabularioTipoEvento {
   mesaEspecial: string
   fornecedoresEssenciais: readonly CategoriaFornecedor[]
   gruposConvidados: readonly string[]
+  cardapio: {
+    doces: string
+  }
   aneisNoConvite: boolean
   celebracao: (nomes: string, varios: boolean) => string
 }
@@ -86,6 +89,9 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     mesaEspecial: 'Mesa dos noivos',
     fornecedoresEssenciais: ['EspacoLocal', 'Buffet', 'Fotografia', 'Decoracao', 'Musica', 'Filmagem', 'BoloDoces', 'Beleza', 'Vestuario', 'ConvitesPapelaria'],
     gruposConvidados: ['Família', 'Padrinhos', 'Amigos', 'Trabalho'],
+    cardapio: {
+      doces: 'o bolo e os bem-casados',
+    },
     aneisNoConvite: true,
     celebracao: (nomes) => `${nomes} vão se casar`,
   },
@@ -129,6 +135,9 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     mesaEspecial: 'Mesa da debutante',
     fornecedoresEssenciais: ['EspacoLocal', 'Buffet', 'Decoracao', 'Fotografia', 'Musica', 'IluminacaoSom', 'Filmagem', 'BoloDoces', 'Beleza', 'Vestuario'],
     gruposConvidados: ['Família', 'Corte', 'Amigos da escola', 'Amigos da família'],
+    cardapio: {
+      doces: 'o bolo e a mesa de doces',
+    },
     aneisNoConvite: false,
     celebracao: (nomes) => `${nomes} vai comemorar os 15 anos`,
   },
@@ -172,6 +181,9 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     mesaEspecial: 'Mesa do aniversariante',
     fornecedoresEssenciais: ['EspacoLocal', 'Buffet', 'Decoracao', 'BoloDoces', 'Fotografia', 'Musica'],
     gruposConvidados: ['Família', 'Amigos', 'Trabalho', 'Vizinhos'],
+    cardapio: {
+      doces: 'o bolo e os docinhos',
+    },
     aneisNoConvite: false,
     celebracao: (nomes) => `${nomes} vai comemorar o aniversário`,
   },
@@ -215,6 +227,9 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
     mesaEspecial: 'Mesa de honra',
     fornecedoresEssenciais: ['EspacoLocal', 'Buffet', 'Decoracao', 'Fotografia'],
     gruposConvidados: ['Família', 'Amigos', 'Convidados de honra'],
+    cardapio: {
+      doces: 'a sobremesa',
+    },
     aneisNoConvite: false,
     celebracao: (nomes, varios) => `${nomes} ${varios ? 'vão' : 'vai'} celebrar`,
   },

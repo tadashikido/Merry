@@ -1,4 +1,5 @@
-import type { OrigemConsentimento, TipoRestricaoAlimentar } from '@/tipos/dadosSensiveis'
+import { emFrase } from '@/textos/convidados'
+import { TIPOS_RESTRICAO_ALIMENTAR, type OrigemConsentimento, type TipoRestricaoAlimentar } from '@/tipos/dadosSensiveis'
 import { formatarNumero } from '@/utilitarios/formatacao'
 
 export const VERSAO_TERMO_PRIVACIDADE = '2026-09-29'
@@ -62,7 +63,9 @@ export const TEXTOS_DADOS_SENSIVEIS = {
   dadosExcluidosTitulo: 'Dados excluídos pela política de privacidade',
   dadosExcluidosTexto: (data: string) => `As restrições deste evento foram apagadas em ${data}.`,
   vazioTitulo: 'Ninguém informou restrição ainda',
-  vazioTexto: 'As respostas do link aparecem aqui. Você também pode registrar uma restrição recebida por outro canal.',
+  vazioTexto:
+    'Quem responde pelo link de confirmação pode informar restrições e necessidades especiais. Se alguém contar por outro canal, registre aqui com a autorização da pessoa.',
+  vazioOpcoes: `No link, a pessoa escolhe entre ${emFrase(TIPOS_RESTRICAO_ALIMENTAR.map((tipo) => ROTULOS_TIPO_RESTRICAO[tipo].toLocaleLowerCase('pt-BR')))}, além de outra restrição e necessidade especial.`,
   erroCarregar: 'Não foi possível carregar as restrições.',
   semAcesso: 'Você não tem permissão para ver as restrições.',
   registrar: 'Registrar restrição',
@@ -96,4 +99,45 @@ export const TEXTOS_DADOS_SENSIVEIS = {
   acoesPessoa: (nome: string) => `Ações da restrição de ${nome}`,
   acompanhante: 'acompanhante',
   nenhuma: '—',
+} as const
+
+export const TIPOS_ALERGIA: readonly TipoRestricaoAlimentar[] = ['AlergiaFrutosDoMar', 'AlergiaAmendoimCastanhas']
+
+export const ORIENTACAO_TIPO_RESTRICAO: Record<TipoRestricaoAlimentar, (doces: string) => string> = {
+  Vegetariana: () => 'Prato principal sem carne, frango ou peixe; confira caldos e molhos.',
+  Vegana: (doces) => `Nada de origem animal, nem leite, ovos ou mel; vale também para ${doces}.`,
+  SemGluten: (doces) => `Sem trigo, cevada ou centeio: atenção a empanados, massas e ${doces}.`,
+  SemLactose: (doces) => `Molhos, cremes, queijos e ${doces} costumam levar leite.`,
+  AlergiaFrutosDoMar: () => 'Preparo e utensílios separados, sem caldos de peixe ou camarão, e o prato identificado no serviço.',
+  AlergiaAmendoimCastanhas: (doces) => `Confira ${doces}, farofas e molhos; preparo separado e prato identificado no serviço.`,
+}
+
+export const TEXTOS_PREPARO_BUFFET = {
+  titulo: 'Para fechar o cardápio',
+  confirmaram: (quantidade: number) => (quantidade === 1 ? 'com restrição confirmou' : 'com restrição confirmaram'),
+  semResposta: 'ainda sem resposta',
+  situacaoRotulo: 'Situação das pessoas com restrição',
+  confirmaramAcessivel: (quantidade: number) =>
+    quantidade === 1 ? '1 pessoa com restrição confirmou' : `${formatarNumero(quantidade)} pessoas com restrição confirmaram`,
+  semRespostaAcessivel: (quantidade: number) =>
+    quantidade === 1 ? '1 pessoa com restrição ainda sem resposta' : `${formatarNumero(quantidade)} pessoas com restrição ainda sem resposta`,
+  seConfirmarem: (itens: readonly string[]) => `Se confirmarem, entram: ${emFrase(itens)}.`,
+  itemContagem: (rotulo: string, quantidade: number) => `${rotulo} (${formatarNumero(quantidade)})`,
+  todosResponderam: 'Todas as pessoas com restrição já responderam.',
+  ninguemConfirmou: 'Ninguém com restrição confirmou ainda. A conta do buffet começa quando confirmarem.',
+  alergiaTitulo: 'Alergia entre os confirmados',
+  alergiaTexto:
+    'Alergia não é preferência: combine com o buffet preparo e utensílios separados e como o prato chega à pessoa certa.',
+  conferirTitulo: 'O que conferir com o buffet',
+  outras: (quantidade: number) =>
+    quantidade === 1
+      ? '1 restrição descrita em texto: leia na lista e repasse ao buffet como foi escrita.'
+      : `${formatarNumero(quantidade)} restrições descritas em texto: leia na lista e repasse ao buffet como foram escritas.`,
+  necessidades: (quantidade: number) =>
+    quantidade === 1
+      ? '1 necessidade especial: é para a organização do espaço e das mesas, não para a cozinha.'
+      : `${formatarNumero(quantidade)} necessidades especiais: são para a organização do espaço e das mesas, não para a cozinha.`,
+  ficha: 'Abrir a ficha para o buffet',
+  fichaNota:
+    'A ficha leva a contagem de confirmados e as restrições por nome, sem telefones nem e-mails. Contém informação de saúde: compartilhe só com a equipe do buffet.',
 } as const

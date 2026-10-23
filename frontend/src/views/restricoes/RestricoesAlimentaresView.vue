@@ -14,6 +14,7 @@ import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import ResumoCardapio from '@/componentes/base/ResumoCardapio.vue'
 import type { ColunaListagem, ItemMenuAcoes, LinhaCardapio } from '@/componentes/base/tipos'
 import DialogoRestricaoAlimentar from '@/componentes/convidados/DialogoRestricaoAlimentar.vue'
+import PreparoBuffetRestricoes from '@/componentes/restricoes/PreparoBuffetRestricoes.vue'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useEventosStore } from '@/stores/eventos'
@@ -56,6 +57,7 @@ const salvando = ref(false)
 const erroDialogo = ref<string | null>(null)
 
 const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
+const tipoEvento = computed(() => evento.value?.tipo ?? null)
 const nomes = computed(() =>
   evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
@@ -283,11 +285,15 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
             icone="lista"
             data-teste="restricoes-vazio"
           >
-            <template
-              v-if="podeRegistrar"
-              #acao
-            >
+            <template #acao>
+              <p
+                class="restricoes__opcoes"
+                data-teste="restricoes-vazio-opcoes"
+              >
+                {{ TEXTOS_DADOS_SENSIVEIS.vazioOpcoes }}
+              </p>
               <Button
+                v-if="podeRegistrar"
                 :label="TEXTOS_DADOS_SENSIVEIS.registrar"
                 severity="secondary"
                 outlined
@@ -374,6 +380,13 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
               </template>
             </ListagemDados>
           </div>
+
+          <PreparoBuffetRestricoes
+            class="restricoes__preparo"
+            :relatorio="relatorio"
+            :tipo="tipoEvento"
+            :evento-id="id"
+          />
         </div>
       </template>
     </div>
@@ -401,7 +414,8 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
   display: grid;
   grid-template-areas:
     'lateral'
-    'principal';
+    'principal'
+    'preparo';
   grid-template-columns: minmax(0, 1fr);
   gap: var(--p-ritmo-bloco);
   align-items: start;
@@ -417,8 +431,21 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
 }
 
 .restricoes__principal {
+  container: restricoes-lista / inline-size;
   grid-area: principal;
   min-width: 0;
+}
+
+.restricoes__preparo {
+  grid-area: preparo;
+}
+
+.restricoes__opcoes {
+  max-width: var(--p-dimensao-largura-leitura);
+  margin: 0;
+  font-family: var(--p-fonte-serif);
+  font-style: italic;
+  color: var(--p-cor-texto-secundario);
 }
 
 .restricoes__principal :deep(.listagem__tabela .listagem__acoes-linha .p-button-label) {
@@ -445,22 +472,28 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
   }
 }
 
-@container restricoes (max-width: 63.99rem) {
+@container restricoes-lista (max-width: 55.99rem) {
   .restricoes__principal :deep(.listagem__tabela .listagem__coluna--secundaria) {
     display: none;
   }
 }
 
-@container restricoes (min-width: 80rem) {
+@container restricoes (min-width: 64rem) {
   .restricoes__corpo {
-    grid-template-areas: 'principal lateral';
+    grid-template-areas:
+      'principal lateral'
+      'principal preparo';
     grid-template-columns: minmax(0, 1fr) var(--restricoes-largura-lateral);
+    grid-template-rows: auto 1fr;
   }
 
   .restricoes__lateral {
     display: flex;
-    position: sticky;
-    top: var(--p-ritmo-bloco);
+    align-items: stretch;
+  }
+
+  .restricoes__preparo {
+    align-self: start;
   }
 }
 </style>
