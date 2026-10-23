@@ -8,6 +8,7 @@ import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import OrientacaoAcesso, { type ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { useAutenticacaoStore, type TipoFalha } from '@/stores/autenticacao'
 import { MENSAGENS_AUTENTICACAO, ROTULOS_CAMPOS_AUTENTICACAO, TEXTOS_ESQUECI_SENHA } from '@/textos/autenticacao'
@@ -18,6 +19,45 @@ const FALHAS: Partial<Record<TipoFalha, string>> = {
   limite: MENSAGENS_AUTENTICACAO.muitasTentativas,
   conexao: MENSAGENS_AUTENTICACAO.conexao,
 }
+
+const ID_ANTES = 'esqueci-antes'
+const ID_ENQUANTO = 'esqueci-enquanto'
+
+const ORIENTACAO_ANTES: readonly ItemOrientacaoAcesso[] = [
+  {
+    chave: 'email-conta',
+    titulo: TEXTOS_ESQUECI_SENHA.emailContaTitulo,
+    texto: TEXTOS_ESQUECI_SENHA.emailContaTexto,
+    teste: 'orientacao-email-conta',
+  },
+  {
+    chave: 'sem-senha',
+    titulo: TEXTOS_ESQUECI_SENHA.semSenhaTitulo,
+    texto: TEXTOS_ESQUECI_SENHA.semSenhaTexto,
+    teste: 'orientacao-sem-senha',
+  },
+]
+
+const ORIENTACAO_ENQUANTO: readonly ItemOrientacaoAcesso[] = [
+  {
+    chave: 'assunto',
+    titulo: TEXTOS_ESQUECI_SENHA.assuntoTitulo,
+    texto: TEXTOS_ESQUECI_SENHA.assuntoTexto,
+    teste: 'orientacao-assunto',
+  },
+  {
+    chave: 'mais-de-um-pedido',
+    titulo: TEXTOS_ESQUECI_SENHA.maisDeUmPedidoTitulo,
+    texto: TEXTOS_ESQUECI_SENHA.maisDeUmPedidoTexto,
+    teste: 'orientacao-mais-de-um-pedido',
+  },
+  {
+    chave: 'depois',
+    titulo: TEXTOS_ESQUECI_SENHA.depoisTitulo,
+    texto: TEXTOS_ESQUECI_SENHA.depoisTexto,
+    teste: 'orientacao-depois',
+  },
+]
 
 const store = useAutenticacaoStore()
 const formulario = useFormulario({ email: store.emailInformado }, { email: [obrigatorio, email, tamanhoMaximo(254)] })
@@ -134,6 +174,28 @@ async function enviarDeNovo() {
           data-teste="enviar"
         />
       </form>
+    </template>
+
+    <template #complemento>
+      <OrientacaoAcesso
+        v-if="enviado"
+        :id-titulo="ID_ENQUANTO"
+        :titulo="TEXTOS_ESQUECI_SENHA.enquantoTitulo"
+        :itens="ORIENTACAO_ENQUANTO"
+        data-teste="orientacao-enquanto"
+      >
+        <p data-teste="nota-anfitriao">
+          <strong>{{ TEXTOS_ESQUECI_SENHA.anfitriaoNotaTitulo }}</strong>
+          {{ TEXTOS_ESQUECI_SENHA.anfitriaoNotaTexto }}
+        </p>
+      </OrientacaoAcesso>
+      <OrientacaoAcesso
+        v-else
+        :id-titulo="ID_ANTES"
+        :titulo="TEXTOS_ESQUECI_SENHA.antesTitulo"
+        :itens="ORIENTACAO_ANTES"
+        data-teste="orientacao-antes"
+      />
     </template>
 
     <template #rodape>

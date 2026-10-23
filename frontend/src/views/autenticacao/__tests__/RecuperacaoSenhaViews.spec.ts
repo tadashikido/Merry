@@ -7,6 +7,7 @@ import RedefinirSenhaView from '@/views/autenticacao/RedefinirSenhaView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { DETALHE_LINK_INVALIDO, useAutenticacaoStore } from '@/stores/autenticacao'
 import { MENSAGENS_AUTENTICACAO, TEXTOS_ESQUECI_SENHA, TEXTOS_REDEFINIR_SENHA } from '@/textos/autenticacao'
+import { tiposEventoEmFrase } from '@/textos/tiposEvento'
 import { MENSAGENS_VALIDACAO } from '@/utilitarios/validacao'
 import {
   corpoDaChamada,
@@ -167,6 +168,83 @@ describe('EsqueciSenhaView', () => {
     expect(confirmacao.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--grupo']))
     expect(confirmacao.get('[data-teste="lacre-envio"]').attributes('aria-hidden')).toBe('true')
     expect(confirmacao.get('p.texto-legenda').text()).toBe(TEXTOS_ESQUECI_SENHA.enviadoDica)
+  })
+
+  it('[COMPONENTE] antes do pedido orienta sobre o e-mail da conta e o anfitrião sem senha, fora do formulário', async () => {
+    await abrirEsqueci()
+
+    const regiao = wrapper!.get('aside[data-teste="orientacao-antes"]')
+    const titulo = regiao.get('h2')
+    expect(regiao.attributes('aria-labelledby')).toBe(titulo.attributes('id'))
+    expect(titulo.text()).toBe(TEXTOS_ESQUECI_SENHA.antesTitulo)
+    expect(regiao.findAll('li h3').map((item) => item.text())).toEqual([
+      TEXTOS_ESQUECI_SENHA.emailContaTitulo,
+      TEXTOS_ESQUECI_SENHA.semSenhaTitulo,
+    ])
+    expect(regiao.get('[data-teste="orientacao-sem-senha"] p').text()).toBe(TEXTOS_ESQUECI_SENHA.semSenhaTexto)
+    expect(regiao.find('a').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="orientacao-enquanto"]').exists()).toBe(false)
+
+    const botao = wrapper!.get('[data-teste="enviar"]').element
+    expect(botao.compareDocumentPosition(regiao.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(wrapper!.get('form').find('[data-teste="orientacao-antes"]').exists()).toBe(false)
+    expect(wrapper!.get('main').find('[data-teste="orientacao-antes"]').exists()).toBe(false)
+    expect(document.activeElement?.id).toBe('esqueci-email')
+    expect(wrapper!.findAll('a')).toHaveLength(1)
+  })
+
+  it('[COMPONENTE] depois do pedido troca para o que fazer enquanto o e-mail chega, com nota ao anfitrião', async () => {
+    await abrirEsqueci()
+    fetchSimulado.mockResolvedValueOnce(respostaJson({ mensagem: 'ok' }, 202))
+    await enviarEmail('renata@exemplo.com')
+
+    expect(wrapper!.find('[data-teste="orientacao-antes"]').exists()).toBe(false)
+    const regiao = wrapper!.get('aside[data-teste="orientacao-enquanto"]')
+    expect(regiao.attributes('aria-labelledby')).toBe(regiao.get('h2').attributes('id'))
+    expect(regiao.get('h2').text()).toBe(TEXTOS_ESQUECI_SENHA.enquantoTitulo)
+    expect(regiao.findAll('li h3').map((item) => item.text())).toEqual([
+      TEXTOS_ESQUECI_SENHA.assuntoTitulo,
+      TEXTOS_ESQUECI_SENHA.maisDeUmPedidoTitulo,
+      TEXTOS_ESQUECI_SENHA.depoisTitulo,
+    ])
+    expect(regiao.get('[data-teste="orientacao-assunto"] p').text()).toBe('“Redefinição de senha — Celebri”. Pode levar alguns minutos.')
+    const nota = regiao.get('[data-teste="nota-anfitriao"]')
+    expect(nota.get('strong').text()).toBe(TEXTOS_ESQUECI_SENHA.anfitriaoNotaTitulo)
+    expect(nota.text()).toContain(TEXTOS_ESQUECI_SENHA.anfitriaoNotaTexto)
+    expect(regiao.find('a').exists()).toBe(false)
+    expect(document.activeElement?.id).toBe('autenticacao-titulo')
+
+    await wrapper!.get('[data-teste="enviar-de-novo"]').trigger('click')
+    await flushPromises()
+    expect(wrapper!.find('[data-teste="orientacao-enquanto"]').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="orientacao-antes"]').exists()).toBe(true)
+  })
+
+  it('[SEGURANÇA] a orientação depois do pedido é a mesma para qualquer e-mail e não repete o endereço', async () => {
+    await abrirEsqueci()
+    fetchSimulado.mockResolvedValueOnce(respostaJson({ mensagem: 'ok' }, 202))
+    await enviarEmail('renata@exemplo.com')
+    const primeira = wrapper!.get('main').text() + wrapper!.get('[data-teste="orientacao-enquanto"]').text()
+
+    await wrapper!.get('[data-teste="enviar-de-novo"]').trigger('click')
+    await flushPromises()
+    fetchSimulado.mockResolvedValueOnce(respostaJson({ mensagem: 'ok' }, 202))
+    await enviarEmail('ninguem@exemplo.com')
+    const segunda = wrapper!.get('main').text() + wrapper!.get('[data-teste="orientacao-enquanto"]').text()
+
+    expect(segunda).toBe(primeira)
+    expect(segunda).not.toMatch(/renata@|ninguem@/)
+  })
+
+  it('[COMPONENTE] não trata casamento como conceito geral antes nem depois do pedido', async () => {
+    await abrirEsqueci()
+    const semTipos = () => wrapper!.text().split(tiposEventoEmFrase()).join('')
+    expect(wrapper!.get('[data-teste="tipos-atendidos"]').text()).toContain(tiposEventoEmFrase())
+    expect(semTipos()).not.toMatch(/casamento|casal|noiv/i)
+
+    fetchSimulado.mockResolvedValueOnce(respostaJson({ mensagem: 'ok' }, 202))
+    await enviarEmail('renata@exemplo.com')
+    expect(semTipos()).not.toMatch(/casamento|casal|noiv/i)
   })
 })
 

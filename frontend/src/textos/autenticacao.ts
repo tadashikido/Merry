@@ -47,6 +47,21 @@ export const TEXTOS_ESQUECI_SENHA = {
   enviadoTexto: 'Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.',
   enviadoDica: 'O link vale por 1 hora. Não chegou? Veja a caixa de spam ou envie de novo.',
   enviarDeNovo: 'Enviar de novo',
+  antesTitulo: 'Antes de pedir o link',
+  emailContaTitulo: 'Use o e-mail da sua conta',
+  emailContaTexto: 'É o mesmo e-mail com que você entra, seja da assessoria ou anfitrião de um evento.',
+  semSenhaTitulo: 'Ainda não criou sua senha?',
+  semSenhaTexto:
+    'Se a assessoria convidou você para acompanhar um evento, a senha é criada pelo link do convite. Se ele expirou, peça um novo à assessoria.',
+  enquantoTitulo: 'Enquanto o e-mail chega',
+  assuntoTitulo: 'Procure pelo assunto',
+  assuntoTexto: `“Redefinição de senha — ${NOME_PRODUTO}”. Pode levar alguns minutos.`,
+  maisDeUmPedidoTitulo: 'Pediu mais de uma vez?',
+  maisDeUmPedidoTexto: 'Use o e-mail mais recente. Cada pedido novo cancela o link anterior.',
+  depoisTitulo: 'Depois de criar a nova senha',
+  depoisTexto: 'As sessões abertas em outros aparelhos são encerradas. Entre de novo com a nova senha.',
+  anfitriaoNotaTitulo: 'Convidado por uma assessoria?',
+  anfitriaoNotaTexto: 'O e-mail de recuperação só vale para quem já criou a senha. Antes disso, use o link do convite.',
 } as const
 
 export const TEXTOS_REDEFINIR_SENHA = {
