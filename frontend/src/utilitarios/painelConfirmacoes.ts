@@ -97,6 +97,16 @@ export function textoUltimaCobranca(instante: string | null, agora: Date = new D
   return dias === 1 ? TEXTOS_COBRANCA.cobradoOntem : TEXTOS_COBRANCA.cobradoDias(dias)
 }
 
+export interface FaixaConfirmacao {
+  confirmadas: number
+  maximo: number
+  semResposta: number
+}
+
+export function faixaConfirmacao(confirmadas: number, semResposta: number): FaixaConfirmacao {
+  return { confirmadas, maximo: confirmadas + semResposta, semResposta }
+}
+
 export type ChavePassoConfirmacao = 'aEnviar' | 'semLembrete' | 'jaLembrados'
 
 export interface PassoConfirmacao {
@@ -143,12 +153,11 @@ export function proximosPassosConfirmacoes(
   }
   const ordem: ChavePassoConfirmacao[] = ['aEnviar', 'semLembrete', 'jaLembrados']
   const dias = dataEvento ? diferencaEmDias(painel.prazo.dataLimite, dataEvento) : null
-  const confirmadas = painel.pessoas.confirmados.total
-  const semResposta = painel.pessoas.pendentes.total
+  const { confirmadas, maximo, semResposta } = faixaConfirmacao(painel.pessoas.confirmados.total, painel.pessoas.pendentes.total)
 
   return {
     confirmadas,
-    maximo: confirmadas + semResposta,
+    maximo,
     semResposta,
     passos: ordem.filter((chave) => contagem[chave] > 0).map((chave) => ({ chave, quantidade: contagem[chave] })),
     visualizadosSemLembrete,

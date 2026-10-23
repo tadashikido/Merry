@@ -10,11 +10,14 @@ import { exportacaoExemplo } from '@/__tests__/auxiliaresConfirmacoes'
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_FICHA_BUFFET } from '@/textos/confirmacoes'
-import { ID_EVENTO, RaizRotas, chamadas, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
+import { TEXTOS_PREPARO_BUFFET } from '@/textos/dadosSensiveis'
+import type { EventoDto } from '@/tipos/eventos'
+import { ID_EVENTO, RaizRotas, chamadas, eventoCompleto, quando, rotearFetch } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 await precarregarRotas('impressao-buffet')
 
 const ROTA_IMPRESSAO = `/api/eventos/${ID_EVENTO}/exportacao-buffet?formato=impressao`
+const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
 
 let fetchSimulado: ReturnType<typeof simularFetch>
 let wrapper: VueWrapper | undefined
@@ -28,6 +31,7 @@ afterEach(() => {
   wrapper?.unmount()
   wrapper = undefined
   document.body.innerHTML = ''
+  window.history.replaceState(null, '')
   registrarProvedorAutenticacao(null)
   vi.restoreAllMocks()
 })
@@ -36,6 +40,35 @@ async function abrir() {
   const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/confirmacoes/buffet`)
   wrapper = await montarView(RaizRotas, montagem)
   await flushPromises()
+}
+
+function rotasComEvento(evento: Partial<EventoDto> | null, exportacao = exportacaoExemplo()) {
+  rotearFetch(
+    fetchSimulado,
+    quando('GET', ROTA_IMPRESSAO, () => respostaJson(exportacao)),
+    quando('GET', ROTA_EVENTO, () =>
+      evento ? respostaJson(eventoCompleto({ localCerimonia: 'Salão Aurora', localRecepcao: 'Igreja Matriz', ...evento })) : respostaProblema(404),
+    ),
+  )
+}
+
+function detalhe(ficha: ReturnType<VueWrapper['get']>, chave: string): string {
+  const item = ficha.get(`[data-teste="ficha-detalhe-${chave}"]`)
+  return `${item.get('dt').text()} ${item.get('dd').text()}`
+}
+
+function exportacaoComAlergia() {
+  const base = exportacaoExemplo()
+  return {
+    ...base,
+    restricoes: {
+      ...base.restricoes,
+      porTipo: [
+        { tipo: 'SemGluten' as const, quantidade: 1 },
+        { tipo: 'AlergiaAmendoimCastanhas' as const, quantidade: 1 },
+      ],
+    },
+  }
 }
 
 describe('ImpressaoBuffetView', () => {
@@ -196,5 +229,135 @@ describe('ImpressaoBuffetView', () => {
     expect(estilo.replace(/1px (solid|dotted)/g, '')).not.toMatch(/\d+(px|mm|pt)\b/)
     expect(estilo).not.toMatch(/background:\s*var\(--p-cor/)
     expect(estilo).not.toContain('box-shadow')
+  })
+
+  it('[COMPONENTE] festa de 15 anos identifica o tipo e rotula horário e locais sem falar de casamento', async () => {
+    rotasComEvento({ tipo: 'QuinzeAnos', nomePrimeiraPessoa: 'Valentina', nomeSegundaPessoa: null })
+    await abrir()
+
+    const ficha = wrapper!.get('[data-teste="ficha-buffet"]')
+    expect(ficha.get('[data-teste="ficha-tipo"]').text()).toBe('Festa de 15 anos')
+    expect(detalhe(ficha, 'horario')).toBe('Horário da festa 16:30')
+    expect(detalhe(ficha, 'localPrincipal')).toBe('Festa Salão Aurora')
+    expect(detalhe(ficha, 'localSecundario')).toBe('Outro local Igreja Matriz')
+    expect(ficha.get('[data-teste="ficha-orientacao-SemGluten"] dd').text()).toContain('o bolo e a mesa de doces')
+    expect(ficha.text()).not.toMatch(/casamento|cerimônia|recepção|noiv/i)
+    expect(chamadas(fetchSimulado, 'GET', ROTA_EVENTO)).toHaveLength(1)
+  })
+
+  it('[COMPONENTE] casamento mantém cerimônia e recepção e os doces do casamento', async () => {
+    rotasComEvento({ tipo: 'Casamento', localCerimonia: 'Capela São José', localRecepcao: 'Espaço Jardim' })
+    await abrir()
+
+    const ficha = wrapper!.get('[data-teste="ficha-buffet"]')
+    expect(ficha.get('[data-teste="ficha-tipo"]').text()).toBe('Casamento')
+    expect(detalhe(ficha, 'localPrincipal')).toBe('Cerimônia Capela São José')
+    expect(detalhe(ficha, 'localSecundario')).toBe('Recepção Espaço Jardim')
+    expect(ficha.get('[data-teste="ficha-orientacao-SemGluten"] dd').text()).toContain('o bolo e os bem-casados')
+  })
+
+  it.each([
+    ['Aniversario', 'Aniversário', 'o bolo e os docinhos'],
+    ['Comemoracao', 'Comemoração', 'a sobremesa'],
+  ] as const)('[COMPONENTE] %s mostra o tipo e os doces do vocabulário', async (tipo, rotulo, doces) => {
+    rotasComEvento({ tipo })
+    await abrir()
+
+    expect(wrapper!.get('[data-teste="ficha-tipo"]').text()).toBe(rotulo)
+    expect(wrapper!.get('[data-teste="ficha-orientacao-SemGluten"] dd').text()).toContain(doces)
+  })
+
+  it('[COMPONENTE] tipo desconhecido não cai em casamento', async () => {
+    rotasComEvento({ tipo: 'Corporativo' as EventoDto['tipo'] })
+    await abrir()
+
+    const ficha = wrapper!.get('[data-teste="ficha-buffet"]')
+    expect(ficha.find('[data-teste="ficha-tipo"]').exists()).toBe(false)
+    expect(detalhe(ficha, 'localPrincipal')).toBe('Local Salão Aurora')
+    expect(ficha.get('[data-teste="ficha-orientacao-SemGluten"] dd').text()).toContain('a sobremesa')
+    expect(ficha.text()).not.toMatch(/casamento|cerimônia|recepção|bem-casados/i)
+  })
+
+  it('[COMPONENTE] sem o evento a ficha continua completa com os dados da exportação', async () => {
+    rotasComEvento(null)
+    await abrir()
+
+    const ficha = wrapper!.get('[data-teste="ficha-buffet"]')
+    expect(ficha.find('[data-teste="ficha-tipo"]').exists()).toBe(false)
+    expect(detalhe(ficha, 'localPrincipal')).toBe('Local Espaço Jardim')
+    expect(detalhe(ficha, 'horario')).toBe('Horário do evento 16:30')
+    expect(detalhe(ficha, 'data')).toContain('sábado, 22 de maio de 2027')
+    expect(ficha.findAll('[data-teste="ficha-convite"]')).toHaveLength(2)
+  })
+
+  it('[COMPONENTE] contagem mostra até quantas pessoas se todos que faltam vierem', async () => {
+    rotasComEvento({ tipo: 'Casamento' })
+    await abrir()
+
+    expect(wrapper!.get('[data-teste="ficha-maximo"]').text()).toBe('Se todos que faltam vierem: até 6 pessoas.')
+  })
+
+  it('[COMPONENTE] para o buffet conferir traz orientações, notas e o alerta de alergia antes da tabela', async () => {
+    rotasComEvento({ tipo: 'Casamento' }, exportacaoComAlergia())
+    await abrir()
+
+    const conferir = wrapper!.get('[data-teste="ficha-conferir"]')
+    expect(conferir.get('h2').text()).toBe(TEXTOS_FICHA_BUFFET.conferirTitulo)
+    expect(conferir.attributes('aria-labelledby')).toBe('ficha-conferir')
+    expect(conferir.get('[data-teste="ficha-alergia"]').text()).toContain(TEXTOS_PREPARO_BUFFET.alergiaTitulo)
+    expect(conferir.find('[data-teste="ficha-orientacao-AlergiaAmendoimCastanhas"]').exists()).toBe(true)
+    expect(conferir.get('[data-teste="ficha-conferir-outras"]').text()).toBe(TEXTOS_PREPARO_BUFFET.outras(2))
+    expect(conferir.get('[data-teste="ficha-conferir-necessidades"]').text()).toBe(TEXTOS_PREPARO_BUFFET.necessidades(2))
+    const blocos = wrapper!.get('[data-teste="ficha-buffet"]').element.querySelectorAll('[data-teste="ficha-conferir"], [data-teste="ficha-restricoes-pessoas"]')
+    expect([...blocos].map((elemento) => elemento.getAttribute('data-teste'))).toEqual(['ficha-conferir', 'ficha-restricoes-pessoas'])
+  })
+
+  it('[COMPONENTE] sem alergia entre os confirmados não há alerta', async () => {
+    rotasComEvento({ tipo: 'Casamento' })
+    await abrir()
+
+    expect(wrapper!.find('[data-teste="ficha-conferir"]').exists()).toBe(true)
+    expect(wrapper!.find('[data-teste="ficha-alergia"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] sem restrições confirmadas nem notas o bloco de conferência some', async () => {
+    rotasComEvento(
+      { tipo: 'Casamento' },
+      exportacaoExemplo({
+        restricoes: { porTipo: [], outrasRestricoes: 0, necessidadesEspeciais: 0, pessoas: [], registrosIlegiveis: 0, dadosExcluidosEm: null },
+      }),
+    )
+    await abrir()
+
+    expect(wrapper!.find('[data-teste="ficha-conferir"]').exists()).toBe(false)
+  })
+
+  it('[SEGURANÇA] restrições apagadas não geram orientação nem alerta', async () => {
+    const base = exportacaoComAlergia()
+    rotasComEvento({ tipo: 'Casamento' }, { ...base, restricoes: { ...base.restricoes, dadosExcluidosEm: '2027-06-01T12:00:00Z' } })
+    await abrir()
+
+    expect(wrapper!.find('[data-teste="ficha-conferir"]').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="ficha-alergia"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] aberta a partir das restrições alimentares volta para elas', async () => {
+    window.history.replaceState({ back: `/eventos/${ID_EVENTO}/restricoes-alimentares` }, '')
+    rotasComEvento({ tipo: 'Casamento' })
+    await abrir()
+
+    const voltar = wrapper!.get('[data-teste="voltar-painel"]')
+    expect(voltar.text()).toBe(TEXTOS_FICHA_BUFFET.voltarRestricoes)
+    expect(voltar.attributes('href')).toBe(`/eventos/${ID_EVENTO}/restricoes-alimentares`)
+  })
+
+  it('[SEGURANÇA] origem de outro evento volta às confirmações', async () => {
+    window.history.replaceState({ back: '/eventos/22222222-2222-4222-8222-222222222222/restricoes-alimentares' }, '')
+    rotasComEvento({ tipo: 'Casamento' })
+    await abrir()
+
+    const voltar = wrapper!.get('[data-teste="voltar-painel"]')
+    expect(voltar.text()).toBe(TEXTOS_FICHA_BUFFET.voltar)
+    expect(voltar.attributes('href')).toBe(`/eventos/${ID_EVENTO}/confirmacoes`)
   })
 })
