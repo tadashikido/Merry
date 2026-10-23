@@ -180,3 +180,65 @@ export const VARIANTES_SITUACAO_PARCELA: Record<SituacaoParcela, VarianteStatus>
   Vencida: 'erro',
   Paga: 'sucesso',
 }
+
+export interface MesProjetado {
+  chave: string
+  centavos: number
+  quantidade: number
+  doEvento: boolean
+}
+
+export interface ProjecaoPagamentos {
+  meses: MesProjetado[]
+  totalCentavos: number
+  maiorCentavos: number
+  ateEventoCentavos: number | null
+  depoisCentavos: number
+  restante: { meses: number; centavos: number }
+}
+
+export const LIMITE_MESES_PROJECAO = 6
+export const LIMITE_MESES_ATE_EVENTO = 12
+
+const PADRAO_DATA_PARCELA = /^\d{4}-\d{2}-\d{2}$/
+
+export function projetarPagamentosPorMes(
+  parcelas: Pick<ParcelaDto, 'valor' | 'vencimento' | 'situacao'>[],
+  dataEvento: string | null,
+  limite: number = LIMITE_MESES_PROJECAO,
+): ProjecaoPagamentos {
+  const dataValidaEvento = dataEvento && PADRAO_DATA_PARCELA.test(dataEvento) ? dataEvento : null
+  const mesEvento = dataValidaEvento ? dataValidaEvento.slice(0, 7) : null
+  const porMes = new Map<string, MesProjetado>()
+  let ateEvento = 0
+  let depois = 0
+  for (const parcela of parcelas) {
+    if (parcela.situacao !== 'Pendente' || !PADRAO_DATA_PARCELA.test(parcela.vencimento)) {
+      continue
+    }
+    const centavos = paraCentavos(parcela.valor)
+    const chave = parcela.vencimento.slice(0, 7)
+    const atual = porMes.get(chave) ?? { chave, centavos: 0, quantidade: 0, doEvento: chave === mesEvento }
+    atual.centavos += centavos
+    atual.quantidade += 1
+    porMes.set(chave, atual)
+    if (dataValidaEvento && parcela.vencimento > dataValidaEvento) {
+      depois += centavos
+    } else {
+      ateEvento += centavos
+    }
+  }
+  const todos = [...porMes.values()].sort((a, b) => a.chave.localeCompare(b.chave))
+  const indiceEvento = todos.findIndex((mes) => mes.doEvento)
+  const corte = Math.max(limite, 0, Math.min(indiceEvento + 1, LIMITE_MESES_ATE_EVENTO))
+  const visiveis = todos.slice(0, corte)
+  const ocultos = todos.slice(visiveis.length)
+  return {
+    meses: visiveis,
+    totalCentavos: ateEvento + depois,
+    maiorCentavos: visiveis.reduce((maior, mes) => Math.max(maior, mes.centavos), 0),
+    ateEventoCentavos: dataValidaEvento ? ateEvento : null,
+    depoisCentavos: dataValidaEvento ? depois : 0,
+    restante: { meses: ocultos.length, centavos: ocultos.reduce((total, mes) => total + mes.centavos, 0) },
+  }
+}

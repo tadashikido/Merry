@@ -32,15 +32,16 @@ export const TEXTOS_FINANCEIRO = {
   vazioSemContratadoTexto: 'Marque um fornecedor como contratado para registrar as parcelas.',
   irFornecedores: 'Ir para Fornecedores',
   vazioAnfitriaoTitulo: 'A assessoria ainda não registrou pagamentos.',
-  vazioAnfitriaoTexto: 'Quando houver parcelas, vocês acompanham tudo por aqui.',
+  vazioAnfitriaoTexto: 'Quando houver parcelas, elas aparecem aqui com valor e vencimento.',
   primeiroAcessoTitulo: 'Organize os pagamentos do evento',
+  primeiroAcessoTituloPara: (contracaoDe: string) => `Organize os pagamentos ${contracaoDe}`,
   primeiroAcessoTexto: 'O Financeiro reúne as parcelas de todos os fornecedores contratados.',
   primeiroAcessoPassos: [
     { chave: 'contratar', rotulo: 'Marque o fornecedor como contratado e informe o valor.', concluido: false },
     { chave: 'gerar', rotulo: 'Gere as parcelas do contrato.', concluido: false },
     { chave: 'pagar', rotulo: 'Registre cada pagamento com o comprovante.', concluido: false },
   ],
-  rodapeAnfitriao: 'A assessoria registra os pagamentos. Falem com ela se algo estiver diferente.',
+  rodapeAnfitriao: 'A assessoria registra os pagamentos. Se algo estiver diferente, fale com ela.',
   arquivado: 'Este evento está arquivado. Restaure para registrar pagamentos.',
   cancelado: 'Parcelas mantidas como histórico. Não entram nos totais nem nos alertas.',
   rotuloCancelado: 'Cancelado',
@@ -76,7 +77,17 @@ export const TEXTOS_FINANCEIRO = {
   apoioEmDia: 'Nada vencido',
   indicadorAParcelar: 'A parcelar',
   apoioAParcelar: 'contratado sem parcela',
-  lateralRotulo: 'Orçamento',
+} as const
+
+export const TEXTOS_PAGAMENTOS_MES = {
+  titulo: 'Pagamentos por mês',
+  legenda: 'a pagar nos próximos meses',
+  listaRotulo: 'Valores a pagar em cada mês',
+  mesDoEvento: (contracaoDe: string) => `Mês ${contracaoDe}`,
+  parcelas: (quantidade: number) => `${quantidade} ${plural(quantidade, 'parcela', 'parcelas')}`,
+  ateEvento: (valor: string, contracaoDe: string) => `${valor} até a data ${contracaoDe}.`,
+  depois: (valor: string) => `${valor} depois dela.`,
+  restante: (valor: string, meses: number) => `E mais ${valor} em ${meses} ${plural(meses, 'mês', 'meses')}.`,
 } as const
 
 export const TEXTOS_PARCELA = {

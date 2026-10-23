@@ -134,6 +134,17 @@ export function formatarDataCalendarioCurta(valor: string | null | undefined): s
   return `${String(data.getUTCDate()).padStart(2, '0')} ${mes} ${data.getUTCFullYear()}`
 }
 
+const formatoMesAno = new Intl.DateTimeFormat(LOCALIDADE, { month: 'long', year: 'numeric', timeZone: 'UTC' })
+
+export function formatarMesAno(chaveMes: string | null | undefined): string {
+  const data = dataCalendarioParaUtc(chaveMes ? `${chaveMes}-01` : null)
+  if (!data) {
+    return VALOR_AUSENTE
+  }
+  const texto = formatoMesAno.format(data)
+  return texto.charAt(0).toLocaleUpperCase(LOCALIDADE) + texto.slice(1)
+}
+
 export function formatarNumero(valor: number | null | undefined): string {
   if (valor === null || valor === undefined || !Number.isFinite(valor)) {
     return VALOR_AUSENTE

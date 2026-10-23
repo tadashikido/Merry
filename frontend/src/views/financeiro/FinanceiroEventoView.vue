@@ -21,12 +21,14 @@ import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 import DialogoGerarParcelas from '@/componentes/financeiro/DialogoGerarParcelas.vue'
 import DialogoPagamento from '@/componentes/financeiro/DialogoPagamento.vue'
 import DialogoParcela from '@/componentes/financeiro/DialogoParcela.vue'
+import PagamentosPorMes from '@/componentes/financeiro/PagamentosPorMes.vue'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useEventosStore } from '@/stores/eventos'
 import { useFinanceiroStore } from '@/stores/financeiro'
 import { TEXTOS_COMPROVANTE, TEXTOS_FINANCEIRO, TEXTOS_PARCELA } from '@/textos/financeiro'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
+import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { FornecedorFinanceiroDto, ParcelaDto, ResultadoPagamento } from '@/tipos/financeiro'
 import { verificarArquivoComprovante, ACEITE_COMPROVANTE, formatarTamanhoArquivo } from '@/utilitarios/arquivo'
 import { deCentavos, paraCentavos, somarCentavos } from '@/utilitarios/centavos'
@@ -112,6 +114,13 @@ const indicadores = computed(() => {
     { chave: 'a-parcelar', rotulo: TEXTOS_FINANCEIRO.indicadorAParcelar, valor: formatarMoeda(aParcelar), apoio: TEXTOS_FINANCEIRO.apoioAParcelar, alerta: false },
   ]
 })
+const tipoEvento = computed(() => (evento.value && ehTipoEvento(evento.value.tipo) ? evento.value.tipo : null))
+const tituloPrimeiroAcesso = computed(() =>
+  evento.value
+    ? TEXTOS_FINANCEIRO.primeiroAcessoTituloPara(vocabularioOuNeutro(tipoEvento.value).referencia.contracaoDe)
+    : TEXTOS_FINANCEIRO.primeiroAcessoTitulo,
+)
+const parcelasEmAberto = computed(() => [...livro.value.proximas, ...livro.value.depois])
 const descricao = computed(() =>
   evento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(evento.value.data)}` : undefined,
 )
@@ -448,7 +457,7 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
         <template v-else-if="semFornecedores">
           <EstadoPrimeiroAcesso
             v-if="podeGerenciar"
-            :titulo="TEXTOS_FINANCEIRO.primeiroAcessoTitulo"
+            :titulo="tituloPrimeiroAcesso"
             :descricao="TEXTOS_FINANCEIRO.vazioSemContratadoTexto"
             :passos="[...TEXTOS_FINANCEIRO.primeiroAcessoPassos]"
             :rotulo-acao="TEXTOS_FINANCEIRO.irFornecedores"
@@ -494,16 +503,15 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
           </ul>
 
           <div class="financeiro__corpo">
-            <aside
-              class="financeiro__lateral"
-              :aria-label="TEXTOS_FINANCEIRO.lateralRotulo"
+            <div
+              class="financeiro__orcamento"
               data-teste="lateral-orcamento"
             >
               <ResumoOrcamento
                 :resumo="financeiro.resumo"
                 exibir-pagamentos
               />
-            </aside>
+            </div>
 
             <div class="financeiro__principal pilha pilha--cartao">
               <SelectButton
@@ -859,6 +867,13 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
                 {{ TEXTOS_FINANCEIRO.rodapeAnfitriao }}
               </p>
             </div>
+
+            <PagamentosPorMes
+              class="financeiro__mensal"
+              :parcelas="parcelasEmAberto"
+              :data-evento="evento?.data ?? null"
+              :tipo="tipoEvento"
+            />
           </div>
         </template>
       </div>
@@ -959,19 +974,26 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    'lateral'
-    'principal';
+    'orcamento'
+    'principal'
+    'mensal';
   gap: var(--p-ritmo-bloco);
   align-items: start;
 }
 
-.financeiro__lateral {
-  grid-area: lateral;
+.financeiro__orcamento {
+  grid-area: orcamento;
   min-width: 0;
 }
 
 .financeiro__principal {
   grid-area: principal;
+  min-width: 0;
+}
+
+.financeiro__mensal {
+  grid-area: mensal;
+  min-width: 0;
 }
 
 .financeiro__visao {
@@ -1108,12 +1130,10 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
 @container financeiro (min-width: 64rem) {
   .financeiro__corpo {
     grid-template-columns: minmax(0, 1fr) var(--financeiro-largura-lateral);
-    grid-template-areas: 'principal lateral';
-  }
-
-  .financeiro__lateral {
-    position: sticky;
-    top: var(--p-ritmo-cartao);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'principal orcamento'
+      'principal mensal';
   }
 }
 

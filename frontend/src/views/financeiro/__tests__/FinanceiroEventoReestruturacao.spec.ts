@@ -142,32 +142,34 @@ describe('FinanceiroEventoView — indicadores e lateral', () => {
     expect(vencido.get('[data-teste="indicador-valor"]').classes()).not.toContain('financeiro__indicador-valor--alerta')
   })
 
-  it('[COMPONENTE] coloca o resumo do orçamento numa lateral nomeada, separada do livro', async () => {
+  it('[COMPONENTE] coloca o resumo do orçamento numa lateral separada do livro, sem região duplicada', async () => {
     const tela = await abrir(SESSAO_EXEMPLO, financeiroExemplo())
 
     const lateral = tela.get('[data-teste="lateral-orcamento"]')
-    expect(lateral.element.tagName).toBe('ASIDE')
-    expect(lateral.attributes('aria-label')).toBe(TEXTOS_FINANCEIRO.lateralRotulo)
+    expect(lateral.element.tagName).toBe('DIV')
+    expect(lateral.attributes('aria-label')).toBeUndefined()
+    expect(lateral.findAll('section')).toHaveLength(1)
     expect(lateral.find('[data-teste="resumo-orcamento"]').exists()).toBe(true)
     expect(lateral.find('[data-teste="livro-vencimentos"]').exists()).toBe(false)
     expect(tela.get('.financeiro__principal').find('[data-teste="livro-vencimentos"]').exists()).toBe(true)
     expect(tela.get('#grupo-vencidas').classes()).toContain('texto-rotulo')
   })
 
-  it('[SEGURANÇA] os anfitriões veem indicadores e resumo sem ações e com texto no plural', async () => {
+  it('[SEGURANÇA] o anfitrião vê indicadores e resumo sem ações e com texto neutro em número', async () => {
     const tela = await abrir(SESSAO_ANFITRIAO, financeiroExemplo({ somenteLeitura: true }))
 
     expect(tela.findAll('[data-teste="indicadores-financeiro"] > li')).toHaveLength(4)
     expect(tela.find('[data-teste="lateral-orcamento"]').exists()).toBe(true)
     expect(tela.find('[data-teste="adicionar-parcela"]').exists()).toBe(false)
     expect(tela.findAllComponents({ name: 'MenuAcoes' })).toHaveLength(0)
-    expect(tela.get('[data-teste="rodape-anfitriao"]').text()).toBe('A assessoria registra os pagamentos. Falem com ela se algo estiver diferente.')
+    expect(tela.get('[data-teste="rodape-anfitriao"]').text()).toBe('A assessoria registra os pagamentos. Se algo estiver diferente, fale com ela.')
   })
 
-  it('[COMPONENTE] o vazio dos anfitriões fala com os dois', async () => {
+  it('[COMPONENTE] o vazio do anfitrião não pressupõe plural', async () => {
     const tela = await abrir(SESSAO_ANFITRIAO, financeiroExemplo({ fornecedores: [], somenteLeitura: true }))
 
-    expect(tela.get('[data-teste="financeiro-vazio"]').text()).toContain('vocês acompanham tudo por aqui')
+    expect(tela.get('[data-teste="financeiro-vazio"]').text()).toContain('elas aparecem aqui com valor e vencimento')
+    expect(tela.get('[data-teste="financeiro-vazio"]').text()).not.toContain('vocês')
     expect(tela.find('[data-teste="indicadores-financeiro"]').exists()).toBe(false)
   })
 })
@@ -235,6 +237,8 @@ describe('Estilo da fundação no financeiro', () => {
     expect(fonte).not.toContain('--p-dimensao-largura-leitura')
     expect(fonte).toContain('container: financeiro / inline-size')
     expect(fonte).toContain('@container financeiro (min-width: 64rem)')
+    expect(fonte).not.toContain('position: sticky')
+    expect(fonte).not.toMatch(/@media\s*\((min|max)-width/)
     expect(fonte).not.toContain('--p-fonte-peso-seminegrito')
   })
 
