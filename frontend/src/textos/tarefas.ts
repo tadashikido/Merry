@@ -107,7 +107,6 @@ export const TEXTOS_TAREFAS = {
   toastIniciada: 'Tarefa em andamento.',
   toastCancelada: 'Tarefa cancelada.',
   vazioTitulo: 'Nenhuma tarefa ainda',
-  vazioTexto: 'Registre o que falta fazer neste evento.',
   vazioTextoEvento: (artigo: string) => `Registre o que falta fazer para ${artigo}.`,
   sugestaoTitulo: 'Tarefas típicas',
   sugestaoTexto: (indefinido: string) =>
