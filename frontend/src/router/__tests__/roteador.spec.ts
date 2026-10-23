@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import { createPinia } from 'pinia'
 
 import roteador, { TITULO_APLICACAO, rotas } from '@/router'
 import NaoEncontradoView from '@/views/NaoEncontradoView.vue'
@@ -65,7 +66,7 @@ describe('NaoEncontradoView', () => {
     await roteadorTeste.push('/inexistente')
     await roteadorTeste.isReady()
 
-    const wrapper = mount(NaoEncontradoView, { global: { plugins: [roteadorTeste] } })
+    const wrapper = mount(NaoEncontradoView, { global: { plugins: [roteadorTeste, createPinia()] } })
     await flushPromises()
 
     expect(wrapper.get('h1').text()).toBe('Página não encontrada')
