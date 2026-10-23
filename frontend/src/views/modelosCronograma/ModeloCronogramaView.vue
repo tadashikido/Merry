@@ -11,16 +11,11 @@ import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
 import LinhaCronograma from '@/componentes/base/LinhaCronograma.vue'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
-import { ROTULOS_DIA_CRONOGRAMA, TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
+import { ROTULOS_DIA_CRONOGRAMA } from '@/textos/cronograma'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
 import { ROTULOS_LOCAL_MODELO, TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
 import type { ItemModeloCronogramaDto } from '@/tipos/modelosCronograma'
-import {
-  MINUTOS_POR_DIA,
-  descreverRelativoCerimonia,
-  horarioParaMinutos,
-  minutosParaHorario,
-} from '@/utilitarios/cronograma'
+import { descreverRelativoCerimonia, resumirDias } from '@/utilitarios/cronograma'
 import { agruparItensModeloPorDia } from '@/utilitarios/modelosCronograma'
 
 const props = defineProps<{ modeloId: string }>()
@@ -34,25 +29,11 @@ const falha = computed(() => (modelo.value ? null : store.falhaAtual))
 const grupos = computed(() => agruparItensModeloPorDia(modelo.value?.itens ?? []))
 
 const resumoDias = computed(() =>
-  grupos.value.map((grupo) => {
-    const inicios = grupo.itens.map((item) => horarioParaMinutos(item.inicio) ?? 0)
-    const fins = grupo.itens.map((item) =>
-      item.termino
-        ? (horarioParaMinutos(item.termino) ?? 0) + (item.terminaEmOutroDia ? MINUTOS_POR_DIA : 0)
-        : (horarioParaMinutos(item.inicio) ?? 0),
-    )
-    const primeiro = Math.min(...inicios)
-    const ultimo = Math.max(...fins)
-    const inicio = minutosParaHorario(primeiro)
-    const fim = ultimo >= MINUTOS_POR_DIA ? `${minutosParaHorario(ultimo)} ${TEXTOS_CRONOGRAMA.rotuloMaisUmDia}` : minutosParaHorario(ultimo)
-    const intervalo =
-      ultimo === primeiro ? TEXTOS_CRONOGRAMA.rotuloHorarioInstante(inicio) : TEXTOS_CRONOGRAMA.rotuloHorarioIntervalo(inicio, fim)
-    return {
-      dia: grupo.dia,
-      rotulo: ROTULOS_DIA_CRONOGRAMA[grupo.dia],
-      detalhe: TEXTOS_MODELOS_CRONOGRAMA.resumoDia(grupo.itens.length, intervalo),
-    }
-  }),
+  resumirDias(grupos.value).map((resumo) => ({
+    dia: resumo.dia,
+    rotulo: ROTULOS_DIA_CRONOGRAMA[resumo.dia],
+    detalhe: TEXTOS_MODELOS_CRONOGRAMA.resumoDia(resumo.quantidade, resumo.intervalo),
+  })),
 )
 
 const extremos = computed(() => {

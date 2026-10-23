@@ -11,6 +11,7 @@ import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
 import { modelosDoTipo } from '@/utilitarios/modelosPorTipo'
 import { ROTULOS_DIA_CRONOGRAMA } from '@/textos/cronograma'
 import { TEXTOS_APLICAR_MODELO_CRONOGRAMA } from '@/textos/modelosCronograma'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { AplicacaoModeloCronogramaDto, ItemPrevistoCronogramaDto } from '@/tipos/modelosCronograma'
 import type { TipoEvento } from '@/tipos/eventos'
 
@@ -29,6 +30,7 @@ const erroPrevia = ref(false)
 const aplicando = ref(false)
 const erroAplicacao = ref<string | null>(null)
 
+const faltaHorario = computed(() => vocabularioOuNeutro(props.tipoEvento).faltaHorario)
 const modelosDoEvento = computed(() => (modelos.lista ? modelosDoTipo(modelos.lista, props.tipoEvento) : null))
 
 const opcoesModelos = computed(() =>
@@ -219,7 +221,7 @@ async function aplicar() {
         <MensagemFormulario
           v-else-if="previa?.semHorarioCerimonia"
           variante="alerta"
-          :mensagem="TEXTOS_APLICAR_MODELO_CRONOGRAMA.incompletoTitulo"
+          :mensagem="faltaHorario"
           data-teste="previa-sem-horario"
         >
           <p class="painel-aplicar-modelo__texto">

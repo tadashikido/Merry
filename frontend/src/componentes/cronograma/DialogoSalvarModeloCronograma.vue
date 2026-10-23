@@ -12,11 +12,9 @@ import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { breakpoints } from '@/design/tokens'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
-import {
-  TEXTOS_APLICAR_MODELO_CRONOGRAMA,
-  TEXTOS_MODELOS_CRONOGRAMA,
-  TEXTOS_SALVAR_COMO_MODELO,
-} from '@/textos/modelosCronograma'
+import { TEXTOS_MODELOS_CRONOGRAMA, TEXTOS_SALVAR_COMO_MODELO } from '@/textos/modelosCronograma'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import type { TipoEvento } from '@/tipos/eventos'
 import {
   LIMITES_MODELO_CRONOGRAMA,
   regraDescricaoModeloCronograma,
@@ -28,11 +26,13 @@ const props = defineProps<{
   visivel: boolean
   eventoId: string
   horarioCerimonia: string | null
+  tipoEvento?: TipoEvento | null
 }>()
 
 const emit = defineEmits<{ 'update:visivel': [valor: boolean] }>()
 
 const store = useModelosCronogramaStore()
+const vocabulario = computed(() => vocabularioOuNeutro(props.tipoEvento))
 const roteador = useRouter()
 const notificacao = useNotificacao()
 const executando = ref(false)
@@ -128,7 +128,7 @@ async function salvar() {
       <MensagemFormulario
         v-if="semHorario"
         variante="alerta"
-        :mensagem="TEXTOS_APLICAR_MODELO_CRONOGRAMA.incompletoTitulo"
+        :mensagem="vocabulario.faltaHorario"
         data-teste="salvar-modelo-sem-horario"
       />
       <p
@@ -136,7 +136,7 @@ async function salvar() {
         class="dialogo-salvar-modelo__nota"
         data-teste="nota-salvar-modelo"
       >
-        {{ TEXTOS_SALVAR_COMO_MODELO.nota(horarioCerimonia ?? '') }}
+        {{ TEXTOS_SALVAR_COMO_MODELO.nota(horarioCerimonia ?? '', vocabulario.referencia.relativoAoMomento) }}
       </p>
 
       <CampoFormulario

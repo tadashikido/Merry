@@ -15,6 +15,10 @@ export interface VocabularioTipoEvento {
     indefinido: string
     relativoAoMomento: string
   }
+  momento: {
+    artigo: string
+    contracaoDe: string
+  }
   homenageados: {
     grupo: string
     primeiro: string
@@ -54,6 +58,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
       indefinido: 'um casamento',
       relativoAoMomento: 'à cerimônia',
     },
+    momento: {
+      artigo: 'a cerimônia',
+      contracaoDe: 'da cerimônia',
+    },
     homenageados: {
       grupo: 'Os noivos',
       primeiro: 'Nome de um dos noivos',
@@ -90,6 +98,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
       contracaoDe: 'da festa de 15 anos',
       indefinido: 'uma festa de 15 anos',
       relativoAoMomento: 'à festa',
+    },
+    momento: {
+      artigo: 'a festa',
+      contracaoDe: 'da festa',
     },
     homenageados: {
       grupo: 'A debutante',
@@ -128,6 +140,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
       indefinido: 'um aniversário',
       relativoAoMomento: 'à festa',
     },
+    momento: {
+      artigo: 'a festa',
+      contracaoDe: 'da festa',
+    },
     homenageados: {
       grupo: 'O aniversariante',
       primeiro: 'Nome do aniversariante',
@@ -164,6 +180,10 @@ export const VOCABULARIO_TIPO_EVENTO: Record<TipoEvento, VocabularioTipoEvento> 
       contracaoDe: 'da comemoração',
       indefinido: 'uma comemoração',
       relativoAoMomento: 'ao evento',
+    },
+    momento: {
+      artigo: 'o evento',
+      contracaoDe: 'do evento',
     },
     homenageados: {
       grupo: 'Os homenageados',

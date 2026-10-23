@@ -379,7 +379,7 @@ describe('CronogramaView — reestruturação da fundação', () => {
     expect(lateral.get('[data-teste="resumo-conflitos"]').text()).toBe('2')
     expect(lateral.get('[data-teste="resumo-dia-Vespera"]').text()).toContain('1 item, das 18:00 às 22:00')
     expect(lateral.get('[data-teste="resumo-dia-DiaDoEvento"]').text()).toContain('4 itens, das 13:00 às 02:00 do dia seguinte')
-    expect(lateral.find('button').exists()).toBe(false)
+    expect(lateral.findAll('button').map((botao) => botao.attributes('data-teste'))).toEqual(['abrir-links-lateral'])
   })
 
   it('[COMPONENTE] sem horário da cerimônia a lateral avisa e sem conflitos não mostra a contagem', async () => {

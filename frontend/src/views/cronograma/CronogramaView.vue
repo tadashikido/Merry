@@ -17,6 +17,7 @@ import type { ItemMenuAcoes } from '@/componentes/base/tipos'
 import DialogoItemCronograma from '@/componentes/cronograma/DialogoItemCronograma.vue'
 import DialogoSalvarModeloCronograma from '@/componentes/cronograma/DialogoSalvarModeloCronograma.vue'
 import PainelAplicarModeloCronograma from '@/componentes/cronograma/PainelAplicarModeloCronograma.vue'
+import EquipeRoteiroCronograma from '@/componentes/cronograma/EquipeRoteiroCronograma.vue'
 import PainelLinksCronograma from '@/componentes/cronograma/PainelLinksCronograma.vue'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
@@ -33,13 +34,16 @@ import {
   TEXTOS_RECALCULO_HORARIOS,
   TEXTOS_SALVAR_COMO_MODELO,
 } from '@/textos/modelosCronograma'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { ItemCronogramaDto } from '@/tipos/cronograma'
 import {
   agruparPorDia,
+  contarSemResponsavel,
   descreverRelativoCerimonia,
-  horarioParaMinutos,
-  MINUTOS_POR_DIA,
-  minutosParaHorario,
+  formatarDuracao,
+  fornecedoresNoRoteiro,
+  resumirDias,
+  responsaveisUsados,
   rotuloLinha,
   textosConflitos,
 } from '@/utilitarios/cronograma'
@@ -62,8 +66,10 @@ const dialogoSalvarModelo = ref(false)
 const dialogoRecalculo = ref(false)
 const recalculando = ref(false)
 const painelLinks = ref(false)
+const origemLinks = ref<'cabecalho' | 'lateral'>('cabecalho')
 
 const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
+const vocabulario = computed(() => vocabularioOuNeutro(evento.value?.tipo))
 const nomes = computed(() =>
   evento.value ? formatarNomesAnfitrioes(evento.value.nomePrimeiraPessoa, evento.value.nomeSegundaPessoa) : '',
 )
@@ -89,28 +95,16 @@ const dadosMensagem = computed(() =>
     : null,
 )
 const resumoDias = computed(() =>
-  grupos.value.map((grupo) => {
-    const inicios = grupo.itens.map((item) => horarioParaMinutos(item.inicio) ?? 0)
-    const fins = grupo.itens.map((item) =>
-      item.termino
-        ? (horarioParaMinutos(item.termino) ?? 0) + (item.terminaEmOutroDia ? MINUTOS_POR_DIA : 0)
-        : (horarioParaMinutos(item.inicio) ?? 0),
-    )
-    const primeiro = Math.min(...inicios)
-    const ultimo = Math.max(...fins)
-    const inicio = minutosParaHorario(primeiro)
-    const fim = ultimo >= MINUTOS_POR_DIA ? `${minutosParaHorario(ultimo)} ${TEXTOS_CRONOGRAMA.rotuloMaisUmDia}` : minutosParaHorario(ultimo)
-    return {
-      dia: grupo.dia,
-      rotulo: ROTULOS_DIA_CRONOGRAMA[grupo.dia],
-      quantidade: TEXTOS_CRONOGRAMA.contagemGrupo(grupo.itens.length),
-      intervalo:
-        ultimo === primeiro
-          ? TEXTOS_CRONOGRAMA.rotuloHorarioInstante(inicio)
-          : TEXTOS_CRONOGRAMA.rotuloHorarioIntervalo(inicio, fim),
-    }
-  }),
+  resumirDias(grupos.value).map((resumo) => ({
+    dia: resumo.dia,
+    rotulo: ROTULOS_DIA_CRONOGRAMA[resumo.dia],
+    detalhe: `${TEXTOS_CRONOGRAMA.contagemGrupo(resumo.quantidade)}, ${resumo.intervalo}`,
+    duracao: resumo.duracaoMinutos === null ? null : TEXTOS_CRONOGRAMA.resumoDuracao(formatarDuracao(resumo.duracaoMinutos)),
+  })),
 )
+const fornecedoresEnvolvidos = computed(() => fornecedoresNoRoteiro(cronograma.value?.itens ?? []))
+const responsaveisEnvolvidos = computed(() => responsaveisUsados(cronograma.value?.itens ?? []))
+const semResponsavel = computed(() => (podeGerenciar.value ? contarSemResponsavel(cronograma.value?.itens ?? []) : 0))
 const acoesMais: ItemMenuAcoes[] = [{ chave: 'salvar-modelo', rotulo: TEXTOS_SALVAR_COMO_MODELO.acao, icone: 'ie ie-lista' }]
 
 const descricao = computed(() => {
@@ -120,8 +114,8 @@ const descricao = computed(() => {
   }
   const data = formatarDataCalendarioComDiaSemana(dados.dataEvento)
   return dados.horarioCerimonia
-    ? TEXTOS_CRONOGRAMA.subtituloCerimonia(data, dados.horarioCerimonia)
-    : TEXTOS_CRONOGRAMA.subtituloSemCerimonia(data)
+    ? TEXTOS_CRONOGRAMA.subtituloCerimonia(data, dados.horarioCerimonia, vocabulario.value.momentoPrincipal)
+    : TEXTOS_CRONOGRAMA.subtituloSemCerimonia(data, vocabulario.value.momento.contracaoDe)
 })
 
 watch(
@@ -177,9 +171,19 @@ function aoSalvar(item: ItemCronogramaDto, mensagem: string) {
 
 watch(painelLinks, (visivel) => {
   if (!visivel) {
-    void nextTick(() => document.querySelector<HTMLElement>('[data-teste="abrir-links-cronograma"]')?.focus())
+    const alvo = origemLinks.value === 'lateral' ? 'abrir-links-lateral' : 'abrir-links-cronograma'
+    void nextTick(() => document.querySelector<HTMLElement>(`[data-teste="${alvo}"]`)?.focus())
   }
 })
+
+function abrirLinks(origem: 'cabecalho' | 'lateral') {
+  origemLinks.value = origem
+  painelLinks.value = true
+}
+
+function relativoAoMomento(minutos: number | null): string | null {
+  return descreverRelativoCerimonia(minutos, vocabulario.value.momento.contracaoDe)
+}
 
 watch(dialogoVisivel, (visivel) => {
   if (!visivel) {
@@ -280,7 +284,7 @@ function excluir(item: ItemCronogramaDto) {
             outlined
             aria-haspopup="dialog"
             data-teste="abrir-links-cronograma"
-            @click="painelLinks = true"
+            @click="abrirLinks('cabecalho')"
           />
           <Button
             v-if="podeGerenciar && !semItens"
@@ -322,7 +326,7 @@ function excluir(item: ItemCronogramaDto) {
         <MensagemFormulario
           v-if="semHorarioCerimonia"
           variante="alerta"
-          :mensagem="TEXTOS_CRONOGRAMA.incompletoTitulo"
+          :mensagem="vocabulario.faltaHorario"
           data-teste="aviso-sem-horario"
         >
           <p class="cronograma__aviso-texto">
@@ -340,7 +344,7 @@ function excluir(item: ItemCronogramaDto) {
         <MensagemFormulario
           v-if="horariosDesatualizados > 0"
           variante="alerta"
-          :mensagem="TEXTOS_RECALCULO_HORARIOS.faixa(horariosDesatualizados)"
+          :mensagem="TEXTOS_RECALCULO_HORARIOS.faixa(horariosDesatualizados, vocabulario.momento.contracaoDe)"
           data-teste="aviso-horarios-desatualizados"
         >
           <Button
@@ -386,7 +390,7 @@ function excluir(item: ItemCronogramaDto) {
           v-else-if="semItens && !painelAplicar"
           icone="cronograma"
           :titulo="podeGerenciar ? TEXTOS_CRONOGRAMA.vazioTitulo : TEXTOS_CRONOGRAMA.vazioAnfitriaoTitulo"
-          :descricao="podeGerenciar ? TEXTOS_CRONOGRAMA.vazioTexto : TEXTOS_CRONOGRAMA.vazioAnfitriaoTexto"
+          :descricao="podeGerenciar ? TEXTOS_CRONOGRAMA.vazioTexto(vocabulario.momento.contracaoDe) : TEXTOS_CRONOGRAMA.vazioAnfitriaoTexto"
         >
           <template
             v-if="podeGerenciar"
@@ -455,7 +459,7 @@ function excluir(item: ItemCronogramaDto) {
                   :fornecedor="item.fornecedor?.nomeEmpresa ?? null"
                   :instrucoes="item.instrucoes"
                   :possui-nota-interna="Boolean(item.notasInternas)"
-                  :relativo-cerimonia="descreverRelativoCerimonia(item.minutosDesdeCerimonia)"
+                  :relativo-cerimonia="relativoAoMomento(item.minutosDesdeCerimonia)"
                   :eh-cerimonia="item.minutosDesdeCerimonia === 0"
                   :conflitos="textosConflitos(item)"
                   :editavel="podeGerenciar"
@@ -483,7 +487,7 @@ function excluir(item: ItemCronogramaDto) {
                 class="cronograma__cerimonia pilha pilha--campo"
                 data-teste="resumo-cerimonia"
               >
-                <span class="cronograma__rotulo-cerimonia">{{ TEXTOS_CRONOGRAMA.resumoCerimonia }}</span>
+                <span class="cronograma__rotulo-cerimonia">{{ vocabulario.horario }}</span>
                 <span
                   v-if="cronograma.horarioCerimonia"
                   class="cronograma__horario-cerimonia"
@@ -499,14 +503,14 @@ function excluir(item: ItemCronogramaDto) {
                   v-if="cronograma.localCerimonia"
                   class="cronograma__dado"
                 >
-                  <dt>{{ TEXTOS_CRONOGRAMA.resumoLocalCerimonia }}</dt>
+                  <dt>{{ vocabulario.locais.campoPrincipal }}</dt>
                   <dd>{{ cronograma.localCerimonia }}</dd>
                 </div>
                 <div
                   v-if="cronograma.localRecepcao"
                   class="cronograma__dado"
                 >
-                  <dt>{{ TEXTOS_CRONOGRAMA.resumoLocalRecepcao }}</dt>
+                  <dt>{{ vocabulario.locais.campoSecundario }}</dt>
                   <dd>{{ cronograma.localRecepcao }}</dd>
                 </div>
                 <div class="cronograma__dado cronograma__dado--numero">
@@ -530,6 +534,18 @@ function excluir(item: ItemCronogramaDto) {
                     {{ cronograma.itensComConflito.toLocaleString('pt-BR') }}
                   </dd>
                 </div>
+                <div
+                  v-if="semResponsavel > 0"
+                  class="cronograma__dado cronograma__dado--numero"
+                >
+                  <dt>{{ TEXTOS_CRONOGRAMA.resumoSemResponsavel }}</dt>
+                  <dd
+                    class="numeros-tabulares"
+                    data-teste="resumo-sem-responsavel"
+                  >
+                    {{ semResponsavel.toLocaleString('pt-BR') }}
+                  </dd>
+                </div>
               </dl>
 
               <div class="cronograma__dias pilha pilha--campo">
@@ -544,11 +560,24 @@ function excluir(item: ItemCronogramaDto) {
                     :data-teste="`resumo-dia-${resumo.dia}`"
                   >
                     <span class="cronograma__dia-nome">{{ resumo.rotulo }}</span>
-                    <span class="cronograma__dia-detalhe">{{ resumo.quantidade }}, {{ resumo.intervalo }}</span>
+                    <span class="cronograma__dia-detalhe">{{ resumo.detalhe }}</span>
+                    <span
+                      v-if="resumo.duracao"
+                      class="cronograma__dia-duracao"
+                      data-teste="resumo-duracao"
+                    >{{ resumo.duracao }}</span>
                   </li>
                 </ul>
               </div>
             </div>
+
+            <EquipeRoteiroCronograma
+              :fornecedores="fornecedoresEnvolvidos"
+              :responsaveis="responsaveisEnvolvidos"
+              :pode-compartilhar="podeCompartilhar"
+              :orientar="podeGerenciar"
+              @abrir-links="abrirLinks('lateral')"
+            />
 
             <p
               v-if="visaoDoAnfitriao"
@@ -567,6 +596,7 @@ function excluir(item: ItemCronogramaDto) {
         :evento-id="id"
         :cronograma="cronograma"
         :item="itemEmEdicao"
+        :tipo-evento="evento?.tipo ?? null"
         @salvo="aoSalvar"
         @excluir="excluir"
       />
@@ -583,13 +613,21 @@ function excluir(item: ItemCronogramaDto) {
         v-model:visivel="dialogoSalvarModelo"
         :evento-id="id"
         :horario-cerimonia="cronograma.horarioCerimonia"
+        :tipo-evento="evento?.tipo ?? null"
       />
 
       <DialogoConfirmacao
         v-if="cronograma && podeGerenciar"
         v-model:visivel="dialogoRecalculo"
         :titulo="TEXTOS_RECALCULO_HORARIOS.titulo"
-        :mensagem="TEXTOS_RECALCULO_HORARIOS.texto(horariosDesatualizados, cronograma.horarioCerimonia ?? '')"
+        :mensagem="
+          TEXTOS_RECALCULO_HORARIOS.texto(
+            horariosDesatualizados,
+            cronograma.horarioCerimonia ?? '',
+            vocabulario.momento.artigo,
+            vocabulario.momento.contracaoDe,
+          )
+        "
         :rotulo-confirmar="TEXTOS_RECALCULO_HORARIOS.recalcular"
         :rotulo-cancelar="TEXTOS_RECALCULO_HORARIOS.manter"
         :executando="recalculando"
@@ -762,6 +800,14 @@ function excluir(item: ItemCronogramaDto) {
   color: var(--p-cor-texto-apoio);
 }
 
+.cronograma__dia-duracao {
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-apoio);
+  font-style: italic;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--p-cor-texto-secundario);
+}
+
 .cronograma__apoio {
   margin: 0;
 }
@@ -808,12 +854,6 @@ function excluir(item: ItemCronogramaDto) {
   .cronograma__lateral {
     position: sticky;
     top: var(--p-ritmo-bloco);
-  }
-}
-
-@media (max-width: 639px) {
-  .cronograma__adicionar {
-    width: 100%;
   }
 }
 </style>

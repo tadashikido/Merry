@@ -73,16 +73,16 @@ export function formatarDuracao(minutos: number): string {
   return resto === 0 ? `${horas} h` : `${horas} h ${String(resto).padStart(2, '0')}`
 }
 
-export function descreverRelativoCerimonia(minutos: number | null): string | null {
+export function descreverRelativoCerimonia(minutos: number | null, contracaoMomento?: string): string | null {
   if (minutos === null) {
     return null
   }
   if (minutos === 0) {
-    return TEXTOS_CRONOGRAMA.relativoCerimonia
+    return TEXTOS_CRONOGRAMA.relativoNoMomento(contracaoMomento)
   }
   return minutos < 0
-    ? TEXTOS_CRONOGRAMA.relativoAntes(formatarDuracao(minutos))
-    : TEXTOS_CRONOGRAMA.relativoDepois(formatarDuracao(minutos))
+    ? TEXTOS_CRONOGRAMA.relativoAntes(formatarDuracao(minutos), contracaoMomento)
+    : TEXTOS_CRONOGRAMA.relativoDepois(formatarDuracao(minutos), contracaoMomento)
 }
 
 export function agruparPorDia(itens: ItemCronogramaDto[]): GrupoCronograma[] {
@@ -90,6 +90,74 @@ export function agruparPorDia(itens: ItemCronogramaDto[]): GrupoCronograma[] {
     const doDia = itens.filter((item) => item.dia === dia)
     return { dia, data: doDia[0]?.data ?? '', itens: doDia }
   }).filter((grupo) => grupo.itens.length > 0)
+}
+
+type HorarioItemCronograma = Pick<ItemCronogramaDto, 'inicio' | 'termino' | 'terminaEmOutroDia'>
+
+export interface ResumoDiaCronograma {
+  dia: DiaCronograma
+  quantidade: number
+  intervalo: string
+  duracaoMinutos: number | null
+}
+
+export function resumirDias(grupos: { dia: DiaCronograma; itens: HorarioItemCronograma[] }[]): ResumoDiaCronograma[] {
+  return grupos
+    .filter((grupo) => grupo.itens.length > 0)
+    .map((grupo) => {
+      const inicios = grupo.itens.map((item) => horarioParaMinutos(item.inicio) ?? 0)
+      const fins = grupo.itens.map((item) =>
+        item.termino
+          ? (horarioParaMinutos(item.termino) ?? 0) + (item.terminaEmOutroDia ? MINUTOS_POR_DIA : 0)
+          : (horarioParaMinutos(item.inicio) ?? 0),
+      )
+      const primeiro = Math.min(...inicios)
+      const ultimo = Math.max(...fins)
+      const inicio = minutosParaHorario(primeiro)
+      const fim =
+        ultimo >= MINUTOS_POR_DIA ? `${minutosParaHorario(ultimo)} ${TEXTOS_CRONOGRAMA.rotuloMaisUmDia}` : minutosParaHorario(ultimo)
+      return {
+        dia: grupo.dia,
+        quantidade: grupo.itens.length,
+        intervalo:
+          ultimo === primeiro
+            ? TEXTOS_CRONOGRAMA.rotuloHorarioInstante(inicio)
+            : TEXTOS_CRONOGRAMA.rotuloHorarioIntervalo(inicio, fim),
+        duracaoMinutos: ultimo > primeiro ? ultimo - primeiro : null,
+      }
+    })
+}
+
+export interface FornecedorNoRoteiro {
+  fornecedorEventoId: string
+  nomeEmpresa: string
+  categoria: string
+  quantidadeItens: number
+}
+
+export function fornecedoresNoRoteiro(itens: Pick<ItemCronogramaDto, 'fornecedor'>[]): FornecedorNoRoteiro[] {
+  const porId = new Map<string, FornecedorNoRoteiro>()
+  for (const { fornecedor } of itens) {
+    if (!fornecedor) {
+      continue
+    }
+    const existente = porId.get(fornecedor.fornecedorEventoId)
+    if (existente) {
+      existente.quantidadeItens += 1
+    } else {
+      porId.set(fornecedor.fornecedorEventoId, {
+        fornecedorEventoId: fornecedor.fornecedorEventoId,
+        nomeEmpresa: fornecedor.nomeEmpresa,
+        categoria: fornecedor.categoria,
+        quantidadeItens: 1,
+      })
+    }
+  }
+  return [...porId.values()].sort((a, b) => a.nomeEmpresa.localeCompare(b.nomeEmpresa, 'pt-BR'))
+}
+
+export function contarSemResponsavel(itens: Pick<ItemCronogramaDto, 'responsavel' | 'fornecedor'>[]): number {
+  return itens.filter((item) => !item.responsavel?.trim() && !item.fornecedor).length
 }
 
 export function textosConflitos(item: ItemCronogramaDto): string[] {

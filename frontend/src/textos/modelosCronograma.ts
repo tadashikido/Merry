@@ -146,8 +146,8 @@ export const TEXTOS_APLICAR_MODELO_CRONOGRAMA = {
 export const TEXTOS_SALVAR_COMO_MODELO = {
   acao: 'Salvar como modelo',
   titulo: 'Salvar como modelo',
-  nota: (horario: string) =>
-    `Os horários ficam relativos à cerimônia (${horario}). Notas internas e fornecedores específicos não entram no modelo; a categoria do fornecedor, sim.`,
+  nota: (horario: string, relativoAoMomento = 'à cerimônia') =>
+    `Os horários ficam relativos ${relativoAoMomento} (${horario}). Notas internas e fornecedores específicos não entram no modelo; a categoria do fornecedor, sim.`,
   salvar: 'Salvar modelo',
   cancelar: 'Cancelar',
   toast: (nome: string) => `Modelo “${nome}” salvo.`,
@@ -155,13 +155,13 @@ export const TEXTOS_SALVAR_COMO_MODELO = {
 } as const
 
 export const TEXTOS_RECALCULO_HORARIOS = {
-  faixa: (quantidade: number) =>
-    `${contar(quantidade, 'item do modelo está', 'itens do modelo estão')} com horários de antes da mudança da cerimônia.`,
+  faixa: (quantidade: number, contracaoMomento = 'da cerimônia') =>
+    `${contar(quantidade, 'item do modelo está', 'itens do modelo estão')} com horários de antes da mudança ${contracaoMomento}.`,
   recalcular: 'Recalcular horários',
   manter: 'Manter horários',
   titulo: 'Recalcular os horários do cronograma?',
-  texto: (quantidade: number, horario: string) =>
-    `${contar(quantidade, 'item veio', 'itens vieram')} de modelo e ${quantidade === 1 ? 'está marcado' : 'estão marcados'} pelo horário antigo da cerimônia. Recalcular move cada um para manter a distância até a cerimônia das ${horario}. Itens criados à mão e itens concluídos não mudam.`,
+  texto: (quantidade: number, horario: string, artigoMomento = 'a cerimônia', contracaoMomento = 'da cerimônia') =>
+    `${contar(quantidade, 'item veio', 'itens vieram')} de modelo e ${quantidade === 1 ? 'está marcado' : 'estão marcados'} pelo horário antigo ${contracaoMomento}. Recalcular move cada um para manter a distância até ${artigoMomento} das ${horario}. Itens criados à mão e itens concluídos não mudam.`,
   toast: (quantidade: number) => `Horários de ${contar(quantidade, 'item recalculados', 'itens recalculados')}.`,
   erro: 'Não foi possível recalcular os horários. Tente de novo em Cronograma.',
 } as const

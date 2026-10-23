@@ -15,6 +15,8 @@ import { useFormulario } from '@/composables/useFormulario'
 import { breakpoints } from '@/design/tokens'
 import { useCronogramaStore } from '@/stores/cronograma'
 import { ROTULOS_DIA_CRONOGRAMA, TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import type { TipoEvento } from '@/tipos/eventos'
 import {
   DIAS_CRONOGRAMA,
   type CronogramaDto,
@@ -42,8 +44,9 @@ const props = withDefaults(
     eventoId: string
     cronograma: CronogramaDto
     item?: ItemCronogramaDto | null
+    tipoEvento?: TipoEvento | null
   }>(),
-  { item: null },
+  { item: null, tipoEvento: null },
 )
 
 const emit = defineEmits<{
@@ -97,12 +100,23 @@ const opcoesFornecedor = computed(() => {
   }
   return [{ valor: null, rotulo: TEXTOS_CRONOGRAMA.nenhumFornecedor }, ...disponiveis]
 })
+const locaisDoTipo = computed(() => vocabularioOuNeutro(props.tipoEvento).locais)
 const atalhosLocal = computed(() => [
   ...(props.cronograma.localCerimonia
-    ? [{ rotulo: TEXTOS_CRONOGRAMA.atalhoCerimonia(props.cronograma.localCerimonia), valor: props.cronograma.localCerimonia }]
+    ? [
+        {
+          rotulo: TEXTOS_CRONOGRAMA.atalhoLocal(locaisDoTipo.value.principal, props.cronograma.localCerimonia),
+          valor: props.cronograma.localCerimonia,
+        },
+      ]
     : []),
   ...(props.cronograma.localRecepcao && props.cronograma.localRecepcao !== props.cronograma.localCerimonia
-    ? [{ rotulo: TEXTOS_CRONOGRAMA.atalhoRecepcao(props.cronograma.localRecepcao), valor: props.cronograma.localRecepcao }]
+    ? [
+        {
+          rotulo: TEXTOS_CRONOGRAMA.atalhoLocal(locaisDoTipo.value.secundario, props.cronograma.localRecepcao),
+          valor: props.cronograma.localRecepcao,
+        },
+      ]
     : []),
 ])
 const sugestoesResponsavel = computed(() => responsaveisUsados(props.cronograma.itens))

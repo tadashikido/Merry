@@ -4,9 +4,11 @@ import { itemCronograma } from '@/__tests__/auxiliaresCronograma'
 import { TEXTOS_CRONOGRAMA } from '@/textos/cronograma'
 import {
   agruparPorDia,
+  contarSemResponsavel,
   descreverRelativoCerimonia,
   duracaoEntre,
   formatarDuracao,
+  fornecedoresNoRoteiro,
   horarioParaMinutos,
   minutosParaHorario,
   proximoInicioSugerido,
@@ -14,6 +16,7 @@ import {
   regraInicio,
   regraTermino,
   responsaveisUsados,
+  resumirDias,
   rotuloLinha,
   terminaNoDiaSeguinte,
   terminoDe,
@@ -53,6 +56,9 @@ describe('utilitários do cronograma', () => {
     expect(descreverRelativoCerimonia(45)).toBe('45 min depois da cerimônia')
     expect(descreverRelativoCerimonia(0)).toBe(TEXTOS_CRONOGRAMA.relativoCerimonia)
     expect(descreverRelativoCerimonia(null)).toBeNull()
+    expect(descreverRelativoCerimonia(-30, 'da festa')).toBe('30 min antes da festa')
+    expect(descreverRelativoCerimonia(90, 'do evento')).toBe('1 h 30 depois do evento')
+    expect(descreverRelativoCerimonia(0, 'da festa')).toBe('Hora da festa')
   })
 
   it('[UNITÁRIO] agrupa por dia na ordem véspera, dia e dia seguinte, sem grupos vazios', () => {
@@ -115,5 +121,44 @@ describe('utilitários do cronograma', () => {
     expect(regraAtividade('A')).toBe(TEXTOS_CRONOGRAMA.erroTamanhoAtividade)
     expect(regraAtividade('a'.repeat(161))).toBe(TEXTOS_CRONOGRAMA.erroTamanhoAtividade)
     expect(regraAtividade('Cerimônia')).toBeNull()
+  })
+
+  it('[UNITÁRIO] resumirDias calcula intervalo e duração, inclusive após a meia-noite', () => {
+    const resumo = resumirDias([
+      { dia: 'Vespera', itens: [itemCronograma({ inicio: '18:00', termino: null })] },
+      {
+        dia: 'DiaDoEvento',
+        itens: [
+          itemCronograma({ inicio: '14:00', termino: '15:00' }),
+          itemCronograma({ inicio: '23:00', termino: '01:30', terminaEmOutroDia: true }),
+        ],
+      },
+      { dia: 'DiaSeguinte', itens: [] },
+    ])
+    expect(resumo).toEqual([
+      { dia: 'Vespera', quantidade: 1, intervalo: 'às 18:00', duracaoMinutos: null },
+      { dia: 'DiaDoEvento', quantidade: 2, intervalo: 'das 14:00 às 01:30 do dia seguinte', duracaoMinutos: 690 },
+    ])
+  })
+
+  it('[UNITÁRIO] fornecedoresNoRoteiro agrupa por fornecedor e ordena por nome', () => {
+    const coral = { fornecedorEventoId: 'v1', nomeEmpresa: 'Coral', categoria: 'Musica' }
+    const buffet = { fornecedorEventoId: 'v2', nomeEmpresa: 'Buffet', categoria: 'Buffet' }
+    expect(fornecedoresNoRoteiro([{ fornecedor: coral }, { fornecedor: null }, { fornecedor: buffet }, { fornecedor: coral }])).toEqual([
+      { ...buffet, quantidadeItens: 1 },
+      { ...coral, quantidadeItens: 2 },
+    ])
+  })
+
+  it('[UNITÁRIO] contarSemResponsavel conta itens sem responsável nem fornecedor', () => {
+    const coral = { fornecedorEventoId: 'v1', nomeEmpresa: 'Coral', categoria: 'Musica' }
+    expect(
+      contarSemResponsavel([
+        { responsavel: null, fornecedor: null },
+        { responsavel: '  ', fornecedor: null },
+        { responsavel: null, fornecedor: coral },
+        { responsavel: 'Ana', fornecedor: null },
+      ]),
+    ).toBe(2)
   })
 })

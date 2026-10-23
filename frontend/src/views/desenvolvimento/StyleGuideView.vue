@@ -289,8 +289,8 @@ const secoes = [
 const dialogoRevogacaoVisivel = ref(false)
 const localCronogramaDemonstracao = ref('Paróquia São José')
 const atalhosLocalDemonstracao = [
-  { rotulo: TEXTOS_CRONOGRAMA.atalhoCerimonia('Paróquia São José'), valor: 'Paróquia São José' },
-  { rotulo: TEXTOS_CRONOGRAMA.atalhoRecepcao('Espaço Villa Real'), valor: 'Espaço Villa Real' },
+  { rotulo: TEXTOS_CRONOGRAMA.atalhoLocal('Cerimônia', 'Paróquia São José'), valor: 'Paróquia São José' },
+  { rotulo: TEXTOS_CRONOGRAMA.atalhoLocal('Recepção', 'Espaço Villa Real'), valor: 'Espaço Villa Real' },
 ]
 const copiaTarefasDemonstracao = ref(true)
 const copiaFornecedoresDemonstracao = ref(false)
