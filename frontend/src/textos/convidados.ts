@@ -13,11 +13,11 @@ function contar(quantidade: number, singular: string, varias: string): string {
   return `${formatarNumero(quantidade)} ${plural(quantidade, singular, varias)}`
 }
 
-function emFrase(itens: readonly string[]): string {
+function emFrase(itens: readonly string[], conector = 'e'): string {
   if (itens.length <= 1) {
     return itens[0] ?? ''
   }
-  return `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`
+  return `${itens.slice(0, -1).join(', ')} ${conector} ${itens[itens.length - 1]}`
 }
 
 export function referenciaDoEvento(tipo: TipoEvento | null | undefined): string {
@@ -54,8 +54,12 @@ export const TEXTOS_CONVIDADOS = {
   campoNomeConvite: 'Nome do convite',
   dicaNomeConvite: 'Se deixar em branco, usamos o nome da primeira pessoa.',
   campoGrupo: 'Grupo',
-  dicaGrupo: 'Por exemplo: Família, Amigos do trabalho.',
-  mostrarGrupos: 'Mostrar grupos já usados',
+  dicaGrupoPara: (grupos: readonly string[]) => `Por exemplo: ${emFrase(grupos, 'ou')}.`,
+  dicaGrupoExistente: (quantidade: number, grupo: string) =>
+    quantidade === 1
+      ? `1 outro convite já está em ${grupo}.`
+      : `${formatarNumero(quantidade)} outros convites já estão em ${grupo}.`,
+  mostrarGrupos: 'Mostrar sugestões de grupo',
   campoAcompanhantes: 'Acompanhantes',
   dicaAcompanhantes: 'Pessoas além das listadas que este convite pode levar.',
   opcaoSemAcompanhante: 'Nenhum',
@@ -140,6 +144,15 @@ export const TEXTOS_ACOMPANHAMENTO_CONVITES = {
   todosRespondidos: 'Todos os convites já foram respondidos.',
   orientacaoGrupos: (grupos: readonly string[]) =>
     `Grupos como ${emFrase(grupos)} ajudam a filtrar e a enviar por partes.`,
+} as const
+
+export const TEXTOS_PREVIA_CONVITE = {
+  titulo: 'Como o convidado vê',
+  subtitulo: 'Um resumo da página de confirmação, atualizado enquanto você preenche.',
+  nomeProvisorio: 'Nome do convite',
+  pessoaProvisoria: (numero: number) => `Pessoa ${numero}`,
+  privacidade: 'Telefone e e-mail ficam só com a assessoria; o convidado vê apenas os nomes.',
+  restricoes: 'Restrição alimentar é informada pelo próprio convidado ao confirmar presença.',
 } as const
 
 export const ROTULOS_FAIXA_ETARIA: Record<FaixaEtaria, string> = {

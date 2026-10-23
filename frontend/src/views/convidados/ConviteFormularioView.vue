@@ -14,6 +14,7 @@ import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import ListaRepetivel from '@/componentes/base/ListaRepetivel.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import PreviaConvite, { type PessoaPreviaConvite } from '@/componentes/convidados/PreviaConvite.vue'
 import type { TextosListaRepetivel } from '@/componentes/base/tipos'
 import { useAlteracoesNaoSalvas, useRastreioAlteracoes } from '@/composables/useAlteracoesNaoSalvas'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
@@ -21,7 +22,7 @@ import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useEventosStore } from '@/stores/eventos'
 import { useConvidadosStore, type FalhaConvidados } from '@/stores/convidados'
-import { ROTULOS_FAIXA_ETARIA, ROTULOS_RESPOSTA, TEXTOS_CONVIDADOS } from '@/textos/convidados'
+import { ROTULOS_FAIXA_ETARIA, ROTULOS_RESPOSTA, TEXTOS_CONVIDADOS, gruposSugeridos } from '@/textos/convidados'
 import { ROTULOS_ACOES } from '@/textos/rotulos'
 import {
   FAIXAS_ETARIAS,
@@ -31,9 +32,9 @@ import {
   type RespostaRsvp,
   type SalvarConviteRequest,
 } from '@/tipos/convidados'
-import { listarGrupos } from '@/utilitarios/filtroConvidados'
 import { focarElemento } from '@/utilitarios/foco'
 import { formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
+import { outrosConvitesNoGrupo, sugestoesDeGrupo } from '@/utilitarios/gruposConvite'
 import { formatarTelefone } from '@/utilitarios/telefone'
 import { obrigatorio } from '@/utilitarios/validacao'
 import {
@@ -90,10 +91,18 @@ const arquivado = computed(() => evento.value?.arquivado === true)
 const titulo = computed(() => (edicao.value ? TEXTOS_CONVIDADOS.editarConviteTitulo : TEXTOS_CONVIDADOS.novoConviteTitulo))
 const somenteLeitura = computed(() => arquivado.value || bloqueadoPorPermissao.value)
 
-const sugestoesGrupo = computed(() => {
-  const convites = store.eventoId === props.id ? (store.lista?.convites ?? []) : []
-  return listarGrupos(convites).grupos.map((grupo) => grupo.rotulo)
+const convitesDoEvento = computed(() => (store.eventoId === props.id ? (store.lista?.convites ?? []) : []))
+const sugestoesGrupo = computed(() => sugestoesDeGrupo(convitesDoEvento.value, evento.value?.tipo))
+const dicaGrupo = computed(() => {
+  const existente = outrosConvitesNoGrupo(convitesDoEvento.value, dados.grupo, props.conviteId ?? null)
+  return existente
+    ? TEXTOS_CONVIDADOS.dicaGrupoExistente(existente.quantidade, existente.rotulo)
+    : TEXTOS_CONVIDADOS.dicaGrupoPara(gruposSugeridos(evento.value?.tipo))
 })
+const mostrarPrevia = computed(() => evento.value !== null && !carregandoConvite.value && !falhaConvite.value)
+const pessoasPrevia = computed<PessoaPreviaConvite[]>(() =>
+  pessoas.value.map((pessoa) => ({ chave: pessoa.chaveLocal, nome: pessoa.nome, crianca: pessoa.faixaEtaria === 'Crianca' })),
+)
 
 const opcoesAcompanhantes = Array.from({ length: LIMITES_CONVIDADOS.acompanhantesMaximo + 1 }, (_, quantidade) => ({
   valor: quantidade,
@@ -405,310 +414,358 @@ function excluir() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="pagina-formulario">
-      <CabecalhoPagina
-        :titulo="titulo"
-        :descricao="nomes || undefined"
-      />
-
-      <div class="pilha pilha--cartao">
-        <EstadoCarregando
-          v-if="carregandoConvite"
-          variante="formulario"
-          :linhas="4"
+    <div class="formulario-convite-tela">
+      <div
+        class="pagina-formulario formulario-convite-tela__pagina"
+        :class="{ 'formulario-convite-tela__pagina--com-lateral': mostrarPrevia }"
+      >
+        <CabecalhoPagina
+          :titulo="titulo"
+          :descricao="nomes || undefined"
         />
 
-        <template v-else-if="falhaConvite">
-          <EstadoErro
-            v-if="falhaConvite.tipo === 'naoEncontrado'"
-            :titulo="TEXTOS_CONVIDADOS.conviteNaoEncontradoTitulo"
-            :mensagem="TEXTOS_CONVIDADOS.conviteNaoEncontradoTexto"
-            :pode-tentar-novamente="false"
-          />
-          <EstadoErro
-            v-else
-            :titulo="TEXTOS_CONVIDADOS.erroCarregarTitulo"
-            :mensagem="falhaConvite.tipo === 'semPermissao' ? TEXTOS_CONVIDADOS.semAcesso : TEXTOS_CONVIDADOS.erroCarregar"
-            :pode-tentar-novamente="falhaConvite.tipo !== 'semPermissao'"
-            @tentar-novamente="carregarConvite"
-          />
-          <RouterLink
-            class="formulario-convite__voltar"
-            :to="{ name: 'evento-convidados', params: { id } }"
-            data-teste="voltar-convidados"
-          >
-            {{ TEXTOS_CONVIDADOS.voltarConvidados }}
-          </RouterLink>
-        </template>
+        <div class="formulario-convite-tela__corpo">
+          <div class="formulario-convite-tela__principal pilha pilha--cartao">
+            <EstadoCarregando
+              v-if="carregandoConvite"
+              variante="formulario"
+              :linhas="4"
+            />
 
-        <template v-else>
-          <MensagemFormulario
-            v-if="arquivado"
-            variante="informacao"
-            :mensagem="TEXTOS_CONVIDADOS.avisoArquivado"
-            data-teste="aviso-arquivado"
-          />
-          <MensagemFormulario
-            v-if="mensagemErro"
-            :mensagem="mensagemErro"
-            data-teste="erro-formulario"
-          />
+            <template v-else-if="falhaConvite">
+              <EstadoErro
+                v-if="falhaConvite.tipo === 'naoEncontrado'"
+                :titulo="TEXTOS_CONVIDADOS.conviteNaoEncontradoTitulo"
+                :mensagem="TEXTOS_CONVIDADOS.conviteNaoEncontradoTexto"
+                :pode-tentar-novamente="false"
+              />
+              <EstadoErro
+                v-else
+                :titulo="TEXTOS_CONVIDADOS.erroCarregarTitulo"
+                :mensagem="falhaConvite.tipo === 'semPermissao' ? TEXTOS_CONVIDADOS.semAcesso : TEXTOS_CONVIDADOS.erroCarregar"
+                :pode-tentar-novamente="falhaConvite.tipo !== 'semPermissao'"
+                @tentar-novamente="carregarConvite"
+              />
+              <RouterLink
+                class="formulario-convite__voltar"
+                :to="{ name: 'evento-convidados', params: { id } }"
+                data-teste="voltar-convidados"
+              >
+                {{ TEXTOS_CONVIDADOS.voltarConvidados }}
+              </RouterLink>
+            </template>
 
-          <form
-            class="formulario-convite pilha pilha--bloco"
-            novalidate
-            data-teste="formulario-convite"
-            @submit.prevent="enviar"
-          >
-            <fieldset class="formulario-convite__grupo pilha pilha--grupo">
-              <legend class="formulario-convite__legenda texto-rotulo">
-                {{ TEXTOS_CONVIDADOS.grupoConvite }}
-              </legend>
-              <CampoFormulario
-                v-slot="{ id: idEntrada, invalido, descritoPor }"
-                :rotulo="TEXTOS_CONVIDADOS.campoNomeConvite"
-                :id-campo="idCampoConvite('nome')"
-                :dica="TEXTOS_CONVIDADOS.dicaNomeConvite"
-                :erro="erros.nome"
-              >
-                <InputText
-                  :id="idEntrada"
-                  v-model="dados.nome"
-                  autocomplete="off"
-                  :maxlength="LIMITES_CONVIDADOS.nomeMaximo"
-                  :invalid="invalido"
-                  :aria-invalid="invalido"
-                  :aria-describedby="descritoPor"
-                  :readonly="enviando || somenteLeitura"
-                  data-teste="campo-nome-convite"
-                  @update:model-value="revalidarConviteAoDigitar('nome')"
-                  @blur="validarConviteAoSair('nome')"
-                />
-              </CampoFormulario>
-              <div class="formulario-convite__colunas">
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, invalido, descritoPor }"
-                  :rotulo="TEXTOS_CONVIDADOS.campoGrupo"
-                  :id-campo="idCampoConvite('grupo')"
-                  :dica="TEXTOS_CONVIDADOS.dicaGrupo"
-                  :erro="erros.grupo"
-                >
-                  <CampoSugestoes
-                    :id="idEntrada"
-                    v-model="dados.grupo"
-                    :sugestoes="sugestoesGrupo"
-                    :invalido="invalido"
-                    :descrito-por="descritoPor"
-                    :maximo="LIMITES_CONVIDADOS.grupoMaximo"
-                    :rotulo-botao-sugestoes="TEXTOS_CONVIDADOS.mostrarGrupos"
-                    :desabilitado="enviando || somenteLeitura"
-                    @update:model-value="revalidarConviteAoDigitar('grupo')"
-                    @blur="validarConviteAoSair('grupo')"
-                  />
-                </CampoFormulario>
-                <CampoFormulario
-                  v-slot="{ id: idEntrada, descritoPor }"
-                  :rotulo="TEXTOS_CONVIDADOS.campoAcompanhantes"
-                  :id-campo="idCampoConvite('limiteAcompanhantes')"
-                  :dica="TEXTOS_CONVIDADOS.dicaAcompanhantes"
-                  :erro="erros.limiteAcompanhantes"
-                >
-                  <Select
-                    v-model="dados.limiteAcompanhantes"
-                    :input-id="idEntrada"
-                    :options="opcoesAcompanhantes"
-                    option-label="rotulo"
-                    option-value="valor"
-                    :aria-describedby="descritoPor"
-                    :disabled="enviando || somenteLeitura"
-                    data-teste="campo-acompanhantes"
-                  />
-                </CampoFormulario>
-              </div>
-            </fieldset>
+            <template v-else>
+              <MensagemFormulario
+                v-if="arquivado"
+                variante="informacao"
+                :mensagem="TEXTOS_CONVIDADOS.avisoArquivado"
+                data-teste="aviso-arquivado"
+              />
+              <MensagemFormulario
+                v-if="mensagemErro"
+                :mensagem="mensagemErro"
+                data-teste="erro-formulario"
+              />
 
-            <section
-              class="formulario-convite__grupo pilha pilha--grupo"
-              aria-labelledby="titulo-pessoas"
-            >
-              <h2
-                id="titulo-pessoas"
-                class="formulario-convite__titulo-secao texto-rotulo"
+              <form
+                class="formulario-convite pilha pilha--bloco"
+                novalidate
+                data-teste="formulario-convite"
+                @submit.prevent="enviar"
               >
-                {{ TEXTOS_CONVIDADOS.secaoPessoas }}
-              </h2>
-              <ListaRepetivel
-                :itens="pessoas"
-                :chave="(pessoa) => pessoa.chaveLocal"
-                :textos="textosLista"
-                :minimo="LIMITES_CONVIDADOS.pessoasMinimo"
-                :maximo="LIMITES_CONVIDADOS.pessoasMaximo"
-                :desabilitado="enviando || somenteLeitura"
-                @adicionar="adicionarPessoa"
-                @remover="removerPessoa"
-              >
-                <template #default="{ item: pessoa, indice }">
-                  <div
-                    class="formulario-convite__pessoa pilha pilha--grupo"
-                    data-teste="dados-pessoa"
+                <fieldset class="formulario-convite__grupo pilha pilha--grupo">
+                  <legend class="formulario-convite__legenda texto-rotulo">
+                    {{ TEXTOS_CONVIDADOS.grupoConvite }}
+                  </legend>
+                  <CampoFormulario
+                    v-slot="{ id: idEntrada, invalido, descritoPor }"
+                    :rotulo="TEXTOS_CONVIDADOS.campoNomeConvite"
+                    :id-campo="idCampoConvite('nome')"
+                    :dica="TEXTOS_CONVIDADOS.dicaNomeConvite"
+                    :erro="erros.nome"
                   >
+                    <InputText
+                      :id="idEntrada"
+                      v-model="dados.nome"
+                      autocomplete="off"
+                      :maxlength="LIMITES_CONVIDADOS.nomeMaximo"
+                      :invalid="invalido"
+                      :aria-invalid="invalido"
+                      :aria-describedby="descritoPor"
+                      :readonly="enviando || somenteLeitura"
+                      data-teste="campo-nome-convite"
+                      @update:model-value="revalidarConviteAoDigitar('nome')"
+                      @blur="validarConviteAoSair('nome')"
+                    />
+                  </CampoFormulario>
+                  <div class="formulario-convite__colunas">
                     <CampoFormulario
                       v-slot="{ id: idEntrada, invalido, descritoPor }"
-                      :rotulo="TEXTOS_CONVIDADOS.campoNome"
-                      :id-campo="idCampoPessoa(indice, 'nome')"
-                      obrigatorio
-                      :erro="erros[chaveErroPessoa(indice, 'nome')]"
+                      :rotulo="TEXTOS_CONVIDADOS.campoGrupo"
+                      :id-campo="idCampoConvite('grupo')"
+                      :dica="dicaGrupo"
+                      :erro="erros.grupo"
                     >
-                      <InputText
+                      <CampoSugestoes
                         :id="idEntrada"
-                        v-model="pessoa.nome"
-                        autocomplete="off"
-                        :maxlength="LIMITES_CONVIDADOS.nomeMaximo"
-                        aria-required="true"
-                        :invalid="invalido"
-                        :aria-invalid="invalido"
-                        :aria-describedby="descritoPor"
-                        :readonly="enviando || somenteLeitura"
-                        data-teste="campo-nome-pessoa"
-                        @update:model-value="revalidarPessoaAoDigitar(indice, 'nome')"
-                        @blur="validarPessoaAoSair(indice, 'nome')"
+                        v-model="dados.grupo"
+                        :sugestoes="sugestoesGrupo"
+                        :invalido="invalido"
+                        :descrito-por="descritoPor"
+                        :maximo="LIMITES_CONVIDADOS.grupoMaximo"
+                        :rotulo-botao-sugestoes="TEXTOS_CONVIDADOS.mostrarGrupos"
+                        :desabilitado="enviando || somenteLeitura"
+                        @update:model-value="revalidarConviteAoDigitar('grupo')"
+                        @blur="validarConviteAoSair('grupo')"
                       />
                     </CampoFormulario>
-                    <div class="formulario-convite__colunas-pessoa formulario-convite__colunas-pessoa--opcoes">
-                      <div
-                        class="formulario-convite__opcoes"
-                        role="group"
-                        :aria-labelledby="`${idCampoPessoa(indice, 'faixaEtaria')}-rotulo`"
-                      >
-                        <span
-                          :id="`${idCampoPessoa(indice, 'faixaEtaria')}-rotulo`"
-                          class="formulario-convite__rotulo-opcoes"
-                        >{{ TEXTOS_CONVIDADOS.campoIdade }}</span>
-                        <SelectButton
-                          :id="idCampoPessoa(indice, 'faixaEtaria')"
-                          v-model="pessoa.faixaEtaria"
-                          :options="opcoesFaixa"
-                          option-label="rotulo"
-                          option-value="valor"
-                          :allow-empty="false"
-                          :aria-labelledby="`${idCampoPessoa(indice, 'faixaEtaria')}-rotulo`"
-                          :disabled="enviando || somenteLeitura"
-                          data-teste="campo-faixa-etaria"
-                        />
-                      </div>
-                      <div
-                        class="formulario-convite__opcoes"
-                        role="group"
-                        :aria-labelledby="`${idCampoPessoa(indice, 'resposta')}-rotulo`"
-                      >
-                        <span
-                          :id="`${idCampoPessoa(indice, 'resposta')}-rotulo`"
-                          class="formulario-convite__rotulo-opcoes"
-                        >{{ TEXTOS_CONVIDADOS.campoResposta }}</span>
-                        <SelectButton
-                          :id="idCampoPessoa(indice, 'resposta')"
-                          v-model="pessoa.resposta"
-                          :options="opcoesResposta"
-                          option-label="rotulo"
-                          option-value="valor"
-                          :allow-empty="false"
-                          :aria-labelledby="`${idCampoPessoa(indice, 'resposta')}-rotulo`"
-                          :disabled="enviando || somenteLeitura"
-                          data-teste="campo-resposta"
-                        />
-                      </div>
-                    </div>
-                    <div class="formulario-convite__colunas-pessoa">
-                      <CampoFormulario
-                        v-slot="{ id: idEntrada, invalido, descritoPor }"
-                        :rotulo="TEXTOS_CONVIDADOS.campoTelefone"
-                        :id-campo="idCampoPessoa(indice, 'telefone')"
-                        :erro="erros[chaveErroPessoa(indice, 'telefone')]"
-                      >
-                        <InputText
-                          :id="idEntrada"
-                          v-model="pessoa.telefone"
-                          type="tel"
-                          inputmode="tel"
-                          autocomplete="off"
-                          :maxlength="LIMITES_CONVIDADOS.telefoneMaximo"
-                          :invalid="invalido"
-                          :aria-invalid="invalido"
-                          :aria-describedby="descritoPor"
-                          :readonly="enviando || somenteLeitura"
-                          data-teste="campo-telefone"
-                          @update:model-value="revalidarPessoaAoDigitar(indice, 'telefone')"
-                          @blur="validarPessoaAoSair(indice, 'telefone')"
-                        />
-                      </CampoFormulario>
-                      <CampoFormulario
-                        v-slot="{ id: idEntrada, invalido, descritoPor }"
-                        :rotulo="TEXTOS_CONVIDADOS.campoEmail"
-                        :id-campo="idCampoPessoa(indice, 'email')"
-                        :erro="erros[chaveErroPessoa(indice, 'email')]"
-                      >
-                        <InputText
-                          :id="idEntrada"
-                          v-model="pessoa.email"
-                          type="email"
-                          inputmode="email"
-                          autocomplete="off"
-                          :maxlength="LIMITES_CONVIDADOS.emailMaximo"
-                          :invalid="invalido"
-                          :aria-invalid="invalido"
-                          :aria-describedby="descritoPor"
-                          :readonly="enviando || somenteLeitura"
-                          data-teste="campo-email"
-                          @update:model-value="revalidarPessoaAoDigitar(indice, 'email')"
-                          @blur="validarPessoaAoSair(indice, 'email')"
-                        />
-                      </CampoFormulario>
-                    </div>
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, descritoPor }"
+                      :rotulo="TEXTOS_CONVIDADOS.campoAcompanhantes"
+                      :id-campo="idCampoConvite('limiteAcompanhantes')"
+                      :dica="TEXTOS_CONVIDADOS.dicaAcompanhantes"
+                      :erro="erros.limiteAcompanhantes"
+                    >
+                      <Select
+                        v-model="dados.limiteAcompanhantes"
+                        :input-id="idEntrada"
+                        :options="opcoesAcompanhantes"
+                        option-label="rotulo"
+                        option-value="valor"
+                        :aria-describedby="descritoPor"
+                        :disabled="enviando || somenteLeitura"
+                        data-teste="campo-acompanhantes"
+                      />
+                    </CampoFormulario>
                   </div>
-                </template>
-              </ListaRepetivel>
-            </section>
+                </fieldset>
 
-            <div class="formulario-convite__acoes">
-              <div class="formulario-convite__acoes-principais">
-                <Button
-                  type="submit"
-                  :label="TEXTOS_CONVIDADOS.salvarConvite"
-                  :loading="enviando"
-                  :aria-busy="enviando"
-                  :disabled="somenteLeitura"
-                  data-teste="salvar-convite"
-                />
-                <Button
-                  type="button"
-                  :label="ROTULOS_ACOES.cancelar"
-                  severity="secondary"
-                  text
-                  :disabled="enviando"
-                  data-teste="cancelar"
-                  @click="voltarParaLista"
-                />
-              </div>
-              <Button
-                v-if="edicao && conviteOriginal && !somenteLeitura"
-                type="button"
-                :label="TEXTOS_CONVIDADOS.excluirConvite"
-                icon="ie ie-excluir"
-                severity="danger"
-                outlined
-                :disabled="enviando"
-                data-teste="excluir-convite"
-                @click="excluir"
-              />
-            </div>
-          </form>
-        </template>
+                <section
+                  class="formulario-convite__grupo pilha pilha--grupo"
+                  aria-labelledby="titulo-pessoas"
+                >
+                  <h2
+                    id="titulo-pessoas"
+                    class="formulario-convite__titulo-secao texto-rotulo"
+                  >
+                    {{ TEXTOS_CONVIDADOS.secaoPessoas }}
+                  </h2>
+                  <ListaRepetivel
+                    :itens="pessoas"
+                    :chave="(pessoa) => pessoa.chaveLocal"
+                    :textos="textosLista"
+                    :minimo="LIMITES_CONVIDADOS.pessoasMinimo"
+                    :maximo="LIMITES_CONVIDADOS.pessoasMaximo"
+                    :desabilitado="enviando || somenteLeitura"
+                    @adicionar="adicionarPessoa"
+                    @remover="removerPessoa"
+                  >
+                    <template #default="{ item: pessoa, indice }">
+                      <div
+                        class="formulario-convite__pessoa pilha pilha--grupo"
+                        data-teste="dados-pessoa"
+                      >
+                        <CampoFormulario
+                          v-slot="{ id: idEntrada, invalido, descritoPor }"
+                          :rotulo="TEXTOS_CONVIDADOS.campoNome"
+                          :id-campo="idCampoPessoa(indice, 'nome')"
+                          obrigatorio
+                          :erro="erros[chaveErroPessoa(indice, 'nome')]"
+                        >
+                          <InputText
+                            :id="idEntrada"
+                            v-model="pessoa.nome"
+                            autocomplete="off"
+                            :maxlength="LIMITES_CONVIDADOS.nomeMaximo"
+                            aria-required="true"
+                            :invalid="invalido"
+                            :aria-invalid="invalido"
+                            :aria-describedby="descritoPor"
+                            :readonly="enviando || somenteLeitura"
+                            data-teste="campo-nome-pessoa"
+                            @update:model-value="revalidarPessoaAoDigitar(indice, 'nome')"
+                            @blur="validarPessoaAoSair(indice, 'nome')"
+                          />
+                        </CampoFormulario>
+                        <div class="formulario-convite__colunas-pessoa formulario-convite__colunas-pessoa--opcoes">
+                          <div
+                            class="formulario-convite__opcoes"
+                            role="group"
+                            :aria-labelledby="`${idCampoPessoa(indice, 'faixaEtaria')}-rotulo`"
+                          >
+                            <span
+                              :id="`${idCampoPessoa(indice, 'faixaEtaria')}-rotulo`"
+                              class="formulario-convite__rotulo-opcoes"
+                            >{{ TEXTOS_CONVIDADOS.campoIdade }}</span>
+                            <SelectButton
+                              :id="idCampoPessoa(indice, 'faixaEtaria')"
+                              v-model="pessoa.faixaEtaria"
+                              :options="opcoesFaixa"
+                              option-label="rotulo"
+                              option-value="valor"
+                              :allow-empty="false"
+                              :aria-labelledby="`${idCampoPessoa(indice, 'faixaEtaria')}-rotulo`"
+                              :disabled="enviando || somenteLeitura"
+                              data-teste="campo-faixa-etaria"
+                            />
+                          </div>
+                          <div
+                            class="formulario-convite__opcoes"
+                            role="group"
+                            :aria-labelledby="`${idCampoPessoa(indice, 'resposta')}-rotulo`"
+                          >
+                            <span
+                              :id="`${idCampoPessoa(indice, 'resposta')}-rotulo`"
+                              class="formulario-convite__rotulo-opcoes"
+                            >{{ TEXTOS_CONVIDADOS.campoResposta }}</span>
+                            <SelectButton
+                              :id="idCampoPessoa(indice, 'resposta')"
+                              v-model="pessoa.resposta"
+                              :options="opcoesResposta"
+                              option-label="rotulo"
+                              option-value="valor"
+                              :allow-empty="false"
+                              :aria-labelledby="`${idCampoPessoa(indice, 'resposta')}-rotulo`"
+                              :disabled="enviando || somenteLeitura"
+                              data-teste="campo-resposta"
+                            />
+                          </div>
+                        </div>
+                        <div class="formulario-convite__colunas-pessoa">
+                          <CampoFormulario
+                            v-slot="{ id: idEntrada, invalido, descritoPor }"
+                            :rotulo="TEXTOS_CONVIDADOS.campoTelefone"
+                            :id-campo="idCampoPessoa(indice, 'telefone')"
+                            :erro="erros[chaveErroPessoa(indice, 'telefone')]"
+                          >
+                            <InputText
+                              :id="idEntrada"
+                              v-model="pessoa.telefone"
+                              type="tel"
+                              inputmode="tel"
+                              autocomplete="off"
+                              :maxlength="LIMITES_CONVIDADOS.telefoneMaximo"
+                              :invalid="invalido"
+                              :aria-invalid="invalido"
+                              :aria-describedby="descritoPor"
+                              :readonly="enviando || somenteLeitura"
+                              data-teste="campo-telefone"
+                              @update:model-value="revalidarPessoaAoDigitar(indice, 'telefone')"
+                              @blur="validarPessoaAoSair(indice, 'telefone')"
+                            />
+                          </CampoFormulario>
+                          <CampoFormulario
+                            v-slot="{ id: idEntrada, invalido, descritoPor }"
+                            :rotulo="TEXTOS_CONVIDADOS.campoEmail"
+                            :id-campo="idCampoPessoa(indice, 'email')"
+                            :erro="erros[chaveErroPessoa(indice, 'email')]"
+                          >
+                            <InputText
+                              :id="idEntrada"
+                              v-model="pessoa.email"
+                              type="email"
+                              inputmode="email"
+                              autocomplete="off"
+                              :maxlength="LIMITES_CONVIDADOS.emailMaximo"
+                              :invalid="invalido"
+                              :aria-invalid="invalido"
+                              :aria-describedby="descritoPor"
+                              :readonly="enviando || somenteLeitura"
+                              data-teste="campo-email"
+                              @update:model-value="revalidarPessoaAoDigitar(indice, 'email')"
+                              @blur="validarPessoaAoSair(indice, 'email')"
+                            />
+                          </CampoFormulario>
+                        </div>
+                      </div>
+                    </template>
+                  </ListaRepetivel>
+                </section>
+
+                <div class="formulario-convite__acoes">
+                  <div class="formulario-convite__acoes-principais">
+                    <Button
+                      type="submit"
+                      :label="TEXTOS_CONVIDADOS.salvarConvite"
+                      :loading="enviando"
+                      :aria-busy="enviando"
+                      :disabled="somenteLeitura"
+                      data-teste="salvar-convite"
+                    />
+                    <Button
+                      type="button"
+                      :label="ROTULOS_ACOES.cancelar"
+                      severity="secondary"
+                      text
+                      :disabled="enviando"
+                      data-teste="cancelar"
+                      @click="voltarParaLista"
+                    />
+                  </div>
+                  <Button
+                    v-if="edicao && conviteOriginal && !somenteLeitura"
+                    type="button"
+                    :label="TEXTOS_CONVIDADOS.excluirConvite"
+                    icon="ie ie-excluir"
+                    severity="danger"
+                    outlined
+                    :disabled="enviando"
+                    data-teste="excluir-convite"
+                    @click="excluir"
+                  />
+                </div>
+              </form>
+            </template>
+          </div>
+
+          <div
+            v-if="mostrarPrevia && evento"
+            class="formulario-convite-tela__lateral"
+          >
+            <PreviaConvite
+              :tipo="evento.tipo"
+              :nome-primeira-pessoa="evento.nomePrimeiraPessoa"
+              :nome-segunda-pessoa="evento.nomeSegundaPessoa"
+              :data="evento.data"
+              :data-limite="evento.dataLimiteRsvpEfetiva"
+              :nome-convite="dados.nome"
+              :pessoas="pessoasPrevia"
+              :limite-acompanhantes="dados.limiteAcompanhantes"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </LayoutPainelUsuario>
 </template>
 
 <style scoped>
+.formulario-convite-tela {
+  container: formulario-convite-tela / inline-size;
+}
+
+.formulario-convite-tela__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'principal'
+    'lateral';
+  gap: var(--p-ritmo-bloco);
+}
+
+.formulario-convite-tela__principal {
+  grid-area: principal;
+  min-width: 0;
+}
+
+.formulario-convite-tela__lateral {
+  grid-area: lateral;
+  min-width: 0;
+  padding-top: var(--p-ritmo-bloco);
+  border-top: thin solid var(--p-cor-borda);
+}
+
 .formulario-convite {
   container: formulario-convite / inline-size;
 }
@@ -827,6 +884,25 @@ function excluir() {
   .formulario-convite__opcoes :deep(.p-togglebutton-content) {
     justify-content: center;
     padding-inline: var(--p-ritmo-campo);
+  }
+}
+
+@container formulario-convite-tela (min-width: 64rem) {
+  .formulario-convite-tela__pagina--com-lateral {
+    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
+  }
+
+  .formulario-convite-tela__pagina--com-lateral .formulario-convite-tela__corpo {
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
+    grid-template-areas: 'principal lateral';
+    align-items: start;
+  }
+
+  .formulario-convite-tela__lateral {
+    padding-top: 0;
+    padding-inline-start: var(--p-ritmo-bloco);
+    border-top: 0;
+    border-inline-start: thin solid var(--p-cor-borda);
   }
 }
 </style>
