@@ -1,5 +1,7 @@
 import { NOME_PRODUTO } from '@/textos/rotulos'
 
+export const TITULO_CONVITE_ASSESSORIA = 'Recebeu um convite da assessoria?'
+
 export const TEXTOS_ENTRAR = {
   titulo: 'Entrar',
   descricao: 'Use o e-mail e a senha da sua conta.',
@@ -10,7 +12,7 @@ export const TEXTOS_ENTRAR = {
   primeiraVez: `Primeira vez no ${NOME_PRODUTO}?`,
   assessoriaTitulo: 'Organiza eventos para clientes?',
   assessoriaTexto: 'Crie a conta da sua assessoria. Leva um minuto.',
-  anfitriaoTitulo: 'Recebeu um convite da assessoria?',
+  anfitriaoTitulo: TITULO_CONVITE_ASSESSORIA,
   anfitriaoTexto: 'Abra o link do e-mail para criar sua senha. Depois, entre aqui com o mesmo e-mail.',
 } as const
 
@@ -34,7 +36,7 @@ export const TEXTOS_CADASTRO = {
   recursoPlanejamentoTexto: 'Tarefas, prazos e o roteiro do dia, a partir de modelos para cada tipo de evento.',
   recursoDiaTitulo: 'Dia do evento',
   recursoDiaTexto: 'Cronograma em andamento, mesas e fornecedores à mão da equipe.',
-  anfitriaoTitulo: 'Recebeu um convite da assessoria?',
+  anfitriaoTitulo: TITULO_CONVITE_ASSESSORIA,
   anfitriaoTexto: 'Você não precisa criar conta. Abra o link do e-mail para criar sua senha.',
 } as const
 
@@ -60,18 +62,35 @@ export const TEXTOS_ESQUECI_SENHA = {
   maisDeUmPedidoTexto: 'Use o e-mail mais recente. Cada pedido novo cancela o link anterior.',
   depoisTitulo: 'Depois de criar a nova senha',
   depoisTexto: 'As sessões abertas em outros aparelhos são encerradas. Entre de novo com a nova senha.',
-  anfitriaoNotaTitulo: 'Recebeu um convite da assessoria?',
+  anfitriaoNotaTitulo: TITULO_CONVITE_ASSESSORIA,
   anfitriaoNotaTexto: 'O e-mail de recuperação só vale para quem já criou a senha. Antes disso, use o link do convite.',
 } as const
 
 export const TEXTOS_REDEFINIR_SENHA = {
   titulo: 'Crie uma nova senha',
-  descricao: 'Depois de salvar, entre com a nova senha em todos os seus dispositivos.',
+  descricao: 'Você vai usar esta senha para entrar daqui em diante.',
   botao: 'Salvar nova senha',
   voltar: 'Voltar para entrar',
   linkInvalidoTitulo: 'Este link não vale mais',
   linkInvalidoTexto: 'O link de redefinição expirou ou já foi usado. Peça um novo para continuar.',
   pedirNovo: 'Pedir um novo link',
+  sobreTitulo: 'Sobre a nova senha',
+  soSuaTitulo: 'Escolha uma senha só sua',
+  soSuaTexto: 'Não use o seu e-mail nem uma senha que você já usa em outro site.',
+  depoisTitulo: 'Depois de salvar',
+  depoisTexto: 'Você volta para a tela de entrada. Entre com o mesmo e-mail e a nova senha.',
+  aparelhosTitulo: 'Outros aparelhos saem da conta',
+  aparelhosTexto:
+    'Por segurança, as sessões abertas em outros celulares e computadores são encerradas. Entre de novo neles com a nova senha.',
+  motivoTitulo: 'Por que o link deixou de valer',
+  validadeTitulo: 'O link vale por 1 hora',
+  validadeTexto: 'Depois disso, peça um novo. Ele chega no e-mail da sua conta.',
+  usoUnicoTitulo: 'Cada link funciona uma vez',
+  usoUnicoTexto: 'Se você já criou a nova senha com ele, é só entrar.',
+  maisDeUmPedidoTitulo: TEXTOS_ESQUECI_SENHA.maisDeUmPedidoTitulo,
+  maisDeUmPedidoTexto: TEXTOS_ESQUECI_SENHA.maisDeUmPedidoTexto,
+  anfitriaoNotaTitulo: TITULO_CONVITE_ASSESSORIA,
+  anfitriaoNotaTexto: 'Se você ainda não criou sua senha, use o link do convite. Se ele expirou, peça um novo à assessoria.',
 } as const
 
 export const ROTULOS_CAMPOS_AUTENTICACAO = {

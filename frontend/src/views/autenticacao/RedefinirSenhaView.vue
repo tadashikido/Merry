@@ -8,6 +8,7 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import CampoSenha from '@/componentes/base/CampoSenha.vue'
 import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import OrientacaoAcesso, { type ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { useAutenticacaoStore, type TipoFalha } from '@/stores/autenticacao'
 import { MENSAGENS_AUTENTICACAO, ROTULOS_CAMPOS_AUTENTICACAO, TEXTOS_REDEFINIR_SENHA } from '@/textos/autenticacao'
@@ -18,6 +19,51 @@ const FALHAS: Partial<Record<TipoFalha, string>> = {
   limite: MENSAGENS_AUTENTICACAO.muitasTentativas,
   conexao: MENSAGENS_AUTENTICACAO.conexao,
 }
+
+const ID_NOVA_SENHA = 'redefinir-nova-senha'
+const ID_LINK_INVALIDO = 'redefinir-link-invalido'
+
+const ORIENTACAO_NOVA_SENHA: readonly ItemOrientacaoAcesso[] = [
+  {
+    chave: 'so-sua',
+    titulo: TEXTOS_REDEFINIR_SENHA.soSuaTitulo,
+    texto: TEXTOS_REDEFINIR_SENHA.soSuaTexto,
+    teste: 'orientacao-so-sua',
+  },
+  {
+    chave: 'depois',
+    titulo: TEXTOS_REDEFINIR_SENHA.depoisTitulo,
+    texto: TEXTOS_REDEFINIR_SENHA.depoisTexto,
+    teste: 'orientacao-depois',
+  },
+  {
+    chave: 'aparelhos',
+    titulo: TEXTOS_REDEFINIR_SENHA.aparelhosTitulo,
+    texto: TEXTOS_REDEFINIR_SENHA.aparelhosTexto,
+    teste: 'orientacao-aparelhos',
+  },
+]
+
+const ORIENTACAO_LINK_INVALIDO: readonly ItemOrientacaoAcesso[] = [
+  {
+    chave: 'validade',
+    titulo: TEXTOS_REDEFINIR_SENHA.validadeTitulo,
+    texto: TEXTOS_REDEFINIR_SENHA.validadeTexto,
+    teste: 'orientacao-validade',
+  },
+  {
+    chave: 'uso-unico',
+    titulo: TEXTOS_REDEFINIR_SENHA.usoUnicoTitulo,
+    texto: TEXTOS_REDEFINIR_SENHA.usoUnicoTexto,
+    teste: 'orientacao-uso-unico',
+  },
+  {
+    chave: 'mais-de-um-pedido',
+    titulo: TEXTOS_REDEFINIR_SENHA.maisDeUmPedidoTitulo,
+    texto: TEXTOS_REDEFINIR_SENHA.maisDeUmPedidoTexto,
+    teste: 'orientacao-mais-de-um-pedido',
+  },
+]
 
 const store = useAutenticacaoStore()
 const rota = useRoute()
@@ -178,6 +224,28 @@ function pedirNovoLink() {
           data-teste="enviar"
         />
       </form>
+    </template>
+
+    <template #complemento>
+      <OrientacaoAcesso
+        v-if="linkInvalido"
+        :id-titulo="ID_LINK_INVALIDO"
+        :titulo="TEXTOS_REDEFINIR_SENHA.motivoTitulo"
+        :itens="ORIENTACAO_LINK_INVALIDO"
+        data-teste="orientacao-link-invalido"
+      >
+        <p data-teste="nota-anfitriao">
+          <strong>{{ TEXTOS_REDEFINIR_SENHA.anfitriaoNotaTitulo }}</strong>
+          {{ TEXTOS_REDEFINIR_SENHA.anfitriaoNotaTexto }}
+        </p>
+      </OrientacaoAcesso>
+      <OrientacaoAcesso
+        v-else
+        :id-titulo="ID_NOVA_SENHA"
+        :titulo="TEXTOS_REDEFINIR_SENHA.sobreTitulo"
+        :itens="ORIENTACAO_NOVA_SENHA"
+        data-teste="orientacao-nova-senha"
+      />
     </template>
 
     <template #rodape>

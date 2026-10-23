@@ -6,7 +6,14 @@ import EsqueciSenhaView from '@/views/autenticacao/EsqueciSenhaView.vue'
 import RedefinirSenhaView from '@/views/autenticacao/RedefinirSenhaView.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { DETALHE_LINK_INVALIDO, useAutenticacaoStore } from '@/stores/autenticacao'
-import { MENSAGENS_AUTENTICACAO, TEXTOS_ENTRAR, TEXTOS_ESQUECI_SENHA, TEXTOS_REDEFINIR_SENHA } from '@/textos/autenticacao'
+import {
+  MENSAGENS_AUTENTICACAO,
+  TEXTOS_CADASTRO,
+  TEXTOS_ENTRAR,
+  TEXTOS_ESQUECI_SENHA,
+  TEXTOS_REDEFINIR_SENHA,
+  TITULO_CONVITE_ASSESSORIA,
+} from '@/textos/autenticacao'
 import { tiposEventoEmFrase } from '@/textos/tiposEvento'
 import { MENSAGENS_VALIDACAO } from '@/utilitarios/validacao'
 import {
@@ -327,7 +334,7 @@ describe('RedefinirSenhaView', () => {
     await abrir('/redefinir-senha')
 
     expect(wrapper!.findAll('h1')).toHaveLength(1)
-    expect(wrapper!.find('h2').exists()).toBe(false)
+    expect(wrapper!.get('main').find('h2').exists()).toBe(false)
     expect(wrapper!.find('[data-teste="estado-erro"]').exists()).toBe(false)
     expect(wrapper!.text().split(TEXTOS_REDEFINIR_SENHA.linkInvalidoTexto)).toHaveLength(2)
 
@@ -422,5 +429,100 @@ describe('RedefinirSenhaView', () => {
     await flushPromises()
     expect(wrapper!.text()).toContain(MENSAGENS_AUTENTICACAO.conexao)
     expect(wrapper!.find('form').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] com link válido orienta sobre a nova senha fora do formulário, sem links e sem tirar o foco do campo', async () => {
+    await abrir('/redefinir-senha#token=abc')
+
+    const regiao = wrapper!.get('aside[data-teste="orientacao-nova-senha"]')
+    const titulo = regiao.get('h2')
+    expect(regiao.attributes('aria-labelledby')).toBe(titulo.attributes('id'))
+    expect(titulo.text()).toBe(TEXTOS_REDEFINIR_SENHA.sobreTitulo)
+    expect(regiao.findAll('li h3').map((item) => item.text())).toEqual([
+      TEXTOS_REDEFINIR_SENHA.soSuaTitulo,
+      TEXTOS_REDEFINIR_SENHA.depoisTitulo,
+      TEXTOS_REDEFINIR_SENHA.aparelhosTitulo,
+    ])
+    expect(regiao.get('[data-teste="orientacao-so-sua"] p').text()).toBe(TEXTOS_REDEFINIR_SENHA.soSuaTexto)
+    expect(regiao.get('[data-teste="orientacao-depois"] p').text()).toBe(TEXTOS_REDEFINIR_SENHA.depoisTexto)
+    expect(regiao.get('[data-teste="orientacao-aparelhos"] p').text()).toBe(TEXTOS_REDEFINIR_SENHA.aparelhosTexto)
+    expect(regiao.find('a').exists()).toBe(false)
+    expect(regiao.find('[data-teste="nota-anfitriao"]').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="orientacao-link-invalido"]').exists()).toBe(false)
+
+    const botao = wrapper!.get('[data-teste="enviar"]').element
+    expect(botao.compareDocumentPosition(regiao.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(wrapper!.get('main').find('[data-teste="orientacao-nova-senha"]').exists()).toBe(false)
+    expect(document.activeElement?.id).toBe('redefinir-novaSenha')
+    expect(wrapper!.findAll('a')).toHaveLength(1)
+  })
+
+  it('[COMPONENTE] link sem token explica por que deixou de valer, com nota ao anfitrião', async () => {
+    await abrir('/redefinir-senha')
+
+    expect(wrapper!.find('[data-teste="orientacao-nova-senha"]').exists()).toBe(false)
+    const regiao = wrapper!.get('aside[data-teste="orientacao-link-invalido"]')
+    expect(regiao.attributes('aria-labelledby')).toBe(regiao.get('h2').attributes('id'))
+    expect(regiao.get('h2').text()).toBe(TEXTOS_REDEFINIR_SENHA.motivoTitulo)
+    expect(regiao.findAll('li h3').map((item) => item.text())).toEqual([
+      TEXTOS_REDEFINIR_SENHA.validadeTitulo,
+      TEXTOS_REDEFINIR_SENHA.usoUnicoTitulo,
+      TEXTOS_ESQUECI_SENHA.maisDeUmPedidoTitulo,
+    ])
+    expect(regiao.get('[data-teste="orientacao-mais-de-um-pedido"] p').text()).toBe(TEXTOS_ESQUECI_SENHA.maisDeUmPedidoTexto)
+    const nota = regiao.get('[data-teste="nota-anfitriao"]')
+    expect(nota.get('strong').text()).toBe(TITULO_CONVITE_ASSESSORIA)
+    expect(nota.text()).toContain(TEXTOS_REDEFINIR_SENHA.anfitriaoNotaTexto)
+    expect(regiao.find('a').exists()).toBe(false)
+    expect(regiao.find('button').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] link recusado pelo servidor troca a orientação para o motivo, com ids de título distintos', async () => {
+    await abrir('/redefinir-senha#token=abc')
+    const idAntes = wrapper!.get('[data-teste="orientacao-nova-senha"] h2').attributes('id')
+    fetchSimulado.mockResolvedValue(respostaProblema(422, { detail: DETALHE_LINK_INVALIDO }))
+
+    await preencherEEnviar('senhaForte1', 'senhaForte1')
+
+    expect(wrapper!.find('[data-teste="orientacao-nova-senha"]').exists()).toBe(false)
+    const idDepois = wrapper!.get('[data-teste="orientacao-link-invalido"] h2').attributes('id')
+    expect(idDepois).not.toBe(idAntes)
+    expect(document.activeElement?.id).toBe('autenticacao-titulo')
+  })
+
+  it('[SEGURANÇA] a orientação não repete token nem e-mail e é a mesma para qualquer link inválido', async () => {
+    await abrir('/redefinir-senha#token=segredo-123')
+    fetchSimulado.mockResolvedValue(respostaProblema(422, { detail: DETALHE_LINK_INVALIDO }))
+    await preencherEEnviar('senhaForte1', 'senhaForte1')
+    const recusado = wrapper!.get('[data-teste="orientacao-link-invalido"]').text()
+    expect(wrapper!.text()).not.toMatch(/segredo-123|@/)
+    wrapper!.unmount()
+    wrapper = undefined
+    document.body.innerHTML = ''
+
+    await abrir('/redefinir-senha')
+    expect(wrapper!.get('[data-teste="orientacao-link-invalido"]').text()).toBe(recusado)
+  })
+
+  it('[COMPONENTE] não trata casamento como conceito geral no formulário nem no link inválido', async () => {
+    await abrir('/redefinir-senha#token=abc')
+    const semTipos = () => wrapper!.text().split(tiposEventoEmFrase()).join('')
+    expect(wrapper!.get('[data-teste="tipos-atendidos"]').text()).toContain(tiposEventoEmFrase())
+    expect(semTipos()).not.toMatch(/casamento|casal|noiv/i)
+    wrapper!.unmount()
+    document.body.innerHTML = ''
+
+    await abrir('/redefinir-senha')
+    expect(semTipos()).not.toMatch(/casamento|casal|noiv/i)
+  })
+
+  it('[COMPONENTE] a nota ao anfitrião usa o mesmo título nas telas de acesso', () => {
+    expect([
+      TEXTOS_ENTRAR.anfitriaoTitulo,
+      TEXTOS_CADASTRO.anfitriaoTitulo,
+      TEXTOS_ESQUECI_SENHA.anfitriaoNotaTitulo,
+      TEXTOS_REDEFINIR_SENHA.anfitriaoNotaTitulo,
+    ]).toEqual(Array(4).fill(TITULO_CONVITE_ASSESSORIA))
+    expect(TITULO_CONVITE_ASSESSORIA).toBe('Recebeu um convite da assessoria?')
   })
 })
