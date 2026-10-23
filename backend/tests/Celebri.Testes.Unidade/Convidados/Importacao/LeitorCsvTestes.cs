@@ -43,6 +43,30 @@ public class LeitorCsvTestes
     }
 
     [Fact]
+    public void Fixture_QuebraEmAspas_DeveChegarComOsBytesDoRepositorioSemConversaoDeFimDeLinha()
+    {
+        var conteudo = Fixture("utf8-sem-bom-quebra-em-aspas.csv");
+
+        Assert.False(
+            conteudo.Contains((byte)'\r'),
+            "A fixture chegou com CR: o .gitattributes precisa manter backend/tests/**/Fixtures/** como -text para preservar os bytes no checkout.");
+    }
+
+    [Fact]
+    public void Ler_FimDeLinhaCrlfComQuebraEntreAspasELinhaVazia_DevePreservarCrlfNoCampoENumerarPelaLinhaFisica()
+    {
+        var planilha = LeitorCsv.Ler(Utf8("Nome;Convite\r\n\"Ana\r\nBeatriz\";Família Lima\r\n\r\nBruno Lima;Família Lima\r\n"));
+
+        Assert.Equal(["Nome", "Convite"], planilha.Cabecalho);
+        Assert.Equal(2, planilha.Linhas.Count);
+        Assert.Equal("Ana\r\nBeatriz", planilha.Linhas[0].Celulas[0]);
+        Assert.Equal("Família Lima", planilha.Linhas[0].Celulas[1]);
+        Assert.Equal(2, planilha.Linhas[0].Numero);
+        Assert.Equal("Bruno Lima", planilha.Linhas[1].Celulas[0]);
+        Assert.Equal(5, planilha.Linhas[1].Numero);
+    }
+
+    [Fact]
     public void Ler_ArquivoBinarioComExtensaoCsv_DeveRecusarComoNaoTexto()
     {
         var excecao = Assert.Throws<RegraNegocioException>(() => LeitorCsv.Ler(Fixture("imagem-renomeada.csv")));

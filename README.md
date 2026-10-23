@@ -53,6 +53,8 @@ dotnet test
 
 Os testes de integração com banco usam Testcontainers e exigem Docker em execução.
 
+O fim de linha é LF em qualquer sistema: o `.gitattributes` impõe `eol=lf` mesmo com `core.autocrlf=true` (padrão do Git for Windows) e entrega as fixtures de `backend/tests/**/Fixtures/` byte a byte (`-text`). Um checkout Windows feito antes dessa regra continua com CRLF no disco e quebra `dotnet format --verify-no-changes`; para regravá-lo, com a working tree limpa: `git rm --cached -r -q . && git reset --hard`. Não rode `git add --renormalize .` com arquivos em CRLF no disco: ele gravaria as fixtures com CRLF.
+
 ```bash
 cd frontend
 npm run lint
