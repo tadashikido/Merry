@@ -34,7 +34,7 @@ multievento em 21/10/2026: a primeira versão cobre eventos sociais (casamento, 
 anos, aniversário, comemoração); corporativo e formatura ficam previstos no modelo, sem
 construção agora. O projeto no SpecFlow ainda se chama "Casamento" e parte do domínio no
 código ainda usa `Casamento`/`Casal` até o renome de domínio (Casamento→Evento,
-Casal→Anfitrião). Stack definida na constituição SpecFlow: backend .NET 8 + ASP.NET Core +
+Casal→Anfitrião). Stack definida na constituição SpecFlow: backend .NET 10 LTS + ASP.NET Core +
 EF Core + PostgreSQL, frontend Vue 3 + TypeScript + Pinia + PrimeVue, JWT, SignalR pra tempo
 real.
 

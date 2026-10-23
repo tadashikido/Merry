@@ -444,8 +444,8 @@ public sealed class DuplicacaoEventoApiTestes : IsolamentoOrganizacaoTestesBase,
         await VincularAsync(OrganizacaoA.Cliente, origem.Id, fornecedor, "Cotacao", 1_000m);
         await using (var contexto = CriarContexto(OrganizacaoA))
         {
-            await contexto.Database.ExecuteSqlRawAsync(
-                "ALTER TABLE fornecedores_evento ADD CONSTRAINT ck_teste_bloqueia_copia CHECK (evento_id = '" + origem.Id + "')");
+            var restricaoQueBloqueiaCopia = $"ALTER TABLE fornecedores_evento ADD CONSTRAINT ck_teste_bloqueia_copia CHECK (evento_id = '{origem.Id:D}')";
+            await contexto.Database.ExecuteSqlRawAsync(restricaoQueBloqueiaCopia);
         }
 
         try

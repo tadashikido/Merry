@@ -3,6 +3,7 @@ using Celebri.Testes.Integracao.Infraestrutura;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -51,6 +52,7 @@ public class FabricaApiIsolamento : FabricaApiAutenticacao
         if (_incluirEntidadeTeste)
         {
             opcoes.ReplaceService<IModelCustomizer, CustomizadorModeloIsolamento>();
+            opcoes.ConfigureWarnings(avisos => avisos.Ignore(RelationalEventId.PendingModelChangesWarning));
         }
     }
 }

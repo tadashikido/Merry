@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend (.NET 8)
+    name: Backend (.NET 10)
     runs-on: ubuntu-latest
     defaults:
       run:

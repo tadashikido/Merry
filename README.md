@@ -2,12 +2,12 @@
 
 *Eventos que conectam.* Plataforma para cerimonialistas e assessorias gerenciarem os eventos sociais dos seus clientes (casamento, festa de 15 anos, aniversário, comemoração).
 
-- `backend/` — .NET 8 (ASP.NET Core, EF Core, PostgreSQL), camadas `Api`, `Aplicacao`, `Dominio`, `Infraestrutura`
+- `backend/` — .NET 10 LTS (ASP.NET Core, EF Core, PostgreSQL), camadas `Api`, `Aplicacao`, `Dominio`, `Infraestrutura`
 - `frontend/` — Vue 3 + TypeScript + Pinia + PrimeVue (Vite)
 
 ## Pré-requisitos
 
-Docker, SDK .NET 8 (fixado em `global.json`) e Node 24 (`.nvmrc`).
+Docker, SDK .NET 10 (fixado em `global.json`) e Node 24 (`.nvmrc`).
 
 ## Subir tudo
 

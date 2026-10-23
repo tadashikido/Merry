@@ -143,7 +143,7 @@ public class CelebriDbContext : DbContext
 
         foreach (var tipo in entidadesIsoladas)
         {
-            if (tipo.GetQueryFilter() is not null)
+            if (tipo.GetDeclaredQueryFilters().Count > 0)
             {
                 throw new InvalidOperationException(
                     $"A entidade '{tipo.ClrType.Name}' já possui query filter próprio. Filtros de entidades isoladas por organização devem ser compostos na convenção de isolamento do CelebriDbContext.");

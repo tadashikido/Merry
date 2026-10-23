@@ -62,7 +62,7 @@ public class ConvencaoIsolamentoTestes
 
         foreach (var tipo in contexto.Model.GetEntityTypes().Where(tipo => typeof(IPertenceOrganizacao).IsAssignableFrom(tipo.ClrType)))
         {
-            Assert.NotNull(tipo.GetQueryFilter());
+            Assert.NotEmpty(tipo.GetDeclaredQueryFilters());
             Assert.True(tipo.FindProperty(nameof(IPertenceOrganizacao.OrganizacaoId))!.IsConcurrencyToken);
         }
     }
@@ -151,7 +151,7 @@ public class ConvencaoIsolamentoTestes
 
         var tipo = contexto.Model.FindEntityType(typeof(EntidadeFicticiaIsolada))!;
 
-        Assert.NotNull(tipo.GetQueryFilter());
+        Assert.NotEmpty(tipo.GetDeclaredQueryFilters());
         Assert.True(tipo.FindProperty(nameof(IPertenceOrganizacao.OrganizacaoId))!.IsConcurrencyToken);
     }
 
@@ -171,6 +171,16 @@ public class ConvencaoIsolamentoTestes
     public void Convencao_EntidadeIsoladaComFiltroProprio_DeveFalharAoConstruirModelo()
     {
         using var contexto = CriarContexto<CustomizadorEntidadeComFiltroProprio>(Guid.NewGuid());
+
+        var excecao = Assert.Throws<InvalidOperationException>(() => contexto.Model);
+
+        Assert.Contains(nameof(EntidadeFicticiaComFiltroProprio), excecao.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Convencao_EntidadeIsoladaComFiltroNomeadoProprio_DeveFalharAoConstruirModelo()
+    {
+        using var contexto = CriarContexto<CustomizadorEntidadeComFiltroNomeado>(Guid.NewGuid());
 
         var excecao = Assert.Throws<InvalidOperationException>(() => contexto.Model);
 
@@ -240,6 +250,20 @@ public class CustomizadorEntidadeComFiltroProprio : ModelCustomizer
     public override void Customize(ModelBuilder modelBuilder, DbContext context)
     {
         modelBuilder.Entity<EntidadeFicticiaComFiltroProprio>().HasQueryFilter(entidade => entidade.Ativo);
+        base.Customize(modelBuilder, context);
+    }
+}
+
+public class CustomizadorEntidadeComFiltroNomeado : ModelCustomizer
+{
+    public CustomizadorEntidadeComFiltroNomeado(ModelCustomizerDependencies dependencias)
+        : base(dependencias)
+    {
+    }
+
+    public override void Customize(ModelBuilder modelBuilder, DbContext context)
+    {
+        modelBuilder.Entity<EntidadeFicticiaComFiltroProprio>().HasQueryFilter("somenteAtivos", entidade => entidade.Ativo);
         base.Customize(modelBuilder, context);
     }
 }

@@ -52,7 +52,7 @@ public class ConfiguracaoApiTestes
 
         Assert.Equal(ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto, opcoes.ForwardedHeaders);
         Assert.All(opcoes.KnownProxies, proxy => Assert.True(IPAddress.IsLoopback(proxy)));
-        Assert.All(opcoes.KnownNetworks, rede => Assert.True(IPAddress.IsLoopback(rede.Prefix)));
+        Assert.All(opcoes.KnownIPNetworks, rede => Assert.True(IPAddress.IsLoopback(rede.BaseAddress)));
     }
 
     [Fact]
@@ -71,8 +71,8 @@ public class ConfiguracaoApiTestes
         ConfiguracaoApi.ConfigurarProxyReverso(opcoes, configuracao);
 
         Assert.Contains(IPAddress.Parse("10.0.0.5"), opcoes.KnownProxies);
-        Assert.Contains(opcoes.KnownNetworks, rede => rede.Prefix.Equals(IPAddress.Parse("172.16.0.0")) && rede.PrefixLength == 12);
-        Assert.Contains(opcoes.KnownNetworks, rede => rede.Prefix.Equals(IPAddress.Parse("fd00::")) && rede.PrefixLength == 8);
+        Assert.Contains(opcoes.KnownIPNetworks, rede => rede.BaseAddress.Equals(IPAddress.Parse("172.16.0.0")) && rede.PrefixLength == 12);
+        Assert.Contains(opcoes.KnownIPNetworks, rede => rede.BaseAddress.Equals(IPAddress.Parse("fd00::")) && rede.PrefixLength == 8);
     }
 
     [Theory]
@@ -81,6 +81,7 @@ public class ConfiguracaoApiTestes
     [InlineData("ProxyReverso:Redes:0", "10.0.0.0/33")]
     [InlineData("ProxyReverso:Redes:0", "10.0.0.0/-1")]
     [InlineData("ProxyReverso:Redes:0", "rede/8")]
+    [InlineData("ProxyReverso:Redes:0", "fd00::/129")]
     public void ConfigurarProxyReverso_ValorInvalido_DeveFalharNaInicializacao(string chave, string valor)
     {
         var configuracao = new ConfigurationBuilder()

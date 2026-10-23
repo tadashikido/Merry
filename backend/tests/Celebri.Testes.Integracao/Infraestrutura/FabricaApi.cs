@@ -1,3 +1,4 @@
+using Celebri.Infraestrutura.Persistencia;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -72,12 +73,12 @@ public class FabricaApi : WebApplicationFactory<Program>
 
     private void LiberarPoolConexoes()
     {
-        if (_stringConexao == StringConexaoInalcancavel)
+        if (string.IsNullOrWhiteSpace(_stringConexao) || _stringConexao == StringConexaoInalcancavel)
         {
             return;
         }
 
-        using var conexao = new NpgsqlConnection(_stringConexao);
+        using var conexao = new NpgsqlConnection(ConfiguracaoDbContext.MontarStringConexao(_stringConexao));
         NpgsqlConnection.ClearPool(conexao);
     }
 }

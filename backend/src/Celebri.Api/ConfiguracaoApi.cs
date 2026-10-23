@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using Celebri.Api.Autenticacao;
@@ -9,7 +8,7 @@ using Celebri.Aplicacao.DadosSensiveis;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using RedeIp = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
+using RedeIp = System.Net.IPNetwork;
 
 namespace Celebri.Api;
 
@@ -117,19 +116,15 @@ public static class ConfiguracaoApi
 
         foreach (var rede in LerLista(configuracao, "ProxyReverso:Redes"))
         {
-            opcoes.KnownNetworks.Add(InterpretarRede(rede));
+            opcoes.KnownIPNetworks.Add(InterpretarRede(rede));
         }
     }
 
     private static RedeIp InterpretarRede(string rede)
     {
-        var partes = rede.Split('/');
-        if (partes.Length == 2
-            && IPAddress.TryParse(partes[0], out var prefixo)
-            && int.TryParse(partes[1], NumberStyles.None, CultureInfo.InvariantCulture, out var tamanhoPrefixo)
-            && tamanhoPrefixo <= (prefixo.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 32 : 128))
+        if (RedeIp.TryParse(rede, out var redeInterpretada))
         {
-            return new RedeIp(prefixo, tamanhoPrefixo);
+            return redeInterpretada;
         }
 
         throw new InvalidOperationException($"Rede inválida em 'ProxyReverso:Redes': '{rede}'. Use o formato CIDR, por exemplo 10.0.0.0/8.");

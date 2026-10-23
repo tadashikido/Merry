@@ -76,7 +76,7 @@ com motivo detalhado, sem `concluir`.
 
 ## Stack e restrições (da constituição — confirme no pré-voo)
 
-- Backend: .NET 8 + ASP.NET Core + EF Core + PostgreSQL; JWT; SignalR.
+- Backend: .NET 10 + ASP.NET Core + EF Core + PostgreSQL; JWT; SignalR.
 - Frontend: Vue 3 + TypeScript + Pinia + PrimeVue; SFC `<script setup>`; stores `useXStore`.
 - DTOs são `record` imutáveis; nomes de negócio em pt-BR; sufixos técnicos em inglês.
 - Sem lógica em Controllers; sem entidades nas respostas; sem `any`; HTTP só em stores.
