@@ -100,6 +100,7 @@ const dicaGrupo = computed(() => {
     : TEXTOS_CONVIDADOS.dicaGrupoPara(gruposSugeridos(evento.value?.tipo))
 })
 const mostrarPrevia = computed(() => evento.value !== null && !carregandoConvite.value && !falhaConvite.value)
+const paginaComLateral = computed(() => !falhaConvite.value && eventos.falhaAtual === null)
 const pessoasPrevia = computed<PessoaPreviaConvite[]>(() =>
   pessoas.value.map((pessoa) => ({ chave: pessoa.chaveLocal, nome: pessoa.nome, crianca: pessoa.faixaEtaria === 'Crianca' })),
 )
@@ -414,18 +415,18 @@ function excluir() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="formulario-convite-tela">
+    <div class="formulario-convite-tela com-lateral">
       <div
-        class="pagina-formulario formulario-convite-tela__pagina"
-        :class="{ 'formulario-convite-tela__pagina--com-lateral': mostrarPrevia }"
+        class="pagina-formulario formulario-convite-tela__pagina com-lateral__pagina"
+        :class="{ 'com-lateral__pagina--ativa': paginaComLateral }"
       >
         <CabecalhoPagina
           :titulo="titulo"
           :descricao="nomes || undefined"
         />
 
-        <div class="formulario-convite-tela__corpo">
-          <div class="formulario-convite-tela__principal pilha pilha--cartao">
+        <div class="formulario-convite-tela__corpo com-lateral__corpo">
+          <div class="formulario-convite-tela__principal com-lateral__principal pilha pilha--cartao">
             <EstadoCarregando
               v-if="carregandoConvite"
               variante="formulario"
@@ -721,7 +722,7 @@ function excluir() {
 
           <div
             v-if="mostrarPrevia && evento"
-            class="formulario-convite-tela__lateral"
+            class="formulario-convite-tela__lateral com-lateral__lateral com-lateral__lateral--filete"
           >
             <PreviaConvite
               :tipo="evento.tipo"
@@ -741,31 +742,6 @@ function excluir() {
 </template>
 
 <style scoped>
-.formulario-convite-tela {
-  container: formulario-convite-tela / inline-size;
-}
-
-.formulario-convite-tela__corpo {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    'principal'
-    'lateral';
-  gap: var(--p-ritmo-bloco);
-}
-
-.formulario-convite-tela__principal {
-  grid-area: principal;
-  min-width: 0;
-}
-
-.formulario-convite-tela__lateral {
-  grid-area: lateral;
-  min-width: 0;
-  padding-top: var(--p-ritmo-bloco);
-  border-top: thin solid var(--p-cor-borda);
-}
-
 .formulario-convite {
   container: formulario-convite / inline-size;
 }
@@ -884,25 +860,6 @@ function excluir() {
   .formulario-convite__opcoes :deep(.p-togglebutton-content) {
     justify-content: center;
     padding-inline: var(--p-ritmo-campo);
-  }
-}
-
-@container formulario-convite-tela (min-width: 64rem) {
-  .formulario-convite-tela__pagina--com-lateral {
-    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
-  }
-
-  .formulario-convite-tela__pagina--com-lateral .formulario-convite-tela__corpo {
-    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
-    grid-template-areas: 'principal lateral';
-    align-items: start;
-  }
-
-  .formulario-convite-tela__lateral {
-    padding-top: 0;
-    padding-inline-start: var(--p-ritmo-bloco);
-    border-top: 0;
-    border-inline-start: thin solid var(--p-cor-borda);
   }
 }
 </style>

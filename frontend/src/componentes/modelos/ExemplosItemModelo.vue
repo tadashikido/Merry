@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
 
+import SecaoRecolhivel from '@/componentes/base/SecaoRecolhivel.vue'
+
 import { TEXTOS_ITEM_MODELO } from '@/textos/checklist'
 import { exemplosItemChecklist, exemplosItemCronograma, referenciaDoModelo } from '@/textos/modelos'
 import { TEXTOS_ITEM_MODELO_CRONOGRAMA } from '@/textos/modelosCronograma'
@@ -9,10 +11,14 @@ import type { TipoEvento } from '@/tipos/eventos'
 import { descreverRelativoCerimonia } from '@/utilitarios/cronograma'
 import { descreverPrazoAproximado } from '@/utilitarios/prazoModelo'
 
-const props = withDefaults(defineProps<{ tipo?: TipoEvento | null; recurso?: 'checklist' | 'cronograma' }>(), {
-  tipo: null,
-  recurso: 'checklist',
-})
+const props = withDefaults(
+  defineProps<{ tipo?: TipoEvento | null; recurso?: 'checklist' | 'cronograma'; recolhivel?: boolean }>(),
+  {
+    tipo: null,
+    recurso: 'checklist',
+    recolhivel: false,
+  },
+)
 
 const idTitulo = useId()
 const idApoio = useId()
@@ -47,38 +53,42 @@ const exemplos = computed(() =>
     :aria-labelledby="idTitulo"
     data-teste="exemplos-item-modelo"
   >
-    <h2
-      :id="idTitulo"
-      class="exemplos-item__titulo texto-rotulo"
-    >
-      {{ textos.exemplosTitulo }}
-    </h2>
-    <p
-      :id="idApoio"
-      class="exemplos-item__apoio"
-      data-teste="apoio-exemplos-item"
-    >
-      {{ apoio }}
-    </p>
-    <ul
-      class="exemplos-item__lista"
-      :aria-labelledby="idApoio"
-    >
-      <li
-        v-for="exemplo in exemplos"
-        :key="exemplo.chave"
-        class="exemplos-item__exemplo"
-        data-teste="exemplo-item"
+    <SecaoRecolhivel :recolhivel="recolhivel">
+      <template #titulo>
+        <h2
+          :id="idTitulo"
+          class="exemplos-item__titulo texto-rotulo"
+        >
+          {{ textos.exemplosTitulo }}
+        </h2>
+      </template>
+      <p
+        :id="idApoio"
+        class="exemplos-item__apoio"
+        data-teste="apoio-exemplos-item"
       >
-        <span
-          v-if="exemplo.tipoRotulo"
-          class="exemplos-item__tipo"
-          data-teste="tipo-exemplo-item"
-        >{{ exemplo.tipoRotulo }}</span>
-        <span class="exemplos-item__nome">{{ exemplo.titulo }}</span>
-        <span class="exemplos-item__prazo">{{ exemplo.prazo }}</span>
-      </li>
-    </ul>
+        {{ apoio }}
+      </p>
+      <ul
+        class="exemplos-item__lista"
+        :aria-labelledby="idApoio"
+      >
+        <li
+          v-for="exemplo in exemplos"
+          :key="exemplo.chave"
+          class="exemplos-item__exemplo"
+          data-teste="exemplo-item"
+        >
+          <span
+            v-if="exemplo.tipoRotulo"
+            class="exemplos-item__tipo"
+            data-teste="tipo-exemplo-item"
+          >{{ exemplo.tipoRotulo }}</span>
+          <span class="exemplos-item__nome">{{ exemplo.titulo }}</span>
+          <span class="exemplos-item__prazo">{{ exemplo.prazo }}</span>
+        </li>
+      </ul>
+    </SecaoRecolhivel>
   </section>
 </template>
 
@@ -92,6 +102,10 @@ const exemplos = computed(() =>
 
 .exemplos-item .exemplos-item__titulo {
   margin: 0 0 var(--p-ritmo-campo);
+}
+
+.exemplos-item .recolhivel__resumo .exemplos-item__titulo {
+  margin: 0;
 }
 
 .exemplos-item__apoio {

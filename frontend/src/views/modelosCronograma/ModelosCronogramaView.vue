@@ -97,7 +97,7 @@ function executarAcao(modelo: ModeloCronogramaResumoDto, chave: string) {
       </template>
     </CabecalhoPagina>
 
-    <div class="modelos pilha pilha--cartao">
+    <div class="modelos com-lateral pilha pilha--cartao">
       <AbasSecao
         :rotulo="TEXTOS_ABAS_MODELOS.rotulo"
         :abas="ABAS_MODELOS"
@@ -196,7 +196,7 @@ function executarAcao(modelo: ModeloCronogramaResumoDto, chave: string) {
 
 <style scoped>
 .modelos {
-  container: modelos / inline-size;
+  container: modelos com-lateral / inline-size;
 }
 
 .modelos__corpo {
@@ -218,9 +218,9 @@ function executarAcao(modelo: ModeloCronogramaResumoDto, chave: string) {
   color: var(--p-cor-texto-secundario);
 }
 
-@container modelos (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .modelos__corpo {
-    grid-template-columns: minmax(0, 1fr) 20rem;
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
   }
 }
 </style>

@@ -235,6 +235,6 @@ describe('FornecedorEventoFormularioView — eventos', () => {
     expect(chamadas(fetchSimulado, 'GET', ROTA_HISTORICO_VINCULO)).toHaveLength(1)
     expect(historico.text()).not.toContain('Atual')
     expect(wrapper.find('[data-teste="contratacao-fornecedores"]').exists()).toBe(false)
-    expect(wrapper.get('.formulario-vinculo__pagina').classes()).toContain('formulario-vinculo__pagina--com-lateral')
+    expect(wrapper.get('.formulario-vinculo__pagina').classes()).toContain('com-lateral__pagina--ativa')
   })
 })

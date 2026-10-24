@@ -176,9 +176,20 @@ describe('ConviteFormularioView por tipo de evento', { timeout: 20_000 }, () => 
     await abrir(CAMINHO_NOVO, 'Casamento')
 
     const pagina = wrapper!.get('.formulario-convite-tela__pagina')
-    expect(pagina.classes()).toContain('formulario-convite-tela__pagina--com-lateral')
+    expect(pagina.classes()).toContain('com-lateral__pagina--ativa')
     const corpo = wrapper!.get('.formulario-convite-tela__corpo').element
     expect(corpo.lastElementChild?.classList.contains('formulario-convite-tela__lateral')).toBe(true)
+  })
+
+  it('[COMPONENTE] enquanto o evento carrega a página já tem a largura final, sem a prévia', async () => {
+    const pendente = (): Response => new Promise<Response>(() => undefined) as unknown as Response
+    rotearFetch(fetchSimulado, quando('GET', ROTA_EVENTO, pendente), quando('GET', ROTA_CONVITES, () => respostaJson(lista([]))))
+    const montagem = await prepararAplicacao(CAMINHO_NOVO)
+    wrapper = await montarView(RaizRotas, montagem)
+    await flushPromises()
+
+    expect(wrapper.find('[data-teste="previa-convite"]').exists()).toBe(false)
+    expect(wrapper.get('.formulario-convite-tela__pagina').classes()).toContain('com-lateral__pagina--ativa')
   })
 
   it('[COMPONENTE] falha ao carregar o evento mantém o formulário sem lateral', async () => {
@@ -193,7 +204,7 @@ describe('ConviteFormularioView por tipo de evento', { timeout: 20_000 }, () => 
 
     expect(wrapper.find('[data-teste="formulario-convite"]').exists()).toBe(true)
     expect(wrapper.find('[data-teste="previa-convite"]').exists()).toBe(false)
-    expect(wrapper.get('.formulario-convite-tela__pagina').classes()).not.toContain('formulario-convite-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-convite-tela__pagina').classes()).not.toContain('com-lateral__pagina--ativa')
     expect(dicaGrupo()).toBe('Por exemplo: Família, Amigos ou Convidados de honra.')
   })
 })

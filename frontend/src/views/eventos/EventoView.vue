@@ -249,7 +249,7 @@ async function desfazerArquivamento(id: string) {
         </template>
       </CabecalhoPagina>
 
-      <div class="evento pilha pilha--bloco">
+      <div class="evento com-lateral pilha pilha--bloco">
         <div
           v-if="evento.arquivado || dadosFaltantes.length > 0"
           class="pilha pilha--grupo"
@@ -359,7 +359,7 @@ async function desfazerArquivamento(id: string) {
 }
 
 .evento {
-  container: evento / inline-size;
+  container: evento com-lateral / inline-size;
 }
 
 .evento__painel {
@@ -376,9 +376,9 @@ async function desfazerArquivamento(id: string) {
   align-items: start;
 }
 
-@container evento (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .evento__painel {
-    grid-template-columns: minmax(0, 1fr) minmax(var(--p-dimensao-largura-gaveta), var(--p-dimensao-largura-autenticacao));
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
     grid-template-rows: auto 1fr;
   }
 

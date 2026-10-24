@@ -264,7 +264,7 @@ function importar() {
         </template>
       </CabecalhoPagina>
 
-      <div class="confirmacoes pilha pilha--bloco">
+      <div class="confirmacoes com-lateral pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado"
           variante="informacao"
@@ -568,12 +568,10 @@ function importar() {
 .confirmacoes {
   --confirmacoes-coluna-minima: 22rem;
 
-  container: confirmacoes / inline-size;
+  container: confirmacoes com-lateral / inline-size;
 }
 
 .confirmacoes__corpo {
-  --confirmacoes-largura-lateral: 21rem;
-
   display: grid;
   grid-template-areas:
     'pendentes'
@@ -695,10 +693,10 @@ function importar() {
   }
 }
 
-@container confirmacoes (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .confirmacoes__corpo {
     grid-template-areas: 'pendentes passos';
-    grid-template-columns: minmax(0, 1fr) var(--confirmacoes-largura-lateral);
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
   }
 }
 </style>

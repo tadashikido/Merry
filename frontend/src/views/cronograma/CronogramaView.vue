@@ -315,7 +315,7 @@ function excluir(item: ItemCronogramaDto) {
         </template>
       </CabecalhoPagina>
 
-      <div class="cronograma pilha pilha--bloco">
+      <div class="cronograma com-lateral pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado"
           variante="alerta"
@@ -641,9 +641,7 @@ function excluir(item: ItemCronogramaDto) {
 
 <style scoped>
 .cronograma {
-  --cronograma-largura-lateral: 18rem;
-
-  container: cronograma / inline-size;
+  container: cronograma com-lateral / inline-size;
 }
 
 .cronograma__aviso-texto {
@@ -846,9 +844,9 @@ function excluir(item: ItemCronogramaDto) {
   }
 }
 
-@container cronograma (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .cronograma__corpo {
-    grid-template-columns: minmax(0, 1fr) var(--cronograma-largura-lateral);
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
   }
 }
 </style>

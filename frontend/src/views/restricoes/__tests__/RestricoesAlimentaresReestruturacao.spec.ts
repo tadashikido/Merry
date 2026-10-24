@@ -199,13 +199,13 @@ describe('RestricoesAlimentaresView — reestruturação da fundação', { timeo
 
   it('[UNITÁRIO] estilos usam @container e ritmo, sem @media nem espaçamento solto', () => {
     expect(ESTILO_VIEW).not.toMatch(/@media/)
-    expect(ESTILO_VIEW).toContain('container: restricoes / inline-size')
+    expect(ESTILO_VIEW).toContain('container: restricoes com-lateral / inline-size')
     expect(ESTILO_VIEW).toContain('@container restricoes (min-width: 40rem)')
     expect(ESTILO_VIEW).toContain('container: restricoes-lista / inline-size')
     expect(ESTILO_VIEW).not.toContain(':deep(.listagem__')
     expect(FONTE_VIEW_RESTRICOES).toMatch(/<ListagemDados[^>]*ocultar-secundarias-abaixo="media"[^>]*acoes-somente-icone-abaixo="sempre"/)
     expect(FONTE_VIEW_RESTRICOES).toMatch(/<MenuAcoes[^>]*compactavel/)
-    expect(ESTILO_VIEW).toContain('@container restricoes (min-width: 64rem)')
+    expect(ESTILO_VIEW).toContain('@container com-lateral (min-width: 64rem)')
     expect(ESTILO_VIEW).not.toContain('80rem')
     expect(ESTILO_VIEW).not.toMatch(/sticky/)
     expect(ESTILO_VIEW).not.toMatch(/--p-espaco-/)

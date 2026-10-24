@@ -373,7 +373,7 @@ async function recalcular() {
         </template>
       </CabecalhoPagina>
 
-      <div class="checklist pilha pilha--bloco">
+      <div class="checklist com-lateral pilha pilha--bloco">
         <EstadoCarregando
           v-if="store.carregando && !dados"
           variante="lista"
@@ -705,9 +705,7 @@ async function recalcular() {
 
 <style scoped>
 .checklist {
-  --checklist-largura-lateral: 18rem;
-
-  container: checklist / inline-size;
+  container: checklist com-lateral / inline-size;
 }
 
 .checklist__corpo {
@@ -899,16 +897,14 @@ async function recalcular() {
   }
 }
 
-@container checklist (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .checklist__corpo {
-    grid-template-columns: minmax(0, 1fr) var(--checklist-largura-lateral);
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
   }
 
   .checklist__lateral {
     grid-column: 2;
     grid-row: 1;
-    position: sticky;
-    top: var(--p-ritmo-bloco);
   }
 
   .checklist__principal {

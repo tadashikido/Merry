@@ -144,12 +144,12 @@ describe('ModelosCronogramaView', () => {
   it('[UNITÁRIO] estilo da tela usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModelosCronogramaView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(estilo).toContain('container: modelos / inline-size')
-    expect(estilo).toContain('@container modelos')
+    expect(estilo).toContain('container: modelos com-lateral / inline-size')
+    expect(estilo).toContain('@container com-lateral (min-width: 52rem)')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')
-    expect(fonte).toContain('class="modelos pilha pilha--cartao"')
+    expect(fonte).toContain('class="modelos com-lateral pilha pilha--cartao"')
   })
 
   it('[COMPONENTE] estado vazio convida a criar e erro oferece nova tentativa', async () => {
@@ -429,14 +429,14 @@ describe('ModeloCronogramaView', () => {
   it('[UNITÁRIO] estilo do detalhe usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModeloCronogramaView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(estilo).toContain('container: modelo-cronograma / inline-size')
+    expect(estilo).toContain('container: modelo-cronograma com-lateral / inline-size')
     expect(estilo).toContain('container: lateral-modelo-cronograma / inline-size')
-    expect(estilo).toContain('@container modelo-cronograma (min-width: 64rem)')
+    expect(estilo).toContain('@container com-lateral (min-width: 52rem)')
     expect(estilo).toContain('@container lateral-modelo-cronograma (min-width: 36rem)')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')
-    expect(fonte).toContain('class="modelo-cronograma pilha pilha--bloco"')
+    expect(fonte).toContain('class="modelo-cronograma com-lateral pilha pilha--bloco"')
   })
 
   it('[UNITÁRIO] corpo do detalhe em grade de três filhos sem sticky, com Por dia oculto no estreito', () => {
@@ -715,11 +715,11 @@ describe('Formulários de modelo de cronograma', () => {
   it('[UNITÁRIO] estilo do formulário de modelo usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModeloCronogramaFormularioView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(fonte).toContain('class="pagina-formulario formulario-modelo-tela__pagina"')
+    expect(fonte).toContain('class="pagina-formulario formulario-modelo-tela__pagina com-lateral__pagina')
     expect(estilo).toContain('container: formulario-modelo / inline-size')
     expect(estilo).toContain('@container formulario-modelo (min-width: 40rem)')
-    expect(estilo).toContain('container: formulario-modelo-tela / inline-size')
-    expect(estilo).toContain('@container formulario-modelo-tela (min-width: 64rem)')
+    expect(estilo).not.toContain('container: formulario-modelo-tela /')
+    expect(estilo).not.toContain('@container formulario-modelo-tela ')
     expect(estilo).toContain('repeat(2, minmax(0, 1fr))')
     expect(estilo).not.toContain('sticky')
     expect(estilo).not.toContain('@media')
@@ -732,7 +732,7 @@ describe('Formulários de modelo de cronograma', () => {
     rotearFetch(fetchSimulado)
     const { wrapper } = await abrir('/modelos-cronograma/novo')
 
-    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).toContain('formulario-modelo-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).toContain('com-lateral__pagina--ativa')
     expect(wrapper.get('label[for="modelo-cronograma-horarioReferencia"]').text()).toContain('Horário de referência do evento')
     expect(wrapper.get('[data-teste="formulario-modelo"]').text()).not.toMatch(/cerimônia|casamento|comemoração/i)
     expect(wrapper.get('.cabecalho-pagina__descricao').text()).not.toMatch(/cerimônia|casamento/i)
@@ -803,7 +803,7 @@ describe('Formulários de modelo de cronograma', () => {
     const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/editar`)
 
     expect(wrapper.find('[data-teste="lateral-formulario-modelo"]').exists()).toBe(false)
-    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).not.toContain('formulario-modelo-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).not.toContain('com-lateral__pagina--ativa')
   })
 
   it('[INTEGRAÇÃO] novo item converte dia e horário em minutos desde a cerimônia', async () => {
@@ -1066,7 +1066,7 @@ describe('Formulários de modelo de cronograma', () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
     const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/${ID_ITEM_MODELO_CRONOGRAMA}/editar`)
 
-    expect(wrapper.get('.formulario-item-tela__pagina').classes()).toContain('formulario-item-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-item-tela__pagina').classes()).toContain('com-lateral__pagina--ativa')
     const lateral = wrapper.get('[data-teste="lateral-formulario-item"]')
     expect(lateral.get('[data-teste="previa-horario-item"]').text()).toBe('6 h antes da cerimônia')
     expect(lateral.findAll('[data-teste="vizinho-item"]').map((linha) => linha.text())).toEqual(['Cerimônia16:00, hora da cerimônia'])
@@ -1109,17 +1109,17 @@ describe('Formulários de modelo de cronograma', () => {
     const { wrapper } = await abrir(caminho)
 
     expect(wrapper.find('[data-teste="lateral-formulario-item"]').exists()).toBe(false)
-    expect(wrapper.get('.formulario-item-tela__pagina').classes()).not.toContain('formulario-item-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-item-tela__pagina').classes()).not.toContain('com-lateral__pagina--ativa')
   })
 
   it('[UNITÁRIO] estilo do formulário de item usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ItemModeloCronogramaFormularioView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(fonte).toContain('class="pagina-formulario formulario-item-tela__pagina"')
+    expect(fonte).toContain('class="pagina-formulario formulario-item-tela__pagina com-lateral__pagina')
     expect(estilo).toContain('container: formulario-item-cronograma / inline-size')
     expect(estilo).toContain('@container formulario-item-cronograma (min-width: 40rem)')
-    expect(estilo).toContain('container: formulario-item-tela / inline-size')
-    expect(estilo).toContain('@container formulario-item-tela (min-width: 64rem)')
+    expect(estilo).not.toContain('container: formulario-item-tela /')
+    expect(estilo).not.toContain('@container formulario-item-tela ')
     expect(estilo).toContain('flex: 1 1 auto')
     expect(estilo).not.toContain('sticky')
     expect(estilo).not.toContain('@media')

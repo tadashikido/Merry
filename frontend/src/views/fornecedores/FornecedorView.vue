@@ -205,7 +205,7 @@ function arquivarEmVezDeExcluir() {
         </template>
       </CabecalhoPagina>
 
-      <div class="fornecedor pilha pilha--bloco">
+      <div class="fornecedor com-lateral pilha pilha--bloco">
         <EstadoCarregando
           v-if="store.carregandoAtual && !fornecedor"
           variante="cartao"
@@ -431,11 +431,10 @@ function arquivarEmVezDeExcluir() {
 
 <style scoped>
 .fornecedor {
-  --fornecedor-largura-ficha: 20rem;
   --fornecedor-largura-data: 6rem;
   --fornecedor-largura-selos: 14rem;
 
-  container: fornecedor / inline-size;
+  container: fornecedor com-lateral / inline-size;
 }
 
 .fornecedor__detalhes {
@@ -561,9 +560,9 @@ function arquivarEmVezDeExcluir() {
   }
 }
 
-@container fornecedor (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .fornecedor__corpo {
-    grid-template-columns: var(--fornecedor-largura-ficha) minmax(0, 1fr);
+    grid-template-columns: var(--com-lateral-largura) minmax(0, 1fr);
   }
 }
 </style>

@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { computed, useId } from 'vue'
+import { computed, ref, useId } from 'vue'
 
 import { ROTULOS_CATEGORIA_FORNECEDOR, TEXTOS_COBERTURA_FORNECEDORES } from '@/textos/fornecedores'
 import type { CategoriaSemFornecedor, CoberturaCarteira } from '@/utilitarios/coberturaFornecedores'
 import { descreverCarteiraPorTipo } from '@/utilitarios/carteiraEventos'
 
-const props = withDefaults(defineProps<{ cobertura: CoberturaCarteira; comReaproveitamento?: boolean }>(), {
-  comReaproveitamento: false,
-})
+const props = withDefaults(
+  defineProps<{ cobertura: CoberturaCarteira; comReaproveitamento?: boolean; limite?: number | null }>(),
+  {
+    comReaproveitamento: false,
+    limite: null,
+  },
+)
 
 const idTitulo = useId()
 const idFaltas = useId()
+const idLista = useId()
+const expandida = ref(false)
 const idReaproveitamento = useId()
 
 const frase = computed(() =>
@@ -19,6 +25,14 @@ const frase = computed(() =>
     : TEXTOS_COBERTURA_FORNECEDORES.semCarteira(),
 )
 const completa = computed(() => props.cobertura.essenciais > 0 && props.cobertura.faltando.length === 0)
+const excedentes = computed(() =>
+  props.limite === null ? 0 : Math.max(0, props.cobertura.faltando.length - props.limite),
+)
+const faltasVisiveis = computed(() =>
+  excedentes.value === 0 || expandida.value || props.limite === null
+    ? props.cobertura.faltando
+    : props.cobertura.faltando.slice(0, props.limite),
+)
 
 function apoio(item: CategoriaSemFornecedor): string {
   return props.cobertura.daCarteira
@@ -72,11 +86,12 @@ function apoio(item: CategoriaSemFornecedor): string {
             {{ TEXTOS_COBERTURA_FORNECEDORES.faltasTitulo }}
           </h3>
           <ul
+            :id="idLista"
             class="cobertura__lista"
             :aria-labelledby="idFaltas"
           >
             <li
-              v-for="item in cobertura.faltando"
+              v-for="item in faltasVisiveis"
               :key="item.categoria"
               class="cobertura__item"
               :data-teste="`cobertura-falta-${item.categoria}`"
@@ -99,6 +114,21 @@ function apoio(item: CategoriaSemFornecedor): string {
               </span>
             </li>
           </ul>
+          <button
+            v-if="excedentes > 0"
+            type="button"
+            class="cobertura__alternar"
+            :aria-expanded="expandida"
+            :aria-controls="idLista"
+            data-teste="cobertura-alternar"
+            @click="expandida = !expandida"
+          >
+            <span
+              :class="['ie', expandida ? 'ie-seta-baixo' : 'ie-seta-direita']"
+              aria-hidden="true"
+            />
+            {{ expandida ? TEXTOS_COBERTURA_FORNECEDORES.menosFaltas : TEXTOS_COBERTURA_FORNECEDORES.maisFaltas(excedentes) }}
+          </button>
         </template>
       </div>
 
@@ -207,6 +237,21 @@ function apoio(item: CategoriaSemFornecedor): string {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   border-top: 1px solid var(--p-cor-divisoria);
+}
+
+.cobertura__alternar {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--p-espaco-1);
+  min-height: var(--p-dimensao-alvo-toque);
+  padding: 0;
+  font: inherit;
+  font-size: var(--p-fonte-tamanho-controle);
+  color: var(--p-cor-primaria-escura);
+  cursor: pointer;
+  background: none;
+  border: 0;
 }
 
 .cobertura__item {

@@ -229,7 +229,7 @@ describe('DuplicarEventoView no design system Celebri', () => {
     expect(estilo).not.toContain('@media')
     expect(estilo).toContain('@container duplicar-campos (min-width: 36rem)')
     expect(estilo).toContain('@container duplicar-campos (min-width: 40rem)')
-    expect(estilo).toContain('@container duplicar (min-width: 64rem)')
+    expect(estilo).not.toContain('@container duplicar ')
     expect(estilo).not.toContain('--p-espaco-')
     expect(semContainer).not.toMatch(/\d+(px|rem|em)\b/)
     expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)

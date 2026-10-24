@@ -125,12 +125,12 @@ describe('ModelosChecklistView', () => {
   it('[UNITÁRIO] estilo da tela usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModelosChecklistView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(estilo).toContain('container: modelos / inline-size')
-    expect(estilo).toContain('@container modelos (min-width: 64rem)')
+    expect(estilo).toContain('container: modelos com-lateral / inline-size')
+    expect(estilo).toContain('@container com-lateral (min-width: 52rem)')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')
-    expect(fonte).toContain('class="modelos pilha pilha--cartao"')
+    expect(fonte).toContain('class="modelos com-lateral pilha pilha--cartao"')
   })
 
   it('[COMPONENTE] agrupa por tipo com selo do tipo, modelo da assessoria e tipo desconhecido neutro', async () => {
@@ -445,15 +445,15 @@ describe('ModeloChecklistView', () => {
   it('[UNITÁRIO] estilo do detalhe usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModeloChecklistView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(estilo).toContain('container: modelo / inline-size')
-    expect(estilo).toContain('@container modelo (min-width: 64rem)')
+    expect(estilo).toContain('container: modelo com-lateral / inline-size')
+    expect(estilo).toContain('@container com-lateral (min-width: 52rem)')
     expect(estilo).toContain('@container lateral-modelo (min-width: 36rem)')
     expect(estilo).not.toContain('sticky')
     expect(estilo).toContain('grid-row: 1 / span 2')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
     expect(estilo).not.toContain('--p-espaco-')
-    expect(fonte).toContain('class="modelo pilha pilha--bloco"')
+    expect(fonte).toContain('class="modelo com-lateral pilha pilha--bloco"')
   })
 
   it('[UNITÁRIO] prazo do item não usa a cor primária', () => {
@@ -583,11 +583,11 @@ describe('Formulários de modelo e item', () => {
   it('[UNITÁRIO] estilo do formulário de modelo usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModeloChecklistFormularioView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(fonte).toContain('class="pagina-formulario formulario-modelo-tela__pagina"')
+    expect(fonte).toContain('class="pagina-formulario formulario-modelo-tela__pagina com-lateral__pagina')
     expect(estilo).toContain('container: formulario-modelo / inline-size')
     expect(estilo).toContain('@container formulario-modelo (min-width: 40rem)')
-    expect(estilo).toContain('container: formulario-modelo-tela / inline-size')
-    expect(estilo).toContain('@container formulario-modelo-tela (min-width: 64rem)')
+    expect(estilo).not.toContain('container: formulario-modelo-tela /')
+    expect(estilo).not.toContain('@container formulario-modelo-tela ')
     expect(estilo).not.toContain('sticky')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
@@ -599,7 +599,7 @@ describe('Formulários de modelo e item', () => {
     rotearFetch(fetchSimulado)
     const { wrapper } = await abrir('/modelos-checklist/novo')
 
-    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).toContain('formulario-modelo-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).toContain('com-lateral__pagina--ativa')
     const lateral = wrapper.get('[data-teste="lateral-formulario-modelo"]')
     expect(lateral.get('[data-teste="selo-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.origemAssessoria)
     expect(lateral.get('[data-teste="onde-aparece-modelo"]').text()).toBe('Na lista ao aplicar o checklist de qualquer evento.')
@@ -661,7 +661,7 @@ describe('Formulários de modelo e item', () => {
     const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/editar`)
 
     expect(wrapper.find('[data-teste="lateral-formulario-modelo"]').exists()).toBe(false)
-    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).not.toContain('formulario-modelo-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-modelo-tela__pagina').classes()).not.toContain('com-lateral__pagina--ativa')
   })
 
   it('[COMPONENTE] item com "depois do evento" envia dias negativos', async () => {
@@ -780,11 +780,11 @@ describe('Formulários de modelo e item', () => {
   it('[UNITÁRIO] estilo do formulário de item usa @container, sem @media, largura de leitura nem espaçamento solto', () => {
     const fonte = readFileSync(resolve(__dirname, '../ItemModeloChecklistFormularioView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
-    expect(fonte).toContain('class="pagina-formulario formulario-item-tela__pagina"')
+    expect(fonte).toContain('class="pagina-formulario formulario-item-tela__pagina com-lateral__pagina')
     expect(estilo).toContain('container: formulario-item / inline-size')
     expect(estilo).toContain('@container formulario-item (min-width: 40rem)')
-    expect(estilo).toContain('container: formulario-item-tela / inline-size')
-    expect(estilo).toContain('@container formulario-item-tela (min-width: 64rem)')
+    expect(estilo).not.toContain('container: formulario-item-tela /')
+    expect(estilo).not.toContain('@container formulario-item-tela ')
     expect(estilo).not.toContain('sticky')
     expect(estilo).not.toContain('@media')
     expect(estilo).not.toContain('largura-leitura')
@@ -803,7 +803,7 @@ describe('Formulários de modelo e item', () => {
 
     expect(wrapper.get('[data-teste="campo-titulo"]').attributes('placeholder')).toBe(`Ex.: ${exemplo}`)
     expect(wrapper.get('[data-teste="campo-quando"]').text()).toContain(`${previa}.`)
-    expect(wrapper.get('.formulario-item-tela__pagina').classes()).toContain('formulario-item-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-item-tela__pagina').classes()).toContain('com-lateral__pagina--ativa')
     const lateral = wrapper.get('[data-teste="lateral-formulario-item"]')
     expect(lateral.get('[data-teste="previa-prazo-item"]').text()).toBe(previa)
     expect(lateral.get('[data-teste="marco-item-seisMeses"]').classes()).toContain('posicao-item__marco--atual')
@@ -874,7 +874,7 @@ describe('Formulários de modelo e item', () => {
     const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}/itens/novo`)
 
     expect(wrapper.find('[data-teste="lateral-formulario-item"]').exists()).toBe(false)
-    expect(wrapper.get('.formulario-item-tela__pagina').classes()).not.toContain('formulario-item-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-item-tela__pagina').classes()).not.toContain('com-lateral__pagina--ativa')
   })
 
   it('[COMPONENTE] item inexistente não mostra a lateral', async () => {

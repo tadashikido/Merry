@@ -200,8 +200,8 @@ describe('EventoView — estrutura reestruturada', () => {
     expect(estiloView).toMatch(/repeat\(auto-fit, minmax\(min\(28rem, 100%\), 1fr\)\)/)
     expect(estiloView).toMatch(/gap: var\(--p-ritmo-cartao\)/)
     expect(estiloView).not.toMatch(/@media/)
-    expect(estiloView).toMatch(/container: evento \/ inline-size/)
-    expect(estiloView).toMatch(/@container evento \(min-width: 64rem\)/)
+    expect(estiloView).toMatch(/container: evento com-lateral \/ inline-size/)
+    expect(estiloView).toMatch(/@container com-lateral \(min-width: 52rem\)/)
 
     const estiloCabecalho = estiloDe(lerFonte('componentes/base/CabecalhoPagina.vue'))
     const desktop = estiloCabecalho.slice(estiloCabecalho.indexOf('@container cabecalho-pagina (min-width: 40rem)'))

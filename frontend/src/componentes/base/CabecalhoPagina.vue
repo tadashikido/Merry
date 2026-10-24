@@ -78,16 +78,21 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
         </div>
       </div>
       <div
-        v-if="$slots.destaque"
-        class="cabecalho-pagina__destaque"
+        v-if="$slots.destaque || $slots.acoes"
+        class="cabecalho-pagina__complementos"
       >
-        <slot name="destaque" />
-      </div>
-      <div
-        v-if="$slots.acoes"
-        class="cabecalho-pagina__acoes"
-      >
-        <slot name="acoes" />
+        <div
+          v-if="$slots.destaque"
+          class="cabecalho-pagina__destaque"
+        >
+          <slot name="destaque" />
+        </div>
+        <div
+          v-if="$slots.acoes"
+          class="cabecalho-pagina__acoes"
+        >
+          <slot name="acoes" />
+        </div>
       </div>
     </div>
   </header>
@@ -154,6 +159,13 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
   color: var(--p-cor-texto-secundario);
 }
 
+.cabecalho-pagina__complementos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-espaco-4);
+  min-width: 0;
+}
+
 .cabecalho-pagina__destaque {
   flex-shrink: 0;
 }
@@ -189,12 +201,16 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
   }
 
   .cabecalho-pagina__textos {
+    flex: 999 1 auto;
     min-width: min(100%, 24rem);
   }
 
-  .cabecalho-pagina__destaque {
-    padding-left: var(--p-espaco-7);
-    border-left: 1px solid var(--p-cor-borda);
+  .cabecalho-pagina__complementos {
+    flex: 1 1 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--p-ritmo-grupo) var(--p-espaco-8);
   }
 
   .cabecalho-pagina__acoes {
@@ -209,13 +225,6 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
   .cabecalho-pagina--display .cabecalho-pagina__titulo {
     font-size: var(--p-fonte-tamanho-display);
     line-height: var(--p-fonte-entrelinha-display);
-  }
-
-  @container cabecalho-pagina (max-width: 54rem) {
-    .cabecalho-pagina__destaque {
-      padding-left: 0;
-      border-left: 0;
-    }
   }
 }
 </style>

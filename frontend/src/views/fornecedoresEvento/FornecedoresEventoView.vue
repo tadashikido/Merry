@@ -220,7 +220,7 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
         </template>
       </CabecalhoPagina>
 
-      <div class="fornecedores-evento pilha pilha--bloco">
+      <div class="fornecedores-evento com-lateral pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado && !visaoDoAnfitriao"
           variante="alerta"
@@ -427,9 +427,7 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
 
 <style scoped>
 .fornecedores-evento {
-  --fornecedores-evento-largura-lateral: 22rem;
-
-  container: fornecedores-evento / inline-size;
+  container: fornecedores-evento com-lateral / inline-size;
 }
 
 .fornecedores-evento__acoes-vazio {
@@ -500,9 +498,9 @@ function aoImportar(resultado: ResultadoImportacaoFornecedoresDto) {
   margin-top: var(--p-ritmo-grupo);
 }
 
-@container fornecedores-evento (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .fornecedores-evento__corpo {
-    grid-template-columns: minmax(0, 1fr) var(--fornecedores-evento-largura-lateral);
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
     grid-template-rows: auto 1fr;
     grid-template-areas:
       'principal orcamento'

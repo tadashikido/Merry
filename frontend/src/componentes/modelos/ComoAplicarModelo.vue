@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { useId } from 'vue'
 
+import SecaoRecolhivel from '@/componentes/base/SecaoRecolhivel.vue'
+
 withDefaults(
   defineProps<{
     titulo: string
     passos: readonly string[]
     nota?: string | null
+    recolhivel?: boolean
   }>(),
-  { nota: null },
+  { nota: null, recolhivel: false },
 )
 
 const idTitulo = useId()
@@ -19,38 +22,44 @@ const idTitulo = useId()
     :aria-labelledby="idTitulo"
     data-teste="como-aplicar-modelo"
   >
-    <h2
-      :id="idTitulo"
-      class="como-aplicar__titulo texto-rotulo"
-    >
-      {{ titulo }}
-    </h2>
-    <ol class="como-aplicar__passos">
-      <li
-        v-for="(passo, indice) in passos"
-        :key="indice"
-        class="como-aplicar__passo"
-        data-teste="passo-aplicar-modelo"
+    <SecaoRecolhivel :recolhivel="recolhivel">
+      <template #titulo>
+        <h2
+          :id="idTitulo"
+          class="como-aplicar__titulo texto-rotulo"
+        >
+          {{ titulo }}
+        </h2>
+      </template>
+      <ol class="como-aplicar__passos">
+        <li
+          v-for="(passo, indice) in passos"
+          :key="indice"
+          class="como-aplicar__passo"
+          data-teste="passo-aplicar-modelo"
+        >
+          <span
+            class="como-aplicar__numero numeros-tabulares"
+            aria-hidden="true"
+          >{{ indice + 1 }}</span>
+          <span class="como-aplicar__texto">{{ passo }}</span>
+        </li>
+      </ol>
+      <p
+        v-if="nota"
+        class="como-aplicar__nota"
+        data-teste="nota-aplicar-modelo"
       >
-        <span
-          class="como-aplicar__numero numeros-tabulares"
-          aria-hidden="true"
-        >{{ indice + 1 }}</span>
-        <span class="como-aplicar__texto">{{ passo }}</span>
-      </li>
-    </ol>
-    <p
-      v-if="nota"
-      class="como-aplicar__nota"
-      data-teste="nota-aplicar-modelo"
-    >
-      {{ nota }}
-    </p>
+        {{ nota }}
+      </p>
+    </SecaoRecolhivel>
   </section>
 </template>
 
 <style scoped>
 .como-aplicar {
+  --recolhivel-espaco: var(--p-ritmo-grupo);
+
   container: como-aplicar / inline-size;
   display: flex;
   flex-direction: column;

@@ -2,6 +2,7 @@
 import { computed, useId } from 'vue'
 
 import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
+import SecaoRecolhivel from '@/componentes/base/SecaoRecolhivel.vue'
 import { TEXTOS_MODELOS_POR_TIPO, exemplosNomeModelo, ondeApareceModelo, rotuloSugeridoDoModelo } from '@/textos/modelos'
 import type { TipoEvento } from '@/tipos/eventos'
 
@@ -14,8 +15,9 @@ const props = withDefaults(
     tipo?: TipoEvento | null
     sugerido?: boolean
     contagem?: string | null
+    recolhivel?: boolean
   }>(),
-  { edicao: false, tipo: null, sugerido: false, contagem: null },
+  { edicao: false, tipo: null, sugerido: false, contagem: null, recolhivel: false },
 )
 
 const idOnde = useId()
@@ -85,48 +87,52 @@ const exemplos = exemplosNomeModelo()
         :aria-labelledby="idBomModelo"
         data-teste="bom-modelo"
       >
-        <h2
-          :id="idBomModelo"
-          class="orientacao-modelo__titulo texto-rotulo"
-        >
-          {{ TEXTOS_MODELOS_POR_TIPO.bomModeloTitulo }}
-        </h2>
-        <p
-          :id="idExemplos"
-          class="orientacao-modelo__apoio"
-        >
-          {{ TEXTOS_MODELOS_POR_TIPO.exemplosApoio }}
-        </p>
-        <dl
-          class="orientacao-modelo__exemplos"
-          :aria-labelledby="idExemplos"
-          data-teste="exemplos-nome-modelo"
-        >
-          <div
-            v-for="exemplo in exemplos"
-            :key="exemplo.tipo"
-            class="orientacao-modelo__exemplo"
-            :data-teste="`exemplo-nome-${exemplo.tipo}`"
+        <SecaoRecolhivel :recolhivel="recolhivel">
+          <template #titulo>
+            <h2
+              :id="idBomModelo"
+              class="orientacao-modelo__titulo texto-rotulo"
+            >
+              {{ TEXTOS_MODELOS_POR_TIPO.bomModeloTitulo }}
+            </h2>
+          </template>
+          <p
+            :id="idExemplos"
+            class="orientacao-modelo__apoio"
           >
-            <dt class="orientacao-modelo__tipo">
-              {{ exemplo.rotulo }}
-            </dt>
-            <dd class="orientacao-modelo__nome">
-              {{ exemplo.exemplo }}
-            </dd>
-          </div>
-        </dl>
-        <ul
-          class="orientacao-modelo__dicas"
-          data-teste="dicas-modelo"
-        >
-          <li
-            v-for="(dica, indice) in dicas"
-            :key="indice"
+            {{ TEXTOS_MODELOS_POR_TIPO.exemplosApoio }}
+          </p>
+          <dl
+            class="orientacao-modelo__exemplos"
+            :aria-labelledby="idExemplos"
+            data-teste="exemplos-nome-modelo"
           >
-            {{ dica }}
-          </li>
-        </ul>
+            <div
+              v-for="exemplo in exemplos"
+              :key="exemplo.tipo"
+              class="orientacao-modelo__exemplo"
+              :data-teste="`exemplo-nome-${exemplo.tipo}`"
+            >
+              <dt class="orientacao-modelo__tipo">
+                {{ exemplo.rotulo }}
+              </dt>
+              <dd class="orientacao-modelo__nome">
+                {{ exemplo.exemplo }}
+              </dd>
+            </div>
+          </dl>
+          <ul
+            class="orientacao-modelo__dicas"
+            data-teste="dicas-modelo"
+          >
+            <li
+              v-for="(dica, indice) in dicas"
+              :key="indice"
+            >
+              {{ dica }}
+            </li>
+          </ul>
+        </SecaoRecolhivel>
       </section>
     </div>
   </div>
@@ -235,6 +241,10 @@ const exemplos = exemplosNomeModelo()
   font-size: var(--p-fonte-tamanho-controle);
   line-height: var(--p-fonte-entrelinha-leitura);
   color: var(--p-cor-texto);
+}
+
+.orientacao-modelo .recolhivel__resumo .orientacao-modelo__titulo {
+  margin: 0;
 }
 
 @container orientacao-modelo (min-width: 22rem) {

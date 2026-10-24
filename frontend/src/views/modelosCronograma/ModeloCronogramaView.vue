@@ -220,7 +220,7 @@ function editarModelo() {
         </template>
       </CabecalhoPagina>
 
-      <div class="modelo-cronograma pilha pilha--bloco">
+      <div class="modelo-cronograma com-lateral pilha pilha--bloco">
         <EstadoCarregando
           v-if="store.carregandoAtual && !modelo"
           variante="lista"
@@ -530,9 +530,7 @@ function editarModelo() {
 
 <style scoped>
 .modelo-cronograma {
-  --modelo-cronograma-largura-lateral: 20rem;
-
-  container: modelo-cronograma / inline-size;
+  container: modelo-cronograma com-lateral / inline-size;
 }
 
 .modelo-cronograma__corpo {
@@ -722,9 +720,9 @@ function editarModelo() {
   }
 }
 
-@container modelo-cronograma (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .modelo-cronograma__corpo {
-    grid-template-columns: minmax(0, 1fr) var(--modelo-cronograma-largura-lateral);
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
     grid-template-rows: auto 1fr;
   }
 

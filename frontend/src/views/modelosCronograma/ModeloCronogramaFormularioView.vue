@@ -169,18 +169,18 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="formulario-modelo-tela">
+    <div class="formulario-modelo-tela com-lateral">
       <div
-        class="pagina-formulario formulario-modelo-tela__pagina"
-        :class="{ 'formulario-modelo-tela__pagina--com-lateral': mostrarLateral }"
+        class="pagina-formulario formulario-modelo-tela__pagina com-lateral__pagina"
+        :class="{ 'com-lateral__pagina--ativa': mostrarLateral }"
       >
         <CabecalhoPagina
           :titulo="titulo"
           :descricao="descricaoCabecalho"
         />
 
-        <div class="formulario-modelo-tela__corpo">
-          <div class="formulario-modelo pilha pilha--cartao">
+        <div class="formulario-modelo-tela__corpo com-lateral__corpo">
+          <div class="formulario-modelo com-lateral__principal pilha pilha--cartao">
             <EstadoCarregando
               v-if="carregando"
               variante="formulario"
@@ -320,7 +320,7 @@ function cancelar() {
 
           <div
             v-if="mostrarLateral"
-            class="formulario-modelo-tela__lateral pilha pilha--bloco"
+            class="formulario-modelo-tela__lateral com-lateral__lateral com-lateral__lateral--filete"
             data-teste="lateral-formulario-modelo"
           >
             <OrientacaoFormularioModelo
@@ -331,12 +331,14 @@ function cancelar() {
               :tipo="tipoModelo"
               :sugerido="modeloCarregado?.sugerido ?? false"
               :contagem="contagemItens"
+              recolhivel
             />
             <ComoAplicarModelo
               v-if="!edicao"
               :titulo="TEXTOS_MODELOS_POR_TIPO.depoisDeCriarTitulo"
               :passos="passosDepoisDeCriar"
               :nota="TEXTOS_MODELOS_CRONOGRAMA.notaAplicar"
+              recolhivel
             />
           </div>
         </div>
@@ -346,30 +348,9 @@ function cancelar() {
 </template>
 
 <style scoped>
-.formulario-modelo-tela {
-  container: formulario-modelo-tela / inline-size;
-}
-
-.formulario-modelo-tela__corpo {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    'principal'
-    'lateral';
-  gap: var(--p-ritmo-bloco);
-}
-
 .formulario-modelo {
   container: formulario-modelo / inline-size;
-  grid-area: principal;
   min-width: 0;
-}
-
-.formulario-modelo-tela__lateral {
-  grid-area: lateral;
-  min-width: 0;
-  padding-top: var(--p-ritmo-bloco);
-  border-top: 1px solid var(--p-cor-borda);
 }
 
 .formulario-modelo__grupo {
@@ -408,25 +389,6 @@ function cancelar() {
   .formulario-modelo__acoes {
     flex-direction: row;
     gap: var(--p-ritmo-grupo);
-  }
-}
-
-@container formulario-modelo-tela (min-width: 64rem) {
-  .formulario-modelo-tela__pagina--com-lateral {
-    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
-  }
-
-  .formulario-modelo-tela__pagina--com-lateral .formulario-modelo-tela__corpo {
-    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
-    grid-template-areas: 'principal lateral';
-    align-items: start;
-  }
-
-  .formulario-modelo-tela__lateral {
-    padding-top: 0;
-    padding-inline-start: var(--p-ritmo-bloco);
-    border-top: 0;
-    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

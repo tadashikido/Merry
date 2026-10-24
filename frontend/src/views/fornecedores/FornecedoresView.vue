@@ -169,7 +169,7 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
       </template>
     </CabecalhoPagina>
 
-    <div class="fornecedores pilha pilha--bloco">
+    <div class="fornecedores com-lateral pilha pilha--bloco">
       <EstadoCarregando
         v-if="store.carregandoLista && !store.lista"
         variante="lista"
@@ -369,6 +369,7 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
           <CoberturaCategoriasFornecedores
             class="fornecedores__cobertura"
             :cobertura="cobertura"
+            :limite="3"
           />
         </div>
       </template>
@@ -378,9 +379,7 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
 
 <style scoped>
 .fornecedores {
-  --fornecedores-largura-indice: 18rem;
-
-  container: fornecedores / inline-size;
+  container: fornecedores com-lateral / inline-size;
 }
 
 .fornecedores__barra {
@@ -440,9 +439,9 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
   container: lista-fornecedores / inline-size;
 }
 
-@container fornecedores (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .fornecedores__corpo {
-    grid-template-columns: var(--fornecedores-largura-indice) minmax(0, 1fr);
+    grid-template-columns: var(--com-lateral-largura) minmax(0, 1fr);
     grid-template-rows: auto 1fr;
     grid-template-areas:
       'cobertura principal'

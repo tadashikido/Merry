@@ -262,6 +262,8 @@ export const dimensoes = {
   larguraRail: '4.5rem',
   larguraNavegacaoEvento: '14.5rem',
   larguraGaveta: '19rem',
+  larguraLateral: '18rem',
+  larguraLateralMaxima: '24rem',
   alturaBarraCelular: '3.5rem',
   alturaControle: '2.5rem',
   larguraAmpla: '96rem',

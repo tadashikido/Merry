@@ -199,7 +199,7 @@ describe('EventoFormularioView no design system Celebri', () => {
     expect(estilo).toContain('margin-bottom: var(--p-ritmo-grupo)')
     expect(estilo).not.toContain('@media')
     expect(estilo).toContain('@container formulario-evento-campos (min-width: 36rem)')
-    expect(estilo).toContain('@container formulario-evento (min-width: 64rem)')
+    expect(estilo).not.toContain('@container formulario-evento ')
     expect(estilo).not.toContain('--p-espaco-')
     expect(semContainer).not.toMatch(/\d+(px|rem|em)\b/)
     expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)

@@ -30,8 +30,9 @@ const props = withDefaults(
     atividade?: string
     itemId?: string | null
     tipo?: TipoEvento | null
+    previaNoCampo?: boolean
   }>(),
-  { atividade: '', itemId: null, tipo: null },
+  { atividade: '', itemId: null, tipo: null, previaNoCampo: false },
 )
 
 const idTitulo = useId()
@@ -115,7 +116,7 @@ const comAtividadePropria = computed(() => props.atividade.trim() !== '')
 
     <p
       class="posicao-cronograma__previa"
-      :class="{ 'posicao-cronograma__previa--vazia': atual === null }"
+      :class="{ 'posicao-cronograma__previa--vazia': atual === null, 'com-lateral__so-leitor-ao-lado': previaNoCampo }"
       aria-live="polite"
       data-teste="previa-horario-item"
     >

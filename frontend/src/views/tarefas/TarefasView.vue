@@ -392,7 +392,7 @@ function novaTarefa() {
         </template>
       </CabecalhoPagina>
 
-      <div class="tarefas pilha pilha--bloco">
+      <div class="tarefas com-lateral pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado"
           variante="alerta"
@@ -692,9 +692,7 @@ function novaTarefa() {
 
 <style scoped>
 .tarefas {
-  --tarefas-largura-lateral: 18rem;
-
-  container: tarefas / inline-size;
+  container: tarefas com-lateral / inline-size;
 }
 
 .tarefas__corpo {
@@ -884,18 +882,13 @@ function novaTarefa() {
   }
 }
 
-@container tarefas (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .tarefas__corpo {
-    grid-template-columns: minmax(0, 1fr) var(--tarefas-largura-lateral);
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
   }
 
   .tarefas__corpo--sem-lateral {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .tarefas__lateral {
-    position: sticky;
-    top: var(--p-ritmo-bloco);
   }
 }
 

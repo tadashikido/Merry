@@ -94,6 +94,7 @@ const dicaPrazo = computed(() => {
     : TEXTOS_TAREFAS.campoPrazoDica
 })
 const mostrarCalendario = computed(() => evento.value !== null && !carregandoTarefa.value && !falhaTarefa.value)
+const paginaComLateral = computed(() => !falhaTarefa.value && eventos.falhaAtual === null)
 const rotuloSalvar = computed(() => (edicao.value ? TEXTOS_TAREFAS.salvar : TEXTOS_TAREFAS.criar))
 
 const opcoesResponsavel = RESPONSAVEIS_TAREFA.map((valor) => ({ valor, rotulo: ROTULOS_RESPONSAVEL_TAREFA[valor] }))
@@ -223,18 +224,18 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="formulario-tarefa">
+    <div class="formulario-tarefa com-lateral">
       <div
-        class="pagina-formulario formulario-tarefa__pagina"
-        :class="{ 'formulario-tarefa__pagina--com-lateral': mostrarCalendario }"
+        class="pagina-formulario formulario-tarefa__pagina com-lateral__pagina"
+        :class="{ 'com-lateral__pagina--ativa': paginaComLateral }"
       >
         <CabecalhoPagina
           :titulo="titulo"
           :descricao="nomes || undefined"
         />
 
-        <div class="formulario-tarefa__corpo">
-          <div class="formulario-tarefa__principal pilha pilha--cartao">
+        <div class="formulario-tarefa__corpo com-lateral__corpo">
+          <div class="formulario-tarefa__principal com-lateral__principal pilha pilha--cartao">
             <EstadoCarregando
               v-if="carregandoTarefa"
               variante="formulario"
@@ -449,7 +450,7 @@ function cancelar() {
 
           <CalendarioPrazoTarefa
             v-if="mostrarCalendario && evento"
-            class="formulario-tarefa__lateral"
+            class="formulario-tarefa__lateral com-lateral__lateral com-lateral__lateral--filete"
             :evento="evento"
             :prazo="prazoValido"
             :gerada-de-modelo="original?.geradaDeModelo === true"
@@ -461,29 +462,9 @@ function cancelar() {
 </template>
 
 <style scoped>
-.formulario-tarefa {
-  container: formulario-tarefa / inline-size;
-}
-
-.formulario-tarefa__corpo {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    'principal'
-    'lateral';
-  gap: var(--p-ritmo-bloco);
-}
-
 .formulario-tarefa__principal {
   container: formulario-tarefa-campos / inline-size;
-  grid-area: principal;
   min-width: 0;
-}
-
-.formulario-tarefa__lateral {
-  grid-area: lateral;
-  padding-top: var(--p-ritmo-bloco);
-  border-top: 1px solid var(--p-cor-borda);
 }
 
 .formulario-tarefa__grupo {
@@ -528,25 +509,6 @@ function cancelar() {
   .formulario-tarefa__acoes {
     flex-direction: row;
     gap: var(--p-ritmo-grupo);
-  }
-}
-
-@container formulario-tarefa (min-width: 64rem) {
-  .formulario-tarefa__pagina--com-lateral {
-    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
-  }
-
-  .formulario-tarefa__pagina--com-lateral .formulario-tarefa__corpo {
-    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
-    grid-template-areas: 'principal lateral';
-    align-items: start;
-  }
-
-  .formulario-tarefa__lateral {
-    padding-top: 0;
-    padding-inline-start: var(--p-ritmo-bloco);
-    border-top: 0;
-    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

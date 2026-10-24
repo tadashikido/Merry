@@ -362,10 +362,10 @@ async function removerContrato() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="formulario-vinculo">
+    <div class="formulario-vinculo com-lateral">
       <div
-        class="pagina-formulario formulario-vinculo__pagina"
-        :class="{ 'formulario-vinculo__pagina--com-lateral': comLateral }"
+        class="pagina-formulario formulario-vinculo__pagina com-lateral__pagina"
+        :class="{ 'com-lateral__pagina--ativa': comLateral }"
       >
         <CabecalhoPagina
           :titulo="titulo"
@@ -396,9 +396,9 @@ async function removerContrato() {
 
         <div
           v-else
-          class="formulario-vinculo__corpo"
+          class="formulario-vinculo__corpo com-lateral__corpo"
         >
-          <div class="formulario-vinculo__principal pilha pilha--cartao">
+          <div class="formulario-vinculo__principal com-lateral__principal pilha pilha--cartao">
             <MensagemFormulario
               v-if="arquivado"
               variante="alerta"
@@ -665,7 +665,7 @@ async function removerContrato() {
 
           <div
             v-if="comLateral"
-            class="formulario-vinculo__lateral pilha pilha--bloco"
+            class="formulario-vinculo__lateral com-lateral__lateral com-lateral__lateral--filete"
             data-teste="lateral-vinculo"
           >
             <aside
@@ -720,30 +720,9 @@ async function removerContrato() {
 </template>
 
 <style scoped>
-.formulario-vinculo {
-  container: formulario-vinculo / inline-size;
-}
-
-.formulario-vinculo__corpo {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    'principal'
-    'lateral';
-  gap: var(--p-ritmo-bloco);
-}
-
 .formulario-vinculo__principal {
   container: formulario-vinculo-campos / inline-size;
-  grid-area: principal;
   min-width: 0;
-}
-
-.formulario-vinculo__lateral {
-  grid-area: lateral;
-  min-width: 0;
-  padding-top: var(--p-ritmo-bloco);
-  border-top: 1px solid var(--p-cor-borda);
 }
 
 .formulario-vinculo__grupo {
@@ -806,26 +785,6 @@ async function removerContrato() {
   .formulario-vinculo__acoes {
     flex-direction: row;
     gap: var(--p-ritmo-grupo);
-  }
-}
-
-@container formulario-vinculo (min-width: 64rem) {
-  .formulario-vinculo__pagina--com-lateral {
-    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
-  }
-
-  .formulario-vinculo__corpo {
-    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
-    grid-template-areas: 'principal lateral';
-    align-items: start;
-  }
-
-  .formulario-vinculo__lateral {
-    align-self: stretch;
-    padding-top: 0;
-    padding-inline-start: var(--p-ritmo-bloco);
-    border-top: 0;
-    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

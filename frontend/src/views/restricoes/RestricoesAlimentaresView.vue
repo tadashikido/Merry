@@ -253,7 +253,7 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
       </template>
     </CabecalhoPagina>
 
-    <div class="restricoes pilha pilha--bloco">
+    <div class="restricoes com-lateral pilha pilha--bloco">
       <EstadoCarregando
         v-if="store.carregando && !relatorio"
         variante="lista"
@@ -408,9 +408,7 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
 
 <style scoped>
 .restricoes {
-  --restricoes-largura-lateral: 20rem;
-
-  container: restricoes / inline-size;
+  container: restricoes com-lateral / inline-size;
 }
 
 .restricoes__corpo {
@@ -471,12 +469,12 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
   }
 }
 
-@container restricoes (min-width: 64rem) {
+@container com-lateral (min-width: 64rem) {
   .restricoes__corpo {
     grid-template-areas:
       'principal lateral'
       'principal preparo';
-    grid-template-columns: minmax(0, 1fr) var(--restricoes-largura-lateral);
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
     grid-template-rows: auto 1fr;
   }
 

@@ -217,10 +217,10 @@ describe('PainelConfirmacoesView — reestruturação da fundação', { timeout:
 
   it('[UNITÁRIO] estilos da view usam @container e ritmo, sem @media, largura de leitura nem valores soltos', () => {
     expect(ESTILO_VIEW).not.toMatch(/@media/)
-    expect(ESTILO_VIEW).toContain('container: confirmacoes / inline-size')
+    expect(ESTILO_VIEW).toContain('container: confirmacoes com-lateral / inline-size')
     expect(ESTILO_VIEW).toContain('@container confirmacoes (max-width: 39.99rem)')
     expect(ESTILO_VIEW).toContain('@container confirmacoes (min-width: 48rem)')
-    expect(ESTILO_VIEW).toContain('@container confirmacoes (min-width: 64rem)')
+    expect(ESTILO_VIEW).toContain('@container com-lateral (min-width: 52rem)')
     expect(ESTILO_VIEW).toContain('container: confirmacoes-lista / inline-size')
     expect(ESTILO_VIEW).not.toContain(':deep(.listagem__')
     expect(FONTE_VIEW_CONFIRMACOES).toMatch(/<ListagemDados[^>]*acoes-somente-icone-abaixo="larga"/)

@@ -233,7 +233,7 @@ describe('ConviteFormularioView reestruturado', { timeout: 20_000 }, () => {
     expect(estilo).not.toMatch(/--p-espaco-/)
     const foraDeContainer = estilo.replace(/@container[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, '')
     expect(foraDeContainer).not.toMatch(/^\s*max-width:/m)
-    expect(estilo).toMatch(/@container formulario-convite-tela \(min-width: 64rem\)/)
+    expect(estilo).not.toMatch(/@container formulario-convite-tela /)
     expect(estilo).not.toMatch(/calc\(-1/)
     expect(estilo).not.toMatch(/\d+px/)
     expect(fonte).not.toMatch(/validarCampoConvite\('nome'\)"|@blur="validarCampoPessoa/)

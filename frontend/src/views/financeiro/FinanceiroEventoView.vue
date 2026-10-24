@@ -425,7 +425,7 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
         </template>
       </CabecalhoPagina>
 
-      <div class="financeiro pilha pilha--bloco">
+      <div class="financeiro com-lateral pilha pilha--bloco">
         <MensagemFormulario
           v-if="arquivado && !visaoDoAnfitriao"
           variante="informacao"
@@ -936,8 +936,7 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
 
 <style scoped>
 .financeiro {
-  --financeiro-largura-lateral: 22rem;
-  container: financeiro / inline-size;
+  container: financeiro com-lateral / inline-size;
 }
 
 .financeiro__indicadores {
@@ -1127,9 +1126,9 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
   }
 }
 
-@container financeiro (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .financeiro__corpo {
-    grid-template-columns: minmax(0, 1fr) var(--financeiro-largura-lateral);
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
     grid-template-rows: auto 1fr;
     grid-template-areas:
       'principal orcamento'

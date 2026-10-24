@@ -215,10 +215,10 @@ function alterarSentido() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="formulario-item-tela">
+    <div class="formulario-item-tela com-lateral">
       <div
-        class="pagina-formulario formulario-item-tela__pagina"
-        :class="{ 'formulario-item-tela__pagina--com-lateral': mostrarLateral }"
+        class="pagina-formulario formulario-item-tela__pagina com-lateral__pagina"
+        :class="{ 'com-lateral__pagina--ativa': mostrarLateral }"
       >
         <CabecalhoPagina
           :titulo="titulo"
@@ -226,8 +226,8 @@ function alterarSentido() {
           :rotulos-trilha="{ 'modelo-checklist': nomeModelo || TEXTOS_MODELOS_CHECKLIST.titulo }"
         />
 
-        <div class="formulario-item-tela__corpo">
-          <div class="formulario-item pilha pilha--cartao">
+        <div class="formulario-item-tela__corpo com-lateral__corpo">
+          <div class="formulario-item com-lateral__principal pilha pilha--cartao">
             <EstadoCarregando
               v-if="carregando"
               variante="formulario"
@@ -452,7 +452,7 @@ function alterarSentido() {
 
           <div
             v-if="mostrarLateral && modeloCarregado"
-            class="formulario-item-tela__lateral pilha pilha--bloco"
+            class="formulario-item-tela__lateral com-lateral__lateral com-lateral__lateral--filete"
             data-teste="lateral-formulario-item"
           >
             <PosicaoItemModelo
@@ -461,8 +461,12 @@ function alterarSentido() {
               :titulo="formulario.valores.titulo"
               :item-id="itemId ?? null"
               :tipo="tipoModelo"
+              previa-no-campo
             />
-            <ExemplosItemModelo :tipo="tipoModelo" />
+            <ExemplosItemModelo
+              :tipo="tipoModelo"
+              recolhivel
+            />
           </div>
         </div>
       </div>
@@ -471,30 +475,9 @@ function alterarSentido() {
 </template>
 
 <style scoped>
-.formulario-item-tela {
-  container: formulario-item-tela / inline-size;
-}
-
-.formulario-item-tela__corpo {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    'principal'
-    'lateral';
-  gap: var(--p-ritmo-bloco);
-}
-
 .formulario-item {
   container: formulario-item / inline-size;
-  grid-area: principal;
   min-width: 0;
-}
-
-.formulario-item-tela__lateral {
-  grid-area: lateral;
-  min-width: 0;
-  padding-top: var(--p-ritmo-bloco);
-  border-top: 1px solid var(--p-cor-borda);
 }
 
 .formulario-item__grupo,
@@ -554,25 +537,6 @@ function alterarSentido() {
   .formulario-item__acoes {
     flex-direction: row;
     gap: var(--p-ritmo-grupo);
-  }
-}
-
-@container formulario-item-tela (min-width: 64rem) {
-  .formulario-item-tela__pagina--com-lateral {
-    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
-  }
-
-  .formulario-item-tela__pagina--com-lateral .formulario-item-tela__corpo {
-    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
-    grid-template-areas: 'principal lateral';
-    align-items: start;
-  }
-
-  .formulario-item-tela__lateral {
-    padding-top: 0;
-    padding-inline-start: var(--p-ritmo-bloco);
-    border-top: 0;
-    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

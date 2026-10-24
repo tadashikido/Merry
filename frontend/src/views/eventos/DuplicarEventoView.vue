@@ -403,8 +403,8 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="duplicar">
-      <div class="pagina-formulario duplicar__pagina">
+    <div class="duplicar com-lateral">
+      <div class="pagina-formulario duplicar__pagina com-lateral__pagina com-lateral__pagina--ativa">
         <CabecalhoPagina
           :titulo="TEXTOS_DUPLICACAO_EVENTO.titulo"
           :descricao="TEXTOS_DUPLICACAO_EVENTO.descricao"
@@ -477,9 +477,9 @@ function cancelar() {
 
           <div
             v-else
-            class="duplicar__corpo"
+            class="duplicar__corpo com-lateral__corpo"
           >
-            <div class="duplicar__principal pilha pilha--cartao">
+            <div class="duplicar__principal com-lateral__principal pilha pilha--cartao">
               <MensagemFormulario
                 v-if="mensagemErro"
                 :mensagem="mensagemErro"
@@ -817,7 +817,7 @@ function cancelar() {
             </div>
 
             <div
-              class="duplicar__lateral pilha pilha--bloco"
+              class="duplicar__lateral com-lateral__lateral com-lateral__lateral--filete"
               data-teste="lateral-duplicacao"
             >
               <template v-if="origemDaPrevia">
@@ -848,30 +848,9 @@ function cancelar() {
 </template>
 
 <style scoped>
-.duplicar {
-  container: duplicar / inline-size;
-}
-
-.duplicar__corpo {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    'principal'
-    'lateral';
-  gap: var(--p-ritmo-bloco);
-}
-
 .duplicar__principal {
   container: duplicar-campos / inline-size;
-  grid-area: principal;
   min-width: 0;
-}
-
-.duplicar__lateral {
-  grid-area: lateral;
-  min-width: 0;
-  padding-top: var(--p-ritmo-bloco);
-  border-top: 1px solid var(--p-cor-borda);
 }
 
 .duplicar__origem {
@@ -990,25 +969,6 @@ function cancelar() {
   .duplicar__fica {
     padding-inline-start: var(--p-ritmo-cartao);
     border-inline-start: 1px solid var(--p-cor-divisoria);
-  }
-}
-
-@container duplicar (min-width: 64rem) {
-  .duplicar__pagina {
-    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
-  }
-
-  .duplicar__corpo {
-    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
-    grid-template-areas: 'principal lateral';
-    align-items: start;
-  }
-
-  .duplicar__lateral {
-    padding-top: 0;
-    padding-inline-start: var(--p-ritmo-bloco);
-    border-top: 0;
-    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

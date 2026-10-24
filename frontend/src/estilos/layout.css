@@ -123,6 +123,119 @@
   color: var(--p-cor-texto-apoio);
 }
 
+.com-lateral,
+.com-lateral__corpo {
+  --com-lateral-largura: clamp(var(--p-dimensao-largura-lateral), 30%, var(--p-dimensao-largura-lateral-maxima));
+}
+
+.com-lateral {
+  container: com-lateral / inline-size;
+}
+
+.com-lateral__corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-bloco);
+}
+
+.com-lateral__principal {
+  min-width: 0;
+}
+
+.com-lateral__lateral {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--p-dimensao-largura-lateral), 100%), 1fr));
+  align-items: start;
+  gap: var(--p-ritmo-bloco);
+  min-width: 0;
+}
+
+.com-lateral__lateral--filete {
+  padding-top: var(--p-ritmo-bloco);
+  border-top: 1px solid var(--p-cor-borda);
+}
+
+.recolhivel__resumo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--p-ritmo-campo);
+  min-height: var(--p-dimensao-alvo-toque);
+  cursor: pointer;
+  list-style: none;
+}
+
+.recolhivel__resumo::-webkit-details-marker {
+  display: none;
+}
+
+.recolhivel__resumo::after {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-inline-end: var(--p-espaco-1);
+  content: '';
+  border-right: 1.5px solid currentcolor;
+  border-bottom: 1.5px solid currentcolor;
+  transform: translateY(-25%) rotate(45deg);
+  transition: transform var(--p-duracao-rapida);
+}
+
+.recolhivel[open] > .recolhivel__resumo::after {
+  transform: translateY(25%) rotate(225deg);
+}
+
+.recolhivel__resumo > * {
+  margin: 0;
+}
+
+.recolhivel__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--recolhivel-espaco, var(--p-ritmo-campo));
+  min-width: 0;
+  padding-top: var(--p-ritmo-campo);
+}
+
+@container com-lateral (min-width: 52rem) {
+  .com-lateral__pagina--ativa {
+    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-lateral-maxima) + var(--p-ritmo-bloco));
+  }
+
+  .com-lateral__pagina--ativa .com-lateral__corpo {
+    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-lateral), 1fr);
+    align-items: start;
+  }
+
+  .com-lateral__lateral {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .com-lateral__lateral--filete {
+    align-self: stretch;
+    padding-top: 0;
+    padding-inline-start: var(--p-ritmo-cartao);
+    border-top: 0;
+    border-inline-start: 1px solid var(--p-cor-borda);
+  }
+
+  .com-lateral__so-leitor-ao-lado {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recolhivel__resumo::after {
+    transition: none;
+  }
+}
+
 @container aplicacao (max-width: 39.99rem) {
   .pilha--secao {
     --pilha-espaco: var(--p-ritmo-bloco);

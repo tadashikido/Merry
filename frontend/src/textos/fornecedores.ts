@@ -150,6 +150,9 @@ export const TEXTOS_COBERTURA_FORNECEDORES = {
   legenda: (total: number) =>
     `de ${total.toLocaleString('pt-BR')} ${plural(total, 'categoria essencial', 'categorias essenciais')} com fornecedor ativo`,
   faltasTitulo: 'Ainda sem fornecedor',
+  maisFaltas: (quantidade: number) =>
+    `Ver mais ${quantidade.toLocaleString('pt-BR')} ${plural(quantidade, 'categoria', 'categorias')}`,
+  menosFaltas: 'Ver menos',
   essencialParaEventos: (quantidade: number) =>
     `Essencial para ${quantidade.toLocaleString('pt-BR')} ${plural(quantidade, 'evento', 'eventos')} pela frente`,
   essencialEm: (tipos: readonly TipoEvento[]) =>

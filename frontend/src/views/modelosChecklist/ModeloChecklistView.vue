@@ -208,7 +208,7 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
         </template>
       </CabecalhoPagina>
 
-      <div class="modelo pilha pilha--bloco">
+      <div class="modelo com-lateral pilha pilha--bloco">
         <EstadoCarregando
           v-if="store.carregandoAtual && !modelo"
           variante="lista"
@@ -410,9 +410,7 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
 
 <style scoped>
 .modelo {
-  --modelo-largura-lateral: 20rem;
-
-  container: modelo / inline-size;
+  container: modelo com-lateral / inline-size;
 }
 
 .modelo__corpo {
@@ -561,9 +559,9 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
   }
 }
 
-@container modelo (min-width: 64rem) {
+@container com-lateral (min-width: 52rem) {
   .modelo__corpo {
-    grid-template-columns: minmax(0, 1fr) var(--modelo-largura-lateral);
+    grid-template-columns: minmax(0, 1fr) var(--com-lateral-largura);
     grid-template-rows: auto 1fr;
   }
 
@@ -581,6 +579,10 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
   .modelo__principal {
     grid-column: 1;
     grid-row: 1 / span 2;
+  }
+
+  .modelo__bloco--por-marco {
+    display: none;
   }
 }
 </style>

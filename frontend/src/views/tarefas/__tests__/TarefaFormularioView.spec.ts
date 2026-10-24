@@ -350,10 +350,21 @@ describe('TarefaFormularioView para eventos', () => {
     await flushPromises()
 
     expect(wrapper.find('[data-teste="calendario-prazo"]').exists()).toBe(false)
-    expect(wrapper.get('.formulario-tarefa__pagina').classes()).not.toContain('formulario-tarefa__pagina--com-lateral')
+    expect(wrapper.get('.formulario-tarefa__pagina').classes()).not.toContain('com-lateral__pagina--ativa')
     await wrapper.get('#tarefa-prazo').setValue('2027-03-10')
     await flushPromises()
     expect(dicaDoPrazo()).toBe(TEXTOS_TAREFAS.campoPrazoDica)
+  })
+
+  it('[COMPONENTE] enquanto o evento carrega a página já tem a largura final, sem a lateral', async () => {
+    const pendente = (): Response => new Promise<Response>(() => undefined) as unknown as Response
+    rotearFetch(fetchSimulado, quando('GET', ROTA_EVENTO, pendente))
+    const montagem = await prepararAplicacao(CAMINHO_NOVA)
+    wrapper = await montarView(RaizRotas, montagem)
+    await flushPromises()
+
+    expect(wrapper.find('[data-teste="calendario-prazo"]').exists()).toBe(false)
+    expect(wrapper.get('.formulario-tarefa__pagina').classes()).toContain('com-lateral__pagina--ativa')
   })
 
   it('[COMPONENTE] a dica do responsável explica onde a tarefa aparece, sem "casal"', async () => {
@@ -369,9 +380,10 @@ describe('TarefaFormularioView para eventos', () => {
     const fonte = readFileSync(resolve(__dirname, '../TarefaFormularioView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
     expect(estilo).not.toMatch(/@media/)
-    expect(estilo).toMatch(/container: formulario-tarefa \/ inline-size/)
+    expect(estilo).not.toMatch(/container: formulario-tarefa \//)
+    expect(fonte).toContain('<div class="formulario-tarefa com-lateral">')
     expect(estilo).toMatch(/@container formulario-tarefa-campos \(min-width: 36rem\)/)
-    expect(estilo).toMatch(/@container formulario-tarefa \(min-width: 64rem\)/)
+    expect(estilo).not.toMatch(/@container formulario-tarefa /)
     expect(fonte).toMatch(/validarAoSair\('prazo'\)/)
     expect(fonte).toMatch(/revalidarAoDigitar\('prazo'\)/)
     expect(fonte).toMatch(/useAlteracoesNaoSalvas\(/)

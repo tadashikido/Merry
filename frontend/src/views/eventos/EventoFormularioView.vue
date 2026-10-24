@@ -368,8 +368,8 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="formulario-evento">
-      <div class="pagina-formulario formulario-evento__pagina">
+    <div class="formulario-evento com-lateral">
+      <div class="pagina-formulario formulario-evento__pagina com-lateral__pagina com-lateral__pagina--ativa">
         <CabecalhoPagina
           :titulo="titulo"
           :descricao="descricao"
@@ -398,9 +398,9 @@ function cancelar() {
 
         <div
           v-else
-          class="formulario-evento__corpo"
+          class="formulario-evento__corpo com-lateral__corpo"
         >
-          <div class="formulario-evento__principal pilha pilha--cartao">
+          <div class="formulario-evento__principal com-lateral__principal pilha pilha--cartao">
             <p
               v-if="!edicao"
               class="formulario-evento__alternativa"
@@ -687,7 +687,7 @@ function cancelar() {
           </div>
 
           <LateralFormularioEvento
-            class="formulario-evento__lateral"
+            class="formulario-evento__lateral com-lateral__lateral com-lateral__lateral--filete"
             :tipo="formulario.valores.tipo"
             :mostrar-modelos="!edicao"
           />
@@ -722,29 +722,9 @@ function cancelar() {
 </template>
 
 <style scoped>
-.formulario-evento {
-  container: formulario-evento / inline-size;
-}
-
-.formulario-evento__corpo {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    'principal'
-    'lateral';
-  gap: var(--p-ritmo-bloco);
-}
-
 .formulario-evento__principal {
   container: formulario-evento-campos / inline-size;
-  grid-area: principal;
   min-width: 0;
-}
-
-.formulario-evento__lateral {
-  grid-area: lateral;
-  padding-top: var(--p-ritmo-bloco);
-  border-top: 1px solid var(--p-cor-borda);
 }
 
 .formulario-evento__alternativa {
@@ -796,25 +776,6 @@ function cancelar() {
   .formulario-evento__acoes {
     flex-direction: row;
     gap: var(--p-ritmo-grupo);
-  }
-}
-
-@container formulario-evento (min-width: 64rem) {
-  .formulario-evento__pagina {
-    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
-  }
-
-  .formulario-evento__corpo {
-    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
-    grid-template-areas: 'principal lateral';
-    align-items: start;
-  }
-
-  .formulario-evento__lateral {
-    padding-top: 0;
-    padding-inline-start: var(--p-ritmo-bloco);
-    border-top: 0;
-    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

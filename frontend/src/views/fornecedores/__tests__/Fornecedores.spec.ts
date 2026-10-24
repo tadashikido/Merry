@@ -491,9 +491,9 @@ describe('FornecedoresView — reestruturação da fundação', () => {
     expect(estilo).not.toMatch(/@media/)
     expect(estilo).not.toMatch(/--p-espaco-/)
     expect(estilo).not.toMatch(/margin[^:]*:\s*-/)
-    expect(estilo).toMatch(/container:\s*fornecedores\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/container:\s*fornecedores com-lateral\s*\/\s*inline-size/)
     expect(estilo).toMatch(/container:\s*lista-fornecedores\s*\/\s*inline-size/)
-    expect(estilo).toMatch(/@container fornecedores \(min-width: 64rem\)/)
+    expect(estilo).toMatch(/@container com-lateral \(min-width: 52rem\)/)
     expect(estilo).not.toMatch(/sticky/)
   })
 
@@ -617,9 +617,9 @@ describe('FornecedorView — reestruturação da fundação', () => {
     expect(estilo).not.toMatch(/--p-espaco-/)
     expect(estilo).not.toMatch(/margin[^:]*:\s*-/)
     expect(estilo).not.toMatch(/box-shadow/)
-    expect(estilo).toMatch(/container:\s*fornecedor\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/container:\s*fornecedor com-lateral\s*\/\s*inline-size/)
     expect(estilo).toMatch(/container:\s*historico-fornecedor\s*\/\s*inline-size/)
-    expect(estilo).toMatch(/@container fornecedor \(min-width: 64rem\)\s*\{\s*\.fornecedor__corpo\s*\{\s*grid-template-columns:\s*var\(--fornecedor-largura-ficha\) minmax\(0, 1fr\)/)
+    expect(estilo).toMatch(/@container com-lateral \(min-width: 52rem\)\s*\{\s*\.fornecedor__corpo\s*\{\s*grid-template-columns:\s*var\(--com-lateral-largura\) minmax\(0, 1fr\)/)
     expect(estilo).toMatch(/@container fornecedor \(min-width: 40rem\) and \(max-width: 63\.99rem\)/)
     expect(estilo).toMatch(/@container historico-fornecedor \(min-width: 36rem\)/)
     expect(estilo).not.toMatch(/sticky/)
@@ -758,7 +758,7 @@ describe('FornecedorFormularioView — reestruturação da fundação', () => {
     const fonte = lerFonte('views/fornecedores/FornecedorFormularioView.vue')
     const estilo = estiloDe(fonte)
 
-    expect(fonte).toContain('class="pagina-formulario formulario-fornecedor-tela__pagina"')
+    expect(fonte).toContain('class="pagina-formulario formulario-fornecedor-tela__pagina com-lateral__pagina')
     expect(fonte).not.toMatch(/validarCampo\('/)
     expect(fonte).toMatch(/@blur="formulario\.validarAoSair\('nomeEmpresa'\)"/)
     expect(fonte).toMatch(/@update:model-value="formulario\.revalidarAoDigitar\('nomeEmpresa'\)"/)
@@ -822,6 +822,7 @@ describe('FornecedoresView — categorias essenciais', () => {
     )
     const { wrapper } = await abrir('/fornecedores')
     await aguardarAte(() => expect(wrapper.get('[data-teste="cobertura-frase"]').text()).toBe('Para os eventos pela frente: 1 festa de 15 anos e 1 comemoração.'))
+    await wrapper.get('[data-teste="cobertura-alternar"]').trigger('click')
 
     expect(wrapper.get('[data-teste="cobertura-falta-IluminacaoSom"]').text()).toContain('Essencial para 1 evento pela frente')
     expect(wrapper.find('[data-teste="cobertura-falta-ConvitesPapelaria"]').exists()).toBe(false)
@@ -1117,7 +1118,7 @@ describe('FornecedorFormularioView — categoria e lateral para eventos', () => 
 
     const formulario = wrapper.get('[data-teste="formulario-fornecedor"]')
     expect(formulario.element.compareDocumentPosition(lateral.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(wrapper.get('.formulario-fornecedor-tela__pagina').classes()).toContain('formulario-fornecedor-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-fornecedor-tela__pagina').classes()).toContain('com-lateral__pagina--ativa')
   })
 
   it('[COMPONENTE] edição: conta os outros ativos e mostra a atuação sem repetir a frase da categoria', async () => {
@@ -1160,7 +1161,7 @@ describe('FornecedorFormularioView — categoria e lateral para eventos', () => 
     const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}/editar`)
 
     expect(wrapper.find('[data-teste="lateral-fornecedor"]').exists()).toBe(false)
-    expect(wrapper.get('.formulario-fornecedor-tela__pagina').classes()).not.toContain('formulario-fornecedor-tela__pagina--com-lateral')
+    expect(wrapper.get('.formulario-fornecedor-tela__pagina').classes()).not.toContain('com-lateral__pagina--ativa')
   })
 
   it('[SEGURANÇA] linha da categoria, lateral e título não expõem telefone nem e-mail', async () => {
@@ -1178,11 +1179,12 @@ describe('FornecedorFormularioView — categoria e lateral para eventos', () => 
   it('[UNITÁRIO] a casca abre a lateral por contêiner da tela num filho, sem @media nem sticky', () => {
     const estilo = estiloDe(lerFonte('views/fornecedores/FornecedorFormularioView.vue'))
 
-    expect(estilo).toMatch(/\.formulario-fornecedor-tela\s*\{\s*container:\s*formulario-fornecedor-tela\s*\/\s*inline-size/)
-    expect(estilo).toMatch(
-      /@container formulario-fornecedor-tela \(min-width: 64rem\)\s*\{\s*\.formulario-fornecedor-tela__pagina--com-lateral\s*\{[^}]*max-width/,
-    )
-    expect(estilo).toMatch(/\.formulario-fornecedor-tela__corpo\s*\{\s*grid-template-columns:\s*minmax\(0, var\(--p-dimensao-largura-formulario\)\)/)
+    const fonte = lerFonte('views/fornecedores/FornecedorFormularioView.vue')
+    expect(estilo).not.toMatch(/container:\s*formulario-fornecedor-tela/)
+    expect(estilo).not.toMatch(/@container formulario-fornecedor-tela /)
+    expect(fonte).toContain('<div class="formulario-fornecedor-tela com-lateral">')
+    expect(fonte).toContain("'com-lateral__pagina--ativa': comLateral")
+    expect(fonte).toContain('class="formulario-fornecedor-tela__corpo com-lateral__corpo"')
     expect(estilo).not.toMatch(/@media/)
     expect(estilo).not.toMatch(/sticky/)
     expect(estilo).not.toMatch(/--p-espaco-/)

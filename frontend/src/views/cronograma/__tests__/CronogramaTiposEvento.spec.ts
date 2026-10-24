@@ -232,7 +232,7 @@ describe('CronogramaView — resumo do dia e quem está no roteiro', () => {
   it('[UNITÁRIO] estilos só ajustam largura por @container', () => {
     const view = estiloDe(lerFonte('views/cronograma/CronogramaView.vue'))
     expect(view).not.toContain('@media')
-    expect(view).toContain('@container cronograma (min-width: 64rem)')
+    expect(view).toContain('@container com-lateral (min-width: 52rem)')
     expect(view).not.toContain('position: sticky')
     const equipe = estiloDe(lerFonte('componentes/cronograma/EquipeRoteiroCronograma.vue'))
     expect(equipe).toContain('container: equipe-roteiro / inline-size')

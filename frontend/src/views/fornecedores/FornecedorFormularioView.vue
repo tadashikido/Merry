@@ -236,18 +236,18 @@ function cancelar() {
 
 <template>
   <LayoutPainelUsuario>
-    <div class="formulario-fornecedor-tela">
+    <div class="formulario-fornecedor-tela com-lateral">
       <div
-        class="pagina-formulario formulario-fornecedor-tela__pagina"
-        :class="{ 'formulario-fornecedor-tela__pagina--com-lateral': comLateral }"
+        class="pagina-formulario formulario-fornecedor-tela__pagina com-lateral__pagina"
+        :class="{ 'com-lateral__pagina--ativa': comLateral }"
       >
         <CabecalhoPagina
           :titulo="titulo"
           :descricao="descricaoCabecalho"
         />
 
-        <div class="formulario-fornecedor-tela__corpo">
-          <div class="formulario-fornecedor pilha pilha--cartao">
+        <div class="formulario-fornecedor-tela__corpo com-lateral__corpo">
+          <div class="formulario-fornecedor com-lateral__principal pilha pilha--cartao">
             <EstadoCarregando
               v-if="carregando"
               variante="formulario"
@@ -532,7 +532,7 @@ function cancelar() {
 
           <div
             v-if="comLateral"
-            class="formulario-fornecedor-tela__lateral pilha pilha--bloco"
+            class="formulario-fornecedor-tela__lateral com-lateral__lateral com-lateral__lateral--filete"
             data-teste="lateral-fornecedor"
           >
             <AtuacaoFornecedor
@@ -554,30 +554,9 @@ function cancelar() {
 </template>
 
 <style scoped>
-.formulario-fornecedor-tela {
-  container: formulario-fornecedor-tela / inline-size;
-}
-
-.formulario-fornecedor-tela__corpo {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    'principal'
-    'lateral';
-  gap: var(--p-ritmo-bloco);
-}
-
 .formulario-fornecedor {
   container: formulario-fornecedor / inline-size;
-  grid-area: principal;
   min-width: 0;
-}
-
-.formulario-fornecedor-tela__lateral {
-  grid-area: lateral;
-  min-width: 0;
-  padding-top: var(--p-ritmo-bloco);
-  border-top: 1px solid var(--p-cor-borda);
 }
 
 .formulario-fornecedor__situacao {
@@ -627,26 +606,6 @@ function cancelar() {
     flex-direction: row;
     flex-wrap: wrap;
     gap: var(--p-ritmo-grupo);
-  }
-}
-
-@container formulario-fornecedor-tela (min-width: 64rem) {
-  .formulario-fornecedor-tela__pagina--com-lateral {
-    max-width: calc(var(--p-dimensao-largura-formulario) + var(--p-dimensao-largura-autenticacao) + var(--p-ritmo-bloco));
-  }
-
-  .formulario-fornecedor-tela__corpo {
-    grid-template-columns: minmax(0, var(--p-dimensao-largura-formulario)) minmax(var(--p-dimensao-largura-gaveta), 1fr);
-    grid-template-areas: 'principal lateral';
-    align-items: start;
-  }
-
-  .formulario-fornecedor-tela__lateral {
-    align-self: stretch;
-    padding-top: 0;
-    padding-inline-start: var(--p-ritmo-bloco);
-    border-top: 0;
-    border-inline-start: 1px solid var(--p-cor-borda);
   }
 }
 </style>

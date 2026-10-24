@@ -29,8 +29,9 @@ const props = withDefaults(
     titulo?: string
     itemId?: string | null
     tipo?: TipoEvento | null
+    previaNoCampo?: boolean
   }>(),
-  { titulo: '', itemId: null, tipo: null },
+  { titulo: '', itemId: null, tipo: null, previaNoCampo: false },
 )
 
 const idTitulo = useId()
@@ -102,7 +103,7 @@ const comTituloProprio = computed(() => props.titulo.trim() !== '')
 
     <p
       class="posicao-item__previa"
-      :class="{ 'posicao-item__previa--vazia': dias === null }"
+      :class="{ 'posicao-item__previa--vazia': dias === null, 'com-lateral__so-leitor-ao-lado': previaNoCampo }"
       aria-live="polite"
       data-teste="previa-prazo-item"
     >
