@@ -7,11 +7,12 @@ import type { MenuItem } from 'primevue/menuitem'
 import type { ItemMenuAcoes } from './tipos'
 
 const props = withDefaults(
-  defineProps<{ itens: ItemMenuAcoes[]; rotulo: string; rotuloAcessivel?: string; desabilitado?: boolean; somenteIcone?: boolean }>(),
+  defineProps<{ itens: ItemMenuAcoes[]; rotulo: string; rotuloAcessivel?: string; desabilitado?: boolean; somenteIcone?: boolean; compactavel?: boolean }>(),
   {
     rotuloAcessivel: undefined,
     desabilitado: false,
     somenteIcone: false,
+    compactavel: false,
   },
 )
 
@@ -43,7 +44,7 @@ function alternar(evento: Event) {
       type="button"
       :label="somenteIcone ? undefined : rotulo"
       :aria-label="rotuloAcessivel ?? rotulo"
-      :title="somenteIcone ? rotulo : undefined"
+      :title="somenteIcone || compactavel ? rotulo : undefined"
       icon="ie ie-mais-opcoes"
       severity="secondary"
       text

@@ -642,7 +642,7 @@ describe('TarefasView — reestruturação da fundação', () => {
   it('[UNITÁRIO] CabecalhoPagina só desenha o fio do destaque quando há largura para texto e destaque lado a lado', () => {
     const estiloCabecalho = estiloDe(lerFonte('componentes/base/CabecalhoPagina.vue'))
     expect(estiloCabecalho).toMatch(/\.cabecalho-pagina \{[^}]*container: cabecalho-pagina \/ inline-size/)
-    const desktop = estiloCabecalho.slice(estiloCabecalho.indexOf('@media (min-width: 1024px)'))
+    const desktop = estiloCabecalho.slice(estiloCabecalho.indexOf('@container cabecalho-pagina (min-width: 40rem)'))
     expect(desktop).toMatch(/border-left: 1px solid var\(--p-cor-borda\)/)
     expect(desktop).toMatch(/@container cabecalho-pagina \(max-width: 54rem\) \{\s*\.cabecalho-pagina__destaque \{\s*padding-left: 0;\s*border-left: 0;/)
   })

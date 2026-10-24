@@ -37,7 +37,7 @@ defineProps<{ rotulo: string }>()
   color: var(--p-cor-acento-texto);
 }
 
-@media (min-width: 640px) {
+@container (min-width: 36rem) {
   .par-lugares {
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: stretch;

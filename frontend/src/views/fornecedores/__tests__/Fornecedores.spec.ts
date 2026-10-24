@@ -508,8 +508,9 @@ describe('FornecedoresView — reestruturação da fundação', () => {
     const estilo = estiloDe(lerFonte('componentes/base/LinhaFornecedor.vue'))
 
     expect(estilo).toMatch(/padding:\s*var\(--p-ritmo-grupo\) var\(--p-ritmo-cartao\)/)
-    expect(estilo).toMatch(/@container lista-fornecedores \(max-width: 39\.99rem\)/)
-    expect(estilo.indexOf('@container lista-fornecedores')).toBeGreaterThan(estilo.indexOf('@media (min-width: 640px)'))
+    expect(estilo).toMatch(/\.linha-fornecedor \{[^}]*grid-template-areas:\s*'textos acoes'\s*'canais canais';/)
+    expect(estilo).toMatch(/@container lista-fornecedores \(min-width: 40rem\) \{\s*\.linha-fornecedor \{[^}]*grid-template-areas: 'textos canais acoes';/)
+    expect(estilo).not.toMatch(/@media/)
   })
 })
 

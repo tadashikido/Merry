@@ -150,6 +150,7 @@ watch(
 
 <style scoped>
 .lista-problemas {
+  container: lista-problemas / inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--p-espaco-3);
@@ -235,7 +236,7 @@ watch(
   align-self: flex-start;
 }
 
-@media (min-width: 640px) {
+@container lista-problemas (min-width: 36rem) {
   .lista-problemas__item {
     display: grid;
     grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);

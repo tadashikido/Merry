@@ -25,6 +25,20 @@ describe('NomesAnfitrioes', () => {
     expect(wrapper.classes()).toContain('nomes-anfitrioes--linha')
   })
 
+  it('[REGRESSÃO] oferece ponto de quebra entre os nomes para não cortar palavra no meio em coluna estreita', () => {
+    const wrapper = mount(NomesAnfitrioes, { props: { primeiro: 'Maria Eduarda Vasconcellos', segundo: 'Bernardo' }, global })
+
+    const filhos = [...wrapper.element.childNodes].filter((no) => no.nodeType === 1).map((no) => (no as Element).tagName.toLowerCase())
+    expect(filhos).toEqual(['span', 'span', 'span', 'wbr', 'span'])
+    expect(wrapper.text()).toContain('Bernardo')
+  })
+
+  it('[COMPONENTE] sem segundo nome não insere ponto de quebra', () => {
+    const wrapper = mount(NomesAnfitrioes, { props: { primeiro: 'Valentina', segundo: null }, global })
+
+    expect(wrapper.findAll('wbr')).toHaveLength(0)
+  })
+
   it('[COMPONENTE] aplica o tamanho pedido', () => {
     const wrapper = mount(NomesAnfitrioes, { props: { primeiro: 'Ana', segundo: 'Bruno', tamanho: 'titulo' }, global })
 

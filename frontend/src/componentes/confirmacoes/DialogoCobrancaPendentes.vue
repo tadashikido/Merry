@@ -378,7 +378,7 @@ function rotulo(acao: string, pendente: ConvitePendenteDto): string {
   white-space: nowrap;
 }
 
-@media (max-width: 639px) {
+@container aplicacao (max-width: 39.99rem) {
   .cobranca__acoes > * {
     flex: 1 1 100%;
   }

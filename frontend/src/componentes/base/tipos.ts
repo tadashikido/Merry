@@ -17,6 +17,8 @@ export interface ItemTrilha {
   rota: RouteLocationRaw | null
 }
 
+export type LarguraListagem = 'estreita' | 'media' | 'larga'
+
 export interface ColunaListagem<T> {
   campo: keyof T & string
   titulo: string

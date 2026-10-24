@@ -30,7 +30,7 @@ withDefaults(defineProps<{ ampla?: boolean }>(), { ampla: false })
   max-width: none;
 }
 
-@media (min-width: 1024px) {
+@container (min-width: 48rem) {
   .superficie-operacao--ampla {
     padding: var(--p-ritmo-bloco);
   }

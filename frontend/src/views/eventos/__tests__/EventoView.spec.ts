@@ -204,7 +204,7 @@ describe('EventoView — estrutura reestruturada', () => {
     expect(estiloView).toMatch(/@container evento \(min-width: 64rem\)/)
 
     const estiloCabecalho = estiloDe(lerFonte('componentes/base/CabecalhoPagina.vue'))
-    const desktop = estiloCabecalho.slice(estiloCabecalho.indexOf('@media (min-width: 1024px)'))
+    const desktop = estiloCabecalho.slice(estiloCabecalho.indexOf('@container cabecalho-pagina (min-width: 40rem)'))
     expect(desktop).toMatch(/flex-wrap: wrap/)
     expect(desktop).toMatch(/min-width: min\(100%, 24rem\)/)
 

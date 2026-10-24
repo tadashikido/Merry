@@ -135,7 +135,7 @@ const variante = computed(() => (props.situacao === 'vazio' ? null : VARIANTES[p
   margin-top: auto;
 }
 
-@media (max-width: 639px) {
+@container (max-width: 35.99rem) {
   .lugar-acesso__acoes > :deep(.p-button:not(.p-button-icon-only)) {
     flex: 1 1 100%;
     min-height: var(--p-dimensao-alvo-toque);

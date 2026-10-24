@@ -75,6 +75,7 @@ const visiveis = computed(() => props.segmentos.filter((segmento) => segmento.va
 
 <style scoped>
 .barra-progresso {
+  container: barra-progresso / inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--p-espaco-4);
@@ -179,7 +180,7 @@ const visiveis = computed(() => props.segmentos.filter((segmento) => segmento.va
   border-top: 1px solid var(--p-cor-borda);
 }
 
-@media (min-width: 640px) {
+@container barra-progresso (min-width: 28rem) {
   .barra-progresso__legenda {
     grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   }

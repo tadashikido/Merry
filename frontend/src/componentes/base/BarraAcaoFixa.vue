@@ -101,7 +101,7 @@ withDefaults(defineProps<{ variante?: 'padrao' | 'operacao' | 'selecao' }>(), { 
   width: auto;
 }
 
-@media (min-width: 640px) {
+@container aplicacao (min-width: 40rem) {
   .barra-acao-fixa:not(.barra-acao-fixa--selecao) {
     position: static;
     margin: 0;

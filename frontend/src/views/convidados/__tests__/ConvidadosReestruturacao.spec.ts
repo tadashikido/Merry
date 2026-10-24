@@ -220,8 +220,8 @@ describe('ConvidadosView — reestruturação da fundação', { timeout: 20_000 
     const estilo = estiloDaView()
     expect(estilo).toMatch(/\.convidados__nome-convite \{[^}]*overflow-wrap: anywhere;/)
     expect(estilo).toMatch(/\.convidados__lista :deep\(\.p-selectbutton\) \{[^}]*flex-wrap: wrap;/)
-    expect(estilo).toMatch(/@container convidados \(max-width: 63\.99rem\) \{[^@]*\.convidados__lista :deep\(\.listagem__tabela \.convidados__whatsapp \.p-button-label\) \{\s*display: none;/)
-    expect(estilo).toMatch(/\.listagem__acoes-linha\) \{\s*display: grid;\s*grid-template-columns: repeat\(2, auto\);/)
+    expect(estilo).not.toContain('.listagem__acoes-linha')
+    expect(estilo).not.toContain('.p-button-label')
     expect(estilo).not.toContain('hyphens')
     expect(estilo).not.toContain('nowrap')
   })
@@ -230,10 +230,10 @@ describe('ConvidadosView — reestruturação da fundação', { timeout: 20_000 
     const estilo = estiloDaView()
     expect(estilo).toMatch(/\.convidados \{\s*container: convidados \/ inline-size;\s*\}/)
     expect(estilo).not.toMatch(/@media/)
-    expect(estilo).toMatch(/@container convidados \(max-width: 63\.99rem\) \{\s*\.convidados__lista :deep\(\.listagem__tabela \.listagem__coluna--secundaria\) \{\s*display: none;/)
-    expect(estilo).toMatch(/@container convidados \(max-width: 63\.99rem\) \{[^@]*\.listagem__acoes-linha\) \{\s*display: grid;/)
+    expect(estilo).not.toMatch(/:deep\(\.listagem__/)
 
     const fonte = lerFonte('../ConvidadosView.vue')
+    expect(fonte).toMatch(/<ListagemDados[^>]*ocultar-secundarias-abaixo="larga"[^>]*acoes-somente-icone-abaixo="larga"/)
     expect(fonte).toMatch(/<div class="convidados pilha pilha--bloco">[\s\S]*class="convidados__lista/)
   })
 

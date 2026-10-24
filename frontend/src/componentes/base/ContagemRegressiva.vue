@@ -71,6 +71,7 @@ const numero = computed(() => props.dias.toLocaleString('pt-BR'))
 }
 
 .contagem--destaque {
+  container: contagem / inline-size;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -122,7 +123,7 @@ const numero = computed(() => props.dias.toLocaleString('pt-BR'))
   color: var(--p-cor-texto-apoio);
 }
 
-@media (min-width: 1024px) {
+@container contagem (min-width: 22rem) {
   .contagem--destaque .contagem__frase {
     font-size: var(--p-fonte-tamanho-pagina);
   }

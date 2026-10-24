@@ -476,6 +476,7 @@ function importar() {
                 chave="id"
                 :rotulo="TEXTOS_CONFIRMACOES.pendentesRotulo"
                 :placeholder-busca="TEXTOS_CONFIRMACOES.buscaPendentes"
+                acoes-somente-icone-abaixo="larga"
               >
                 <template #celula-nome="{ item }">
                   <div
@@ -502,6 +503,7 @@ function importar() {
                     v-if="!arquivado"
                     :label="TEXTOS_ENVIO_CONVITE.enviarWhatsApp"
                     :aria-label="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.enviarWhatsApp, item.nome)"
+                    :title="TEXTOS_ENVIO_CONVITE.enviarWhatsApp"
                     icon="ie ie-whatsapp"
                     severity="secondary"
                     outlined
@@ -515,6 +517,7 @@ function importar() {
                     :rotulo="TEXTOS_ENVIO_CONVITE.maisAcoes"
                     :rotulo-acessivel="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.maisAcoes, item.nome)"
                     :desabilitado="conviteEmAndamento !== null"
+                    compactavel
                     @selecionar="envio.executarAcaoLink(paraEnvio(item.pendente), $event)"
                   />
                 </template>
@@ -696,18 +699,6 @@ function importar() {
   .confirmacoes__corpo {
     grid-template-areas: 'pendentes passos';
     grid-template-columns: minmax(0, 1fr) var(--confirmacoes-largura-lateral);
-  }
-}
-
-@container confirmacoes-lista (max-width: 55.99rem) {
-  .confirmacoes__pendentes :deep(.listagem__tabela .listagem__acoes-linha .p-button-label) {
-    display: none;
-  }
-}
-
-@container confirmacoes (max-width: 63.99rem) {
-  .confirmacoes__pendentes :deep(.listagem__tabela .listagem__acoes-linha .p-button-label) {
-    display: none;
   }
 }
 </style>

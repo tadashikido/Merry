@@ -3643,7 +3643,7 @@ const regras = [
   font-size: var(--p-fonte-tamanho-corpo);
 }
 
-@media (min-width: 1024px) {
+@container aplicacao (min-width: 64rem) {
   .guia__fornecedores {
     grid-template-columns: var(--p-dimensao-largura-navegacao-evento) minmax(0, 1fr);
     align-items: start;
@@ -4149,7 +4149,7 @@ const regras = [
   padding-left: var(--p-espaco-5);
 }
 
-@media (min-width: 640px) {
+@container aplicacao (min-width: 40rem) {
   .guia__campos {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

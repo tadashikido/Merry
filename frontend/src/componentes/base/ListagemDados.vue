@@ -10,7 +10,7 @@ import Button from 'primevue/button'
 import EstadoCarregando from './EstadoCarregando.vue'
 import EstadoVazio from './EstadoVazio.vue'
 import EstadoErro from './EstadoErro.vue'
-import type { ColunaListagem } from './tipos'
+import type { ColunaListagem, LarguraListagem } from './tipos'
 import { breakpoints } from '@/design/tokens'
 import { useTelaPequena } from '@/composables/useTelaPequena'
 import { MENSAGENS_PADRAO } from '@/textos/mensagens'
@@ -29,6 +29,8 @@ const props = withDefaults(
     descricaoVazio?: string
     filtrosAtivos?: boolean
     comBusca?: boolean
+    ocultarSecundariasAbaixo?: LarguraListagem
+    acoesSomenteIconeAbaixo?: LarguraListagem | 'sempre'
   }>(),
   {
     carregando: false,
@@ -38,6 +40,8 @@ const props = withDefaults(
     descricaoVazio: undefined,
     filtrosAtivos: false,
     comBusca: true,
+    ocultarSecundariasAbaixo: undefined,
+    acoesSomenteIconeAbaixo: undefined,
   },
 )
 
@@ -51,6 +55,10 @@ const exibirCartoes = useTelaPequena(`(max-width: ${breakpoints.tablet - 1}px)`)
 const temFiltroAplicado = computed(() => props.filtrosAtivos || busca.value.trim() !== '')
 const colunaPrincipal = computed(() => props.colunas.find((coluna) => coluna.principal) ?? props.colunas[0])
 const colunasSecundarias = computed(() => props.colunas.filter((coluna) => coluna !== colunaPrincipal.value))
+const classesLargura = computed(() => [
+  `listagem--secundarias-${props.ocultarSecundariasAbaixo ?? 'janela'}`,
+  props.acoesSomenteIconeAbaixo ? `listagem--acoes-${props.acoesSomenteIconeAbaixo}` : null,
+])
 
 function valorCelula(item: T, campo: keyof T & string): string {
   const valor = item[campo]
@@ -69,6 +77,7 @@ function limparFiltros() {
 <template>
   <section
     class="listagem"
+    :class="classesLargura"
     :aria-label="rotulo"
   >
     <div
@@ -255,6 +264,7 @@ function limparFiltros() {
 
 <style scoped>
 .listagem {
+  container: listagem / inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--p-espaco-4);
@@ -370,9 +380,67 @@ function limparFiltros() {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
-@media (max-width: 1023px) {
-  .listagem__tabela :deep(.listagem__coluna--secundaria) {
+@container aplicacao (max-width: 63.99rem) {
+  .listagem--secundarias-janela .listagem__tabela :deep(.listagem__coluna--secundaria) {
     display: none;
   }
+}
+
+@container listagem (max-width: 39.99rem) {
+  .listagem--secundarias-estreita .listagem__tabela :deep(.listagem__coluna--secundaria) {
+    display: none;
+  }
+
+  .listagem--acoes-estreita .listagem__tabela .listagem__acoes-linha {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: end;
+  }
+
+  .listagem--acoes-estreita .listagem__tabela .listagem__acoes-linha :deep(.p-button-label) {
+    display: none;
+  }
+}
+
+@container listagem (max-width: 55.99rem) {
+  .listagem--secundarias-media .listagem__tabela :deep(.listagem__coluna--secundaria) {
+    display: none;
+  }
+
+  .listagem--acoes-media .listagem__tabela .listagem__acoes-linha {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: end;
+  }
+
+  .listagem--acoes-media .listagem__tabela .listagem__acoes-linha :deep(.p-button-label) {
+    display: none;
+  }
+}
+
+@container listagem (max-width: 63.99rem) {
+  .listagem--secundarias-larga .listagem__tabela :deep(.listagem__coluna--secundaria) {
+    display: none;
+  }
+
+  .listagem--acoes-larga .listagem__tabela .listagem__acoes-linha {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: end;
+  }
+
+  .listagem--acoes-larga .listagem__tabela .listagem__acoes-linha :deep(.p-button-label) {
+    display: none;
+  }
+}
+
+.listagem--acoes-sempre .listagem__tabela .listagem__acoes-linha {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  justify-content: end;
+}
+
+.listagem--acoes-sempre .listagem__tabela .listagem__acoes-linha :deep(.p-button-label) {
+  display: none;
 }
 </style>

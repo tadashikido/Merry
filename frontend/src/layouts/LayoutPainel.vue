@@ -328,7 +328,7 @@ watch(telaPequena, (pequena) => {
   padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo) var(--p-ritmo-bloco);
 }
 
-@media (min-width: 640px) {
+@container aplicacao (min-width: 40rem) {
   .layout-painel--compacto .layout-painel__conteudo {
     padding: var(--p-ritmo-bloco) var(--p-ritmo-cartao);
   }

@@ -594,7 +594,7 @@ function excluir() {
   width: 100%;
 }
 
-@media (min-width: 640px) {
+@container aplicacao (min-width: 40rem) {
   .dialogo-item-cronograma__rodape {
     flex-direction: row;
     align-items: center;

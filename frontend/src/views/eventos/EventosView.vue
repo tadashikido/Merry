@@ -202,6 +202,8 @@ async function alternarArquivamento(evento: EventoResumoDto) {
         :placeholder-busca="TEXTOS_EVENTOS.placeholderBusca"
         :titulo-vazio="emArquivados ? TEXTOS_EVENTOS.vazioArquivadosTitulo : TEXTOS_EVENTOS.vazioAtivosTitulo"
         :descricao-vazio="emArquivados ? TEXTOS_EVENTOS.vazioArquivadosTexto : TEXTOS_EVENTOS.vazioAtivosTexto"
+        ocultar-secundarias-abaixo="larga"
+        acoes-somente-icone-abaixo="larga"
         :filtros-ativos="filtrosAtivos"
         @tentar-novamente="carregar"
         @limpar-filtros="limparFiltros"
@@ -300,6 +302,7 @@ async function alternarArquivamento(evento: EventoResumoDto) {
             v-if="!item.arquivado"
             :label="TEXTOS_EVENTOS.editar"
             :aria-label="TEXTOS_EVENTOS.acaoComNome(TEXTOS_EVENTOS.editar, nomes(item))"
+            :title="TEXTOS_EVENTOS.editar"
             icon="ie ie-editar"
             severity="secondary"
             text
@@ -312,6 +315,7 @@ async function alternarArquivamento(evento: EventoResumoDto) {
             :aria-label="
               TEXTOS_EVENTOS.acaoComNome(item.arquivado ? TEXTOS_EVENTOS.restaurar : TEXTOS_EVENTOS.arquivar, nomes(item))
             "
+            :title="item.arquivado ? TEXTOS_EVENTOS.restaurar : TEXTOS_EVENTOS.arquivar"
             :icon="item.arquivado ? 'ie ie-restaurar' : 'ie ie-arquivar'"
             severity="secondary"
             text
@@ -353,7 +357,7 @@ async function alternarArquivamento(evento: EventoResumoDto) {
   text-decoration-color: var(--p-cor-primaria);
 }
 
-.eventos :deep(.eventos__contagem-na-fase) {
+.eventos__contagem-na-fase {
   display: none;
 }
 
@@ -369,17 +373,12 @@ async function alternarArquivamento(evento: EventoResumoDto) {
   }
 }
 
-@container eventos (max-width: 63.99rem) {
-  .eventos :deep(.listagem__tabela .eventos__contagem-na-fase) {
+@container listagem (max-width: 63.99rem) {
+  .listagem__tabela .eventos__contagem-na-fase {
     display: block;
     margin-top: var(--p-ritmo-campo);
     font-size: var(--p-fonte-tamanho-controle);
     color: var(--p-cor-texto-apoio);
-  }
-
-  .eventos :deep(.listagem__tabela .listagem__coluna--secundaria),
-  .eventos :deep(.listagem__tabela .listagem__acoes-linha .p-button-label) {
-    display: none;
   }
 }
 </style>

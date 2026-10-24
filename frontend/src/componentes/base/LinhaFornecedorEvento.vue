@@ -265,7 +265,7 @@ a.linha-vinculo__nome:hover {
   color: var(--p-cor-texto-apoio);
 }
 
-@media (min-width: 1024px) {
+@container lista-vinculos (min-width: 48rem) {
   .linha-vinculo {
     grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1.5fr) auto;
     grid-template-areas: 'identidade valores extras acoes';
@@ -286,33 +286,6 @@ a.linha-vinculo__nome:hover {
 
   .linha-vinculo__acoes {
     align-self: center;
-  }
-}
-
-@container lista-vinculos (max-width: 47.99rem) {
-  .linha-vinculo {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      'identidade acoes'
-      'valores valores'
-      'extras extras';
-    gap: var(--p-espaco-2) var(--p-espaco-3);
-  }
-
-  .linha-vinculo__valores {
-    flex-direction: row;
-  }
-
-  .linha-vinculo__valor {
-    justify-content: flex-start;
-  }
-
-  .linha-vinculo__extras {
-    justify-content: flex-start;
-  }
-
-  .linha-vinculo__acoes {
-    align-self: start;
   }
 }
 </style>

@@ -182,7 +182,7 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
   display: inline-flex;
 }
 
-@media (min-width: 640px) {
+@container aplicacao (min-width: 40rem) {
   .layout-autenticacao__folha {
     padding: var(--p-ritmo-bloco);
   }
@@ -192,7 +192,7 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
   }
 }
 
-@media (min-width: 1024px) {
+@container aplicacao (min-width: 64rem) {
   .layout-autenticacao:not(.layout-autenticacao--demonstracao) {
     display: grid;
     grid-template-columns: minmax(24rem, 2fr) 3fr;

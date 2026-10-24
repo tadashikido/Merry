@@ -17,6 +17,8 @@ await precarregarRotas('restricoes-alimentares')
 const ROTA_EVENTO = `/api/eventos/${ID_EVENTO}`
 const ROTA_RELATORIO = `${ROTA_EVENTO}/restricoes-alimentares`
 
+const FONTE_VIEW_RESTRICOES = readFileSync(resolve(__dirname, '../RestricoesAlimentaresView.vue'), 'utf-8')
+
 const ESTILO_VIEW = (() => {
   const fonte = readFileSync(resolve(__dirname, '../RestricoesAlimentaresView.vue'), 'utf-8')
   return fonte.slice(fonte.indexOf('<style'))
@@ -200,7 +202,9 @@ describe('RestricoesAlimentaresView — reestruturação da fundação', { timeo
     expect(ESTILO_VIEW).toContain('container: restricoes / inline-size')
     expect(ESTILO_VIEW).toContain('@container restricoes (min-width: 40rem)')
     expect(ESTILO_VIEW).toContain('container: restricoes-lista / inline-size')
-    expect(ESTILO_VIEW).toContain('@container restricoes-lista (max-width: 55.99rem)')
+    expect(ESTILO_VIEW).not.toContain(':deep(.listagem__')
+    expect(FONTE_VIEW_RESTRICOES).toMatch(/<ListagemDados[^>]*ocultar-secundarias-abaixo="media"[^>]*acoes-somente-icone-abaixo="sempre"/)
+    expect(FONTE_VIEW_RESTRICOES).toMatch(/<MenuAcoes[^>]*compactavel/)
     expect(ESTILO_VIEW).toContain('@container restricoes (min-width: 64rem)')
     expect(ESTILO_VIEW).not.toContain('80rem')
     expect(ESTILO_VIEW).not.toMatch(/sticky/)

@@ -391,6 +391,8 @@ function excluir(convite: ConviteDto) {
             :filtros-ativos="temFiltros"
             :titulo-vazio="TEXTOS_CONVIDADOS.vazioTitulo"
             :descricao-vazio="descricaoVazio"
+            ocultar-secundarias-abaixo="larga"
+            acoes-somente-icone-abaixo="larga"
             @tentar-novamente="store.carregar(id)"
             @limpar-filtros="limparFiltros"
           >
@@ -689,21 +691,5 @@ function excluir(convite: ConviteDto) {
 .convidados__voltar {
   display: inline-block;
   margin-top: var(--p-ritmo-grupo);
-}
-
-@container convidados (max-width: 63.99rem) {
-  .convidados__lista :deep(.listagem__tabela .listagem__coluna--secundaria) {
-    display: none;
-  }
-
-  .convidados__lista :deep(.listagem__tabela .convidados__whatsapp .p-button-label) {
-    display: none;
-  }
-
-  .convidados__lista :deep(.listagem__tabela .listagem__acoes-linha) {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    justify-content: end;
-  }
 }
 </style>

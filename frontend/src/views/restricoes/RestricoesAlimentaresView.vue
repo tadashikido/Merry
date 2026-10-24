@@ -351,6 +351,8 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
               :rotulo="TEXTOS_DADOS_SENSIVEIS.listaRotulo"
               :placeholder-busca="TEXTOS_DADOS_SENSIVEIS.buscaPlaceholder"
               :titulo-vazio="TEXTOS_DADOS_SENSIVEIS.vazioTitulo"
+              ocultar-secundarias-abaixo="media"
+              acoes-somente-icone-abaixo="sempre"
             >
               <template #celula-nome="{ item }">
                 <span class="restricoes__nome">
@@ -375,6 +377,7 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
                   :itens="itensMenu"
                   :rotulo="TEXTOS_DADOS_SENSIVEIS.editar"
                   :rotulo-acessivel="TEXTOS_DADOS_SENSIVEIS.acoesPessoa(item.nome)"
+                  compactavel
                   @selecionar="selecionarAcao(item.pessoa, $event)"
                 />
               </template>
@@ -448,10 +451,6 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
   color: var(--p-cor-texto-secundario);
 }
 
-.restricoes__principal :deep(.listagem__tabela .listagem__acoes-linha .p-button-label) {
-  display: none;
-}
-
 .restricoes__nome {
   display: inline-flex;
   flex-wrap: wrap;
@@ -469,12 +468,6 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
-  }
-}
-
-@container restricoes-lista (max-width: 55.99rem) {
-  .restricoes__principal :deep(.listagem__tabela .listagem__coluna--secundaria) {
-    display: none;
   }
 }
 

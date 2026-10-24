@@ -67,7 +67,7 @@ withDefaults(defineProps<{ rotuloAcoes: string; demonstracao?: boolean }>(), { d
   border-radius: var(--p-raio-tag);
 }
 
-@media (min-width: 640px) {
+@container aplicacao (min-width: 40rem) {
   .layout-impressao__folha {
     padding: 16mm;
   }

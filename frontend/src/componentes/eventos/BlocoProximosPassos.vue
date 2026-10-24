@@ -269,6 +269,7 @@ function irParaAcessoAnfitriao() {
 
 <style scoped>
 .proximos-passos {
+  container: proximos-passos / inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--p-espaco-4);
@@ -430,7 +431,7 @@ function irParaAcessoAnfitriao() {
   color: var(--p-cor-texto-secundario);
 }
 
-@media (max-width: 639px) {
+@container proximos-passos (max-width: 29.99rem) {
   .proximos-passos__acao-principal {
     width: 100%;
     min-height: var(--p-dimensao-alvo-toque);
@@ -441,7 +442,7 @@ function irParaAcessoAnfitriao() {
   }
 }
 
-@media (min-width: 640px) {
+@container proximos-passos (min-width: 30rem) {
   .proximos-passos__passo {
     grid-template-columns: auto minmax(0, 1fr) auto;
   }

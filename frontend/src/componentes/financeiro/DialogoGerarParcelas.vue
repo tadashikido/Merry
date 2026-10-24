@@ -369,7 +369,7 @@ async function gerar() {
   color: var(--p-cor-alerta-texto);
 }
 
-@media (min-width: 640px) {
+@container aplicacao (min-width: 40rem) {
   .dialogo-gerar__linha {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

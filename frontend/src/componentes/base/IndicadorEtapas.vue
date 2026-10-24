@@ -59,6 +59,7 @@ function situacao(indice: number): 'concluida' | 'atual' | 'futura' {
 
 <style scoped>
 .indicador-etapas {
+  container: indicador-etapas / inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--p-espaco-2);
@@ -108,7 +109,7 @@ function situacao(indice: number): 'concluida' | 'atual' | 'futura' {
   white-space: nowrap;
 }
 
-@media (min-width: 640px) {
+@container indicador-etapas (min-width: 36rem) {
   .indicador-etapas__compacto {
     display: none;
   }

@@ -134,6 +134,7 @@ const tom = computed(() => {
 
 <style scoped>
 .linha-parcela {
+  container: linha-parcela / inline-size;
   display: flex;
   align-items: center;
   gap: var(--p-espaco-2);
@@ -258,7 +259,7 @@ const tom = computed(() => {
   padding: var(--p-espaco-2) 0;
 }
 
-@media (min-width: 640px) {
+@container linha-parcela (min-width: 28rem) {
   .linha-parcela__corpo {
     grid-template-columns: var(--p-espaco-10) minmax(0, 1fr) auto minmax(var(--p-espaco-16), auto);
     grid-template-areas: 'data texto valor situacao';

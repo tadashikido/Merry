@@ -87,7 +87,7 @@ const variante = computed(() => VARIANTES[props.situacao])
   align-items: center;
 }
 
-@media (max-width: 639px) {
+@container (max-width: 35.99rem) {
   .linha-destino-link__acoes :deep(.p-button:not(.p-button-icon-only)) {
     flex: 1 1 auto;
     min-height: var(--p-dimensao-alvo-toque-movel);

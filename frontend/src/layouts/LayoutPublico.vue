@@ -145,7 +145,7 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
   color: var(--p-cor-operacao-apoio);
 }
 
-@media (min-width: 640px) {
+@container aplicacao (min-width: 40rem) {
   .layout-publico {
     padding-top: var(--p-ritmo-secao);
   }

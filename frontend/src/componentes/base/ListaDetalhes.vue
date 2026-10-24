@@ -41,6 +41,7 @@ function exibir(valor: ItemDetalhe['valor']): string {
 
 <style scoped>
 .lista-detalhes {
+  container: lista-detalhes / inline-size;
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -90,7 +91,7 @@ function exibir(valor: ItemDetalhe['valor']): string {
   color: var(--p-cor-texto-apoio);
 }
 
-@media (min-width: 640px) {
+@container lista-detalhes (min-width: 30rem) {
   .lista-detalhes__item {
     display: grid;
     grid-template-columns: 12rem minmax(0, 1fr);

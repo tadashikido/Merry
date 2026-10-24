@@ -20,6 +20,7 @@ withDefaults(
         aria-hidden="true"
       >&amp;</span>
       <span class="somente-leitor-tela">{{ ` ${TEXTOS_EVENTOS.conectorNomes} ` }}</span>
+      <wbr>
       <span class="nomes-anfitrioes__nome">{{ segundo }}</span>
     </template>
   </span>

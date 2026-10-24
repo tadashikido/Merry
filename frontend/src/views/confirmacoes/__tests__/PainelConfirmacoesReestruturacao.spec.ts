@@ -27,6 +27,7 @@ const lerEstilo = (arquivo: string) => {
   return fonte.slice(fonte.indexOf('<style'))
 }
 const ESTILO_VIEW = lerEstilo('../PainelConfirmacoesView.vue')
+const FONTE_VIEW_CONFIRMACOES = readFileSync(resolve(__dirname, '../PainelConfirmacoesView.vue'), 'utf-8')
 const ESTILO_RESUMO = lerEstilo('../../../componentes/base/ResumoContagem.vue')
 
 const relatorio: RelatorioRestricoesAlimentaresDto = {
@@ -219,10 +220,12 @@ describe('PainelConfirmacoesView — reestruturação da fundação', { timeout:
     expect(ESTILO_VIEW).toContain('container: confirmacoes / inline-size')
     expect(ESTILO_VIEW).toContain('@container confirmacoes (max-width: 39.99rem)')
     expect(ESTILO_VIEW).toContain('@container confirmacoes (min-width: 48rem)')
-    expect(ESTILO_VIEW).toContain('@container confirmacoes (max-width: 63.99rem)')
     expect(ESTILO_VIEW).toContain('@container confirmacoes (min-width: 64rem)')
     expect(ESTILO_VIEW).toContain('container: confirmacoes-lista / inline-size')
-    expect(ESTILO_VIEW).toContain('@container confirmacoes-lista (max-width: 55.99rem)')
+    expect(ESTILO_VIEW).not.toContain(':deep(.listagem__')
+    expect(FONTE_VIEW_CONFIRMACOES).toMatch(/<ListagemDados[^>]*acoes-somente-icone-abaixo="larga"/)
+    expect(FONTE_VIEW_CONFIRMACOES).toMatch(/<MenuAcoes[^>]*compactavel/)
+    expect(FONTE_VIEW_CONFIRMACOES).toContain(':title="TEXTOS_ENVIO_CONVITE.enviarWhatsApp"')
     expect(ESTILO_VIEW).not.toMatch(/sticky/)
     expect(ESTILO_VIEW).not.toMatch(/--p-espaco-/)
     expect(ESTILO_VIEW).not.toMatch(/(?:gap|margin|padding)[^;]*\d+px/)

@@ -237,7 +237,7 @@ async function salvar() {
   width: 100%;
 }
 
-@media (min-width: 640px) {
+@container aplicacao (min-width: 40rem) {
   .dialogo-salvar-modelo__acoes {
     flex-direction: row;
     justify-content: flex-end;

@@ -409,8 +409,8 @@ describe('FornecedoresEventoView — reestruturação da fundação', () => {
     const estilo = estiloDe(lerFonte('componentes/base/LinhaFornecedorEvento.vue'))
 
     expect(estilo).toMatch(/padding:\s*var\(--p-ritmo-grupo\) var\(--p-ritmo-cartao\)/)
-    expect(estilo).toMatch(/@container lista-vinculos \(max-width: 47\.99rem\)/)
-    expect(estilo.indexOf('@container lista-vinculos')).toBeGreaterThan(estilo.indexOf('@media (min-width: 1024px)'))
+    expect(estilo).toMatch(/@container lista-vinculos \(min-width: 48rem\) \{\s*\.linha-vinculo \{[^}]*grid-template-areas: 'identidade valores extras acoes';/)
+    expect(estilo).not.toMatch(/@media/)
   })
 })
 

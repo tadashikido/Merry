@@ -278,7 +278,7 @@ defineExpose({ focar })
   text-align: left;
 }
 
-@media (min-width: 640px) {
+@container (min-width: 36rem) {
   .envio-arquivo {
     padding: var(--p-espaco-10) var(--p-espaco-6);
   }

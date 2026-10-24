@@ -48,6 +48,7 @@ withDefaults(defineProps<{ itens: ItemContagem[]; rotulo: string; variante?: 'fa
 
 <style scoped>
 .resumo-contagem {
+  container: resumo-contagem / inline-size;
   display: flex;
   flex-direction: column;
   background: var(--p-cor-superficie);
@@ -109,7 +110,7 @@ withDefaults(defineProps<{ itens: ItemContagem[]; rotulo: string; variante?: 'fa
   border-top: 1px solid var(--p-cor-borda);
 }
 
-@media (min-width: 640px) {
+@container resumo-contagem (min-width: 36rem) {
   .resumo-contagem__itens {
     grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
     grid-auto-flow: column;
@@ -129,7 +130,7 @@ withDefaults(defineProps<{ itens: ItemContagem[]; rotulo: string; variante?: 'fa
   }
 }
 
-@media (min-width: 1024px) {
+@container resumo-contagem (min-width: 38rem) {
   .resumo-contagem__numero {
     font-size: var(--p-fonte-tamanho-pagina);
   }

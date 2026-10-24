@@ -279,6 +279,7 @@ export const dimensoes = {
   noCronograma: '0.75rem',
   fioCronograma: '2px',
   colunaHorarioOperacao: '4.75rem',
+  colunaRotuloDiaOperacao: '7.5rem',
   alturaAcaoOperacao: '3.5rem',
 } as const
 

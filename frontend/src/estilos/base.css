@@ -9,6 +9,7 @@ html {
 }
 
 body {
+  container: aplicacao / inline-size;
   margin: 0;
   min-width: 320px;
   font-family: var(--p-fonte-interface);
@@ -129,13 +130,13 @@ h1,
   font-variant-numeric: lining-nums;
 }
 
-@media (min-width: 1024px) {
+@container aplicacao (min-width: 64rem) {
   body .p-button-label {
     white-space: nowrap;
   }
 }
 
-@media (min-width: 640px) {
+@container aplicacao (min-width: 40rem) {
   body .p-inputtext,
   body .p-select-label,
   body .p-select-option,
@@ -144,7 +145,13 @@ h1,
   }
 }
 
-@media (max-width: 639px), (pointer: coarse) {
+@container aplicacao (max-width: 39.99rem) {
+  .p-button:not(.p-button-icon-only):not(.p-button-sm):not(.p-button-link) {
+    min-height: var(--p-dimensao-alvo-toque-movel);
+  }
+}
+
+@media (pointer: coarse) {
   .p-button:not(.p-button-icon-only):not(.p-button-sm):not(.p-button-link) {
     min-height: var(--p-dimensao-alvo-toque-movel);
   }

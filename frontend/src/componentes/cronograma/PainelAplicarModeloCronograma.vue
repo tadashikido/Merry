@@ -337,7 +337,7 @@ async function aplicar() {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
-@media (min-width: 640px) {
+@container (min-width: 36rem) {
   .painel-aplicar-modelo {
     padding: var(--p-espaco-6);
   }

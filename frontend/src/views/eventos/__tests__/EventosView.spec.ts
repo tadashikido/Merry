@@ -203,10 +203,10 @@ describe('EventosView no design system Celebri', () => {
 
     expect(estilo).not.toContain('@media')
     expect(estilo).toContain('container: eventos / inline-size')
-    const estreito = estilo.slice(estilo.indexOf('@container eventos (max-width: 63.99rem)'))
-    expect(estreito).toContain('.listagem__coluna--secundaria')
-    expect(estreito).toContain('.p-button-label')
-    expect(estreito).toContain('.eventos__contagem-na-fase')
+    expect(estilo).not.toContain(':deep(')
+    expect(fonte).toMatch(/<ListagemDados[^>]*ocultar-secundarias-abaixo="larga"[^>]*acoes-somente-icone-abaixo="larga"/)
+    const estreito = estilo.slice(estilo.indexOf('@container listagem (max-width: 63.99rem)'))
+    expect(estreito).toMatch(/^@container listagem \(max-width: 63\.99rem\) \{\s*\.listagem__tabela \.eventos__contagem-na-fase \{\s*display: block;/)
   })
 })
 

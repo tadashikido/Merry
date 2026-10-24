@@ -234,7 +234,7 @@ const temConteudo = computed(() => temConteudoParaODia(props.evento, props.itens
 
 @container para-o-dia-cronograma (min-width: 20rem) {
   .para-o-dia-cronograma__dia {
-    grid-template-columns: 7.5rem minmax(0, 1fr);
+    grid-template-columns: var(--p-dimensao-coluna-rotulo-dia-operacao) minmax(0, 1fr);
     gap: var(--p-ritmo-campo);
   }
 }

@@ -381,11 +381,13 @@ const metadados = computed(() =>
   white-space: normal;
 }
 
-@media (min-width: 640px) {
+@container (min-width: 36rem) {
   .linha-cronograma {
     grid-template-columns: var(--p-dimensao-coluna-horario-cronograma) var(--p-espaco-8) minmax(0, 1fr);
   }
+}
 
+@container linha-cronograma (min-width: 30rem) {
   .linha-cronograma__metadados {
     flex-direction: row;
     flex-wrap: wrap;
@@ -393,7 +395,7 @@ const metadados = computed(() =>
   }
 }
 
-@media (min-width: 1024px) {
+@container linha-cronograma (min-width: 36rem) {
   .linha-cronograma__cabeca {
     flex-direction: row;
     gap: var(--p-espaco-4);

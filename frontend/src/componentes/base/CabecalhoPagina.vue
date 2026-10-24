@@ -169,7 +169,7 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
-@media (min-width: 640px) {
+@container cabecalho-pagina (min-width: 36rem) {
   .cabecalho-pagina__acoes {
     flex-direction: row;
     flex-wrap: wrap;
@@ -180,7 +180,7 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
   }
 }
 
-@media (min-width: 1024px) {
+@container cabecalho-pagina (min-width: 40rem) {
   .cabecalho-pagina__linha {
     flex-direction: row;
     flex-wrap: wrap;

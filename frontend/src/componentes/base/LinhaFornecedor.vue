@@ -142,7 +142,7 @@ withDefaults(
   align-self: start;
 }
 
-@media (min-width: 640px) {
+@container lista-fornecedores (min-width: 40rem) {
   .linha-fornecedor {
     grid-template-columns: minmax(0, 1fr) auto auto;
     grid-template-areas: 'textos canais acoes';
@@ -151,20 +151,6 @@ withDefaults(
 
   .linha-fornecedor__acoes {
     align-self: center;
-  }
-}
-
-@container lista-fornecedores (max-width: 39.99rem) {
-  .linha-fornecedor {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      'textos acoes'
-      'canais canais';
-    gap: var(--p-espaco-1) var(--p-espaco-3);
-  }
-
-  .linha-fornecedor__acoes {
-    align-self: start;
   }
 }
 </style>
