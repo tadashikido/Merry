@@ -50,8 +50,11 @@ describe('CronogramaPublicoView', () => {
     expect(wrapper!.find('.layout-publico--operacao').exists()).toBe(true)
     expect(wrapper!.get('h1').text()).toContain('Ana Beatriz & Bruno')
     expect(wrapper!.get('[data-teste="cabecalho-operacao-filtro"]').text()).toBe('Seus horários · Buffet Sabor')
-    expect(wrapper!.text()).toContain('16:30 · Capela São José')
-    expect(wrapper!.text()).toContain('Espaço Jardim')
+    expect(wrapper!.find('.cabecalho-operacao dl').exists()).toBe(false)
+    expect(wrapper!.findAll('[data-teste="cronograma-publico-local"]').map((local) => local.text())).toEqual([
+      'CerimôniaCapela São JoséAbrir no mapa',
+      'RecepçãoEspaço JardimAbrir no mapa',
+    ])
     expect(wrapper!.findAll('[data-teste^="dia-roteiro-"]').map((secao) => secao.attributes('data-teste'))).toEqual([
       'dia-roteiro-Vespera',
       'dia-roteiro-DiaDoEvento',
@@ -103,7 +106,8 @@ describe('CronogramaPublicoView', () => {
     await abrir()
 
     expect(wrapper!.get('[data-teste="cabecalho-operacao-filtro"]').text()).toBe('Equipe completa')
-    expect(wrapper!.get('[data-teste="cronograma-publico-vazio"]').text()).toContain(TEXTOS_CRONOGRAMA_PUBLICO.vazioTitulo)
+    expect(wrapper!.get('[data-teste="cronograma-publico-vazio"]').text()).toContain(TEXTOS_CRONOGRAMA_PUBLICO.vazioGeralTitulo)
+    expect(wrapper!.get('[data-teste="cronograma-publico-vazio"]').text()).toContain(TEXTOS_CRONOGRAMA_PUBLICO.vazioGeralTexto)
     expect(wrapper!.find('[data-teste="cronograma-publico-atualizar"]').exists()).toBe(true)
   })
 
@@ -210,7 +214,7 @@ describe('CronogramaPublicoView — agora / próximo', () => {
 
     await abrir()
 
-    expect(wrapper!.get('[data-teste="faixa-fase-dia-titulo"]').text()).toBe(TEXTOS_GRANDE_DIA.antesTitulo)
+    expect(wrapper!.get('[data-teste="faixa-fase-dia-titulo"]').text()).toBe('O casamento ainda não chegou')
     expect(wrapper!.find('[data-teste="painel-agora-proximo"]').exists()).toBe(false)
   })
 

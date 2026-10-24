@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, watch } from 'vue'
 import Button from 'primevue/button'
 
 import LayoutPublico from '@/layouts/LayoutPublico.vue'
-import CabecalhoOperacao, { type LocalOperacao } from '@/componentes/base/CabecalhoOperacao.vue'
+import CabecalhoOperacao from '@/componentes/base/CabecalhoOperacao.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
@@ -13,11 +13,14 @@ import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import PainelAgoraProximo from '@/componentes/base/PainelAgoraProximo.vue'
 import RelogioOperacao from '@/componentes/base/RelogioOperacao.vue'
+import ParaODiaCronograma from '@/componentes/cronogramaPublico/ParaODiaCronograma.vue'
 import { useAtualizacaoPeriodica, useRelogioDispositivo } from '@/composables/useAtualizacaoPeriodica'
 import { useCronogramaPublicoStore } from '@/stores/cronogramaPublico'
 import { TEXTOS_CRONOGRAMA_PUBLICO } from '@/textos/cronogramaPublico'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
-import { agruparRoteiro, ehHorarioDaCerimonia, montarLocaisOperacao, rotuloFiltro } from '@/utilitarios/cronogramaPublico'
+import { momentoDoModelo, referenciaDoModelo } from '@/textos/modelos'
+import { agruparRoteiro, ehHorarioDaCerimonia, rotuloFiltro } from '@/utilitarios/cronogramaPublico'
+import { temConteudoParaODia } from '@/utilitarios/paraODiaCronograma'
 import { formatarDataCalendarioExtenso, formatarHora } from '@/utilitarios/formatacao'
 import {
   interpolarMomento,
@@ -54,10 +57,25 @@ const seloFase = computed(() => {
 const aoVivo = computed(() => grupos.value.length > 0 && fase.value === 'NoDia')
 const semConexaoComDados = computed(() => dados.value !== null && store.falha !== null && store.falha !== 'linkInativo')
 
-const locais = computed<LocalOperacao[]>(() => {
-  const evento = dados.value?.evento
-  return evento ? montarLocaisOperacao(evento) : []
+const filtrado = computed(() => dados.value !== null && dados.value.filtro.tipo !== 'Geral')
+const referencia = computed(() => referenciaDoModelo(dados.value?.evento.tipo))
+const rotuloMomento = computed(() => TEXTOS_GRANDE_DIA.rotuloMomento(momentoDoModelo(dados.value?.evento.tipo).contracaoDe))
+const faixaFase = computed(() => {
+  if (fase.value === 'AntesDoDia') {
+    return { titulo: TEXTOS_GRANDE_DIA.faseAntes(referencia.value.artigo), texto: TEXTOS_CRONOGRAMA_PUBLICO.faseAntesTexto }
+  }
+  if (fase.value === 'DepoisDoDia') {
+    return { titulo: TEXTOS_GRANDE_DIA.faseDepois(referencia.value.artigo), texto: TEXTOS_GRANDE_DIA.depoisTexto }
+  }
+  return null
 })
+const temLateral = computed(() => dados.value !== null && temConteudoParaODia(dados.value.evento, dados.value.itens.length))
+const temContexto = computed(() => grupos.value.length > 0 && (aoVivo.value || faixaFase.value !== null))
+const vazio = computed(() =>
+  filtrado.value
+    ? { titulo: TEXTOS_CRONOGRAMA_PUBLICO.vazioTitulo, texto: TEXTOS_CRONOGRAMA_PUBLICO.vazioTexto }
+    : { titulo: TEXTOS_CRONOGRAMA_PUBLICO.vazioGeralTitulo, texto: TEXTOS_CRONOGRAMA_PUBLICO.vazioGeralTexto },
+)
 
 const estadoErro = computed(() => {
   if (dados.value !== null || store.falha === null) {
@@ -121,7 +139,11 @@ onBeforeUnmount(() => store.limpar())
     >
       <div
         class="cronograma-publico__conteudo"
-        :class="{ 'cronograma-publico__conteudo--ao-vivo': aoVivo }"
+        :class="{
+          'cronograma-publico__conteudo--ao-vivo': aoVivo,
+          'cronograma-publico__conteudo--com-lateral': temLateral,
+          'cronograma-publico__conteudo--sem-contexto': !temContexto,
+        }"
         data-teste="cronograma-publico"
       >
         <div class="cronograma-publico__topo">
@@ -131,7 +153,6 @@ onBeforeUnmount(() => store.limpar())
               :segundo="dados.evento.nomeSegundaPessoa"
               :data="dados.evento.data"
               :filtro="rotuloFiltro(dados)"
-              :locais="locais"
             />
 
             <RelogioOperacao
@@ -151,68 +172,80 @@ onBeforeUnmount(() => store.limpar())
           />
         </div>
 
+        <div
+          v-if="aoVivo"
+          class="cronograma-publico__painel cronograma-publico__contexto"
+        >
+          <PainelAgoraProximo
+            :itens="itensPainel"
+            :minuto-atual="minutoAtual"
+            :rotulo-momento="rotuloMomento"
+            prefixo="cronograma-publico"
+          />
+        </div>
+
+        <FaixaFaseDia
+          v-else-if="temContexto && faixaFase"
+          class="cronograma-publico__contexto"
+          :titulo="faixaFase.titulo"
+          :texto="faixaFase.texto"
+        />
+
         <EstadoVazio
           v-if="grupos.length === 0"
+          class="cronograma-publico__principal"
           icone="cronograma"
-          :titulo="TEXTOS_CRONOGRAMA_PUBLICO.vazioTitulo"
-          :descricao="TEXTOS_CRONOGRAMA_PUBLICO.vazioTexto"
+          :titulo="vazio.titulo"
+          :descricao="vazio.texto"
           data-teste="cronograma-publico-vazio"
         />
 
-        <template v-else>
-          <div
-            v-if="aoVivo"
-            class="cronograma-publico__painel"
+        <div
+          v-else
+          class="cronograma-publico__roteiro cronograma-publico__principal"
+          data-teste="cronograma-publico-roteiro"
+        >
+          <section
+            v-for="grupo in grupos"
+            :key="grupo.dia"
+            class="cronograma-publico__dia"
+            :aria-labelledby="`dia-roteiro-${grupo.dia}`"
+            :data-teste="`dia-roteiro-${grupo.dia}`"
           >
-            <PainelAgoraProximo
-              :itens="itensPainel"
-              :minuto-atual="minutoAtual"
-              prefixo="cronograma-publico"
-            />
-          </div>
-
-          <FaixaFaseDia
-            v-else-if="fase !== null"
-            :titulo="fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.antesTitulo : TEXTOS_GRANDE_DIA.depoisTitulo"
-            :texto="fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.antesTexto : TEXTOS_GRANDE_DIA.depoisTexto"
-          />
-
-          <div
-            class="cronograma-publico__roteiro"
-            data-teste="cronograma-publico-roteiro"
-          >
-            <section
-              v-for="grupo in grupos"
-              :key="grupo.dia"
-              class="cronograma-publico__dia"
-              :aria-labelledby="`dia-roteiro-${grupo.dia}`"
-              :data-teste="`dia-roteiro-${grupo.dia}`"
+            <h2
+              :id="`dia-roteiro-${grupo.dia}`"
+              class="cronograma-publico__titulo-dia"
             >
-              <h2
-                :id="`dia-roteiro-${grupo.dia}`"
-                class="cronograma-publico__titulo-dia"
-              >
-                {{ grupo.titulo }}
-              </h2>
-              <ol class="cronograma-publico__lista">
-                <ItemRoteiro
-                  v-for="(item, indice) in grupo.itens"
-                  :key="`${item.inicio}-${indice}`"
-                  :inicio="item.inicio"
-                  :termino="item.termino"
-                  :termina-em-outro-dia="item.terminaEmOutroDia"
-                  :atividade="item.atividade"
-                  :local="item.local"
-                  :responsavel="item.responsavel"
-                  :fornecedor="item.fornecedor?.nomeEmpresa ?? null"
-                  :instrucoes="item.instrucoes"
-                  :concluido="item.status === 'Concluido'"
-                  :cerimonia="ehHorarioDaCerimonia(item, dados.evento.horarioCerimonia)"
-                />
-              </ol>
-            </section>
-          </div>
-        </template>
+              {{ grupo.titulo }}
+            </h2>
+            <ol class="cronograma-publico__lista">
+              <ItemRoteiro
+                v-for="(item, indice) in grupo.itens"
+                :key="`${item.inicio}-${indice}`"
+                :inicio="item.inicio"
+                :termino="item.termino"
+                :termina-em-outro-dia="item.terminaEmOutroDia"
+                :atividade="item.atividade"
+                :local="item.local"
+                :responsavel="item.responsavel"
+                :fornecedor="item.fornecedor?.nomeEmpresa ?? null"
+                :instrucoes="item.instrucoes"
+                :concluido="item.status === 'Concluido'"
+                :cerimonia="ehHorarioDaCerimonia(item, dados.evento.horarioCerimonia)"
+                :rotulo-momento="rotuloMomento"
+              />
+            </ol>
+          </section>
+        </div>
+
+        <ParaODiaCronograma
+          class="cronograma-publico__lateral"
+          :evento="dados.evento"
+          :itens="dados.itens"
+          :filtrado="filtrado"
+          :fase="fase"
+          :minuto-atual="minutoAtual"
+        />
 
         <footer class="cronograma-publico__rodape">
           <p
@@ -361,30 +394,44 @@ onBeforeUnmount(() => store.limpar())
     border-bottom: 1px solid var(--p-cor-operacao-divisoria);
   }
 
-  .cronograma-publico__conteudo--ao-vivo {
+  .cronograma-publico__conteudo--com-lateral {
     display: grid;
     grid-template-areas:
       'topo topo'
-      'painel roteiro'
+      'contexto principal'
+      'lateral principal'
       'rodape rodape';
+    grid-template-rows: auto auto 1fr auto;
     grid-template-columns: minmax(20rem, 2fr) minmax(0, 3fr);
     gap: var(--p-ritmo-bloco);
     align-items: start;
   }
 
-  .cronograma-publico__conteudo--ao-vivo .cronograma-publico__topo {
+  .cronograma-publico__conteudo--com-lateral.cronograma-publico__conteudo--sem-contexto {
+    grid-template-areas:
+      'topo topo'
+      'lateral principal'
+      'rodape rodape';
+    grid-template-rows: auto 1fr auto;
+  }
+
+  .cronograma-publico__conteudo--com-lateral .cronograma-publico__topo {
     grid-area: topo;
   }
 
-  .cronograma-publico__conteudo--ao-vivo .cronograma-publico__painel {
-    grid-area: painel;
+  .cronograma-publico__conteudo--com-lateral .cronograma-publico__contexto {
+    grid-area: contexto;
   }
 
-  .cronograma-publico__conteudo--ao-vivo .cronograma-publico__roteiro {
-    grid-area: roteiro;
+  .cronograma-publico__conteudo--com-lateral .cronograma-publico__principal {
+    grid-area: principal;
   }
 
-  .cronograma-publico__conteudo--ao-vivo .cronograma-publico__rodape {
+  .cronograma-publico__conteudo--com-lateral .cronograma-publico__lateral {
+    grid-area: lateral;
+  }
+
+  .cronograma-publico__conteudo--com-lateral .cronograma-publico__rodape {
     grid-area: rodape;
   }
 }

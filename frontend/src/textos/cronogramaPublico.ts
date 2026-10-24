@@ -38,6 +38,16 @@ export const TEXTOS_CRONOGRAMA_PUBLICO = {
   erroTexto: 'Verifique a conexão e tente de novo.',
   semConexao: (horario: string) => `Sem conexão. Mostrando a última versão carregada às ${horario}.`,
   tentarDeNovo: 'Tentar de novo',
+  faseAntesTexto: 'Este é o roteiro planejado. No dia, a tela mostra o que está acontecendo agora.',
+  vazioGeralTitulo: 'O roteiro ainda está vazio.',
+  vazioGeralTexto: 'Quando a assessoria montar o roteiro do dia, ele aparece aqui. Toque em Atualizar para conferir.',
+  seusHorarios: 'Seus horários',
+  horariosEquipe: 'Horários da equipe',
+  horariosPorDia: 'Horários por dia',
+  quantidadeHorarios: (quantidade: number, intervalo: string) =>
+    `${quantidade.toLocaleString('pt-BR')} ${quantidade === 1 ? 'horário' : 'horários'}, ${intervalo}`,
+  momentoMarcado: (momento: string, horario: string) =>
+    `${momento.charAt(0).toLocaleUpperCase('pt-BR')}${momento.slice(1)} começa às ${horario}`,
 } as const
 
 export const TEXTOS_LINKS_CRONOGRAMA = {
