@@ -10,7 +10,7 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import router from '@/router'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
-import { TEXTOS_ATUACAO_FORNECEDOR, TEXTOS_COBERTURA_FORNECEDORES, TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
+import { TEXTOS_ATUACAO_FORNECEDOR, TEXTOS_COBERTURA_FORNECEDORES, TEXTOS_FORMULARIO_FORNECEDOR, TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
 import type { TipoEvento } from '@/tipos/eventos'
 import { RaizRotas, chamadas, quando, resumoEvento, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
 
@@ -757,7 +757,7 @@ describe('FornecedorFormularioView — reestruturação da fundação', () => {
     const fonte = lerFonte('views/fornecedores/FornecedorFormularioView.vue')
     const estilo = estiloDe(fonte)
 
-    expect(fonte).toContain('class="pagina-formulario"')
+    expect(fonte).toContain('class="pagina-formulario formulario-fornecedor-tela__pagina"')
     expect(fonte).not.toMatch(/validarCampo\('/)
     expect(fonte).toMatch(/@blur="formulario\.validarAoSair\('nomeEmpresa'\)"/)
     expect(fonte).toMatch(/@update:model-value="formulario\.revalidarAoDigitar\('nomeEmpresa'\)"/)
@@ -998,5 +998,192 @@ describe('FornecedorView — atuação na assessoria', () => {
     expect(texto).not.toContain('98765')
     expect(texto).not.toContain('@')
     expect(document.title).toBe(TEXTOS_FORNECEDORES.tituloDetalhe)
+  })
+})
+
+describe('FornecedorFormularioView — categoria e lateral para eventos', () => {
+  const BASE = [
+    resumoFornecedor(),
+    resumoFornecedor({ id: ID_FORNECEDOR_2, nomeEmpresa: 'Decora Mais', categoria: 'Decoracao' }),
+    resumoFornecedor({ id: 'arq', nomeEmpresa: 'Florista Jardim', categoria: 'Decoracao', arquivado: true }),
+    resumoFornecedor({ id: 'outro-buffet', nomeEmpresa: 'Buffet Sol', categoria: 'Buffet' }),
+  ]
+
+  function participacao(eventoId: string, dataEvento: string, status: string) {
+    return { eventoId, nomePrimeiraPessoa: `Anfitriã ${eventoId}`, nomeSegundaPessoa: null, dataEvento, eventoArquivado: false, status }
+  }
+
+  async function abrirNovo(eventos: () => Response, lista: () => Response = () => respostaJson(BASE)) {
+    rotearFetch(fetchSimulado, quando('GET', ROTA, lista), quando('GET', ROTA_EVENTOS_ATIVOS, eventos))
+    return abrir('/fornecedores/novo')
+  }
+
+  async function abrirEdicao(participacoes: unknown[] | null, eventos: () => Response = () => respostaJson(carteira('Casamento'))) {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA, () => respostaJson(BASE)),
+      quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () =>
+        participacoes ? respostaJson(participacoes) : respostaProblema(500, { title: 'Erro' }),
+      ),
+      quando('GET', ROTA_EVENTOS_ATIVOS, eventos),
+    )
+    const aberto = await abrir(`/fornecedores/${ID_FORNECEDOR}/editar`)
+    await flushPromises()
+    return aberto
+  }
+
+  async function escolher(alvo: VueWrapper, valor: string) {
+    alvo.findComponent({ name: 'Select' }).vm.$emit('update:modelValue', valor)
+    await flushPromises()
+  }
+
+  const situacao = (alvo: VueWrapper) => alvo.get('[data-teste="categoria-situacao"]')
+
+  it('[COMPONENTE] casamentos e festa de 15 anos: Decoração é essencial para os eventos e arquivado não conta', async () => {
+    const { wrapper } = await abrirNovo(() => respostaJson(carteira('Casamento', 'Casamento', 'QuinzeAnos')))
+
+    expect(situacao(wrapper).text()).toBe('')
+    await escolher(wrapper, 'Decoracao')
+    expect(situacao(wrapper).text()).toBe('Essencial para 3 eventos pela frente; já tem 1 fornecedor ativo.')
+    expect(situacao(wrapper).attributes('aria-live')).toBe('polite')
+
+    await escolher(wrapper, 'Fotografia')
+    expect(situacao(wrapper).text()).toBe('Essencial para 3 eventos pela frente; nenhum fornecedor ativo ainda.')
+    expect(chamadas(fetchSimulado, 'GET', ROTA)).toHaveLength(1)
+    expect(chamadas(fetchSimulado, 'GET', ROTA_EVENTOS_ATIVOS)).toHaveLength(1)
+  })
+
+  it('[COMPONENTE] aniversários: Iluminação e som fica fora das essenciais, sem citar casamento', async () => {
+    const { wrapper } = await abrirNovo(() => respostaJson(carteira('Aniversario', 'Aniversario')))
+
+    await escolher(wrapper, 'IluminacaoSom')
+    expect(situacao(wrapper).text()).toBe('Fora das categorias essenciais dos eventos pela frente; nenhum fornecedor ativo ainda.')
+    await escolher(wrapper, 'BoloDoces')
+    expect(situacao(wrapper).text()).toBe('Essencial para 2 eventos pela frente; nenhum fornecedor ativo ainda.')
+    expect(wrapper.get('[data-teste="formulario-fornecedor"]').text()).not.toMatch(/casamento/i)
+  })
+
+  it('[COMPONENTE] festa de 15 anos e comemoração variam a essencialidade da mesma categoria', async () => {
+    const { wrapper } = await abrirNovo(() => respostaJson(carteira('QuinzeAnos', 'Comemoracao')))
+
+    await escolher(wrapper, 'IluminacaoSom')
+    expect(situacao(wrapper).text()).toBe('Essencial para 1 evento pela frente; nenhum fornecedor ativo ainda.')
+    await escolher(wrapper, 'Decoracao')
+    expect(situacao(wrapper).text()).toBe('Essencial para 2 eventos pela frente; já tem 1 fornecedor ativo.')
+  })
+
+  it.each([
+    ['tipo desconhecido', () => respostaJson([resumoEvento({ id: 'e1', tipo: 'Formatura' as unknown as TipoEvento })])],
+    ['falha da lista de eventos', () => respostaProblema(500, { title: 'Erro' })],
+  ])('[COMPONENTE] com %s usa os 4 tipos, nunca só casamento', async (_rotulo, eventos) => {
+    const { wrapper } = await abrirNovo(eventos)
+
+    await escolher(wrapper, 'Buffet')
+    expect(situacao(wrapper).text()).toBe('Essencial nos 4 tipos de evento; já tem 2 fornecedores ativos.')
+    await escolher(wrapper, 'Beleza')
+    expect(situacao(wrapper).text()).toBe('Essencial em casamentos e festas de 15 anos; nenhum fornecedor ativo ainda.')
+  })
+
+  it('[COMPONENTE] falha da base de fornecedores omite só a contagem e mantém o cadastro', async () => {
+    const { wrapper } = await abrirNovo(
+      () => respostaJson(carteira('Casamento')),
+      () => respostaProblema(500, { title: 'Erro' }),
+    )
+
+    await escolher(wrapper, 'Decoracao')
+    expect(situacao(wrapper).text()).toBe('Essencial para 1 evento pela frente.')
+    expect(wrapper.find('[data-teste="formulario-fornecedor"]').exists()).toBe(true)
+    expect(wrapper.find('[data-teste="erro-formulario"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] criação: lateral orienta o cadastro, depois do formulário, sem links nem botões', async () => {
+    const { wrapper } = await abrirNovo(() => respostaJson(carteira('Casamento')))
+
+    const lateral = wrapper.get('[data-teste="lateral-fornecedor"]')
+    const orientacao = lateral.get('[data-teste="orientacao-fornecedor"]')
+    expect(orientacao.element.tagName).toBe('ASIDE')
+    expect(orientacao.get('h2').text()).toBe(TEXTOS_FORMULARIO_FORNECEDOR.orientacaoTitulo)
+    expect(orientacao.attributes('aria-labelledby')).toBe(orientacao.get('h2').attributes('id'))
+    expect(orientacao.findAll('h3').map((titulo) => titulo.text())).toEqual(
+      TEXTOS_FORMULARIO_FORNECEDOR.orientacao().map((item) => item.titulo),
+    )
+    expect(lateral.get('[data-teste="orientacao-categoria"]').text()).toContain(
+      'casamentos, festas de 15 anos, aniversários e comemorações',
+    )
+    expect(lateral.find('[data-teste="atuacao-fornecedor"]').exists()).toBe(false)
+    expect(lateral.findAll('a, button, input, select, textarea')).toHaveLength(0)
+
+    const formulario = wrapper.get('[data-teste="formulario-fornecedor"]')
+    expect(formulario.element.compareDocumentPosition(lateral.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(wrapper.get('.formulario-fornecedor-tela__pagina').classes()).toContain('formulario-fornecedor-tela__pagina--com-lateral')
+  })
+
+  it('[COMPONENTE] edição: conta os outros ativos e mostra a atuação sem repetir a frase da categoria', async () => {
+    const { wrapper } = await abrirEdicao(
+      [participacao('evento-0', '2099-06-10', 'Contratado'), participacao('evento-velho', '2020-01-10', 'Contratado')],
+      () => respostaJson([...carteira('Casamento'), resumoEvento({ id: 'evento-velho', tipo: 'Aniversario', diasRestantes: -400 })]),
+    )
+    await aguardarAte(() => expect(wrapper.find('[data-teste="atuacao-fornecedor"]').exists()).toBe(true))
+
+    expect(situacao(wrapper).text()).toBe('Essencial para 1 evento pela frente; já tem 1 outro ativo.')
+    const atuacao = wrapper.get('[data-teste="atuacao-fornecedor"]')
+    expect(atuacao.get('[data-teste="atuacao-total"]').text()).toBe('2 eventos na assessoria')
+    expect(atuacao.get('[data-teste="atuacao-tipos"]').text()).toBe('1 casamento e 1 aniversário')
+    expect(atuacao.find('[data-teste="atuacao-categoria"]').exists()).toBe(false)
+    expect(wrapper.get('[data-teste="lateral-fornecedor"]').findAll('a, button')).toHaveLength(0)
+
+    await escolher(wrapper, 'Decoracao')
+    expect(situacao(wrapper).text()).toBe('Essencial para 1 evento pela frente; já tem 1 outro ativo.')
+    await escolher(wrapper, 'Transporte')
+    expect(situacao(wrapper).text()).toBe('Fora das categorias essenciais dos eventos pela frente; nenhum outro fornecedor ativo.')
+  })
+
+  it.each([
+    ['sem participações', []],
+    ['falha das participações', null],
+  ])('[COMPONENTE] edição %s mantém só a orientação na lateral', async (_rotulo, participacoes) => {
+    const { wrapper } = await abrirEdicao(participacoes)
+
+    expect(wrapper.find('[data-teste="atuacao-fornecedor"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="orientacao-fornecedor"]').exists()).toBe(true)
+    expect(wrapper.find('[data-teste="erro-formulario"]').exists()).toBe(false)
+  })
+
+  it.each([
+    ['404', 404],
+    ['403', 403],
+    ['500', 500],
+  ])('[COMPONENTE] falha %s ao carregar a edição não mostra lateral', async (_rotulo, status) => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_FORNECEDOR, () => respostaProblema(status, { title: 'Falha' })))
+    const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}/editar`)
+
+    expect(wrapper.find('[data-teste="lateral-fornecedor"]').exists()).toBe(false)
+    expect(wrapper.get('.formulario-fornecedor-tela__pagina').classes()).not.toContain('formulario-fornecedor-tela__pagina--com-lateral')
+  })
+
+  it('[SEGURANÇA] linha da categoria, lateral e título não expõem telefone nem e-mail', async () => {
+    const { wrapper } = await abrirEdicao([participacao('evento-0', '2099-06-10', 'Contratado')])
+    await aguardarAte(() => expect(wrapper.find('[data-teste="atuacao-fornecedor"]').exists()).toBe(true))
+
+    for (const texto of [situacao(wrapper).text(), wrapper.get('[data-teste="lateral-fornecedor"]').text(), document.title]) {
+      expect(texto).not.toContain('98765')
+      expect(texto).not.toContain('@')
+    }
+    expect(document.title).toBe(TEXTOS_FORNECEDORES.editarTitulo)
+    expect((wrapper.get('[data-teste="campo-telefone"]').element as HTMLInputElement).value).toBe('11987654321')
+  })
+
+  it('[UNITÁRIO] a casca abre a lateral por contêiner da tela num filho, sem @media nem sticky', () => {
+    const estilo = estiloDe(lerFonte('views/fornecedores/FornecedorFormularioView.vue'))
+
+    expect(estilo).toMatch(/\.formulario-fornecedor-tela\s*\{\s*container:\s*formulario-fornecedor-tela\s*\/\s*inline-size/)
+    expect(estilo).toMatch(
+      /@container formulario-fornecedor-tela \(min-width: 64rem\)\s*\{\s*\.formulario-fornecedor-tela__pagina--com-lateral\s*\{[^}]*max-width/,
+    )
+    expect(estilo).toMatch(/\.formulario-fornecedor-tela__corpo\s*\{\s*grid-template-columns:\s*minmax\(0, var\(--p-dimensao-largura-formulario\)\)/)
+    expect(estilo).not.toMatch(/@media/)
+    expect(estilo).not.toMatch(/sticky/)
+    expect(estilo).not.toMatch(/--p-espaco-/)
   })
 })

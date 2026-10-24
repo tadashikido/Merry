@@ -92,3 +92,27 @@ export function essencialidadeDaCategoria(
     eventos: falta ? falta.eventos : 0,
   }
 }
+
+export interface SituacaoCategoriaNaBase {
+  essencialidade: EssencialidadeCategoria
+  ativos: number | null
+  outros: boolean
+}
+
+export function situacaoCategoriaNaBase(
+  categoria: CategoriaFornecedor,
+  fornecedores: readonly FornecedorResumoDto[] | null,
+  eventos: readonly EventoResumoDto[] | null,
+  fornecedorAtualId: string | null = null,
+): SituacaoCategoriaNaBase {
+  const ativos = fornecedores
+    ? fornecedores.filter(
+        (fornecedor) => !fornecedor.arquivado && fornecedor.categoria === categoria && fornecedor.id !== fornecedorAtualId,
+      ).length
+    : null
+  return {
+    essencialidade: essencialidadeDaCategoria(categoria, eventos),
+    ativos,
+    outros: fornecedorAtualId !== null,
+  }
+}

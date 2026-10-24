@@ -1,6 +1,7 @@
 import { VOCABULARIO_TIPO_EVENTO, tiposEventoEmFrase } from '@/textos/tiposEvento'
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import type { CategoriaFornecedor } from '@/tipos/fornecedores'
+import type { SituacaoCategoriaNaBase } from '@/utilitarios/coberturaFornecedores'
 
 function plural(quantidade: number, singular: string, varios: string): string {
   return quantidade === 1 ? singular : varios
@@ -189,3 +190,63 @@ export const TEXTOS_ATUACAO_FORNECEDOR = {
   naoEssencialCarteira: (categoria: string) => `${categoria} não está entre as categorias essenciais dos eventos pela frente.`,
   naoEssencial: (categoria: string) => `${categoria} não está entre as categorias essenciais de nenhum tipo de evento.`,
 } as const
+
+export const TEXTOS_FORMULARIO_FORNECEDOR = {
+  foraCarteira: 'Fora das categorias essenciais dos eventos pela frente',
+  foraTipos: 'Fora das categorias essenciais dos 4 tipos de evento',
+  nenhumAtivo: 'nenhum fornecedor ativo ainda',
+  ativos: (quantidade: number) =>
+    `já tem ${quantidade.toLocaleString('pt-BR')} ${plural(quantidade, 'fornecedor ativo', 'fornecedores ativos')}`,
+  nenhumOutro: 'nenhum outro fornecedor ativo',
+  outros: (quantidade: number) =>
+    `já tem ${quantidade.toLocaleString('pt-BR')} ${plural(quantidade, 'outro ativo', 'outros ativos')}`,
+  lateralRotulo: 'Sobre este cadastro',
+  orientacaoTitulo: 'Um cadastro para todos os eventos',
+  orientacao: () => [
+    {
+      chave: 'categoria',
+      titulo: 'Categoria certa',
+      texto: `É por ela que o fornecedor aparece no índice da base e conta nas categorias essenciais de ${tiposEventoEmFrase()}.`,
+      teste: 'orientacao-categoria',
+    },
+    {
+      chave: 'contato',
+      titulo: 'Quem atende e como falar',
+      texto: 'Responsável e telefone com DDD viram contato de um toque no Grande Dia de cada evento.',
+      teste: 'orientacao-contato',
+    },
+    {
+      chave: 'observacoes',
+      titulo: 'O que vale lembrar',
+      texto: 'Condições, pontos fortes e em que tipo de evento ele se sai melhor. Só a assessoria vê.',
+      teste: 'orientacao-observacoes',
+    },
+    {
+      chave: 'evento',
+      titulo: 'O que fica no evento',
+      texto: 'Serviço, valor e contrato são combinados em cada evento, em Fornecedores do evento. Aqui fica o que vale para todos.',
+      teste: 'orientacao-evento',
+    },
+  ],
+} as const
+
+function descreverEssencialidade({ daCarteira, tipos, eventos }: SituacaoCategoriaNaBase['essencialidade']): string {
+  if (tipos.length === 0) {
+    return daCarteira ? TEXTOS_FORMULARIO_FORNECEDOR.foraCarteira : TEXTOS_FORMULARIO_FORNECEDOR.foraTipos
+  }
+  return daCarteira ? TEXTOS_COBERTURA_FORNECEDORES.essencialParaEventos(eventos) : TEXTOS_COBERTURA_FORNECEDORES.essencialEm(tipos)
+}
+
+function descreverAtivos(ativos: number, outros: boolean): string {
+  if (outros) {
+    return ativos === 0 ? TEXTOS_FORMULARIO_FORNECEDOR.nenhumOutro : TEXTOS_FORMULARIO_FORNECEDOR.outros(ativos)
+  }
+  return ativos === 0 ? TEXTOS_FORMULARIO_FORNECEDOR.nenhumAtivo : TEXTOS_FORMULARIO_FORNECEDOR.ativos(ativos)
+}
+
+export function descreverSituacaoCategoria(situacao: SituacaoCategoriaNaBase): string {
+  const essencialidade = descreverEssencialidade(situacao.essencialidade)
+  return situacao.ativos === null
+    ? `${essencialidade}.`
+    : `${essencialidade}; ${descreverAtivos(situacao.ativos, situacao.outros)}.`
+}

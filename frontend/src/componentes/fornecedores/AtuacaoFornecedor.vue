@@ -10,13 +10,16 @@ import { formatarDataCalendarioCurta, formatarNomesAnfitrioes } from '@/utilitar
 
 const props = defineProps<{
   resumo: ResumoAtuacaoFornecedor
-  categoria: CategoriaFornecedor
-  essencialidade: EssencialidadeCategoria
+  categoria?: CategoriaFornecedor
+  essencialidade?: EssencialidadeCategoria
 }>()
 
 const idTitulo = useId()
 
 const fraseCategoria = computed(() => {
+  if (!props.categoria || !props.essencialidade) {
+    return null
+  }
   const rotulo = ROTULOS_CATEGORIA_FORNECEDOR[props.categoria]
   const { daCarteira, tipos, eventos } = props.essencialidade
   if (tipos.length === 0) {
@@ -136,6 +139,7 @@ const mostrarPorTipo = computed(() => props.resumo.tiposConhecidos && (props.res
       </dl>
 
       <p
+        v-if="fraseCategoria"
         class="atuacao__categoria"
         data-teste="atuacao-categoria"
       >

@@ -4,7 +4,8 @@ import { resumoFornecedor } from '@/__tests__/auxiliaresFornecedores'
 import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import type { CategoriaFornecedor } from '@/tipos/fornecedores'
-import { coberturaDaCarteira, eventosDaCarteira } from '@/utilitarios/coberturaFornecedores'
+import { descreverSituacaoCategoria } from '@/textos/fornecedores'
+import { coberturaDaCarteira, eventosDaCarteira, situacaoCategoriaNaBase } from '@/utilitarios/coberturaFornecedores'
 import { resumoEvento } from '@/views/eventos/__tests__/auxiliaresEventos'
 
 const TIPO_DESCONHECIDO = 'Formatura' as unknown as TipoEvento
@@ -101,5 +102,44 @@ describe('coberturaDaCarteira', () => {
     const cobertura = coberturaDaCarteira(categorias.map((categoria) => fornecedor(categoria)), [evento('Aniversario')])
     expect(cobertura.faltando).toEqual([])
     expect(cobertura.cobertas).toBe(cobertura.essenciais)
+  })
+})
+
+describe('situacaoCategoriaNaBase', () => {
+  const base = [
+    resumoFornecedor({ id: 'a', categoria: 'Decoracao' }),
+    resumoFornecedor({ id: 'b', categoria: 'Decoracao' }),
+    resumoFornecedor({ id: 'c', categoria: 'Decoracao', arquivado: true }),
+    resumoFornecedor({ id: 'd', categoria: 'Buffet' }),
+  ]
+
+  it('[UNITÁRIO] conta só ativos da categoria e exclui o fornecedor em edição', () => {
+    expect(situacaoCategoriaNaBase('Decoracao', base, null).ativos).toBe(2)
+    expect(situacaoCategoriaNaBase('Decoracao', base, null, 'a')).toMatchObject({ ativos: 1, outros: true })
+    expect(situacaoCategoriaNaBase('Fotografia', base, null)).toMatchObject({ ativos: 0, outros: false })
+    expect(situacaoCategoriaNaBase('Decoracao', null, null).ativos).toBeNull()
+  })
+
+  it('[UNITÁRIO] essencialidade vem da carteira com tipos conhecidos', () => {
+    const carteira = [evento('Casamento'), evento('QuinzeAnos'), evento('Aniversario', -5)]
+    expect(situacaoCategoriaNaBase('Beleza', base, carteira).essencialidade).toEqual({
+      daCarteira: true,
+      tipos: ['Casamento', 'QuinzeAnos'],
+      eventos: 2,
+    })
+  })
+})
+
+describe('descreverSituacaoCategoria', () => {
+  it.each([
+    ['carteira essencial, nenhum ativo', situacaoCategoriaNaBase('Decoracao', [], [evento('Casamento'), evento('Aniversario')]), 'Essencial para 2 eventos pela frente; nenhum fornecedor ativo ainda.'],
+    ['carteira fora das essenciais', situacaoCategoriaNaBase('IluminacaoSom', [fornecedor('IluminacaoSom')], [evento('Comemoracao')]), 'Fora das categorias essenciais dos eventos pela frente; já tem 1 fornecedor ativo.'],
+    ['sem carteira, 4 tipos', situacaoCategoriaNaBase('Buffet', [fornecedor('Buffet'), resumoFornecedor({ id: 'x', categoria: 'Buffet' })], null), 'Essencial nos 4 tipos de evento; já tem 2 fornecedores ativos.'],
+    ['tipo desconhecido, só alguns tipos', situacaoCategoriaNaBase('Beleza', null, [evento(TIPO_DESCONHECIDO)]), 'Essencial em casamentos e festas de 15 anos.'],
+    ['sem carteira e não essencial', situacaoCategoriaNaBase('Transporte', null, null), 'Fora das categorias essenciais dos 4 tipos de evento.'],
+    ['edição sem outros', situacaoCategoriaNaBase('Buffet', [resumoFornecedor({ id: 'eu', categoria: 'Buffet' })], null, 'eu'), 'Essencial nos 4 tipos de evento; nenhum outro fornecedor ativo.'],
+    ['edição com outros', situacaoCategoriaNaBase('Buffet', [resumoFornecedor({ id: 'eu', categoria: 'Buffet' }), fornecedor('Buffet'), resumoFornecedor({ id: 'y', categoria: 'Buffet' })], null, 'eu'), 'Essencial nos 4 tipos de evento; já tem 2 outros ativos.'],
+  ])('[UNITÁRIO] %s', (_rotulo, situacao, esperado) => {
+    expect(descreverSituacaoCategoria(situacao)).toBe(esperado)
   })
 })
