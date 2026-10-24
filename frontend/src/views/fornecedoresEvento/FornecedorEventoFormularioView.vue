@@ -745,7 +745,6 @@ async function removerContrato() {
 
 .formulario-vinculo__trilho {
   max-width: 100%;
-  overflow-x: auto;
 }
 
 .formulario-vinculo__empresa {

@@ -9,13 +9,17 @@ import type { FaseGrandeDia } from '@/tipos/grandeDia'
 import { fraseMomentoDoCronograma, horariosPorDia, temConteudoParaODia } from '@/utilitarios/paraODiaCronograma'
 import { linkMapaDoLocal, locaisDoConvite } from '@/utilitarios/rsvp'
 
-const props = defineProps<{
-  evento: EventoCronogramaPublicoDto
-  itens: ItemCronogramaPublicoDto[]
-  filtrado: boolean
-  fase: FaseGrandeDia | null
-  minutoAtual: number
-}>()
+const props = withDefaults(
+  defineProps<{
+    evento: EventoCronogramaPublicoDto
+    itens: ItemCronogramaPublicoDto[]
+    filtrado: boolean
+    fase: FaseGrandeDia | null
+    minutoAtual: number
+    idComoChegar?: string
+  }>(),
+  { idComoChegar: undefined },
+)
 
 const idTitulo = useId()
 
@@ -85,7 +89,10 @@ const temConteudo = computed(() => temConteudoParaODia(props.evento, props.itens
 
     <div
       v-if="locais.length > 0"
+      :id="idComoChegar"
       class="para-o-dia-cronograma__grupo"
+      :tabindex="idComoChegar ? -1 : undefined"
+      data-teste="cronograma-publico-como-chegar"
     >
       <h3 class="para-o-dia-cronograma__subtitulo">
         {{ TEXTOS_PARA_O_DIA.comoChegar }}
@@ -153,6 +160,7 @@ const temConteudo = computed(() => temConteudoParaODia(props.evento, props.itens
   flex-direction: column;
   gap: var(--p-ritmo-campo);
   min-width: 0;
+  scroll-margin-top: var(--p-ritmo-cartao);
 }
 
 .para-o-dia-cronograma__subtitulo {

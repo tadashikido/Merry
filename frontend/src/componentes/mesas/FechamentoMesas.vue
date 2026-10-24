@@ -47,32 +47,35 @@ const projecao = computed(() => {
 
 const observacoes = computed(() => {
   const atual = situacao.value
-  const itens: { chave: string; texto: string }[] = []
+  const itens: { chave: string; texto: string; repetida: boolean }[] = []
   const especial = atual.mesaEspecial
   if (especial) {
     itens.push({
       chave: 'especial',
+      repetida: true,
       texto: especial.nome
         ? TEXTOS.especialDefinidaComNome(termoEspecial.value, rotuloMesa(especial, termoEspecial.value), especial.ocupacao, especial.capacidade)
         : TEXTOS.especialDefinida(termoEspecial.value, especial.ocupacao, especial.capacidade),
     })
   } else if (!props.arquivado && props.mapa.mesas.length > 0) {
-    itens.push({ chave: 'especial-ausente', texto: TEXTOS.especialAusente(termoEspecial.value) })
+    itens.push({ chave: 'especial-ausente', repetida: false, texto: TEXTOS.especialAusente(termoEspecial.value) })
   }
   if (atual.completas > 0) {
-    itens.push({ chave: 'completas', texto: TEXTOS.completas(atual.completas) })
+    itens.push({ chave: 'completas', repetida: true, texto: TEXTOS.completas(atual.completas) })
   }
   if (atual.vazias > 0) {
-    itens.push({ chave: 'vazias', texto: TEXTOS.vazias(atual.vazias) })
+    itens.push({ chave: 'vazias', repetida: true, texto: TEXTOS.vazias(atual.vazias) })
   }
   if (atual.criancasSemMesa > 0) {
-    itens.push({ chave: 'criancas', texto: TEXTOS.criancas(atual.criancasSemMesa) })
+    itens.push({ chave: 'criancas', repetida: false, texto: TEXTOS.criancas(atual.criancasSemMesa) })
   }
   if (atual.convitesDivididos > 0) {
-    itens.push({ chave: 'divididos', texto: TEXTOS.divididos(atual.convitesDivididos) })
+    itens.push({ chave: 'divididos', repetida: false, texto: TEXTOS.divididos(atual.convitesDivididos) })
   }
   return itens
 })
+
+const soRepetidas = computed(() => observacoes.value.every((item) => item.repetida))
 </script>
 
 <template>
@@ -159,12 +162,14 @@ const observacoes = computed(() => {
       <ul
         v-if="observacoes.length > 0"
         class="fechamento-mesas__observacoes"
+        :class="{ 'fechamento-mesas__observacoes--so-repetidas': soRepetidas }"
         :aria-label="TEXTOS.observacoesRotulo"
       >
         <li
           v-for="item in observacoes"
           :key="item.chave"
           class="fechamento-mesas__observacao"
+          :class="{ 'fechamento-mesas__observacao--repetida': item.repetida }"
           :data-teste="`fechamento-${item.chave}`"
         >
           {{ item.texto }}
@@ -283,6 +288,13 @@ const observacoes = computed(() => {
   font-size: var(--p-fonte-tamanho-apoio);
   line-height: var(--p-fonte-entrelinha-corpo);
   color: var(--p-cor-texto);
+}
+
+@container fechamento-mesas (max-width: 35.99rem) {
+  .fechamento-mesas__observacao--repetida,
+  .fechamento-mesas__observacoes--so-repetidas {
+    display: none;
+  }
 }
 
 @container fechamento-mesas (min-width: 36rem) {

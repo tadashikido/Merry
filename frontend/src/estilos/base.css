@@ -115,9 +115,9 @@ body .p-selectbutton {
 }
 
 body .p-selectbutton {
+  flex-wrap: wrap;
   max-width: 100%;
-  overflow-x: auto;
-  scrollbar-width: none;
+  background: var(--p-togglebutton-background);
 }
 
 body .p-selectbutton .p-togglebutton {

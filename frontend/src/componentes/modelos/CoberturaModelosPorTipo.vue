@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
 
+import SecaoRecolhivel from '@/componentes/base/SecaoRecolhivel.vue'
+
 import { TEXTOS_MODELOS_POR_TIPO } from '@/textos/modelos'
 import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import { coberturaPorTipo, situacaoComumCobertura, type CoberturaTipoModelos, type ModeloComTipoESugestao } from '@/utilitarios/modelosPorTipo'
@@ -113,23 +115,27 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
       class="cobertura__reaproveitamento"
       data-teste="reaproveitamento-modelos"
     >
-      <h3
-        :id="idReaproveitamento"
-        class="cobertura__subtitulo"
-      >
-        {{ TEXTOS_MODELOS_POR_TIPO.reaproveitamentoTitulo }}
-      </h3>
-      <ul
-        class="cobertura__lista"
-        :aria-labelledby="idReaproveitamento"
-      >
-        <li
-          v-for="frase in reaproveitamento"
-          :key="frase"
+      <SecaoRecolhivel>
+        <template #titulo>
+          <h3
+            :id="idReaproveitamento"
+            class="cobertura__subtitulo"
+          >
+            {{ TEXTOS_MODELOS_POR_TIPO.reaproveitamentoTitulo }}
+          </h3>
+        </template>
+        <ul
+          class="cobertura__lista"
+          :aria-labelledby="idReaproveitamento"
         >
-          {{ frase }}
-        </li>
-      </ul>
+          <li
+            v-for="frase in reaproveitamento"
+            :key="frase"
+          >
+            {{ frase }}
+          </li>
+        </ul>
+      </SecaoRecolhivel>
     </div>
   </section>
 </template>

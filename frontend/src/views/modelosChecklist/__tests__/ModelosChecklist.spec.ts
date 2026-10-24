@@ -430,14 +430,14 @@ describe('ModeloChecklistView', () => {
     expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.itensVazioTextoPara('do aniversário'))
   })
 
-  it('[COMPONENTE] ordem no DOM: resumo, itens e depois Como aplicar', async () => {
+  it('[COMPONENTE] ordem no DOM: itens, resumo e depois Como aplicar', async () => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCompleto([itemModelo()]))))
 
     const { wrapper } = await abrir(`/modelos-checklist/${ID_MODELO}`)
 
     const filhos = [...wrapper.get('.modelo__corpo').element.children].map((filho) => filho.className)
-    expect(filhos[0]).toContain('modelo__lateral')
-    expect(filhos[1]).toContain('modelo__principal')
+    expect(filhos[0]).toContain('modelo__principal')
+    expect(filhos[1]).toContain('modelo__lateral')
     expect(filhos[2]).toContain('modelo__aplicar')
     expect(wrapper.get('[data-teste="nota-aplicar-modelo"]').text()).toBe(TEXTOS_MODELOS_CHECKLIST.notaAplicar)
   })

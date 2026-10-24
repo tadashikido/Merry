@@ -252,6 +252,39 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
           v-else-if="modelo"
           class="modelo__corpo"
         >
+          <div class="modelo__principal">
+            <ReguaMarcos
+              :marcos="marcos"
+              :rotulo="TEXTOS_MODELOS_CHECKLIST.regua"
+            >
+              <template #marco="{ marco, idTitulo }">
+                <ul
+                  class="modelo__lista cartao"
+                  :aria-labelledby="idTitulo"
+                >
+                  <ItemModeloChecklist
+                    v-for="item in itensDoMarco(marco.chave)"
+                    :key="item.id"
+                    :titulo="item.titulo"
+                    :prazo-relativo="descreverPrazoRelativo(item.diasAntesDoEvento, referencia.contracaoDe)"
+                    :metadados="metadados(item)"
+                    :descricao="item.descricao"
+                  >
+                    <template #acoes>
+                      <MenuAcoes
+                        :itens="acoesItem"
+                        :rotulo="TEXTOS_MODELOS_CHECKLIST.maisAcoes"
+                        :rotulo-acessivel="TEXTOS_MODELOS_CHECKLIST.itemMaisAcoesAria(item.titulo)"
+                        somente-icone
+                        @selecionar="executarAcao(item, $event)"
+                      />
+                    </template>
+                  </ItemModeloChecklist>
+                </ul>
+              </template>
+            </ReguaMarcos>
+          </div>
+
           <aside
             class="modelo__lateral pilha pilha--grupo"
             aria-labelledby="titulo-resumo-modelo"
@@ -362,39 +395,6 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
               {{ TEXTOS_MODELOS_CHECKLIST.voltarModelos }}
             </RouterLink>
           </aside>
-
-          <div class="modelo__principal">
-            <ReguaMarcos
-              :marcos="marcos"
-              :rotulo="TEXTOS_MODELOS_CHECKLIST.regua"
-            >
-              <template #marco="{ marco, idTitulo }">
-                <ul
-                  class="modelo__lista cartao"
-                  :aria-labelledby="idTitulo"
-                >
-                  <ItemModeloChecklist
-                    v-for="item in itensDoMarco(marco.chave)"
-                    :key="item.id"
-                    :titulo="item.titulo"
-                    :prazo-relativo="descreverPrazoRelativo(item.diasAntesDoEvento, referencia.contracaoDe)"
-                    :metadados="metadados(item)"
-                    :descricao="item.descricao"
-                  >
-                    <template #acoes>
-                      <MenuAcoes
-                        :itens="acoesItem"
-                        :rotulo="TEXTOS_MODELOS_CHECKLIST.maisAcoes"
-                        :rotulo-acessivel="TEXTOS_MODELOS_CHECKLIST.itemMaisAcoesAria(item.titulo)"
-                        somente-icone
-                        @selecionar="executarAcao(item, $event)"
-                      />
-                    </template>
-                  </ItemModeloChecklist>
-                </ul>
-              </template>
-            </ReguaMarcos>
-          </div>
 
           <ComoAplicarModelo
             class="modelo__aplicar"

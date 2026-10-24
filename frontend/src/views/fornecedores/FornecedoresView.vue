@@ -367,6 +367,7 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
           </div>
 
           <CoberturaCategoriasFornecedores
+            v-if="situacao !== 'arquivados'"
             class="fornecedores__cobertura"
             :cobertura="cobertura"
             :limite="3"

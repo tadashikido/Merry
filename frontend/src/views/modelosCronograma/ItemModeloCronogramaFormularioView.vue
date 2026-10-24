@@ -726,6 +726,7 @@ function excluir() {
 
 .formulario-item-cronograma__opcoes {
   display: flex;
+  flex-wrap: nowrap;
   width: 100%;
 }
 

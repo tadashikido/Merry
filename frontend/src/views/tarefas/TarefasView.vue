@@ -717,7 +717,6 @@ function novaTarefa() {
 
 .tarefas__trilho {
   max-width: 100%;
-  overflow-x: auto;
 }
 
 .tarefas__filtros-secundarios {

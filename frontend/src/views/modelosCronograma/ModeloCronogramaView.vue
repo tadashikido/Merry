@@ -264,6 +264,52 @@ function editarModelo() {
           v-else-if="modelo"
           class="modelo-cronograma__corpo"
         >
+          <div class="modelo-cronograma__principal pilha pilha--bloco">
+            <section
+              v-for="grupo in grupos"
+              :key="grupo.dia"
+              class="modelo-cronograma__grupo pilha pilha--grupo"
+              :aria-labelledby="`grupo-modelo-${grupo.dia}`"
+              :data-teste="`grupo-modelo-${grupo.dia}`"
+            >
+              <div class="modelo-cronograma__cabeca-grupo">
+                <h2
+                  :id="`grupo-modelo-${grupo.dia}`"
+                  class="modelo-cronograma__titulo-grupo"
+                >
+                  {{ ROTULOS_DIA_CRONOGRAMA[grupo.dia] }}
+                </h2>
+                <span
+                  class="modelo-cronograma__contagem texto-legenda numeros-tabulares"
+                  :data-teste="`intervalo-grupo-${grupo.dia}`"
+                >{{ detalhePorDia.get(grupo.dia) }}</span>
+              </div>
+              <ol
+                class="modelo-cronograma__lista cartao"
+                :aria-labelledby="`grupo-modelo-${grupo.dia}`"
+              >
+                <LinhaCronograma
+                  v-for="item in grupo.itens"
+                  :key="item.id"
+                  :data-item-modelo-cronograma="item.id"
+                  :inicio="item.inicio"
+                  :termino="item.termino"
+                  :termina-em-outro-dia="item.terminaEmOutroDia"
+                  :atividade="item.atividade"
+                  :local="local(item)"
+                  :responsavel="item.responsavel"
+                  :fornecedor="fornecedor(item)"
+                  :instrucoes="item.instrucoes"
+                  :relativo-cerimonia="distancia(item)"
+                  :eh-cerimonia="item.minutosDesdeCerimonia === 0"
+                  editavel
+                  :rotulo="TEXTOS_MODELOS_CRONOGRAMA.rotuloLinha(item.atividade, item.inicio, distancia(item))"
+                  @editar="editarItem(item)"
+                />
+              </ol>
+            </section>
+          </div>
+
           <aside
             class="modelo-cronograma__lateral pilha pilha--grupo"
             aria-labelledby="titulo-resumo-modelo"
@@ -469,52 +515,6 @@ function editarModelo() {
               {{ TEXTOS_MODELOS_CRONOGRAMA.voltarModelos }}
             </RouterLink>
           </aside>
-
-          <div class="modelo-cronograma__principal pilha pilha--bloco">
-            <section
-              v-for="grupo in grupos"
-              :key="grupo.dia"
-              class="modelo-cronograma__grupo pilha pilha--grupo"
-              :aria-labelledby="`grupo-modelo-${grupo.dia}`"
-              :data-teste="`grupo-modelo-${grupo.dia}`"
-            >
-              <div class="modelo-cronograma__cabeca-grupo">
-                <h2
-                  :id="`grupo-modelo-${grupo.dia}`"
-                  class="modelo-cronograma__titulo-grupo"
-                >
-                  {{ ROTULOS_DIA_CRONOGRAMA[grupo.dia] }}
-                </h2>
-                <span
-                  class="modelo-cronograma__contagem texto-legenda numeros-tabulares"
-                  :data-teste="`intervalo-grupo-${grupo.dia}`"
-                >{{ detalhePorDia.get(grupo.dia) }}</span>
-              </div>
-              <ol
-                class="modelo-cronograma__lista cartao"
-                :aria-labelledby="`grupo-modelo-${grupo.dia}`"
-              >
-                <LinhaCronograma
-                  v-for="item in grupo.itens"
-                  :key="item.id"
-                  :data-item-modelo-cronograma="item.id"
-                  :inicio="item.inicio"
-                  :termino="item.termino"
-                  :termina-em-outro-dia="item.terminaEmOutroDia"
-                  :atividade="item.atividade"
-                  :local="local(item)"
-                  :responsavel="item.responsavel"
-                  :fornecedor="fornecedor(item)"
-                  :instrucoes="item.instrucoes"
-                  :relativo-cerimonia="distancia(item)"
-                  :eh-cerimonia="item.minutosDesdeCerimonia === 0"
-                  editavel
-                  :rotulo="TEXTOS_MODELOS_CRONOGRAMA.rotuloLinha(item.atividade, item.inicio, distancia(item))"
-                  @editar="editarItem(item)"
-                />
-              </ol>
-            </section>
-          </div>
 
           <ComoAplicarModelo
             class="modelo-cronograma__aplicar"

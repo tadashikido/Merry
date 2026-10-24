@@ -119,7 +119,7 @@ describe('ImportarConvidadosView — reestruturação da fundação', () => {
     await escolherArquivo()
 
     expect(wrapper!.get('.previa__grade').classes()).toContain('previa__grade--com-lateral')
-    expect(ESTILO_PREVIA).toMatch(/\.previa__grade--com-lateral \{\s*grid-template-columns: minmax\(0, 1fr\) 20rem;/)
+    expect(ESTILO_PREVIA).toMatch(/\.previa__grade--com-lateral \{\s*grid-template-rows: auto auto auto 1fr;\s*grid-template-columns: minmax\(0, 1fr\) 20rem;/)
   })
 
   it('[COMPONENTE] etapa 3 usa o lacre padronizado em vez do selo colorido', async () => {

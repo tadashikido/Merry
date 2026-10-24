@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, watch } from 'vue'
+import { computed, onBeforeUnmount, useId, watch } from 'vue'
 import Button from 'primevue/button'
 
 import LayoutPublico from '@/layouts/LayoutPublico.vue'
@@ -19,6 +19,7 @@ import { useCronogramaPublicoStore } from '@/stores/cronogramaPublico'
 import { TEXTOS_CRONOGRAMA_PUBLICO } from '@/textos/cronogramaPublico'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
 import { momentoDoModelo, referenciaDoModelo } from '@/textos/modelos'
+import { TEXTOS_PARA_O_DIA } from '@/textos/rsvp'
 import { agruparRoteiro, ehHorarioDaCerimonia, rotuloFiltro } from '@/utilitarios/cronogramaPublico'
 import { temConteudoParaODia } from '@/utilitarios/paraODiaCronograma'
 import { formatarDataCalendarioExtenso, formatarHora } from '@/utilitarios/formatacao'
@@ -29,6 +30,7 @@ import {
   itensPainelPublicos,
   minutoAtualNoRoteiro,
 } from '@/utilitarios/grandeDia'
+import { locaisDoConvite } from '@/utilitarios/rsvp'
 
 const props = defineProps<{ token: string }>()
 
@@ -69,6 +71,8 @@ const faixaFase = computed(() => {
   }
   return null
 })
+const idComoChegar = `como-chegar-${useId()}`
+const temComoChegar = computed(() => dados.value !== null && locaisDoConvite(dados.value.evento).length > 0)
 const temLateral = computed(() => dados.value !== null && temConteudoParaODia(dados.value.evento, dados.value.itens.length))
 const temContexto = computed(() => grupos.value.length > 0 && (aoVivo.value || faixaFase.value !== null))
 const vazio = computed(() =>
@@ -92,6 +96,15 @@ const estadoErro = computed(() => {
 
 function carregar() {
   void store.consultar(props.token)
+}
+
+function irParaComoChegar() {
+  const destino = document.getElementById(idComoChegar)
+  if (!destino) {
+    return
+  }
+  destino.scrollIntoView({ block: 'start' })
+  destino.focus({ preventScroll: true })
 }
 
 watch(() => props.token, carregar, { immediate: true })
@@ -170,6 +183,20 @@ onBeforeUnmount(() => store.limpar())
             :mensagem="TEXTOS_CRONOGRAMA_PUBLICO.semConexao(horarioCarga)"
             data-teste="cronograma-publico-sem-conexao"
           />
+
+          <a
+            v-if="temComoChegar"
+            class="cronograma-publico__atalho"
+            :href="`#${idComoChegar}`"
+            data-teste="atalho-como-chegar"
+            @click.prevent="irParaComoChegar"
+          >
+            <span
+              class="ie ie-local"
+              aria-hidden="true"
+            />
+            {{ TEXTOS_PARA_O_DIA.comoChegar }}
+          </a>
         </div>
 
         <div
@@ -245,6 +272,7 @@ onBeforeUnmount(() => store.limpar())
           :filtrado="filtrado"
           :fase="fase"
           :minuto-atual="minutoAtual"
+          :id-como-chegar="idComoChegar"
         />
 
         <footer class="cronograma-publico__rodape">
@@ -305,6 +333,24 @@ onBeforeUnmount(() => store.limpar())
 
 .cronograma-publico__painel {
   min-width: 0;
+}
+
+.cronograma-publico__atalho {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--p-ritmo-campo);
+  min-height: var(--p-dimensao-alvo-toque-movel);
+  font-size: var(--p-fonte-tamanho-controle);
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-operacao-destaque);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.cronograma-publico__atalho:focus-visible {
+  outline: 2px solid var(--p-cor-operacao-destaque);
+  outline-offset: 2px;
 }
 
 .cronograma-publico__roteiro {
@@ -413,6 +459,10 @@ onBeforeUnmount(() => store.limpar())
       'lateral principal'
       'rodape rodape';
     grid-template-rows: auto 1fr auto;
+  }
+
+  .cronograma-publico__conteudo--com-lateral .cronograma-publico__atalho {
+    display: none;
   }
 
   .cronograma-publico__conteudo--com-lateral .cronograma-publico__topo {

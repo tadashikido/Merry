@@ -120,14 +120,6 @@ const convitesExibidos = computed(() =>
           </template>
         </ResumoContagem>
 
-        <GruposImportacao
-          v-if="previa.resumo.convitesValidos > 0"
-          :convites="previa.convites"
-          :existentes="existentes"
-          :carregando-existentes="carregandoExistentes"
-          :tipo="tipo"
-        />
-
         <MensagemFormulario
           v-if="acimaDoLimite"
           :mensagem="TEXTOS_IMPORTACAO.acimaDoLimite(previa.resumo.limitePorEvento)"
@@ -231,6 +223,18 @@ const convitesExibidos = computed(() =>
           />
         </section>
       </div>
+
+      <div
+        v-if="previa.resumo.convitesValidos > 0"
+        class="previa__grupos"
+      >
+        <GruposImportacao
+          :convites="previa.convites"
+          :existentes="existentes"
+          :carregando-existentes="carregandoExistentes"
+          :tipo="tipo"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -275,6 +279,7 @@ const convitesExibidos = computed(() =>
 }
 
 .previa__lateral,
+.previa__grupos,
 .previa__principal {
   min-width: 0;
 }
@@ -407,6 +412,7 @@ const convitesExibidos = computed(() =>
 
 @container previa (min-width: 56rem) {
   .previa__grade--com-lateral {
+    grid-template-rows: auto auto auto 1fr;
     grid-template-columns: minmax(0, 1fr) 20rem;
     column-gap: var(--p-ritmo-bloco);
   }
@@ -417,12 +423,17 @@ const convitesExibidos = computed(() =>
 
   .previa__lateral {
     grid-column: 2;
-    grid-row: 2 / span 2;
+    grid-row: 2;
+  }
+
+  .previa__grupos {
+    grid-column: 2;
+    grid-row: 3;
   }
 
   .previa__principal {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 2 / -1;
   }
 
   .previa__lateral :deep(.resumo-contagem__itens) {

@@ -439,14 +439,14 @@ describe('ModeloCronogramaView', () => {
     expect(fonte).toContain('class="modelo-cronograma com-lateral pilha pilha--bloco"')
   })
 
-  it('[UNITÁRIO] corpo do detalhe em grade de três filhos sem sticky, com Por dia oculto no estreito', () => {
+  it('[UNITÁRIO] corpo do detalhe em grade de três filhos sem sticky, roteiro antes do resumo no DOM e Por dia oculto no estreito', () => {
     const fonte = readFileSync(resolve(__dirname, '../ModeloCronogramaView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style'))
     expect(estilo).not.toContain('sticky')
     expect(estilo).toContain('grid-row: 1 / span 2')
     expect(estilo).toContain('@container modelo-cronograma (max-width: 35.99rem)')
-    expect(fonte.indexOf('data-teste="lateral-modelo"')).toBeLessThan(fonte.indexOf('modelo-cronograma__principal pilha'))
-    expect(fonte.indexOf('modelo-cronograma__principal pilha')).toBeLessThan(fonte.indexOf('<ComoAplicarModelo'))
+    expect(fonte.indexOf('modelo-cronograma__principal pilha')).toBeLessThan(fonte.indexOf('data-teste="lateral-modelo"'))
+    expect(fonte.indexOf('data-teste="lateral-modelo"')).toBeLessThan(fonte.indexOf('<ComoAplicarModelo'))
   })
 
   const TIPO_DESCONHECIDO = 'Formatura' as unknown as TipoEvento
