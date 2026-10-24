@@ -14,12 +14,18 @@ import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
+import AtuacaoFornecedor from '@/componentes/fornecedores/AtuacaoFornecedor.vue'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
+import { useEventosStore } from '@/stores/eventos'
 import { useFornecedoresStore } from '@/stores/fornecedores'
 import { ROTULOS_CATEGORIA_FORNECEDOR, TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
 import { ROTULOS_STATUS_FORNECEDOR_EVENTO, TEXTOS_HISTORICO_FORNECEDOR } from '@/textos/fornecedoresEvento'
+import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import type { FornecedorDto } from '@/tipos/fornecedores'
+import { resumirAtuacaoFornecedor, tiposDasParticipacoes } from '@/utilitarios/atuacaoFornecedor'
+import { essencialidadeDaCategoria } from '@/utilitarios/coberturaFornecedores'
+import { hojeEmSaoPaulo } from '@/utilitarios/dataCalendario'
 import { formatarData, formatarDataCalendarioCurta, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { possuiContato } from '@/utilitarios/fornecedores'
 import { VARIANTES_STATUS_FORNECEDOR_EVENTO } from '@/utilitarios/fornecedoresEvento'
@@ -27,6 +33,7 @@ import { VARIANTES_STATUS_FORNECEDOR_EVENTO } from '@/utilitarios/fornecedoresEv
 const props = defineProps<{ fornecedorId: string }>()
 
 const store = useFornecedoresStore()
+const eventos = useEventosStore()
 const roteador = useRouter()
 const notificacao = useNotificacao()
 const { confirmarExclusao } = useConfirmarExclusao()
@@ -37,6 +44,15 @@ const temContato = computed(() => (fornecedor.value ? possuiContato(fornecedor.v
 const participacoes = computed(() => (store.participacoesDe === props.fornecedorId ? store.participacoes : null))
 const falhaParticipacoes = computed(() => (store.participacoesDe === props.fornecedorId ? store.falhaParticipacoes : null))
 const exclusaoBloqueada = ref(false)
+const carteira = computed(() => (eventos.ativosCarregados ? eventos.ativos : null))
+const tiposPorEvento = computed(() => tiposDasParticipacoes(participacoes.value ?? [], carteira.value))
+const atuacao = computed(() => (participacoes.value ? resumirAtuacaoFornecedor(participacoes.value, carteira.value, hojeEmSaoPaulo()) : null))
+const essencialidade = computed(() => (fornecedor.value ? essencialidadeDaCategoria(fornecedor.value.categoria, carteira.value) : null))
+
+function tipoDaParticipacao(eventoId: string): string | null {
+  const tipo = tiposPorEvento.value.get(eventoId)
+  return tipo ? VOCABULARIO_TIPO_EVENTO[tipo].rotulo : null
+}
 
 const acoes = computed<ItemMenuAcoes[]>(() => [
   fornecedor.value?.arquivado
@@ -47,6 +63,7 @@ const acoes = computed<ItemMenuAcoes[]>(() => [
 
 onMounted(() => {
   document.title = TEXTOS_FORNECEDORES.tituloDetalhe
+  void eventos.garantirAtivos()
 })
 
 watch(
@@ -301,82 +318,100 @@ function arquivarEmVezDeExcluir() {
               </p>
             </aside>
 
-            <section
-              class="fornecedor__historico-secao pilha pilha--campo"
-              aria-labelledby="fornecedor-historico"
-              data-teste="historico-eventos"
-            >
-              <h2
-                id="fornecedor-historico"
-                class="fornecedor__titulo-bloco texto-rotulo"
+            <div class="fornecedor__principal pilha pilha--bloco">
+              <AtuacaoFornecedor
+                v-if="atuacao && essencialidade"
+                :resumo="atuacao"
+                :categoria="fornecedor.categoria"
+                :essencialidade="essencialidade"
+              />
+
+              <section
+                class="fornecedor__historico-secao pilha pilha--campo"
+                aria-labelledby="fornecedor-historico"
+                data-teste="historico-eventos"
               >
-                {{ TEXTOS_FORNECEDORES.historicoTitulo }}
-              </h2>
-              <p
-                v-if="store.carregandoParticipacoes && !participacoes"
-                class="fornecedor__cartao cartao fornecedor__apoio"
-              >
-                {{ TEXTOS_HISTORICO_FORNECEDOR.carregando }}
-              </p>
-              <div
-                v-else-if="falhaParticipacoes"
-                class="fornecedor__cartao cartao fornecedor__historico-erro"
-                data-teste="erro-historico"
-              >
-                <p class="fornecedor__apoio">
-                  {{ TEXTOS_HISTORICO_FORNECEDOR.erro }}
-                </p>
-                <Button
-                  :label="TEXTOS_HISTORICO_FORNECEDOR.tentarNovamente"
-                  severity="secondary"
-                  text
-                  size="small"
-                  @click="store.carregarParticipacoes(fornecedorId)"
-                />
-              </div>
-              <ul
-                v-else-if="participacoes && participacoes.length > 0"
-                class="fornecedor__historico cartao"
-                :aria-label="TEXTOS_HISTORICO_FORNECEDOR.listaRotulo"
-                data-teste="lista-historico"
-              >
-                <li
-                  v-for="participacao in participacoes"
-                  :key="participacao.eventoId"
-                  class="fornecedor__participacao"
+                <h2
+                  id="fornecedor-historico"
+                  class="fornecedor__titulo-bloco texto-rotulo"
                 >
-                  <RouterLink
-                    :to="{ name: 'evento-fornecedores', params: { id: participacao.eventoId } }"
-                    class="fornecedor__participacao-nomes"
+                  {{ TEXTOS_FORNECEDORES.historicoTitulo }}
+                </h2>
+                <p
+                  v-if="store.carregandoParticipacoes && !participacoes"
+                  class="fornecedor__cartao cartao fornecedor__apoio"
+                >
+                  {{ TEXTOS_HISTORICO_FORNECEDOR.carregando }}
+                </p>
+                <div
+                  v-else-if="falhaParticipacoes"
+                  class="fornecedor__cartao cartao fornecedor__historico-erro"
+                  data-teste="erro-historico"
+                >
+                  <p class="fornecedor__apoio">
+                    {{ TEXTOS_HISTORICO_FORNECEDOR.erro }}
+                  </p>
+                  <Button
+                    :label="TEXTOS_HISTORICO_FORNECEDOR.tentarNovamente"
+                    severity="secondary"
+                    text
+                    size="small"
+                    @click="store.carregarParticipacoes(fornecedorId)"
+                  />
+                </div>
+                <ul
+                  v-else-if="participacoes && participacoes.length > 0"
+                  class="fornecedor__historico cartao"
+                  :aria-label="TEXTOS_HISTORICO_FORNECEDOR.listaRotulo"
+                  data-teste="lista-historico"
+                >
+                  <li
+                    v-for="participacao in participacoes"
+                    :key="participacao.eventoId"
+                    class="fornecedor__participacao"
                   >
-                    {{ formatarNomesAnfitrioes(participacao.nomePrimeiraPessoa, participacao.nomeSegundaPessoa) }}
-                  </RouterLink>
-                  <span class="fornecedor__participacao-data numeros-tabulares">{{ formatarDataCalendarioCurta(participacao.dataEvento) }}</span>
-                  <span class="fornecedor__participacao-selos">
-                    <BadgeStatus
-                      :texto="ROTULOS_STATUS_FORNECEDOR_EVENTO[participacao.status]"
-                      :variante="VARIANTES_STATUS_FORNECEDOR_EVENTO[participacao.status]"
-                    />
-                    <BadgeStatus
-                      v-if="participacao.eventoArquivado"
-                      :texto="TEXTOS_HISTORICO_FORNECEDOR.eventoArquivado"
-                      variante="neutro"
-                      icone="arquivar"
-                    />
-                  </span>
-                </li>
-              </ul>
-              <div
-                v-else
-                class="fornecedor__cartao cartao"
-              >
-                <EstadoVazio
-                  icone="evento"
-                  :titulo="TEXTOS_FORNECEDORES.historicoVazioTitulo"
-                  :descricao="TEXTOS_FORNECEDORES.historicoVazioTexto"
-                />
-              </div>
-            </section>
+                    <span class="fornecedor__participacao-evento">
+                      <RouterLink
+                        :to="{ name: 'evento-fornecedores', params: { id: participacao.eventoId } }"
+                        class="fornecedor__participacao-nomes"
+                      >
+                        {{ formatarNomesAnfitrioes(participacao.nomePrimeiraPessoa, participacao.nomeSegundaPessoa) }}
+                      </RouterLink>
+                      <span
+                        v-if="tipoDaParticipacao(participacao.eventoId)"
+                        class="fornecedor__participacao-tipo"
+                        data-teste="tipo-participacao"
+                      >
+                        {{ tipoDaParticipacao(participacao.eventoId) }}
+                      </span>
+                    </span>
+                    <span class="fornecedor__participacao-data numeros-tabulares">{{ formatarDataCalendarioCurta(participacao.dataEvento) }}</span>
+                    <span class="fornecedor__participacao-selos">
+                      <BadgeStatus
+                        :texto="ROTULOS_STATUS_FORNECEDOR_EVENTO[participacao.status]"
+                        :variante="VARIANTES_STATUS_FORNECEDOR_EVENTO[participacao.status]"
+                      />
+                      <BadgeStatus
+                        v-if="participacao.eventoArquivado"
+                        :texto="TEXTOS_HISTORICO_FORNECEDOR.eventoArquivado"
+                        variante="neutro"
+                        icone="arquivar"
+                      />
+                    </span>
+                  </li>
+                </ul>
+                <div
+                  v-else
+                  class="fornecedor__cartao cartao"
+                >
+                  <EstadoVazio
+                    icone="evento"
+                    :titulo="TEXTOS_FORNECEDORES.historicoVazioTitulo"
+                    :descricao="TEXTOS_FORNECEDORES.historicoVazioTexto"
+                  />
+                </div>
+              </section>
+            </div>
           </div>
         </template>
       </div>
@@ -418,6 +453,7 @@ function arquivarEmVezDeExcluir() {
 }
 
 .fornecedor__ficha,
+.fornecedor__principal,
 .fornecedor__historico-secao {
   min-width: 0;
 }
@@ -462,11 +498,22 @@ function arquivarEmVezDeExcluir() {
   border-top: 1px solid var(--p-cor-divisoria);
 }
 
-.fornecedor__participacao-nomes {
+.fornecedor__participacao-evento {
+  display: grid;
   flex: 1 1 100%;
+  gap: var(--p-ritmo-campo);
+  min-width: 0;
+}
+
+.fornecedor__participacao-nomes {
   min-width: 0;
   font-weight: var(--p-fonte-peso-seminegrito);
   overflow-wrap: anywhere;
+}
+
+.fornecedor__participacao-tipo {
+  font-size: var(--p-fonte-tamanho-apoio);
+  color: var(--p-cor-texto-apoio);
 }
 
 .fornecedor__participacao-data {
@@ -517,19 +564,6 @@ function arquivarEmVezDeExcluir() {
 @container fornecedor (min-width: 64rem) {
   .fornecedor__corpo {
     grid-template-columns: var(--fornecedor-largura-ficha) minmax(0, 1fr);
-  }
-
-  .fornecedor__ficha {
-    position: sticky;
-    top: var(--p-ritmo-bloco);
-    max-height: calc(100dvh - 2 * var(--p-ritmo-bloco));
-    overflow-y: auto;
-    padding: var(--p-ritmo-campo);
-    overscroll-behavior: contain;
-  }
-
-  .fornecedor__historico-secao {
-    padding-block-start: var(--p-ritmo-campo);
   }
 }
 </style>

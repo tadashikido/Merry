@@ -10,7 +10,7 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import router from '@/router'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { useConfirmacaoExclusaoStore } from '@/stores/confirmacaoExclusao'
-import { TEXTOS_COBERTURA_FORNECEDORES, TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
+import { TEXTOS_ATUACAO_FORNECEDOR, TEXTOS_COBERTURA_FORNECEDORES, TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
 import type { TipoEvento } from '@/tipos/eventos'
 import { RaizRotas, chamadas, quando, resumoEvento, rotearFetch } from '../../eventos/__tests__/auxiliaresEventos'
 
@@ -621,8 +621,18 @@ describe('FornecedorView — reestruturação da fundação', () => {
     expect(estilo).toMatch(/@container fornecedor \(min-width: 64rem\)\s*\{\s*\.fornecedor__corpo\s*\{\s*grid-template-columns:\s*var\(--fornecedor-largura-ficha\) minmax\(0, 1fr\)/)
     expect(estilo).toMatch(/@container fornecedor \(min-width: 40rem\) and \(max-width: 63\.99rem\)/)
     expect(estilo).toMatch(/@container historico-fornecedor \(min-width: 36rem\)/)
-    expect(estilo).toMatch(/position:\s*sticky/)
-    expect(estilo).toMatch(/overflow-y:\s*auto/)
+    expect(estilo).not.toMatch(/sticky/)
+    expect(estilo).not.toMatch(/overflow-y/)
+  })
+
+  it('[UNITÁRIO] o bloco de atuação abre colunas num filho do contêiner, sem @media nem sticky', () => {
+    const estilo = estiloDe(lerFonte('componentes/fornecedores/AtuacaoFornecedor.vue'))
+
+    expect(estilo).not.toMatch(/@media/)
+    expect(estilo).not.toMatch(/sticky/)
+    expect(estilo).not.toMatch(/--p-espaco-/)
+    expect(estilo).toMatch(/\.atuacao \{[^}]*container:\s*atuacao-fornecedor\s*\/\s*inline-size/)
+    expect(estilo).toMatch(/@container atuacao-fornecedor \(min-width: 36rem\)\s*\{\s*\.atuacao__indicadores\s*\{/)
   })
 
   it('[UNITÁRIO] o título do CabecalhoPagina quebra palavras longas', () => {
@@ -852,5 +862,141 @@ describe('FornecedoresView — categorias essenciais', () => {
     const { wrapper } = await abrir('/fornecedores')
 
     expect(wrapper.find('[data-teste="cobertura-fornecedores"]').exists()).toBe(false)
+  })
+})
+
+describe('FornecedorView — atuação na assessoria', () => {
+  function participacao(eventoId: string, dataEvento: string, status: string, eventoArquivado = false) {
+    return { eventoId, nomePrimeiraPessoa: `Anfitriã ${eventoId}`, nomeSegundaPessoa: null, dataEvento, eventoArquivado, status }
+  }
+
+  const PARTICIPACOES = [
+    participacao('evento-futuro', '2099-06-10', 'Contratado'),
+    participacao('evento-quinze', '2020-03-14', 'Contratado'),
+    participacao('evento-arquivado', '2019-05-01', 'Cancelado', true),
+    participacao('evento-velho', '2018-02-02', 'Contratado', true),
+  ]
+
+  function carteiraDoFornecedor(tipoFuturo: TipoEvento, tipoRealizado: TipoEvento, extras: TipoEvento[] = []) {
+    return [
+      resumoEvento({ id: 'evento-futuro', tipo: tipoFuturo, diasRestantes: 200 }),
+      resumoEvento({ id: 'evento-quinze', tipo: tipoRealizado, diasRestantes: -100 }),
+      ...extras.map((tipo, indice) => resumoEvento({ id: `extra-${indice}`, tipo, diasRestantes: 30 + indice })),
+    ]
+  }
+
+  async function abrirCom(eventos: () => Response, participacoes: unknown[] = PARTICIPACOES, dados = {}) {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto(dados))),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaJson(participacoes)),
+      quando('GET', ROTA_EVENTOS_ATIVOS, eventos),
+    )
+    const aberto = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
+    await flushPromises()
+    return aberto
+  }
+
+  it('[COMPONENTE] casamento pela frente e 15 anos realizado: resumo, próximo, última atuação e tipos', async () => {
+    const { wrapper } = await abrirCom(() => respostaJson(carteiraDoFornecedor('Casamento', 'QuinzeAnos')), PARTICIPACOES, {
+      categoria: 'Decoracao',
+    })
+    await aguardarAte(() => expect(wrapper.find('[data-teste="atuacao-tipos"]').exists()).toBe(true))
+
+    const bloco = wrapper.get('[data-teste="atuacao-fornecedor"]')
+    expect(bloco.get('h2').text()).toBe(TEXTOS_ATUACAO_FORNECEDOR.titulo)
+    expect(bloco.attributes('aria-labelledby')).toBe(bloco.get('h2').attributes('id'))
+    expect(bloco.get('[data-teste="atuacao-total"]').text()).toBe('4 eventos na assessoria')
+    expect(bloco.get('[data-teste="atuacao-contratados"]').text()).toBe('Contratado em 3 de 4.')
+    expect(bloco.get('[data-teste="atuacao-pela-frente"]').text()).toContain('1 evento')
+    expect(bloco.get('[data-teste="atuacao-proximo"]').text()).toBe('O próximo é Anfitriã evento-futuro, em 10 jun 2099.')
+    expect(bloco.get('[data-teste="atuacao-ultima"]').text()).toContain('14 mar 2020')
+    expect(bloco.get('[data-teste="atuacao-tipos"]').text()).toBe('1 casamento e 1 festa de 15 anos')
+    expect(bloco.get('[data-teste="atuacao-sem-tipo"]').text()).toBe('1 em evento arquivado, sem tipo identificado')
+    expect(bloco.get('[data-teste="atuacao-categoria"]').text()).toBe('Decoração é essencial para 1 evento pela frente.')
+    expect(bloco.findAll('a, button')).toHaveLength(0)
+
+    const tipos = wrapper.findAll('[data-teste="tipo-participacao"]').map((item) => item.text())
+    expect(tipos).toEqual(['Casamento', '15 anos'])
+    expect(chamadas(fetchSimulado, 'GET', ROTA_EVENTOS_ATIVOS)).toHaveLength(1)
+
+    const principal = wrapper.get('.fornecedor__principal')
+    const ficha = wrapper.get('[data-teste="ficha-fornecedor"]')
+    expect(ficha.element.compareDocumentPosition(principal.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(principal.element.firstElementChild?.getAttribute('data-teste')).toBe('atuacao-fornecedor')
+  })
+
+  it('[COMPONENTE] aniversário e comemoração variam tipos e essencialidade sem citar casamento', async () => {
+    const { wrapper } = await abrirCom(
+      () => respostaJson(carteiraDoFornecedor('Aniversario', 'Comemoracao', ['Comemoracao'])),
+      PARTICIPACOES,
+      { categoria: 'Musica' },
+    )
+    await aguardarAte(() => expect(wrapper.find('[data-teste="atuacao-tipos"]').exists()).toBe(true))
+
+    expect(wrapper.get('[data-teste="atuacao-tipos"]').text()).toBe('1 aniversário e 1 comemoração')
+    expect(wrapper.get('[data-teste="atuacao-categoria"]').text()).toBe('Música, DJ e banda é essencial para 1 evento pela frente.')
+    expect(wrapper.findAll('[data-teste="tipo-participacao"]').map((item) => item.text())).toEqual(['Aniversário', 'Comemoração'])
+    expect(wrapper.get('[data-teste="atuacao-fornecedor"]').text()).not.toMatch(/casamento/i)
+  })
+
+  it('[COMPONENTE] categoria fora das essenciais da carteira pela frente diz isso sem alarme', async () => {
+    const { wrapper } = await abrirCom(() => respostaJson(carteiraDoFornecedor('Comemoracao', 'Comemoracao')), PARTICIPACOES, {
+      categoria: 'Transporte',
+    })
+    await aguardarAte(() => expect(wrapper.find('[data-teste="atuacao-tipos"]').exists()).toBe(true))
+
+    expect(wrapper.get('[data-teste="atuacao-categoria"]').text()).toBe(
+      'Transporte não está entre as categorias essenciais dos eventos pela frente.',
+    )
+  })
+
+  it.each([
+    ['tipo desconhecido', () => respostaJson([resumoEvento({ id: 'evento-futuro', tipo: 'Formatura' as unknown as TipoEvento })])],
+    ['falha da lista de eventos', () => respostaProblema(500, { title: 'Erro' })],
+  ])('[COMPONENTE] com %s omite o tipo, cita os 4 tipos e mantém o resumo', async (_rotulo, eventos) => {
+    const { wrapper } = await abrirCom(eventos)
+
+    const bloco = wrapper.get('[data-teste="atuacao-fornecedor"]')
+    expect(bloco.get('[data-teste="atuacao-total"]').text()).toBe('4 eventos na assessoria')
+    expect(bloco.find('[data-teste="atuacao-por-tipo"]').exists()).toBe(false)
+    expect(bloco.get('[data-teste="atuacao-categoria"]').text()).toBe('Buffet costuma ser essencial nos 4 tipos de evento.')
+    expect(wrapper.find('[data-teste="tipo-participacao"]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-teste="lista-historico"] li')).toHaveLength(4)
+  })
+
+  it('[COMPONENTE] sem participações mostra só a frase da categoria e a lista ensina onde adicionar', async () => {
+    const { wrapper } = await abrirCom(() => respostaJson(carteiraDoFornecedor('QuinzeAnos', 'QuinzeAnos')), [], {
+      categoria: 'IluminacaoSom',
+    })
+    await aguardarAte(() =>
+      expect(wrapper.get('[data-teste="atuacao-categoria"]').text()).toBe('Iluminação e som é essencial para 1 evento pela frente.'),
+    )
+
+    expect(wrapper.find('[data-teste="atuacao-total"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="atuacao-pela-frente"]').exists()).toBe(false)
+    expect(wrapper.get('[data-teste="historico-eventos"]').text()).toContain(TEXTOS_FORNECEDORES.historicoVazioTexto)
+  })
+
+  it('[COMPONENTE] falha ao carregar as participações esconde o bloco e mantém a nova tentativa', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_FORNECEDOR, () => respostaJson(fornecedorCompleto())),
+      quando('GET', `${ROTA_FORNECEDOR}/eventos`, () => respostaProblema(500, { title: 'Erro' })),
+      quando('GET', ROTA_EVENTOS_ATIVOS, () => respostaJson(carteiraDoFornecedor('Casamento', 'Casamento'))),
+    )
+    const { wrapper } = await abrir(`/fornecedores/${ID_FORNECEDOR}`)
+
+    expect(wrapper.find('[data-teste="atuacao-fornecedor"]').exists()).toBe(false)
+    expect(wrapper.find('[data-teste="erro-historico"]').exists()).toBe(true)
+  })
+
+  it('[SEGURANÇA] o bloco não expõe telefone nem e-mail e o título da aba segue genérico', async () => {
+    const { wrapper } = await abrirCom(() => respostaJson(carteiraDoFornecedor('Casamento', 'QuinzeAnos')))
+
+    const texto = wrapper.get('[data-teste="atuacao-fornecedor"]').text()
+    expect(texto).not.toContain('98765')
+    expect(texto).not.toContain('@')
+    expect(document.title).toBe(TEXTOS_FORNECEDORES.tituloDetalhe)
   })
 })

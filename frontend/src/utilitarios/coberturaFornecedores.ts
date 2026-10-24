@@ -73,3 +73,22 @@ export function coberturaDaCarteira(
     faltando,
   }
 }
+
+export interface EssencialidadeCategoria {
+  daCarteira: boolean
+  tipos: TipoEvento[]
+  eventos: number
+}
+
+export function essencialidadeDaCategoria(
+  categoria: CategoriaFornecedor,
+  eventos: readonly EventoResumoDto[] | null,
+): EssencialidadeCategoria {
+  const cobertura = coberturaDaCarteira([], eventos)
+  const falta = cobertura.faltando.find((item) => item.categoria === categoria)
+  return {
+    daCarteira: cobertura.daCarteira,
+    tipos: falta ? falta.tipos : [],
+    eventos: falta ? falta.eventos : 0,
+  }
+}

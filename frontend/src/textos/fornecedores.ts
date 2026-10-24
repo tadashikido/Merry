@@ -85,7 +85,7 @@ export const TEXTOS_FORNECEDORES = {
   semObservacoes: 'Sem observações.',
   historicoTitulo: 'Eventos em que participou',
   historicoVazioTitulo: 'Nenhum evento ainda',
-  historicoVazioTexto: 'Quando você adicionar este fornecedor a um evento, ele aparece aqui com a data e os anfitriões.',
+  historicoVazioTexto: 'Adicione-o em Fornecedores, dentro de um evento, e ele aparece aqui com a data, os anfitriões e a situação.',
   arquivadoFaixa: 'Este fornecedor está arquivado e não aparece na lista principal.',
   cadastro: (criadoEm: string, atualizadoEm: string) => `Cadastrado em ${criadoEm} · atualizado em ${atualizadoEm}`,
   novoTitulo: 'Novo fornecedor',
@@ -162,4 +162,30 @@ export const TEXTOS_COBERTURA_FORNECEDORES = {
     'Em cada evento, adicione-o em Fornecedores do evento com o serviço e o valor combinados.',
     'Arquive quem saiu do circuito: o histórico nos eventos continua.',
   ],
+} as const
+
+export const TEXTOS_ATUACAO_FORNECEDOR = {
+  titulo: 'Atuação na assessoria',
+  legenda: (total: number) => plural(total, 'evento na assessoria', 'eventos na assessoria'),
+  contratados: (quantidade: number, total: number) =>
+    quantidade === 0
+      ? 'Ainda não foi contratado em nenhum deles.'
+      : `Contratado em ${quantidade.toLocaleString('pt-BR')} de ${total.toLocaleString('pt-BR')}.`,
+  indicadoresRotulo: 'Indicadores de atuação',
+  pelaFrenteRotulo: 'Pela frente',
+  pelaFrente: (quantidade: number) =>
+    quantidade === 0 ? 'Nenhum evento marcado' : `${quantidade.toLocaleString('pt-BR')} ${plural(quantidade, 'evento', 'eventos')}`,
+  proximo: (nomes: string, data: string) => `O próximo é ${nomes}, em ${data}.`,
+  ultimaRotulo: 'Última atuação',
+  porTipoRotulo: 'Por tipo de evento',
+  semTipo: (quantidade: number) =>
+    `${quantidade.toLocaleString('pt-BR')} em ${plural(quantidade, 'evento arquivado', 'eventos arquivados')}, sem tipo identificado`,
+  essencialCarteira: (categoria: string, eventos: number) =>
+    `${categoria} é essencial para ${eventos.toLocaleString('pt-BR')} ${plural(eventos, 'evento', 'eventos')} pela frente.`,
+  essencialTipos: (categoria: string, tipos: readonly TipoEvento[]) =>
+    tipos.length === TIPOS_EVENTO.length
+      ? `${categoria} costuma ser essencial nos 4 tipos de evento.`
+      : `${categoria} costuma ser essencial em ${tiposNoPlural(tipos)}.`,
+  naoEssencialCarteira: (categoria: string) => `${categoria} não está entre as categorias essenciais dos eventos pela frente.`,
+  naoEssencial: (categoria: string) => `${categoria} não está entre as categorias essenciais de nenhum tipo de evento.`,
 } as const
