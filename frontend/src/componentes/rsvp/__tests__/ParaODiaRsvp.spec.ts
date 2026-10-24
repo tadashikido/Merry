@@ -90,8 +90,9 @@ describe('ParaODiaRsvp', () => {
     )
     expect(primeiro.attributes('target')).toBe('_blank')
     expect(primeiro.attributes('rel')).toBe('noopener noreferrer')
-    expect(primeiro.attributes('aria-label')).toBe('Abrir Rua A, 10 & "B" <script> no mapa, em nova aba')
+    expect(primeiro.attributes('aria-label')).toBe('Abrir no mapa: Rua A, 10 & "B" <script>, em nova aba')
     expect(primeiro.text()).toBe('Abrir no mapa')
+    expect(primeiro.attributes('aria-label')!.startsWith(primeiro.text())).toBe(true)
     expect(wrapper!.find('script').exists()).toBe(false)
   })
 

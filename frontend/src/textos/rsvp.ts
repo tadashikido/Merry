@@ -58,7 +58,7 @@ export const TEXTOS_PARA_O_DIA = {
   titulo: (contracaoDe: string) => `Para o dia ${contracaoDe}`,
   comoChegar: 'Como chegar',
   abrirMapa: 'Abrir no mapa',
-  abrirMapaAcessivel: (local: string) => `Abrir ${local} no mapa, em nova aba`,
+  abrirMapaAcessivel: (local: string) => `Abrir no mapa: ${local}, em nova aba`,
   mudarResposta: (prazo: string) => `Depois de enviar, dá para mudar a resposta até ${prazo} por este mesmo link.`,
   linkPessoal: 'Este link é só do seu convite. Quem tiver o link consegue responder por ele.',
 } as const

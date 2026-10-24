@@ -58,6 +58,13 @@ describe('PreviaConvite', () => {
     expect(previa.get('[data-teste="previa-nomes"]').text()).toBe(SEGUNDO_NOME[tipo] ? 'Ana e Rui' : 'Ana')
   })
 
+  it('[COMPONENTE] tipo sem segundo nome espelha o convite: só o primeiro nome, no singular', () => {
+    const previa = montar({ tipo: 'QuinzeAnos', segundo: 'Resto antigo' })
+
+    expect(previa.get('[data-teste="previa-nomes"]').text()).toBe('Ana')
+    expect(previa.get('[data-teste="previa-celebracao"]').text()).toBe('vai comemorar os 15 anos')
+  })
+
   it('[COMPONENTE] tipo desconhecido usa a frase neutra no singular', () => {
     const previa = montar({ tipo: 'Corporativo' as TipoEvento, segundo: null })
 

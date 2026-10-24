@@ -5,7 +5,7 @@ import { TEXTOS_PREVIA_CONVITE } from '@/textos/convidados'
 import { TEXTOS_RSVP } from '@/textos/rsvp'
 import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 import { formatarDataCalendarioExtenso, formatarNomesEmFrase } from '@/utilitarios/formatacao'
-import { celebracaoDoConvite, formatarDiaMes } from '@/utilitarios/rsvp'
+import { celebracaoDoConvite, formatarDiaMes, segundoNomeDoConvite } from '@/utilitarios/rsvp'
 
 export interface PessoaPreviaConvite {
   chave: string
@@ -26,7 +26,9 @@ const props = defineProps<{
 
 const idTitulo = useId()
 
-const nomes = computed(() => formatarNomesEmFrase(props.nomePrimeiraPessoa, props.nomeSegundaPessoa))
+const nomes = computed(() =>
+  formatarNomesEmFrase(props.nomePrimeiraPessoa, segundoNomeDoConvite(props.tipo, props.nomeSegundaPessoa)),
+)
 const celebracao = computed(() => celebracaoDoConvite(props.tipo, props.nomePrimeiraPessoa, props.nomeSegundaPessoa))
 
 const linhasPessoas = computed(() =>
