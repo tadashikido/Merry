@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
 
-import { tratamentoDoConvite } from '@/textos/acessoAnfitriao'
 import { TEXTOS_PREVIA_CONVITE } from '@/textos/convidados'
 import { TEXTOS_RSVP } from '@/textos/rsvp'
-import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 import { formatarDataCalendarioExtenso, formatarNomesEmFrase } from '@/utilitarios/formatacao'
-import { formatarDiaMes } from '@/utilitarios/rsvp'
+import { celebracaoDoConvite, formatarDiaMes } from '@/utilitarios/rsvp'
 
 export interface PessoaPreviaConvite {
   chave: string
@@ -29,11 +27,7 @@ const props = defineProps<{
 const idTitulo = useId()
 
 const nomes = computed(() => formatarNomesEmFrase(props.nomePrimeiraPessoa, props.nomeSegundaPessoa))
-const celebracao = computed(() => {
-  const vocabulario = vocabularioOuNeutro(props.tipo)
-  const frase = vocabulario.celebracao(nomes.value, tratamentoDoConvite(props.nomeSegundaPessoa) === 'plural')
-  return frase.startsWith(nomes.value) ? frase.slice(nomes.value.length).trim() : frase
-})
+const celebracao = computed(() => celebracaoDoConvite(props.tipo, props.nomePrimeiraPessoa, props.nomeSegundaPessoa))
 
 const linhasPessoas = computed(() =>
   props.pessoas.map((pessoa, indice) => {

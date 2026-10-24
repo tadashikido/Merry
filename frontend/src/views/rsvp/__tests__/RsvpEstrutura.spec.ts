@@ -72,16 +72,18 @@ async function abrir(token = TOKEN) {
 }
 
 describe('RsvpView — estrutura da fundação', () => {
-  it('[COMPONENTE] com convite carregado usa a folha ampla e põe o convite antes do formulário', async () => {
+  it('[COMPONENTE] com convite carregado usa a folha ampla: convite, formulário e só depois o bloco Para o dia', async () => {
     rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaJson(dados())))
 
     await abrir()
 
     expect(wrapper!.find('.layout-publico--convite.layout-publico--amplo').exists()).toBe(true)
     const colunas = wrapper!.get('.rsvp__grade').element.children
-    expect(colunas).toHaveLength(2)
+    expect(colunas).toHaveLength(3)
     expect(colunas[0]!.querySelector('[data-teste="cabecalho-convite"]')).not.toBeNull()
     expect(colunas[1]!.querySelector('[data-teste="rsvp-formulario"]')).not.toBeNull()
+    expect(colunas[2]!.getAttribute('data-teste')).toBe('rsvp-para-o-dia')
+    expect(colunas[2]!.classList.contains('rsvp__dia')).toBe(true)
   })
 
   it('[COMPONENTE] títulos de seção usam o rótulo da fundação e o prazo vira legenda', async () => {
@@ -204,6 +206,19 @@ describe('Estilos — ritmo e sem margem negativa', () => {
     expect(arquivos.rsvp).not.toMatch(/@media/)
     expect(arquivos.lista).toMatch(/@container lista-repetivel/)
     expect(arquivos.lista).not.toMatch(/@media/)
+  })
+
+  it('[UNITÁRIO] coluna do convite sem sticky; bloco Para o dia sob o convite no largo', () => {
+    expect(arquivos.rsvp).not.toMatch(/sticky/)
+    expect(arquivos.rsvp).toMatch(/\.rsvp__principal \{\s*grid-column: 2;\s*grid-row: 1 \/ span 2;/)
+    expect(arquivos.rsvp).toMatch(/\.rsvp__dia \{\s*grid-column: 1;\s*grid-row: 2;/)
+  })
+
+  it('[UNITÁRIO] bloco Para o dia usa ritmo e @container, sem @media nem escala antiga', () => {
+    const bloco = fonte('../../../componentes/rsvp/ParaODiaRsvp.vue')
+    expect(bloco).toMatch(/container: para-o-dia \/ inline-size/)
+    expect(bloco).toMatch(/@container para-o-dia \(min-width: 30rem\)/)
+    expect(bloco).not.toMatch(/@media|--p-espaco-|sticky/)
   })
 
   it('[UNITÁRIO] títulos sem peso médio/negrito e raios por token', () => {

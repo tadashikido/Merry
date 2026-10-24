@@ -2,23 +2,23 @@
 import { computed } from 'vue'
 
 import { TEXTOS_RSVP } from '@/textos/rsvp'
-import { vocabularioDoTipo } from '@/textos/tiposEvento'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 import { formatarDataCalendarioComDiaSemana } from '@/utilitarios/formatacao'
-import { formatarHorarioConvite } from '@/utilitarios/rsvp'
+import { celebracaoDoConvite, formatarHorarioConvite, locaisDoConvite, segundoNomeDoConvite } from '@/utilitarios/rsvp'
 
 const props = withDefaults(
   defineProps<{
     primeiro: string
     segundo?: string | null
-    tipo?: TipoEvento
+    tipo?: TipoEvento | null
     data: DataCalendario
     horario?: string | null
     localCerimonia?: string | null
     localRecepcao?: string | null
     variante?: 'completo' | 'compacto'
   }>(),
-  { segundo: null, tipo: 'Casamento', horario: null, localCerimonia: null, localRecepcao: null, variante: 'completo' },
+  { segundo: null, tipo: null, horario: null, localCerimonia: null, localRecepcao: null, variante: 'completo' },
 )
 
 const dataExtenso = computed(() => formatarDataCalendarioComDiaSemana(props.data))
@@ -27,19 +27,13 @@ const horarioTexto = computed(() => {
   const horario = formatarHorarioConvite(props.horario)
   return horario ? TEXTOS_RSVP.horario(horario) : null
 })
-interface LocalConvite {
-  rotulo: string
-  valor: string
-}
 
-const vocabulario = computed(() => vocabularioDoTipo(props.tipo))
-const locais = computed<LocalConvite[]>(() => {
-  const candidatos: { rotulo: string; valor: string | null }[] = [
-    { rotulo: vocabulario.value.locais.principal, valor: props.localCerimonia },
-    { rotulo: vocabulario.value.locais.secundario, valor: props.localRecepcao },
-  ]
-  return candidatos.filter((local): local is LocalConvite => Boolean(local.valor))
-})
+const vocabulario = computed(() => vocabularioOuNeutro(props.tipo))
+const segundoExibido = computed(() => segundoNomeDoConvite(props.tipo, props.segundo))
+const celebracao = computed(() => celebracaoDoConvite(props.tipo, props.primeiro, props.segundo))
+const locais = computed(() =>
+  locaisDoConvite({ tipo: props.tipo, localCerimonia: props.localCerimonia, localRecepcao: props.localRecepcao }),
+)
 </script>
 
 <template>
@@ -72,17 +66,26 @@ const locais = computed<LocalConvite[]>(() => {
     >
       {{ TEXTOS_RSVP.fraseConvite }}
     </p>
-    <h1 class="cabecalho-convite__anfitriao">
-      <span class="cabecalho-convite__nome">{{ primeiro }}</span>
-      <template v-if="segundo">
-        <span
-          class="cabecalho-convite__e"
-          aria-hidden="true"
-        >&amp;</span>
-        <span class="somente-leitor-tela">{{ ` ${TEXTOS_RSVP.conector} ` }}</span>
-        <span class="cabecalho-convite__nome">{{ segundo }}</span>
-      </template>
-    </h1>
+    <div class="cabecalho-convite__quem">
+      <h1 class="cabecalho-convite__anfitriao">
+        <span class="cabecalho-convite__nome">{{ primeiro }}</span>
+        <template v-if="segundoExibido">
+          <span
+            class="cabecalho-convite__e"
+            aria-hidden="true"
+          >&amp;</span>
+          <span class="somente-leitor-tela">{{ ` ${TEXTOS_RSVP.conector} ` }}</span>
+          <span class="cabecalho-convite__nome">{{ segundoExibido }}</span>
+        </template>
+      </h1>
+      <p
+        v-if="variante === 'completo'"
+        class="cabecalho-convite__celebracao"
+        data-teste="cabecalho-convite-celebracao"
+      >
+        {{ celebracao }}
+      </p>
+    </div>
     <span
       v-if="variante === 'completo'"
       class="cabecalho-convite__data-numerica numeros-tabulares"
@@ -101,7 +104,7 @@ const locais = computed<LocalConvite[]>(() => {
     >
       <div
         v-for="local in locais"
-        :key="local.rotulo"
+        :key="local.chave"
         class="cabecalho-convite__local"
       >
         <dt>{{ local.rotulo }}</dt>
@@ -113,6 +116,7 @@ const locais = computed<LocalConvite[]>(() => {
 
 <style scoped>
 .cabecalho-convite {
+  container: cabecalho-convite / inline-size;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -140,6 +144,23 @@ const locais = computed<LocalConvite[]>(() => {
   font-style: italic;
   line-height: 1.45;
   color: var(--p-cor-texto-publico);
+}
+
+.cabecalho-convite__quem {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  min-width: 0;
+}
+
+.cabecalho-convite__celebracao {
+  font-family: var(--p-fonte-serif);
+  font-variant-numeric: lining-nums;
+  font-size: 1.1875rem;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--p-cor-texto-publico);
+  overflow-wrap: anywhere;
 }
 
 .cabecalho-convite .cabecalho-convite__anfitriao {
@@ -233,7 +254,7 @@ const locais = computed<LocalConvite[]>(() => {
   font-size: 1em;
 }
 
-@media (min-width: 640px) {
+@container cabecalho-convite (min-width: 24rem) {
   .cabecalho-convite .cabecalho-convite__anfitriao {
     font-size: 3.625rem;
   }

@@ -2057,6 +2057,7 @@ const regras = [
           <CabecalhoConvite
             primeiro="Ana Beatriz"
             segundo="Bruno Carvalho"
+            tipo="Casamento"
             data="2027-05-22"
             horario="16:30"
             local-cerimonia="Igreja São José, Centro"
@@ -2067,6 +2068,7 @@ const regras = [
       <CabecalhoConvite
         primeiro="Ana Beatriz"
         segundo="Bruno Carvalho"
+        tipo="Casamento"
         data="2027-05-22"
         variante="compacto"
       />

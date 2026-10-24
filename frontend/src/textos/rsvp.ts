@@ -7,7 +7,7 @@ function pessoas(quantidade: number): string {
 }
 
 export const TEXTOS_RSVP = {
-  fraseConvite: 'Com alegria, convidamos você para celebrar o nosso evento',
+  fraseConvite: 'Com alegria, convidamos você',
   tituloDocumento: 'Confirmação de presença',
   conviteDe: 'Convite para',
   prazo: (data: string) => `Responda até ${data}`,
@@ -52,6 +52,15 @@ export const TEXTOS_RSVP = {
   conflito: 'Sua resposta mudou em outro aparelho. Recarregamos com a versão mais recente.',
   erroEnviar: 'Não foi possível enviar. Suas escolhas continuam aqui; tente de novo.',
   erroNomeAcompanhante: 'Use entre 2 e 120 caracteres no nome do acompanhante.',
+} as const
+
+export const TEXTOS_PARA_O_DIA = {
+  titulo: (contracaoDe: string) => `Para o dia ${contracaoDe}`,
+  comoChegar: 'Como chegar',
+  abrirMapa: 'Abrir no mapa',
+  abrirMapaAcessivel: (local: string) => `Abrir ${local} no mapa, em nova aba`,
+  mudarResposta: (prazo: string) => `Depois de enviar, dá para mudar a resposta até ${prazo} por este mesmo link.`,
+  linkPessoal: 'Este link é só do seu convite. Quem tiver o link consegue responder por ele.',
 } as const
 
 export const TEXTOS_LISTA_ACOMPANHANTES: TextosListaRepetivel = {

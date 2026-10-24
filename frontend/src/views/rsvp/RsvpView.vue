@@ -19,6 +19,7 @@ import ListaRepetivel from '@/componentes/base/ListaRepetivel.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import SeloConfirmacao from '@/componentes/base/SeloConfirmacao.vue'
 import SeletorRestricaoAlimentar from '@/componentes/base/SeletorRestricaoAlimentar.vue'
+import ParaODiaRsvp from '@/componentes/rsvp/ParaODiaRsvp.vue'
 import { TEXTOS_PREVIA_RSVP } from '@/textos/confirmacoes'
 import { useRsvpStore } from '@/stores/rsvp'
 import { TEXTOS_DADOS_SENSIVEIS, VERSAO_TERMO_PRIVACIDADE } from '@/textos/dadosSensiveis'
@@ -26,6 +27,7 @@ import { TEXTOS_LISTA_ACOMPANHANTES, TEXTOS_RSVP } from '@/textos/rsvp'
 import type { FaixaEtaria } from '@/tipos/convidados'
 import type { RestricaoPessoaFormulario } from '@/tipos/dadosSensiveis'
 import type { EscolhaPresencaRsvp, RsvpPublicoDto } from '@/tipos/rsvp'
+import { hojeEmSaoPaulo } from '@/utilitarios/dataCalendario'
 import { informaConteudo, restricaoParaEnvio, restricaoVazia, validarRestricao } from '@/utilitarios/dadosSensiveis'
 import { PARAMETRO_PREVIA_RSVP, escolhaInicial, formatarDiaMes, tokenRsvpValido } from '@/utilitarios/rsvp'
 
@@ -101,6 +103,7 @@ const estadoErro = computed(() => {
 })
 
 const conviteAmplo = computed(() => Boolean(dados.value) && !estadoErro.value)
+const hoje = hojeEmSaoPaulo()
 
 function novaChave(): string {
   proximaChave += 1
@@ -676,6 +679,15 @@ function alterarResposta() {
             </BarraAcaoFixa>
           </form>
         </div>
+
+        <ParaODiaRsvp
+          class="rsvp__dia"
+          :evento="dados.evento"
+          :data-limite-resposta="dados.dataLimiteResposta"
+          :mostrar-prazo="modo === 'formulario' && dados.podeResponder"
+          :pode-responder="dados.podeResponder"
+          :hoje="hoje"
+        />
       </div>
     </div>
   </LayoutPublico>
@@ -803,14 +815,25 @@ function alterarResposta() {
 @container rsvp (min-width: 56rem) {
   .rsvp__grade {
     grid-template-columns: minmax(0, 1fr) minmax(0, var(--p-dimensao-largura-convite));
+    grid-template-rows: auto 1fr;
     align-items: start;
     column-gap: var(--p-ritmo-secao);
     max-width: none;
   }
 
   .rsvp__coluna-convite {
-    position: sticky;
-    top: var(--p-ritmo-bloco);
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .rsvp__principal {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .rsvp__dia {
+    grid-column: 1;
+    grid-row: 2;
   }
 
   .rsvp__convite {

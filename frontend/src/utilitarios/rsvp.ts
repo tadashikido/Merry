@@ -1,10 +1,11 @@
+import { tratamentoDoConvite } from '@/textos/acessoAnfitriao'
 import { TEXTOS_COBRANCA } from '@/textos/confirmacoes'
 import { TEXTOS_ENVIO_CONVITE } from '@/textos/rsvp'
-import { vocabularioDoTipo } from '@/textos/tiposEvento'
-import type { EventoDto, DataCalendario } from '@/tipos/eventos'
+import { aceitaSegundoNome, ehTipoEvento, vocabularioDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
+import type { EventoDto, DataCalendario, TipoEvento } from '@/tipos/eventos'
 import type { ConviteDto } from '@/tipos/convidados'
 import type { EscolhaPresencaRsvp, PessoaRsvpDto } from '@/tipos/rsvp'
-import { lerDataCalendario, paraInstanteUtc } from '@/utilitarios/dataCalendario'
+import { diferencaEmDias, lerDataCalendario, paraInstanteUtc } from '@/utilitarios/dataCalendario'
 import { formatarDataCalendarioExtenso, formatarNomesEmFrase } from '@/utilitarios/formatacao'
 
 export const PADRAO_TOKEN_RSVP = /^[A-Za-z0-9_-]{43}$/
@@ -109,4 +110,59 @@ export function dataLimitePadrao(dataEvento: DataCalendario | null | undefined):
 
 export function escolhaInicial(pessoa: Pick<PessoaRsvpDto, 'resposta'>): EscolhaPresencaRsvp | null {
   return pessoa.resposta === 'Pendente' ? null : pessoa.resposta
+}
+
+export const URL_BUSCA_MAPA = 'https://www.google.com/maps/search/?api=1&query='
+
+export interface LocalConvite {
+  chave: 'principal' | 'secundario'
+  rotulo: string
+  valor: string
+}
+
+export function segundoNomeDoConvite(tipo: TipoEvento | null | undefined, segundo: string | null | undefined): string | null {
+  const nome = segundo?.trim()
+  if (!nome) {
+    return null
+  }
+  return ehTipoEvento(tipo) && !aceitaSegundoNome(tipo) ? null : nome
+}
+
+export function celebracaoDoConvite(
+  tipo: TipoEvento | null | undefined,
+  primeiro: string,
+  segundo: string | null | undefined,
+): string {
+  const outro = segundoNomeDoConvite(tipo, segundo)
+  const nomes = formatarNomesEmFrase(primeiro, outro)
+  const frase = vocabularioOuNeutro(tipo).celebracao(nomes, tratamentoDoConvite(outro) === 'plural')
+  return frase.startsWith(nomes) ? frase.slice(nomes.length).trim() : frase
+}
+
+export interface LocaisDoConviteEntrada {
+  tipo: TipoEvento | null | undefined
+  localCerimonia?: string | null
+  localRecepcao?: string | null
+}
+
+export function locaisDoConvite(evento: LocaisDoConviteEntrada): LocalConvite[] {
+  const vocabulario = vocabularioOuNeutro(evento.tipo)
+  const principal = evento.localCerimonia?.trim() ?? ''
+  const secundario = evento.localRecepcao?.trim() ?? ''
+  const locais: LocalConvite[] = []
+  if (principal) {
+    locais.push({ chave: 'principal', rotulo: vocabulario.locais.principal, valor: principal })
+  }
+  if (secundario && secundario.toLocaleLowerCase('pt-BR') !== principal.toLocaleLowerCase('pt-BR')) {
+    locais.push({ chave: 'secundario', rotulo: vocabulario.locais.secundario, valor: secundario })
+  }
+  return locais
+}
+
+export function linkMapaDoLocal(local: string): string {
+  return `${URL_BUSCA_MAPA}${encodeURIComponent(local.trim())}`
+}
+
+export function diasAteOEvento(data: DataCalendario, hoje: DataCalendario): number | null {
+  return diferencaEmDias(hoje, data)
 }
