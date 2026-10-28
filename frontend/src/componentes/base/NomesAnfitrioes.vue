@@ -37,7 +37,11 @@ withDefaults(
   font-variant-numeric: lining-nums;
   font-weight: var(--p-fonte-peso-regular);
   font-style: italic;
-  color: var(--p-cor-acento-texto);
+  color: var(--nomes-conector, var(--p-cor-centelha-texto));
+}
+
+.nomes-anfitrioes--linha .nomes-anfitrioes__e {
+  color: var(--nomes-conector, var(--p-cor-acento-texto));
 }
 
 .nomes-anfitrioes--linha {
@@ -56,7 +60,7 @@ withDefaults(
   font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--nomes-cor, var(--p-cor-titulo));
 }
 
 .nomes-anfitrioes--cartao,

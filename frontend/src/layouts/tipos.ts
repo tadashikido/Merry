@@ -1,7 +1,7 @@
 import type { RouteLocationRaw } from 'vue-router'
 
 import type { NomeIcone } from '@/design/icones'
-import type { DataCalendario } from '@/tipos/eventos'
+import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 
 export interface ItemRail {
   rotulo: string
@@ -47,6 +47,7 @@ export interface ContextoEvento {
   nomeSegundaPessoa: string | null
   data: DataCalendario
   diasRestantes: number
+  tipo?: TipoEvento | null
 }
 
 export type ContextoVisual = 'assessoria' | 'anfitriao'

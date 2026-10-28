@@ -26,14 +26,14 @@ h2,
 h3,
 h4 {
   margin: 0;
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
   text-wrap: balance;
 }
 
 h1 {
   font-family: var(--p-fonte-display);
   font-weight: var(--p-fonte-peso-leve);
-  line-height: var(--p-fonte-entrelinha-titulo);
+  line-height: var(--p-fonte-entrelinha-display);
   letter-spacing: var(--p-fonte-espacamento-letras-display);
 }
 
@@ -41,8 +41,8 @@ h2,
 h3,
 h4 {
   font-family: var(--p-fonte-display);
-  font-weight: var(--p-fonte-peso-medio);
-  line-height: var(--p-fonte-entrelinha-interface);
+  font-weight: var(--p-fonte-peso-regular);
+  line-height: var(--p-fonte-entrelinha-titulo);
 }
 
 h2 {
@@ -59,12 +59,12 @@ p {
 }
 
 a {
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-acento-texto);
   text-underline-offset: 0.2em;
 }
 
 a:hover {
-  color: var(--p-cor-primaria-escura);
+  color: var(--p-cor-primaria);
   text-decoration-thickness: 2px;
 }
 
@@ -102,7 +102,16 @@ a:hover {
 }
 
 body .p-button {
+  font-size: var(--p-fonte-tamanho-botao);
+}
+
+body .p-button.p-button-sm {
   font-size: var(--p-fonte-tamanho-controle);
+}
+
+body .p-button-link {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 body .p-button .ie {
@@ -169,6 +178,7 @@ h1,
 
 .tema-operacao {
   --p-cor-texto: var(--p-cor-operacao-texto);
+  --p-cor-titulo: var(--p-cor-operacao-texto);
   --p-cor-texto-secundario: var(--p-cor-operacao-apoio);
   --p-cor-texto-apoio: var(--p-cor-operacao-apoio);
   --p-cor-superficie: var(--p-cor-operacao-superficie);
@@ -184,6 +194,7 @@ h1,
   --p-button-outlined-secondary-active-background: var(--p-cor-operacao-divisoria);
   --p-cor-superficie-sutil: var(--p-cor-operacao-superficie);
   --p-cor-fundo: var(--p-cor-operacao-fundo);
+  --p-cor-centelha-texto: var(--p-cor-operacao-destaque);
 
   color: var(--p-cor-operacao-texto);
 }

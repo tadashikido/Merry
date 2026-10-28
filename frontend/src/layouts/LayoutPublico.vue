@@ -45,7 +45,7 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
   gap: var(--p-ritmo-cartao);
   min-height: 100vh;
   padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo) var(--p-ritmo-bloco);
-  background: var(--p-cor-fundo-anfitriao);
+  background: var(--p-cor-fundo);
 }
 
 .layout-publico__cabecalho {
@@ -64,7 +64,8 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
   line-height: var(--p-fonte-entrelinha-corpo);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-folha);
+  border-radius: var(--p-raio-cartao-amplo);
+  box-shadow: var(--p-sombra-cartao);
 }
 
 .layout-publico__folha :deep(h1) {
@@ -74,7 +75,11 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
 
 .layout-publico__folha :deep(.p-button) {
   width: 100%;
-  min-height: var(--p-dimensao-alvo-toque-movel);
+  min-height: var(--p-dimensao-altura-botao);
+}
+
+.layout-publico__cabecalho {
+  --marca-tamanho-simbolo: 2.25rem;
 }
 
 .layout-publico__rodape {

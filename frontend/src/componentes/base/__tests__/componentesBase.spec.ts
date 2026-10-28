@@ -250,13 +250,18 @@ describe('BadgeStatus', () => {
 })
 
 describe('MarcaProduto', () => {
-  it('[COMPONENTE] exibe a marca textual Celebri, sem imagem, enquanto o logotipo oficial não chega', () => {
+  it('[COMPONENTE] exibe o símbolo provisório em SVG inline decorativo e o logotipo com o nome Celebri, sem imagem externa', () => {
     const wrapper = mount(MarcaProduto)
 
     expect(wrapper.get('.marca__nome').text()).toBe('Celebri')
     expect(wrapper.find('img').exists()).toBe(false)
-    expect(wrapper.find('svg').exists()).toBe(false)
-    expect(wrapper.classes()).toContain('marca--escuro')
+    const simbolo = wrapper.get('svg.marca__simbolo')
+    expect(simbolo.attributes('aria-hidden')).toBe('true')
+    expect(simbolo.attributes('viewBox')).toBe('0 0 48 48')
+    expect(simbolo.find('.marca__arco').exists()).toBe(true)
+    expect(simbolo.find('.marca__centelha').exists()).toBe(true)
+    expect(wrapper.html()).not.toMatch(/href=|<script/i)
+    expect(wrapper.classes()).toEqual(expect.arrayContaining(['marca--escuro', 'marca--fundo-claro']))
     expect(wrapper.classes()).not.toContain('marca--destaque')
   })
 
@@ -264,18 +269,17 @@ describe('MarcaProduto', () => {
     const wrapper = mount(MarcaProduto, { props: { somenteSimbolo: true, tom: 'claro' } })
 
     expect(wrapper.find('.marca__nome').exists()).toBe(false)
-    expect(wrapper.get('.marca__simbolo').text()).toBe('C')
     expect(wrapper.get('.marca__simbolo').attributes('aria-hidden')).toBe('true')
     expect(wrapper.get('.somente-leitor-tela').text()).toBe('Celebri')
     expect(wrapper.classes()).toContain('marca--claro')
   })
 
-  it('[COMPONENTE] usa a inicial do nome recebido como símbolo e aplica o destaque', () => {
-    const simbolo = mount(MarcaProduto, { props: { somenteSimbolo: true, nome: '  evento' } })
-    expect(simbolo.get('.marca__simbolo').text()).toBe('E')
+  it('[COMPONENTE] usa o nome recebido como nome acessível, aplica o destaque e a variante sobre fundo escuro', () => {
+    const simbolo = mount(MarcaProduto, { props: { somenteSimbolo: true, nome: 'Evento' } })
+    expect(simbolo.get('.somente-leitor-tela').text()).toBe('Evento')
 
-    const destaque = mount(MarcaProduto, { props: { destaque: true } })
-    expect(destaque.classes()).toContain('marca--destaque')
+    const destaque = mount(MarcaProduto, { props: { destaque: true, fundo: 'escuro' } })
+    expect(destaque.classes()).toEqual(expect.arrayContaining(['marca--destaque', 'marca--fundo-escuro']))
     expect(destaque.get('.marca__nome').text()).toBe('Celebri')
   })
 })

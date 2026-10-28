@@ -113,6 +113,16 @@ const iniciais = computed(() =>
   background: var(--p-cor-superficie-sutil);
 }
 
+.resumo-usuario--rail .resumo-usuario__avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: var(--p-fonte-tamanho-controle);
+  font-weight: var(--p-fonte-peso-negrito);
+  color: var(--p-cor-lateral-escura-texto);
+  background: var(--p-cor-rail-avatar);
+  border: 0;
+}
+
 .resumo-usuario--rail .resumo-usuario__sair {
   width: var(--p-dimensao-alvo-toque);
 }

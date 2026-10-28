@@ -1,5 +1,6 @@
 import type { RouteLocationRaw } from 'vue-router'
 import type { NomeIcone } from '@/design/icones'
+import type { TomCelebracao } from '@/design/tokens'
 
 export type VarianteStatus = 'neutro' | 'sucesso' | 'alerta' | 'erro' | 'informacao'
 
@@ -140,4 +141,11 @@ export interface AbaSecao {
   chave: string
   rotulo: string
   rota: RouteLocationRaw
+}
+
+export interface OpcaoFiltroPilula<Valor extends string> {
+  valor: Valor
+  rotulo: string
+  tom?: TomCelebracao
+  contagem?: number
 }

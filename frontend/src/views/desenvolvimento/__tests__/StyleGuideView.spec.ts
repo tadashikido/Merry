@@ -125,6 +125,32 @@ describe('StyleGuideView', () => {
     expect(wrapper.get('.guia__indice').text()).toContain('Evento')
   })
 
+  it('[COMPONENTE] documenta o DS v2: tons por tipo com tinta profunda, etiquetas, fases, botões, filtros, busca e superfícies', async () => {
+    const secao = wrapper.get('#ds-v2')
+    expect(secao.findAll('.guia__tom').map((tom) => tom.attributes('data-tom'))).toEqual(['rose', 'orquidea', 'tangerina', 'champanhe', 'jade', 'neutro'])
+    expect(secao.get('[data-tom="rose"]').text()).toContain('profunda #3A1512')
+    expect(secao.get('[data-tom="rose"]').text()).toContain('data #7A3530')
+    expect(secao.get('[data-tom="jade"]').text()).toContain('profunda #0F332D')
+    expect(secao.findAll('.guia__linha [data-teste="etiqueta-tipo"]').map((etiqueta) => etiqueta.text())).toEqual([
+      'Casamento',
+      '15 anos',
+      'Aniversário',
+      'Comemoração',
+      'Formatura',
+      'Evento',
+    ])
+    expect(secao.findAll('[data-teste="tile-tipo"]').map((tile) => tile.attributes('data-tom'))).toEqual(['rose', 'orquidea', 'tangerina', 'champanhe', 'jade', 'neutro', 'rose'])
+    expect(secao.findAll('[data-teste="etiqueta-fase"]').map((fase) => fase.text())).toEqual(['Planejamento', 'Reta final', 'Realizado', 'Atrasado'])
+    expect(secao.find('.botao-destaque').exists()).toBe(true)
+    expect(secao.find('.botao-acao-linha').exists()).toBe(true)
+    expect(secao.find('[data-teste="filtro-pilulas"]').exists()).toBe(true)
+    expect(secao.find('[data-teste="campo-busca"]').exists()).toBe(true)
+    expect(secao.find('[data-teste="estado-vazio"]').exists()).toBe(true)
+    expect(secao.find('[data-teste="lateral-destaque"]').exists()).toBe(true)
+    expect(secao.get('[data-teste="navegacao-evento-cabecalho"]').classes()).toContain('tom-tipo--orquidea')
+    expect(wrapper.get('.guia__indice').text()).toContain('Design system v2')
+  })
+
   it('[COMPONENTE] lista todas as combinações de contraste aprovadas', async () => {
     const secao = wrapper.get('#cores')
     expect(secao.findAll('tbody tr')).toHaveLength(PARES_CONTRASTE.length)
@@ -132,7 +158,7 @@ describe('StyleGuideView', () => {
   })
 
   it('[COMPONENTE] documenta marca, iconografia, os 8 estados, o workspace e os dois contextos do Celebri', async () => {
-    expect(wrapper.get('#marca').findAll('[data-teste="marca-produto"]')).toHaveLength(4)
+    expect(wrapper.get('#marca').findAll('[data-teste="marca-produto"]')).toHaveLength(6)
     expect(wrapper.get('#marca').get('.guia__logo-principal').text()).toBe('Celebri')
     expect(wrapper.get('#marca').find('img').exists()).toBe(false)
     expect(wrapper.get('[data-teste="guia-icones"]').findAll('li')).toHaveLength(NOMES_ICONES.length)
@@ -166,7 +192,7 @@ describe('StyleGuideView', () => {
     const regras = wrapper.get('#regras').text()
     expect(regras).toContain('Padrão novo exige evoluir o style guide antes de usar numa tela')
     expect(regras).toContain('frontend-design:frontend-design')
-    expect(regras).toContain('O design system Celebri é a referência oficial do front')
+    expect(regras).toContain('O design system Celebri v2 é a referência oficial do front')
     expect(regras).toContain('Espaço só pelo ritmo')
     expect(regras).toContain('“Desfazer” só aparece quando existe operação inversa real')
   })

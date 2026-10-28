@@ -102,7 +102,7 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
 .cabecalho-pagina {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-3);
+  gap: var(--p-ritmo-grupo);
   margin-bottom: var(--p-espaco-7);
   container: cabecalho-pagina / inline-size;
 }
@@ -135,19 +135,21 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
 .cabecalho-pagina__textos {
   display: flex;
   flex-direction: column;
-  gap: var(--p-espaco-2);
+  gap: 0.625rem;
   min-width: 0;
 }
 
 .cabecalho-pagina .cabecalho-pagina__titulo {
   font-size: var(--p-fonte-tamanho-pagina-celular);
-  line-height: var(--p-fonte-entrelinha-titulo);
+  font-weight: var(--p-fonte-peso-regular);
+  line-height: var(--p-fonte-entrelinha-display);
+  letter-spacing: var(--p-fonte-espacamento-letras-display);
   overflow-wrap: anywhere;
 }
 
 .cabecalho-pagina__descricao {
   max-width: var(--p-dimensao-largura-leitura);
-  color: var(--p-cor-texto-secundario);
+  color: var(--p-cor-texto-apoio);
   overflow-wrap: anywhere;
 }
 

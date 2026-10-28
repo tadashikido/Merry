@@ -1,0 +1,105 @@
+.tom-tipo--rose {
+  --tom-viva: var(--p-cor-tom-rose-viva);
+  --tom-fundo: var(--p-cor-tom-rose-fundo);
+  --tom-tinta: var(--p-cor-tom-rose-tinta);
+  --tom-profunda: var(--p-cor-tom-rose-tinta-profunda);
+  --tom-data: var(--p-cor-tom-rose-data);
+}
+
+.tom-tipo--orquidea {
+  --tom-viva: var(--p-cor-tom-orquidea-viva);
+  --tom-fundo: var(--p-cor-tom-orquidea-fundo);
+  --tom-tinta: var(--p-cor-tom-orquidea-tinta);
+  --tom-profunda: var(--p-cor-tom-orquidea-tinta-profunda);
+  --tom-data: var(--p-cor-tom-orquidea-data);
+}
+
+.tom-tipo--tangerina {
+  --tom-viva: var(--p-cor-tom-tangerina-viva);
+  --tom-fundo: var(--p-cor-tom-tangerina-fundo);
+  --tom-tinta: var(--p-cor-tom-tangerina-tinta);
+  --tom-profunda: var(--p-cor-tom-tangerina-tinta-profunda);
+  --tom-data: var(--p-cor-tom-tangerina-data);
+}
+
+.tom-tipo--champanhe {
+  --tom-viva: var(--p-cor-tom-champanhe-viva);
+  --tom-fundo: var(--p-cor-tom-champanhe-fundo);
+  --tom-tinta: var(--p-cor-tom-champanhe-tinta);
+  --tom-profunda: var(--p-cor-tom-champanhe-tinta-profunda);
+  --tom-data: var(--p-cor-tom-champanhe-data);
+}
+
+.tom-tipo--jade {
+  --tom-viva: var(--p-cor-tom-jade-viva);
+  --tom-fundo: var(--p-cor-tom-jade-fundo);
+  --tom-tinta: var(--p-cor-tom-jade-tinta);
+  --tom-profunda: var(--p-cor-tom-jade-tinta-profunda);
+  --tom-data: var(--p-cor-tom-jade-data);
+}
+
+.tom-tipo--neutro {
+  --tom-viva: var(--p-cor-tom-neutro-viva);
+  --tom-fundo: var(--p-cor-tom-neutro-fundo);
+  --tom-tinta: var(--p-cor-tom-neutro-tinta);
+  --tom-profunda: var(--p-cor-tom-neutro-tinta-profunda);
+  --tom-data: var(--p-cor-tom-neutro-data);
+}
+
+.fase--planejamento {
+  --fase-ponto: var(--p-cor-fase-planejamento-ponto);
+  --fase-texto: var(--p-cor-fase-planejamento-texto);
+  --fase-fundo: var(--p-cor-fase-planejamento-fundo);
+}
+
+.fase--reta-final {
+  --fase-ponto: var(--p-cor-fase-reta-final-ponto);
+  --fase-texto: var(--p-cor-fase-reta-final-texto);
+  --fase-fundo: var(--p-cor-fase-reta-final-fundo);
+}
+
+.fase--realizado {
+  --fase-ponto: var(--p-cor-fase-realizado-ponto);
+  --fase-texto: var(--p-cor-fase-realizado-texto);
+  --fase-fundo: var(--p-cor-fase-realizado-fundo);
+}
+
+.fase--atrasado {
+  --fase-ponto: var(--p-cor-fase-atrasado-ponto);
+  --fase-texto: var(--p-cor-fase-atrasado-texto);
+  --fase-fundo: var(--p-cor-fase-atrasado-fundo);
+}
+
+body .p-button.botao-destaque {
+  color: var(--p-cor-destaque-texto);
+  background: var(--p-cor-destaque);
+  border-color: var(--p-cor-destaque);
+}
+
+body .p-button.botao-destaque:not(:disabled):hover {
+  color: var(--p-cor-destaque-texto);
+  background: var(--p-cor-tom-champanhe-viva);
+  border-color: var(--p-cor-tom-champanhe-viva);
+}
+
+body .p-button.botao-destaque .p-button-icon {
+  color: var(--p-cor-centelha-clara);
+}
+
+body .p-button.botao-acao-linha {
+  min-height: var(--p-dimensao-altura-acao-linha);
+  padding-block: 0;
+  color: var(--p-cor-titulo);
+  background: var(--p-cor-primaria-suave);
+  border-color: var(--p-cor-primaria-suave);
+}
+
+body .p-button.botao-acao-linha:not(:disabled):hover {
+  color: var(--p-cor-titulo);
+  background: var(--p-cor-acento-claro);
+  border-color: var(--p-cor-acento-claro);
+}
+
+body .p-button:not(.p-button-icon-only):not(.p-button-sm):not(.p-button-link):not(.botao-acao-linha) {
+  min-height: var(--p-dimensao-altura-botao);
+}

@@ -1,7 +1,7 @@
 import { definePreset } from '@primeuix/themes'
 import Aura from '@primeuix/themes/aura'
 
-import { camadas, cores, dimensoes, duracao, espacamento, paletas, raio, ritmo, sombra, tipografia } from './tokens'
+import { camadas, cores, dimensoes, duracao, espacamento, fases, paletas, raio, ritmo, sombra, tipografia, tonsCelebracao } from './tokens'
 
 const toastEscuro = {
   background: cores.toast,
@@ -10,7 +10,7 @@ const toastEscuro = {
   detailColor: cores.toastTexto,
   shadow: sombra.sobreposicao,
   closeButton: {
-    hoverBackground: paletas.marinho[700],
+    hoverBackground: paletas.meiaNoite[700],
     focusRing: { color: cores.toastAcao, shadow: 'none' },
   },
 }
@@ -31,11 +31,11 @@ export const presetTema = definePreset(Aura, {
     amber: paletas.alerta,
     yellow: paletas.alerta,
     red: paletas.erro,
-    sky: paletas.informacao,
-    blue: paletas.informacao,
+    sky: paletas.meiaNoite,
+    blue: paletas.meiaNoite,
   },
   semantic: {
-    primary: paletas.marinho,
+    primary: paletas.meiaNoite,
     transitionDuration: duracao.padrao,
     focusRing: {
       width: '2px',
@@ -46,8 +46,8 @@ export const presetTema = definePreset(Aura, {
     },
     formField: {
       borderRadius: raio.campo,
-      paddingX: espacamento[3],
-      paddingY: '0.5625rem',
+      paddingX: espacamento[4],
+      paddingY: '0.6875rem',
     },
     content: {
       borderRadius: raio.painel,
@@ -62,7 +62,7 @@ export const presetTema = definePreset(Aura, {
     },
     colorScheme: {
       light: {
-        surface: paletas.cinza,
+        surface: paletas.neutro,
         primary: {
           color: '{primary.800}',
           contrastColor: cores.superficie,
@@ -99,7 +99,7 @@ export const presetTema = definePreset(Aura, {
           filledHoverBackground: '{surface.50}',
           filledFocusBackground: '{surface.50}',
           borderColor: cores.bordaCampo,
-          hoverBorderColor: '{surface.700}',
+          hoverBorderColor: '{surface.600}',
           focusBorderColor: '{primary.800}',
           invalidBorderColor: '{red.600}',
           color: cores.texto,
@@ -119,11 +119,12 @@ export const presetTema = definePreset(Aura, {
   components: {
     button: {
       root: {
-        paddingX: espacamento[4],
-        paddingY: '0.5625rem',
-        gap: espacamento[2],
+        paddingX: '1.375rem',
+        paddingY: '0.8125rem',
+        gap: '0.625rem',
         borderRadius: raio.controle,
-        label: { fontWeight: String(tipografia.pesos.medio) },
+        label: { fontWeight: String(tipografia.pesos.seminegrito) },
+        sm: { fontSize: tipografia.tamanhos.controle, paddingX: espacamento[4], paddingY: '0.5625rem' },
       },
       colorScheme: {
         light: {
@@ -131,8 +132,8 @@ export const presetTema = definePreset(Aura, {
             secondary: {
               hoverBackground: '{surface.100}',
               activeBackground: '{surface.200}',
-              borderColor: cores.bordaCampo,
-              color: cores.texto,
+              borderColor: cores.bordaControle,
+              color: cores.titulo,
             },
             primary: {
               hoverBackground: '{primary.50}',
@@ -140,6 +141,11 @@ export const presetTema = definePreset(Aura, {
               borderColor: '{primary.800}',
               color: '{primary.800}',
             },
+          },
+          link: {
+            color: cores.acentoTexto,
+            hoverColor: cores.primaria,
+            activeColor: cores.primariaEscura,
           },
           text: {
             primary: {
@@ -158,28 +164,32 @@ export const presetTema = definePreset(Aura, {
     },
     tag: {
       root: {
-        fontSize: tipografia.tamanhos.rotulo,
-        fontWeight: String(tipografia.pesos.medio),
-        padding: `0.1875rem ${espacamento[3]}`,
+        fontSize: tipografia.tamanhos.apoio,
+        fontWeight: String(tipografia.pesos.seminegrito),
+        padding: `0.375rem ${espacamento[3]}`,
         gap: '0.375rem',
         borderRadius: raio.total,
       },
       colorScheme: {
         light: {
           secondary: { background: '{surface.200}', color: '{surface.700}' },
-          primary: { background: '{primary.100}', color: '{primary.800}' },
+          primary: { background: '{primary.100}', color: '{primary.600}' },
+          success: { background: fases.realizado.fundo, color: fases.realizado.texto },
+          warn: { background: fases.retaFinal.fundo, color: fases.retaFinal.texto },
+          danger: { background: fases.atrasado.fundo, color: fases.atrasado.texto },
+          info: { background: fases.planejamento.fundo, color: fases.planejamento.texto },
         },
       },
     },
     togglebutton: {
       root: {
-        padding: '0.1875rem',
-        borderRadius: '8px',
+        padding: '0.25rem',
+        borderRadius: raio.trilhoAbas,
         fontWeight: String(tipografia.pesos.medio),
       },
       content: {
-        padding: `0.3125rem ${espacamento[4]}`,
-        borderRadius: raio.controle,
+        padding: `0.5rem 1.125rem`,
+        borderRadius: raio.aba,
         checkedShadow: sombra.suave,
       },
       colorScheme: {
@@ -189,13 +199,13 @@ export const presetTema = definePreset(Aura, {
             checkedBackground: '{surface.200}',
             hoverBackground: '{surface.200}',
             borderColor: '{surface.200}',
-            color: '{surface.700}',
-            hoverColor: cores.texto,
-            checkedColor: cores.texto,
+            color: cores.textoApoio,
+            hoverColor: cores.titulo,
+            checkedColor: cores.titulo,
             checkedBorderColor: '{surface.200}',
           },
           content: { checkedBackground: '{surface.0}' },
-          icon: { color: '{surface.700}', hoverColor: cores.texto, checkedColor: cores.texto },
+          icon: { color: cores.textoApoio, hoverColor: cores.titulo, checkedColor: cores.titulo },
         },
       },
     },
@@ -211,9 +221,9 @@ export const presetTema = definePreset(Aura, {
     datatable: {
       headerCell: {
         padding: `${espacamento[3]} ${espacamento[5]}`,
-        background: '{surface.50}',
+        background: cores.superficieSutil,
         borderColor: cores.divisoria,
-        color: '{surface.600}',
+        color: cores.textoApoio,
       },
       bodyCell: {
         padding: `${espacamento[3]} ${espacamento[5]}`,
@@ -258,6 +268,7 @@ export const presetTema = definePreset(Aura, {
       },
     },
     dialog: {
+      root: { borderRadius: raio.painel },
       title: {
         fontSize: tipografia.tamanhos.secao,
         fontWeight: String(tipografia.pesos.regular),
@@ -273,6 +284,23 @@ export const presetTema = definePreset(Aura, {
   },
   extend: {
     cor: {
+      rail: cores.rail,
+      railIcone: cores.railIcone,
+      railAtivo: cores.railAtivo,
+      railAtivoIcone: cores.railAtivoIcone,
+      railAvatar: cores.railAvatar,
+      centelha: cores.centelha,
+      centelhaClara: cores.centelhaClara,
+      centelhaTexto: cores.centelhaTexto,
+      destaque: cores.destaque,
+      destaqueTexto: cores.destaqueTexto,
+      lateralEscura: cores.lateralEscura,
+      lateralEscuraTexto: cores.lateralEscuraTexto,
+      lateralEscuraApoio: cores.lateralEscuraApoio,
+      titulo: cores.titulo,
+      bordaSuave: cores.bordaSuave,
+      tom: tonsCelebracao,
+      fase: fases,
       navegacao: cores.navegacao,
       navegacaoTexto: cores.navegacaoTexto,
       navegacaoAtivo: cores.navegacaoAtivo,

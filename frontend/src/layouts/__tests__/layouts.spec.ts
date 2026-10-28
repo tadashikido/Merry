@@ -196,6 +196,51 @@ describe('NavegacaoEvento', () => {
     expect(wrapper.findAll('[data-teste="item-evento"]')).toHaveLength(11)
   })
 
+  it.each([
+    ['Casamento', 'tom-tipo--rose', 'Casamento'],
+    ['QuinzeAnos', 'tom-tipo--orquidea', '15 anos'],
+    ['Aniversario', 'tom-tipo--tangerina', 'Aniversário'],
+    ['Comemoracao', 'tom-tipo--champanhe', 'Comemoração'],
+  ] as const)('[COMPONENTE] o cartão do evento %s usa o tom do tipo e mostra a etiqueta do tipo', async (tipo, classe, rotulo) => {
+    const roteador = criarRoteador()
+    const wrapper = mount(NavegacaoEvento, {
+      props: { evento: { ...evento, tipo }, grupos: [] },
+      global: { plugins: [roteador] },
+    })
+
+    const cabecalho = wrapper.get('[data-teste="navegacao-evento-cabecalho"]')
+    expect(cabecalho.classes()).toContain(classe)
+    expect(cabecalho.get('[data-teste="etiqueta-tipo"]').text()).toBe(rotulo)
+    expect(cabecalho.find('[data-teste="nomes-anfitrioes"]').exists()).toBe(true)
+  })
+
+  it.each([null, undefined, 'Formatura'])('[COMPONENTE] tipo %s cai no neutro meia-noite, nunca no rosé de Casamento', async (tipo) => {
+    const roteador = criarRoteador()
+    const wrapper = mount(NavegacaoEvento, {
+      props: { evento: { ...evento, tipo: tipo as ContextoEvento['tipo'] }, grupos: [] },
+      global: { plugins: [roteador] },
+    })
+
+    const cabecalho = wrapper.get('[data-teste="navegacao-evento-cabecalho"]')
+    expect(cabecalho.classes()).toContain('tom-tipo--neutro')
+    expect(cabecalho.classes()).not.toContain('tom-tipo--rose')
+    expect(cabecalho.find('[data-teste="etiqueta-tipo"]').exists()).toBe(false)
+    expect(cabecalho.text()).toContain('Evento')
+  })
+
+  it('[COMPONENTE] marca o Grande Dia com a centelha decorativa e mantém aria-current no item ativo', async () => {
+    const roteador = criarRoteador()
+    await roteador.push(`/eventos/${ID}`)
+    const wrapper = mount(NavegacaoEvento, {
+      props: { evento, grupos: gruposNavegacaoEvento(ID, 'evento', () => true) },
+      global: { plugins: [roteador] },
+    })
+
+    const grandeDia = wrapper.get('.navegacao-evento__item--grande-dia')
+    expect(grandeDia.get('.ie-centelha').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.findAll('[aria-current="page"]')).toHaveLength(1)
+  })
+
   it('[COMPONENTE] descreve o dia do evento e datas passadas sem recalcular os dias', async () => {
     const roteador = criarRoteador()
     const hoje = mount(NavegacaoEvento, {

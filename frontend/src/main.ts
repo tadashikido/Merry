@@ -14,6 +14,7 @@ import './estilos/fontes.css'
 import './estilos/icones.css'
 import './estilos/base.css'
 import './estilos/layout.css'
+import './estilos/componentes.css'
 
 const aplicacao = createApp(App)
 

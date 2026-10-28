@@ -78,6 +78,7 @@ watch(telaPequena, (pequena) => {
       <MarcaProduto
         class="layout-painel__marca"
         somente-simbolo
+        fundo="escuro"
       />
       <RailNavegacao :itens="itensRail" />
       <div
@@ -227,18 +228,31 @@ watch(telaPequena, (pequena) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--p-espaco-5);
+  gap: var(--p-espaco-6);
   height: 100vh;
-  padding: var(--p-espaco-4) 0;
-  background: var(--p-cor-navegacao);
-  border-right: 1px solid var(--p-cor-borda);
+  padding: var(--p-espaco-6) 0;
+  color: var(--p-cor-lateral-escura-texto);
+  background: var(--p-cor-rail);
 }
 
 .layout-painel__marca {
-  padding: var(--p-espaco-1) 0 var(--p-espaco-2);
+  --marca-tamanho-simbolo: 2.125rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--p-dimensao-alvo-toque);
+  height: var(--p-dimensao-alvo-toque);
 }
 
 .layout-painel__rodape-rail {
+  --p-cor-navegacao-texto: var(--p-cor-rail-icone);
+  --p-cor-navegacao-ativo: var(--p-cor-lateral-escura-texto);
+  --p-cor-superficie-sutil: var(--p-cor-lateral-escura);
+  --p-cor-texto: var(--p-cor-lateral-escura-texto);
+  --p-cor-texto-apoio: var(--p-cor-rail-icone);
+  --p-focus-ring-color: var(--p-cor-centelha);
+
   margin-top: auto;
 }
 
@@ -246,7 +260,7 @@ watch(telaPequena, (pequena) => {
   position: sticky;
   top: 0;
   height: 100vh;
-  padding: var(--p-ritmo-cartao) var(--p-espaco-3);
+  padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo) var(--p-espaco-8);
   overflow-y: auto;
   background: var(--p-cor-superficie);
   border-right: 1px solid var(--p-cor-borda);

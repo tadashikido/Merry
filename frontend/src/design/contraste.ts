@@ -1,4 +1,4 @@
-import { cores, paletas } from './tokens'
+import { cores, fases, paletas, tonsCelebracao, type FaseEvento, type TomCelebracao } from './tokens'
 
 export type NivelContraste = 'texto' | 'textoGrande' | 'componente'
 
@@ -60,14 +60,29 @@ export const PARES_CONTRASTE: ParContraste[] = [
   { descricao: 'Botão destrutivo', frente: cores.superficie, fundo: cores.erro, nivel: 'texto' },
   { descricao: 'Link sobre superfície', frente: cores.primaria, fundo: cores.superficie, nivel: 'texto' },
   { descricao: 'Link sobre fundo', frente: cores.primaria, fundo: cores.fundo, nivel: 'texto' },
-  { descricao: 'Rail: ícone inativo', frente: cores.navegacaoTexto, fundo: cores.navegacao, nivel: 'texto' },
-  { descricao: 'Rail: ícone ativo', frente: cores.navegacaoAtivo, fundo: cores.navegacao, nivel: 'texto' },
-  { descricao: 'Badge neutro', frente: paletas.cinza[700], fundo: paletas.cinza[200], nivel: 'texto' },
+  { descricao: 'Rail: ícone inativo', frente: cores.railIcone, fundo: cores.rail, nivel: 'texto' },
+  { descricao: 'Rail: ícone ativo sobre centelha', frente: cores.railAtivoIcone, fundo: cores.railAtivo, nivel: 'texto' },
+  { descricao: 'Rail: centelha ativa sobre o rail', frente: cores.railAtivo, fundo: cores.rail, nivel: 'componente' },
+  { descricao: 'Rail: inicial do usuário', frente: cores.lateralEscuraTexto, fundo: cores.railAvatar, nivel: 'texto' },
+  { descricao: 'Gaveta: item inativo', frente: cores.navegacaoTexto, fundo: cores.navegacao, nivel: 'texto' },
+  { descricao: 'Gaveta: item ativo', frente: cores.navegacaoAtivo, fundo: cores.primariaSuave, nivel: 'texto' },
+  { descricao: 'Título meia-noite sobre névoa', frente: cores.titulo, fundo: cores.fundo, nivel: 'texto' },
+  { descricao: 'Título meia-noite sobre superfície', frente: cores.titulo, fundo: cores.superficie, nivel: 'texto' },
+  { descricao: 'Botão destaque', frente: cores.destaqueTexto, fundo: cores.destaque, nivel: 'texto' },
+  { descricao: 'Botão de ação de linha', frente: cores.titulo, fundo: cores.primariaSuave, nivel: 'texto' },
+  { descricao: 'Aba segmentada inativa sobre o trilho', frente: cores.textoApoio, fundo: cores.trilho, nivel: 'texto' },
+  { descricao: 'Lateral escura: texto', frente: cores.lateralEscuraTexto, fundo: cores.lateralEscura, nivel: 'texto' },
+  { descricao: 'Lateral escura: apoio', frente: cores.lateralEscuraApoio, fundo: cores.lateralEscura, nivel: 'texto' },
+  { descricao: 'Lateral escura: rótulo em centelha', frente: cores.centelha, fundo: cores.lateralEscura, nivel: 'texto' },
+  { descricao: '“&” em centelha texto sobre superfície (≥ 24 px)', frente: cores.centelhaTexto, fundo: cores.superficie, nivel: 'textoGrande' },
+  { descricao: '“&” em centelha texto sobre névoa (≥ 24 px)', frente: cores.centelhaTexto, fundo: cores.fundo, nivel: 'textoGrande' },
+  { descricao: 'Filtro em pílula ativo', frente: cores.superficie, fundo: cores.primaria, nivel: 'texto' },
+  { descricao: 'Badge neutro', frente: paletas.neutro[700], fundo: paletas.neutro[200], nivel: 'texto' },
   { descricao: 'Badge de sucesso', frente: paletas.sucesso[700], fundo: paletas.sucesso[100], nivel: 'texto' },
   { descricao: 'Badge de alerta', frente: paletas.alerta[700], fundo: paletas.alerta[100], nivel: 'texto' },
   { descricao: 'Badge de erro', frente: paletas.erro[700], fundo: paletas.erro[100], nivel: 'texto' },
-  { descricao: 'Badge informativo', frente: paletas.informacao[700], fundo: paletas.informacao[100], nivel: 'texto' },
-  { descricao: 'Badge primário', frente: paletas.marinho[800], fundo: paletas.marinho[100], nivel: 'texto' },
+  { descricao: 'Badge informativo', frente: paletas.meiaNoite[600], fundo: paletas.meiaNoite[100], nivel: 'texto' },
+  { descricao: 'Badge primário', frente: paletas.meiaNoite[600], fundo: paletas.meiaNoite[100], nivel: 'texto' },
   { descricao: 'Toast: mensagem', frente: cores.toastTexto, fundo: cores.toast, nivel: 'texto' },
   { descricao: 'Toast: detalhe', frente: cores.toastApoio, fundo: cores.toast, nivel: 'texto' },
   { descricao: 'Toast: ação Desfazer', frente: cores.toastAcao, fundo: cores.toast, nivel: 'texto' },
@@ -133,4 +148,25 @@ export const PARES_CONTRASTE: ParContraste[] = [
   { descricao: 'Grande Dia: ação principal sobre fundo', frente: cores.operacaoAcao, fundo: cores.operacaoFundo, nivel: 'componente' },
   { descricao: 'Grande Dia: relógio sobre superfície', frente: cores.operacaoTexto, fundo: cores.operacaoSuperficie, nivel: 'textoGrande' },
   { descricao: 'Grande Dia: anel de foco sobre o cartão Agora', frente: cores.acentoTexto, fundo: cores.operacaoCartao, nivel: 'componente' },
+  ...paresDosTons(),
+  ...paresDasFases(),
 ]
+
+function paresDosTons(): ParContraste[] {
+  return (Object.keys(tonsCelebracao) as TomCelebracao[]).flatMap((tom) => {
+    const cor = tonsCelebracao[tom]
+    return [
+      { descricao: `Tom ${tom}: tinta sobre fundo`, frente: cor.tinta, fundo: cor.fundo, nivel: 'texto' as const },
+      { descricao: `Tom ${tom}: nome em tinta profunda sobre fundo`, frente: cor.tintaProfunda, fundo: cor.fundo, nivel: 'texto' as const },
+      { descricao: `Tom ${tom}: data sobre fundo`, frente: cor.data, fundo: cor.fundo, nivel: 'texto' as const },
+      { descricao: `Tom ${tom}: título meia-noite sobre fundo`, frente: cores.titulo, fundo: cor.fundo, nivel: 'texto' as const },
+    ]
+  })
+}
+
+function paresDasFases(): ParContraste[] {
+  return (Object.keys(fases) as FaseEvento[]).flatMap((fase) => [
+    { descricao: `Fase ${fase}: rótulo sobre fundo`, frente: fases[fase].texto, fundo: fases[fase].fundo, nivel: 'texto' as const },
+    { descricao: `Fase ${fase}: ponto sobre fundo`, frente: fases[fase].ponto, fundo: fases[fase].fundo, nivel: 'componente' as const },
+  ])
+}

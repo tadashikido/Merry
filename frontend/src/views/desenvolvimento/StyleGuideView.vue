@@ -31,6 +31,15 @@ import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
 import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
+import EtiquetaFase from '@/componentes/base/EtiquetaFase.vue'
+import TileTipo from '@/componentes/base/TileTipo.vue'
+import FiltroPilulas from '@/componentes/base/FiltroPilulas.vue'
+import CampoBusca from '@/componentes/base/CampoBusca.vue'
+import LateralDestaque from '@/componentes/base/LateralDestaque.vue'
+import type { OpcaoFiltroPilula } from '@/componentes/base/tipos'
+import { TOM_DO_TIPO } from '@/textos/tiposEvento'
+import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import CampoSenha from '@/componentes/base/CampoSenha.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import IndicadorAbertura from '@/componentes/base/IndicadorAbertura.vue'
@@ -94,7 +103,7 @@ import { useNotificacao } from '@/composables/useNotificacao'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useFormulario } from '@/composables/useFormulario'
 import { MINIMO_CONTRASTE, PARES_CONTRASTE, atendeContraste, razaoContraste } from '@/design/contraste'
-import { breakpoints, cores, coresMarca, espacamento, raio, ritmo, sombra, tipografia } from '@/design/tokens'
+import { breakpoints, centelha, cores, coresMarca, espacamento, fases, paletas, raio, ritmo, sombra, tipografia, tonsCelebracao, type FaseEvento, type TomCelebracao } from '@/design/tokens'
 import { MENSAGENS_PADRAO } from '@/textos/mensagens'
 import { NOME_PRODUTO, ROTULOS_ACOES } from '@/textos/rotulos'
 import { MENSAGENS_AUTENTICACAO, ROTULOS_CAMPOS_AUTENTICACAO, TEXTOS_ENTRAR } from '@/textos/autenticacao'
@@ -251,6 +260,7 @@ function mostrarToastComDesfazer() {
 
 const secoes = [
   { id: 'marca', titulo: 'Marca' },
+  { id: 'ds-v2', titulo: 'Design system v2' },
   { id: 'cores', titulo: 'Cores e contraste' },
   { id: 'tipografia', titulo: 'Tipografia' },
   { id: 'espaco', titulo: 'Espaço, ritmo e raio' },
@@ -404,15 +414,30 @@ const itensPainelDemonstracao: ItemPainelGrandeDia[] = [
 ]
 
 const nomesCores: Record<keyof typeof cores, string> = {
+  rail: 'Rail · meia-noite 900',
+  railIcone: 'Rail · ícone inativo',
+  railAtivo: 'Rail · item ativo (centelha)',
+  railAtivoIcone: 'Rail · ícone ativo',
+  railAvatar: 'Rail · inicial do usuário',
+  centelha: 'Centelha sobre escuro',
+  centelhaClara: 'Centelha sobre claro (só ornamento)',
+  centelhaTexto: 'Centelha para “&” grande sobre claro',
+  destaque: 'Destaque · champanhe',
+  destaqueTexto: 'Destaque · texto',
+  lateralEscura: 'Lateral de destaque escura',
+  lateralEscuraTexto: 'Lateral escura · texto',
+  lateralEscuraApoio: 'Lateral escura · apoio',
+  titulo: 'Título · meia-noite 800',
+  bordaSuave: 'Borda tracejada do estado vazio',
   navegacao: 'Navegação',
   navegacaoTexto: 'Navegação · texto',
   navegacaoAtivo: 'Navegação · ativo',
   navegacaoSimbolo: 'Navegação · símbolo',
-  primaria: 'Primária · azul-marinho',
-  primariaEscura: 'Marinho profundo (hover de link)',
-  primariaSuave: 'Primária suave · seleção e item ativo',
-  acento: 'Acento · marinho claro (decorativo)',
-  acentoClaro: 'Marinho névoa (decorativo)',
+  primaria: 'Primária · meia-noite 800',
+  primariaEscura: 'Meia-noite 900 (hover)',
+  primariaSuave: 'Meia-noite 100 · seleção, item ativo e ação de linha',
+  acento: 'Meia-noite 300 (decorativo)',
+  acentoClaro: 'Meia-noite 200 · borda do botão secundário',
   acentoTexto: 'Acento para texto',
   acentoSuave: 'Acento suave',
   assistente: 'Fundo do assistente',
@@ -497,21 +522,68 @@ const paresContraste = PARES_CONTRASTE.map((par) => ({
 }))
 
 const amostrasTipografia = [
-  { nome: 'Display · Jost 64/68 leve', tamanho: tipografia.tamanhos.display, familia: 'display', texto: 'Ana & João' },
-  { nome: 'H1 · Jost 36/44 leve', tamanho: tipografia.tamanhos.pagina, familia: 'display', texto: 'O seu grande dia' },
-  { nome: 'H1 no celular · Jost 30 leve', tamanho: tipografia.tamanhos.paginaCelular, familia: 'display', texto: 'Convidados' },
-  { nome: 'Subtítulo H2 · Jost 22/30 médio', tamanho: tipografia.tamanhos.secao, familia: 'subtitulo', texto: 'Lista de convidados' },
-  { nome: 'Título de cartão · Jost 17 médio', tamanho: tipografia.tamanhos.titulo, familia: 'subtitulo', texto: 'Confirmar buffet para 460 pessoas' },
-  { nome: 'Tagline · Jost 14 caixa alta 0.3em', tamanho: tipografia.tamanhos.tagline, familia: 'tagline', texto: 'Planejem o seu grande dia juntos' },
-  { nome: 'Interface · Jost 16/26', tamanho: tipografia.tamanhos.corpo, familia: 'interface', texto: 'Os anfitriões aprovaram a decoração em 28/09.' },
-  { nome: 'Controle · Jost 14', tamanho: tipografia.tamanhos.controle, familia: 'interface', texto: 'Adicionar convidado' },
-  { nome: 'Rótulo · Jost 12 médio caixa alta 0.14em', tamanho: tipografia.tamanhos.rotulo, familia: 'rotulo', texto: 'Orçamento' },
-  { nome: 'Destaque · Cormorant Garamond 22/32', tamanho: tipografia.tamanhos.secao, familia: 'serif', texto: 'Eventos que conectam as pessoas que importam.' },
-  { nome: 'Corpo editorial · Cormorant Garamond 16/26', tamanho: tipografia.tamanhos.corpo, familia: 'serif', texto: 'Reúnam fornecedores, orçamento e convidados num só lugar.' },
-  { nome: 'Legenda · Cormorant Garamond 13 itálico', tamanho: tipografia.tamanhos.apoio, familia: 'legenda', texto: 'Mesa posta com flores brancas e velas' },
+  { nome: 'Display · Fraunces 56/1.05 −0.02em', tamanho: tipografia.tamanhos.display, familia: 'display', texto: 'Tadashi & Laís' },
+  { nome: 'Título de página · Fraunces 44/1.05', tamanho: tipografia.tamanhos.pagina, familia: 'display', texto: 'Tarefas' },
+  { nome: 'Título · Fraunces 36', tamanho: tipografia.tamanhos.tituloGrande, familia: 'display', texto: 'Modelos de checklist' },
+  { nome: 'H1 no celular · Fraunces 32', tamanho: tipografia.tamanhos.paginaCelular, familia: 'display', texto: 'Convidados' },
+  { nome: 'Seção · Fraunces 24', tamanho: tipografia.tamanhos.secao, familia: 'subtitulo', texto: 'Festas de 15 anos' },
+  { nome: 'Título de cartão · Fraunces 18', tamanho: tipografia.tamanhos.titulo, familia: 'subtitulo', texto: 'Checklist essencial' },
+  { nome: 'Apoio · Fraunces 18 itálico grafite', tamanho: tipografia.tamanhos.apoioEditorial, familia: 'legenda', texto: 'Na lista ao aplicar o checklist de cada evento.' },
+  { nome: 'Corpo · Plus Jakarta Sans 15/1.6', tamanho: tipografia.tamanhos.corpo, familia: 'interface', texto: 'Marcos de 12, 6 e 3 meses e 30 dias antes do evento. Edite à vontade.' },
+  { nome: 'Controle · Plus Jakarta Sans 14', tamanho: tipografia.tamanhos.controle, familia: 'interface', texto: 'Adicionar convidado' },
+  { nome: 'Rótulo · Plus Jakarta Sans 12 · 700 · 0.16em', tamanho: tipografia.tamanhos.rotulo, familia: 'rotulo', texto: 'Planejar · Pessoas · Execução' },
+  { nome: 'Destaque · Fraunces 24', tamanho: tipografia.tamanhos.secao, familia: 'serif', texto: 'Eventos que conectam as pessoas que importam.' },
 ]
 
 const amostrasMarca = Object.entries(coresMarca).map(([chave, valor]) => ({ chave, valor }))
+
+const nomesTons: Record<TomCelebracao, string> = {
+  rose: 'Casamento · Rosé',
+  orquidea: 'Festa de 15 anos · Orquídea',
+  tangerina: 'Aniversário · Tangerina',
+  champanhe: 'Comemoração · Champanhe',
+  jade: 'Formatura · Jade (só token)',
+  neutro: 'Tipo nulo ou desconhecido · Neutro',
+}
+
+const amostrasTons = (Object.keys(tonsCelebracao) as TomCelebracao[]).map((tom) => ({ tom, nome: nomesTons[tom], cores: tonsCelebracao[tom] }))
+
+const amostrasMeiaNoite = Object.entries(paletas.meiaNoite).map(([passo, valor]) => ({ chave: `meia-noite ${passo}`, valor }))
+const amostrasCentelha = Object.entries(centelha).map(([chave, valor]) => ({ chave: `centelha ${chave}`, valor }))
+const amostrasPaletaV2 = [...amostrasMeiaNoite, ...amostrasCentelha]
+
+const rotulosFases: Record<FaseEvento, string> = {
+  planejamento: 'Planejamento',
+  retaFinal: 'Reta final',
+  realizado: 'Realizado',
+  atrasado: 'Atrasado',
+}
+const listaFases = (Object.keys(fases) as FaseEvento[]).map((fase) => ({ fase, texto: rotulosFases[fase] }))
+
+type FiltroTipoDemonstracao = 'todos' | TipoEvento
+const rotulosFiltroTipo: Record<TipoEvento, string> = {
+  Casamento: 'Casamentos',
+  QuinzeAnos: '15 anos',
+  Aniversario: 'Aniversários',
+  Comemoracao: 'Comemorações',
+}
+const filtroTipoDemonstracao = ref<FiltroTipoDemonstracao>('todos')
+const opcoesFiltroTipo: OpcaoFiltroPilula<FiltroTipoDemonstracao>[] = [
+  { valor: 'todos', rotulo: 'Todos', contagem: 12 },
+  ...TIPOS_EVENTO.map((tipo, indice) => ({ valor: tipo, rotulo: rotulosFiltroTipo[tipo], tom: TOM_DO_TIPO[tipo], contagem: indice + 2 })),
+]
+const buscaDemonstracao = ref('')
+const abaSegmentadaDemonstracao = ref('Ativos')
+const opcoesAbaSegmentada = ['Ativos', 'Arquivados']
+
+const eventoNavegacaoQuinzeAnos: ContextoEvento = {
+  nomePrimeiraPessoa: 'Júlia',
+  nomeSegundaPessoa: null,
+  data: '2027-03-12',
+  diasRestantes: 135,
+  tipo: 'QuinzeAnos',
+}
+const gruposNavegacaoV2 = gruposNavegacaoEvento('evento-demonstracao', 'evento-tarefas', () => true)
 
 const amostrasRitmo = [
   { chave: 'secao', uso: 'Entre seções principais da página', valor: ritmo.secao },
@@ -719,15 +791,15 @@ function alternarPessoaMesaDemonstracao(chave: string, valor: boolean) {
 }
 
 const regras = [
-  'O design system Celebri é a referência oficial do front: branco predominante, azul-marinho para marca, texto e ação, Jost leve nos títulos, Cormorant Garamond nas frases editoriais e muito respiro. Divergência só por acessibilidade ou regra de negócio, registrada na documentação.',
+  'O design system Celebri v2 é a referência oficial do front: névoa no fundo, cartões brancos, azul meia-noite para marca, título e ação, centelha dourada para os momentos especiais e uma cor de celebração por tipo de evento. Fraunces nos títulos e nomes, Plus Jakarta Sans na interface. Divergência só por acessibilidade ou regra de negócio, registrada na documentação.',
   'Toda tela consome apenas os tokens, layouts e componentes desta página. Cor, medida, sombra ou fonte literal em tela é proibido.',
   'Padrão novo exige evoluir o style guide antes de usar numa tela: o token ou componente entra aqui, com seus estados, e só depois vai para a tela.',
   'Toda tela deve invocar a skill frontend-design:frontend-design antes de ser desenhada e implementada.',
-  'Jost é a voz da marca e da interface: títulos em peso leve (nunca bold), rótulos e botões em peso médio. Cormorant Garamond entra em frases de destaque, títulos de convite e legendas; o “&” dos anfitriões é Cormorant itálico.',
-  'Azul-marinho é a cor da marca, do texto e da ação: botão primário cheio, link sublinhado, foco e item ativo (sobre o marinho suave). Marinho claro, marinho névoa e hairline são decorativos e nunca levam texto. Verde de sucesso marca concluído; informação usa azul-petróleo, nunca o marinho.',
+  'Fraunces (400–500) é a voz dos títulos, nomes dos anfitriões e números de destaque; itálico só para frases de apoio e o “&” dos nomes. Plus Jakarta Sans carrega a interface: rótulos 12 px em 700 caixa alta, botões em 600, corpo 15/1.6. Nenhum título em negrito.',
+  'Meia-noite 800 é a cor do título e da ação: botão primário cheio, foco e item ativo (sobre o meia-noite 100); links em meia-noite 600 sublinhados. Centelha clara (sobre escuro) só sobre meia-noite; sobre claro a centelha é ornamento (ícone) e o “&” grande usa a centelha de texto. Cor de tipo só via corDoTipo / classeTomDoTipo, com neutro meia-noite para tipo nulo. Fases sempre com ponto e rótulo.',
   'Espaço só pelo ritmo: seção 64 px, bloco 40 px, cartão 24 px, grupo 16 px, campo 8 px. Use as primitivas .pilha, .grade e as larguras .pagina-ampla, .pagina-formulario e .pagina-leitura em vez de margens soltas.',
   'Listas e painéis usam a largura ampla e se espalham em grade; formulários usam a largura de formulário; texto corrido nunca passa da largura de leitura.',
-  'Navegação: rail global de 72 px com ícone e rótulo acessível; dentro de /eventos/:id, a navegação do evento de 232 px. Módulo novo entra em MODULOS_EVENTO (layouts/modulosEvento.ts) com o seu grupo; grupo sem módulo e módulo que ainda não existe não aparecem.',
+  'Navegação: rail global de 76 px em meia-noite 900, ícones meia-noite 300 e item ativo em centelha; dentro de /eventos/:id, a navegação do evento de 248 px com o cartão do evento no fundo do tipo e o Grande Dia com centelha. Módulo novo entra em MODULOS_EVENTO (layouts/modulosEvento.ts) com o seu grupo; grupo sem módulo e módulo que ainda não existe não aparecem.',
   'Uma única ação primária por área. Ações destrutivas nunca são primárias fora do diálogo de confirmação.',
   'Exclusão sempre passa pelo diálogo que nomeia o item, com foco inicial em Cancelar; o diálogo mostra Excluir em carregando, fecha ao terminar e emite o toast de sucesso ou de erro.',
   'Status nunca depende só da cor: o badge sempre tem cor, ícone e texto.',
@@ -736,20 +808,20 @@ const regras = [
   'Datas, horas e moeda só pelas funções de formatação (pt-BR, fuso de São Paulo).',
   'Mensagens em frases curtas, voz ativa, sem jargão técnico e sem desculpas; erro sempre indica o próximo passo.',
   'Telas de acesso (entrar, cadastro, recuperação de senha) usam o layout de autenticação: painel editorial escuro com a marca e o formulário numa superfície branca. Erros que não pertencem a um campo aparecem na mensagem de formulário.',
-  'Nomes dos anfitriões sempre pelo componente de nomes dos anfitriões, com o “&” em Cormorant itálico na cor de acento; o número grande da contagem regressiva aparece só no cabeçalho do evento, nas demais telas a contagem é uma frase curta.',
+  'Nomes dos anfitriões sempre pelo componente de nomes dos anfitriões, com o “&” em Fraunces itálico na centelha de texto (na tinta do tipo dentro do cartão do evento); o número grande da contagem regressiva aparece só no cabeçalho do evento, nas demais telas a contagem é uma frase curta.',
   'Data do evento é data de calendário (AAAA-MM-DD): formate com as funções de data de calendário, nunca convertendo para Date com fuso.',
-  'Totais de pessoas usam o resumo de contagem: número em Jost leve, rótulo no plural correto e detalhe com adultos e crianças; só um número em destaque (marinho) por resumo. Convites e acompanhantes vão no rodapé, nunca somados às pessoas.',
+  'Totais de pessoas usam o resumo de contagem: número em Fraunces, rótulo no plural correto e detalhe com adultos e crianças; só um número em destaque (meia-noite) por resumo. Convites e acompanhantes vão no rodapé, nunca somados às pessoas.',
   'Listas que o usuário monta item a item (as pessoas de um convite) usam a lista repetível: blocos numerados, remover por bloco, adicionar no fim, limite visível e foco levado ao bloco novo.',
   'Campos de texto livre que costumam repetir valores (grupo do convite) usam o campo com sugestões: o usuário escolhe um valor existente ou digita um novo.',
-  'Ocupação de mesa usa a fileira de lugares: um ponto por lugar, marinho cheio quando ocupado e vazado tracejado quando livre, sempre com o texto “6 de 8”. Pessoas que podem ser movidas usam a linha selecionável de pessoa, e a seleção múltipla abre a barra de ação fixa com “Sentar em…”. Sem salão espacial e sem arrastar-e-soltar: o caminho “selecione e toque na mesa” é o padrão.',
+  'Ocupação de mesa usa a fileira de lugares: um ponto por lugar, meia-noite cheio quando ocupado e vazado tracejado quando livre, sempre com o texto “6 de 8”. Pessoas que podem ser movidas usam a linha selecionável de pessoa, e a seleção múltipla abre a barra de ação fixa com “Sentar em…”. Sem salão espacial e sem arrastar-e-soltar: o caminho “selecione e toque na mesa” é o padrão.',
   'Dados de convidados (telefone, e-mail) não aparecem em listagens, URLs nem no título da aba; ficam só no formulário do convite.',
-  'Fluxos com passos reais em sequência (importar uma planilha) usam o indicador de etapas: números só quando há sequência, etapa atual em marinho e anunciada; no celular vira uma frase curta com barra de três segmentos.',
+  'Fluxos com passos reais em sequência (importar uma planilha) usam o indicador de etapas: números só quando há sequência, etapa atual em meia-noite e anunciada; no celular vira uma frase curta com barra de três segmentos.',
   'Envio de arquivo sempre pelo componente de envio: botão real como caminho principal, arrastar e soltar só como atalho, limites de tamanho visíveis e erro que diz como corrigir. O servidor é a autoridade; a checagem no navegador é só conforto.',
   'Problemas por linha de planilha usam a lista de problemas: número da linha, nome, tipo em texto (Erro, Repetida, Aviso) e a mensagem por coluna; filtros por tipo e “Mostrar mais” em listas longas.',
   'Confirmações que não são exclusão usam o diálogo de confirmação: título em pergunta, texto que diz o que acontece e o que fica de fora, foco inicial em voltar e rótulo do botão com a ação exata.',
   'Todo CSV gerado pelo produto (modelo, linhas para corrigir) passa pela neutralização de fórmulas antes de ser baixado.',
   'Andamento por etapas reais (caminho dos convites) usa a barra de progresso segmentada com legenda numérica; prazos usam o indicador de prazo; documentos para fornecedores usam o layout de impressão, sem contatos de convidados e com aviso quando houver dado de saúde.',
-  'O convite público (RSVP) usa o layout público na variante convite: fundo marinho névoa, cartão branco com Jost leve e Cormorant Garamond e opções de presença de 72 px, em uma única página — responder em até 3 toques vale mais que dividir em etapas.',
+  'O convite público (RSVP) usa o layout público na variante convite: fundo meia-noite 50, cartão branco com Fraunces e opções de presença de 72 px, em uma única página — responder em até 3 toques vale mais que dividir em etapas.',
 ]
 </script>
 
@@ -803,7 +875,7 @@ const regras = [
         Marca
       </h2>
       <p class="guia__texto">
-        {{ NOME_PRODUTO }}: enquanto o logotipo oficial não chega, a marca é textual — o nome em Jost leve, azul-marinho, com espaçamento amplo; a inicial faz o papel de símbolo no rail, no topo das páginas públicas e no carregamento. É provisória: não desenhe símbolo nem monte logotipo a partir dela. Margem mínima de 40 px ao redor da marca.
+        {{ NOME_PRODUTO }}: marca provisória do DS v2 — símbolo “C” aberto com a centelha dourada e o logotipo “celebri” em Fraunces caixa baixa. O símbolo sozinho fica no rail (sobre meia-noite 900), no topo das páginas públicas e no carregamento; o nome acessível é sempre “Celebri”. Use só pelo componente de marca: o logotipo oficial ainda virá e será trocado num único lugar. Margem mínima de 40 px ao redor da marca.
       </p>
       <div class="guia__linha">
         <MarcaProduto
@@ -813,6 +885,234 @@ const regras = [
         <MarcaProduto />
         <MarcaProduto tom="claro" />
         <MarcaProduto somente-simbolo />
+        <span class="guia__marca-escura">
+          <MarcaProduto
+            somente-simbolo
+            fundo="escuro"
+          />
+          <MarcaProduto fundo="escuro" />
+        </span>
+      </div>
+    </section>
+
+    <section
+      id="ds-v2"
+      class="guia__secao"
+      aria-labelledby="titulo-ds-v2"
+    >
+      <h2
+        id="titulo-ds-v2"
+        class="guia__titulo-secao"
+      >
+        Design system v2
+      </h2>
+      <p class="guia__texto">
+        Meia-noite como âncora, centelha dourada para os momentos especiais e uma cor de celebração por tipo de evento. Cor de tipo só por corDoTipo / classeTomDoTipo (textos/tiposEvento.ts): a classe .tom-tipo--{tom} expõe --tom-viva, --tom-fundo, --tom-tinta, --tom-profunda e --tom-data. Tipo nulo ou desconhecido cai no neutro meia-noite, nunca no rosé.
+      </p>
+
+      <h3 class="guia__subtitulo">
+        Meia-noite e centelha
+      </h3>
+      <ul class="guia__amostras-cor">
+        <li
+          v-for="amostra in amostrasPaletaV2"
+          :key="amostra.chave"
+          class="guia__amostra-cor"
+        >
+          <span
+            class="guia__cor"
+            :style="{ background: amostra.valor }"
+            aria-hidden="true"
+          />
+          <span class="guia__cor-nome">{{ amostra.chave }}</span>
+          <code class="guia__codigo">{{ amostra.valor }}</code>
+        </li>
+      </ul>
+
+      <h3 class="guia__subtitulo">
+        Celebração por tipo · viva, fundo, tinta, tinta profunda e data
+      </h3>
+      <ul class="guia__tons">
+        <li
+          v-for="amostra in amostrasTons"
+          :key="amostra.tom"
+          class="guia__tom"
+          :class="`tom-tipo--${amostra.tom}`"
+          :data-tom="amostra.tom"
+        >
+          <span class="guia__tom-cartao">
+            <span class="guia__tom-nome">{{ amostra.nome }}</span>
+            <NomesAnfitrioes
+              class="guia__tom-nomes"
+              primeiro="Tadashi"
+              segundo="Laís"
+              tamanho="navegacao"
+            />
+            <span class="guia__tom-data">13 fev 2027 · faltam 108 dias</span>
+          </span>
+          <span class="guia__tom-faixa">
+            <span
+              v-for="(valor, chave) in amostra.cores"
+              :key="chave"
+              class="guia__tom-cor"
+              :style="{ background: valor }"
+              :title="`${chave} ${valor}`"
+            />
+          </span>
+          <code class="guia__codigo">viva {{ amostra.cores.viva }} · fundo {{ amostra.cores.fundo }} · tinta {{ amostra.cores.tinta }} · profunda {{ amostra.cores.tintaProfunda }} · data {{ amostra.cores.data }}</code>
+        </li>
+      </ul>
+
+      <h3 class="guia__subtitulo">
+        Etiquetas de tipo e tiles
+      </h3>
+      <div class="guia__linha">
+        <EtiquetaTipo
+          v-for="tipo in TIPOS_EVENTO"
+          :key="tipo"
+          :tipo="tipo"
+        />
+        <EtiquetaTipo
+          tom="jade"
+          rotulo="Formatura"
+        />
+        <EtiquetaTipo :tipo="null" />
+      </div>
+      <div class="guia__linha">
+        <TileTipo
+          v-for="amostra in amostrasTons"
+          :key="amostra.tom"
+          :tom="amostra.tom"
+        />
+      </div>
+
+      <h3 class="guia__subtitulo">
+        Fases · sempre ponto + rótulo
+      </h3>
+      <div class="guia__linha">
+        <EtiquetaFase
+          v-for="item in listaFases"
+          :key="item.fase"
+          :fase="item.fase"
+          :texto="item.texto"
+        />
+      </div>
+
+      <h3 class="guia__subtitulo">
+        Botões · 48 px, raio 12
+      </h3>
+      <div class="guia__linha">
+        <Button
+          label="Novo evento"
+          icon="ie ie-mais"
+        />
+        <Button
+          label="Aplicar modelo"
+          severity="secondary"
+          outlined
+        />
+        <Button
+          class="botao-destaque"
+          label="Aplicar checklist"
+          icon="ie ie-centelha"
+        />
+        <Button
+          label="Ver todos"
+          link
+        />
+        <Button
+          class="botao-acao-linha"
+          label="Abrir"
+          icon="ie ie-seta-direita"
+          icon-pos="right"
+        />
+      </div>
+
+      <h3 class="guia__subtitulo">
+        Abas segmentadas, filtros e busca
+      </h3>
+      <div class="guia__linha">
+        <SelectButton
+          v-model="abaSegmentadaDemonstracao"
+          :options="opcoesAbaSegmentada"
+          :allow-empty="false"
+          aria-label="Situação dos eventos"
+        />
+        <CampoBusca
+          v-model="buscaDemonstracao"
+          class="guia__busca"
+          rotulo="Buscar pelo nome dos anfitriões"
+          placeholder="Buscar anfitriões"
+        />
+      </div>
+      <FiltroPilulas
+        v-model="filtroTipoDemonstracao"
+        :opcoes="opcoesFiltroTipo"
+        rotulo="Filtrar por tipo de evento"
+      />
+
+      <h3 class="guia__subtitulo">
+        Cartão, estado vazio e lateral de destaque
+      </h3>
+      <div class="com-lateral">
+        <div class="com-lateral__corpo com-lateral__pagina--ativa">
+          <div class="com-lateral__principal pilha pilha--cartao">
+            <article class="cartao pilha pilha--grupo">
+              <div class="guia__linha">
+                <TileTipo tipo="Casamento" />
+                <span class="pilha pilha--campo">
+                  <strong class="guia__cartao-titulo">Checklist essencial</strong>
+                  <span class="guia__texto">Marcos de 12, 6 e 3 meses e 30 dias antes do evento.</span>
+                </span>
+              </div>
+            </article>
+            <EstadoVazio
+              titulo="Nenhuma tarefa ainda"
+              descricao="Registre o que falta fazer para o evento, ou comece pelo modelo sugerido ao lado."
+              icone="checklist"
+            >
+              <template #acao>
+                <Button
+                  label="Nova tarefa"
+                  icon="ie ie-mais"
+                  severity="secondary"
+                  outlined
+                />
+              </template>
+            </EstadoVazio>
+          </div>
+          <div class="com-lateral__lateral">
+            <LateralDestaque
+              rotulo="Tarefas típicas"
+              titulo="Checklist essencial"
+              descricao="26 tarefas · prazos contados a partir da data"
+            >
+              <ul class="guia__lista-simples">
+                <li>Contratar buffet</li>
+                <li>Contratar fotografia e filmagem</li>
+                <li>Enviar o save the date</li>
+              </ul>
+              <template #rodape>
+                <span class="guia__texto">e mais 23</span>
+                <Button
+                  class="botao-destaque"
+                  label="Aplicar checklist"
+                  icon="ie ie-centelha"
+                />
+              </template>
+            </LateralDestaque>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="guia__subtitulo">
+        Navegação do evento · cartão no fundo do tipo
+      </h3>
+      <div class="guia__navegacao-v2">
+        <NavegacaoEvento
+          :evento="eventoNavegacaoQuinzeAnos"
+          :grupos="gruposNavegacaoV2"
+        />
       </div>
     </section>
 
@@ -828,7 +1128,7 @@ const regras = [
         Cores e contraste
       </h2>
       <p class="guia__texto">
-        Branco puro predominante em fundos e superfícies, hairlines em cinza frio, azul-marinho Celebri para marca, texto, ação e foco, marinho névoa para seleção e fundos de contexto (anfitriões, convite, entrada). Feedback com matiz própria e mais claro que o marinho: verde de sucesso, âmbar de alerta, vermelho de erro e azul-petróleo de informação.
+        Névoa no fundo da página, cartões brancos com borda prata, tinta no corpo e grafite no apoio. Meia-noite 800 para título, ação e foco; meia-noite 100 para seleção e item ativo. Estados e fases com ponto, rótulo e fundo próprios: planejamento (meia-noite), reta final (âmbar), realizado (verde) e atrasado (vermelho). A borda de campo é mais escura que a do mockup para atingir 3:1.
       </p>
       <h3 class="guia__subtitulo">
         Cores oficiais da marca
@@ -934,7 +1234,7 @@ const regras = [
         Tipografia
       </h2>
       <p class="guia__texto">
-        Jost (geométrica, fina) carrega a marca e a interface: títulos em peso leve com bastante espaço, taglines e rótulos em caixa alta espaçada. Cormorant Garamond, serifa fria e fina, traz o tom editorial às frases de destaque, aos títulos de convite e às legendas. Nenhum título em negrito.
+        Fraunces (serifa de contraste suave, eixo óptico) nos títulos, nomes dos anfitriões e números de destaque, em 400–500; itálico para frases de apoio. Plus Jakarta Sans na interface: rótulos, tabelas, botões, formulários e texto corrido. Escala: display 56, página 44, título 36, seção 24, apoio 18 itálico, corpo 15/1.6, rótulo 12 em 700 caixa alta 0.16em.
       </p>
       <dl class="guia__tipos">
         <div
@@ -1607,7 +1907,7 @@ const regras = [
         Autenticação
       </h2>
       <p class="guia__texto">
-        Layout de acesso com painel branco à esquerda (marca textual grande e o slogan em Cormorant Garamond) e o formulário num cartão branco sobre o marinho névoa; no celular, a marca textual vai para uma barra no topo. Campo de senha com mostrar/ocultar e lista de requisitos que marca cada item com ícone e texto. Mensagem de formulário para erros que não pertencem a um campo.
+        Layout de acesso com painel branco à esquerda (marca textual grande e o slogan em Fraunces) e o formulário num cartão branco sobre o meia-noite 50; no celular, a marca textual vai para uma barra no topo. Campo de senha com mostrar/ocultar e lista de requisitos que marca cada item com ícone e texto. Mensagem de formulário para erros que não pertencem a um campo.
       </p>
 
       <h3 class="guia__subtitulo">
@@ -1811,7 +2111,7 @@ const regras = [
         Resumo de contagem
       </h3>
       <p class="guia__texto">
-        Números da lista em Jost leve, como a contagem de um livro de presença. Duas colunas no celular, uma linha a partir de 640 px; o número em destaque é o de confirmadas.
+        Números da lista em Fraunces, como a contagem de um livro de presença. Duas colunas no celular, uma linha a partir de 640 px; o número em destaque é o de confirmadas.
       </p>
       <ResumoContagem
         :itens="itensResumoConvidados(TOTAIS_DEMONSTRACAO)"
@@ -1948,7 +2248,7 @@ const regras = [
         Indicador de etapas
       </h3>
       <p class="guia__texto">
-        Para sequências reais. A etapa atual fica em marinho; no celular, só a frase “Etapa 2 de 3: Confira” e a barra.
+        Para sequências reais. A etapa atual fica em meia-noite; no celular, só a frase “Etapa 2 de 3: Confira” e a barra.
       </p>
       <div class="guia__pilha-larga">
         <IndicadorEtapas
@@ -2039,7 +2339,7 @@ const regras = [
         Confirmação de presença
       </h2>
       <p class="guia__texto">
-        A página do convidado é o próprio convite: cartão branco sobre o marinho névoa com a inicial da marca, nomes dos anfitriões empilhados em Jost leve, o “&amp;” em Cormorant itálico e a data espaçada. Todo o resto é quieto, grande e direto. Use no layout público, variante convite.
+        A página do convidado é o próprio convite: cartão branco sobre o meia-noite 50 com a inicial da marca, nomes dos anfitriões empilhados em Fraunces, o “&amp;” em Fraunces itálico e a data espaçada. Todo o resto é quieto, grande e direto. Use no layout público, variante convite.
       </p>
 
       <h3 class="guia__subtitulo">
@@ -2077,7 +2377,7 @@ const regras = [
         Escolha de presença
       </h3>
       <p class="guia__texto">
-        Uma pessoa por linha, separadas por divisórias finas. Opções de 72 px; “Vou” marcado fica em marinho sobre o marinho suave; “Não vou”, em neutro — nunca vermelho, recusar não é erro. É um grupo de rádio: setas alternam, e o estado marcado tem ícone e peso, não só cor. O espaço abaixo das opções recebe a seção extra de cada pessoa (restrição alimentar).
+        Uma pessoa por linha, separadas por divisórias finas. Opções de 72 px; “Vou” marcado fica em meia-noite sobre o meia-noite 100; “Não vou”, em neutro — nunca vermelho, recusar não é erro. É um grupo de rádio: setas alternam, e o estado marcado tem ícone e peso, não só cor. O espaço abaixo das opções recebe a seção extra de cada pessoa (restrição alimentar).
       </p>
       <div class="guia__pilha-larga">
         <EscolhaPresenca
@@ -2245,7 +2545,7 @@ const regras = [
         Resumo em cardápio
       </h3>
       <p class="guia__texto">
-        Para listas que vão para fornecedores (buffet): linhas com pontilhado até o número, como num cardápio, em vez de cartões com número grande. Título em Jost, número em marinho com algarismos tabulares.
+        Para listas que vão para fornecedores (buffet): linhas com pontilhado até o número, como num cardápio, em vez de cartões com número grande. Título em Plus Jakarta Sans, número em meia-noite com algarismos tabulares.
       </p>
       <ResumoCardapio
         :titulo="TEXTOS_DADOS_SENSIVEIS.resumoBuffet"
@@ -2276,7 +2576,7 @@ const regras = [
         Caminho dos convites
       </h3>
       <p class="guia__texto">
-        Barra única, lida da esquerda para a direita porque é uma sequência real: não enviado, enviado, visualizado. Cores por token (neutro, informação, marinho), separadas por 2 px de superfície e sempre acompanhadas da legenda com número — nunca só cor. Respondidos ficam fora da barra, no rodapé, porque são outra dimensão.
+        Barra única, lida da esquerda para a direita porque é uma sequência real: não enviado, enviado, visualizado. Cores por token (neutro, informação, meia-noite), separadas por 2 px de superfície e sempre acompanhadas da legenda com número — nunca só cor. Respondidos ficam fora da barra, no rodapé, porque são outra dimensão.
       </p>
       <div class="guia__pilha-larga">
         <BarraProgressoEnvio
@@ -2300,7 +2600,7 @@ const regras = [
         Indicador de prazo
       </h3>
       <p class="guia__texto">
-        Data limite de resposta com os dias que faltam. Fio marinho no normal, âmbar a partir de 3 dias, neutro quando encerrado. A ação opcional fica à direita.
+        Data limite de resposta com os dias que faltam. Fio meia-noite no normal, âmbar a partir de 3 dias, neutro quando encerrado. A ação opcional fica à direita.
       </p>
       <div class="guia__pilha-larga">
         <IndicadorPrazo
@@ -2404,7 +2704,7 @@ const regras = [
         Linha de pessoa selecionável
       </h3>
       <p class="guia__texto">
-        Caixa de seleção com o nome como rótulo, apoio (grupo, convite ou “Estava na Mesa 3”) e marcas de criança e acompanhante. Selecionada em marinho suave com borda marinho. Sem caixa de seleção quando o evento está arquivado. O slot “extra” recebe o aviso de convite dividido.
+        Caixa de seleção com o nome como rótulo, apoio (grupo, convite ou “Estava na Mesa 3”) e marcas de criança e acompanhante. Selecionada em meia-noite 100 com borda meia-noite. Sem caixa de seleção quando o evento está arquivado. O slot “extra” recebe o aviso de convite dividido.
       </p>
       <ul class="guia__pilha-larga guia__lista-mesas">
         <li
@@ -2475,7 +2775,7 @@ const regras = [
         Acesso dos anfitriões
       </h2>
       <p class="guia__texto">
-        Dois lugares à mesa, ligados pelo "&amp;" em Cormorant itálico: a estrutura mostra de relance quantos acessos restam (limite de 2). Use ParLugares com dois LugarAcesso. O lugar vazio tem borda tracejada sobre o fundo e uma única ação secundária; o formulário de convite abre dentro do próprio lugar. Situação sempre com texto (BadgeStatus) e data em números tabulares. Revogar fica no menu de ações e só é confirmado no diálogo com botão destrutivo.
+        Dois lugares à mesa, ligados pelo "&amp;" em Fraunces itálico: a estrutura mostra de relance quantos acessos restam (limite de 2). Use ParLugares com dois LugarAcesso. O lugar vazio tem borda tracejada sobre o fundo e uma única ação secundária; o formulário de convite abre dentro do próprio lugar. Situação sempre com texto (BadgeStatus) e data em números tabulares. Revogar fica no menu de ações e só é confirmado no diálogo com botão destrutivo.
       </p>
       <h3 class="guia__subtitulo">
         Estados do lugar
@@ -2848,7 +3148,7 @@ const regras = [
         </ReguaMarcos>
       </div>
       <p class="guia__texto">
-        Na navegação do evento, o módulo Checklist mostra o percentual à direita do rótulo, em texto de apoio (marinho quando ativo), anunciado como "80% concluído". Veja a seção Navegação e workspace.
+        Na navegação do evento, o módulo Checklist mostra o percentual à direita do rótulo, em texto de apoio (meia-noite quando ativo), anunciado como "80% concluído". Veja a seção Navegação e workspace.
       </p>
     </section>
 
@@ -2864,7 +3164,7 @@ const regras = [
         Fornecedores
       </h2>
       <p class="guia__texto">
-        A base de fornecedores é a agenda de contatos da assessoria. O elemento memorável é o IndiceCategorias: uma lista de categorias com a contagem em Jost leve editorial (número editorial), que é ao mesmo tempo panorama da base e filtro; a categoria escolhida fica em marinho suave com texto marinho. No celular o índice vira um seletor "Categoria". A lista agrupa por categoria (cabeçalho com a contagem em texto de apoio) e cada fornecedor é uma LinhaFornecedor, com os canais de contato na própria linha. Ícones novos: fornecedor (traço fino) e telefone.
+        A base de fornecedores é a agenda de contatos da assessoria. O elemento memorável é o IndiceCategorias: uma lista de categorias com a contagem em Fraunces editorial (número editorial), que é ao mesmo tempo panorama da base e filtro; a categoria escolhida fica em meia-noite 100 com texto meia-noite. No celular o índice vira um seletor "Categoria". A lista agrupa por categoria (cabeçalho com a contagem em texto de apoio) e cada fornecedor é uma LinhaFornecedor, com os canais de contato na própria linha. Ícones novos: fornecedor (traço fino) e telefone.
       </p>
       <h3 class="guia__subtitulo">
         Índice de categorias e linhas de fornecedor
@@ -2961,7 +3261,7 @@ const regras = [
         Fornecedores do evento
       </h2>
       <p class="guia__texto">
-        O módulo Fornecedores do evento é o livro-caixa de quem vai fazer o quê e por quanto. O elemento memorável é o ResumoOrcamento: uma frase editorial com os dois totais em Jost leve ("R$ 25.900,00 contratados de R$ 43.300,00 orçados") e, por categoria, uma régua fina em que o trecho marinho é o contratado sobre o orçado e o trilho é o que ainda está em aberto. Quando o contratado passa do orçado, a régua fica cheia em âmbar e aparece o selo "acima do orçado" (cor + ícone + texto). É uma tabela acessível (legenda e cabeçalhos para leitor de tela); a régua é decorativa. Vínculos cancelados ficam fora do resumo.
+        O módulo Fornecedores do evento é o livro-caixa de quem vai fazer o quê e por quanto. O elemento memorável é o ResumoOrcamento: uma frase editorial com os dois totais em Fraunces ("R$ 25.900,00 contratados de R$ 43.300,00 orçados") e, por categoria, uma régua fina em que o trecho meia-noite é o contratado sobre o orçado e o trilho é o que ainda está em aberto. Quando o contratado passa do orçado, a régua fica cheia em âmbar e aparece o selo "acima do orçado" (cor + ícone + texto). É uma tabela acessível (legenda e cabeçalhos para leitor de tela); a régua é decorativa. Vínculos cancelados ficam fora do resumo.
       </p>
       <h3 class="guia__subtitulo">
         Resumo do orçamento
@@ -3044,7 +3344,7 @@ const regras = [
         Cronograma do dia
       </h2>
       <p class="guia__texto">
-        O cronograma é lido em pé, no celular. LinhaCronograma desenha "o fio do dia": horário de início em Jost com algarismos tabulares numa coluna fixa, um fio marinho contínuo com um nó por item e o conteúdo à direita (atividade, distância da cerimônia, local, responsável, fornecedor, instruções em até duas linhas). O nó do item na hora da cerimônia vira um nó duplo em marinho claro, o único ornamento da tela; conflito de horário troca o nó por um anel âmbar e mostra um selo de alerta com texto. A lista é uma &lt;ol&gt; por dia, dentro de um painel com borda; para a assessoria a linha inteira é um botão que abre a edição, para os anfitriões é texto com o horário lido por extenso. AtalhosPreenchimento oferece valores conhecidos (locais da cerimônia e da recepção) em pílulas com aria-pressed; a pílula do valor atual fica no marinho suave.
+        O cronograma é lido em pé, no celular. LinhaCronograma desenha "o fio do dia": horário de início em Plus Jakarta Sans com algarismos tabulares numa coluna fixa, um fio meia-noite contínuo com um nó por item e o conteúdo à direita (atividade, distância da cerimônia, local, responsável, fornecedor, instruções em até duas linhas). O nó do item na hora da cerimônia vira um nó duplo em meia-noite 300, o único ornamento da tela; conflito de horário troca o nó por um anel âmbar e mostra um selo de alerta com texto. A lista é uma &lt;ol&gt; por dia, dentro de um painel com borda; para a assessoria a linha inteira é um botão que abre a edição, para os anfitriões é texto com o horário lido por extenso. AtalhosPreenchimento oferece valores conhecidos (locais da cerimônia e da recepção) em pílulas com aria-pressed; a pílula do valor atual fica no meia-noite 100.
       </p>
       <h3 class="guia__subtitulo">
         Linha do cronograma (padrão, cerimônia, conflito, dia seguinte e somente leitura)
@@ -3117,7 +3417,7 @@ const regras = [
         Modelos de cronograma
       </h2>
       <p class="guia__texto">
-        A área Modelos reúne dois tipos de modelo em páginas irmãs. AbasSecao é a navegação entre elas: links reais (não abas de conteúdo), a aba da página atual em marinho suave com texto marinho e aria-current="page", alvo de 44 px (48 px no toque) e rolagem horizontal própria quando não cabe no celular. No modelo de cronograma, o roteiro usa a mesma LinhaCronograma do evento, com os horários lidos na referência do modelo e a distância até a cerimônia ao lado; o nó da cerimônia com dois anéis é o pivô do roteiro.
+        A área Modelos reúne dois tipos de modelo em páginas irmãs. AbasSecao é a navegação entre elas: links reais (não abas de conteúdo), a aba da página atual em meia-noite 100 com texto meia-noite e aria-current="page", alvo de 44 px (48 px no toque) e rolagem horizontal própria quando não cabe no celular. No modelo de cronograma, o roteiro usa a mesma LinhaCronograma do evento, com os horários lidos na referência do modelo e a distância até a cerimônia ao lado; o nó da cerimônia com dois anéis é o pivô do roteiro.
       </p>
       <h3 class="guia__subtitulo">
         Abas da seção
@@ -3167,7 +3467,7 @@ const regras = [
         Cronograma para a equipe
       </h2>
       <p class="guia__texto">
-        O link público do cronograma usa o modo operação do board Grande Dia: LayoutPublico com variante "operacao", fundo marinho profundo e texto marinho névoa. A variante remapeia os tokens de texto, superfície, borda e destaque para os tokens operacao-*, então os estados padrão (carregando, vazio, erro) e o botão secundário funcionam sobre o fundo escuro sem estilos próprios. CabecalhoOperacao traz os nomes dos anfitriões em Jost leve com o "&amp;" em Cormorant itálico, a data por extenso, o selo do filtro (equipe completa ou "seus horários") e os locais. ItemRoteiro é a linha somente leitura: horário de início grande com algarismos tabulares numa coluna fixa, término abaixo ("+1" quando passa da meia-noite), fio contínuo com nó cinza, nó duplo em marinho claro no horário da cerimônia, nó verde e selo "Feito" quando o item foi concluído, e instruções num bloco com filete em marinho claro. O cartão claro do board fica reservado ao "Agora" da visão interativa. LinhaDestinoLink é a linha da área de links da assessoria: destino, detalhe, situação (Link ativo, Sem link, Link indisponível) e as ações no slot.
+        O link público do cronograma usa o modo operação do board Grande Dia: LayoutPublico com variante "operacao", fundo meia-noite profundo e texto meia-noite 50. A variante remapeia os tokens de texto, superfície, borda e destaque para os tokens operacao-*, então os estados padrão (carregando, vazio, erro) e o botão secundário funcionam sobre o fundo escuro sem estilos próprios. CabecalhoOperacao traz os nomes dos anfitriões em Fraunces com o "&amp;" em Fraunces itálico, a data por extenso, o selo do filtro (equipe completa ou "seus horários") e os locais. ItemRoteiro é a linha somente leitura: horário de início grande com algarismos tabulares numa coluna fixa, término abaixo ("+1" quando passa da meia-noite), fio contínuo com nó cinza, nó duplo em meia-noite 300 no horário da cerimônia, nó verde e selo "Feito" quando o item foi concluído, e instruções num bloco com filete em meia-noite 300. O cartão claro do board fica reservado ao "Agora" da visão interativa. LinhaDestinoLink é a linha da área de links da assessoria: destino, detalhe, situação (Link ativo, Sem link, Link indisponível) e as ações no slot.
       </p>
       <h3 class="guia__subtitulo">
         Página pública (390 px)
@@ -3293,7 +3593,7 @@ const regras = [
         Grande Dia
       </h2>
       <p class="guia__texto">
-        O Grande Dia é a visão de operação do roteiro no momento atual, para o celular em uma mão. SuperficieOperacao leva o modo operação escuro para dentro do workspace com a classe global "tema-operacao" (o mesmo remapeamento de tokens da variante "operacao" do LayoutPublico). O único elemento claro da tela é o CartaoAgora (marinho névoa, texto marinho, apoio cinza): atividade em 30 px, "Desde … · até …", local, quem e o slot de contatos. RelogioOperacao mostra a hora em 56 px tabular e o selo "Ao vivo" (vermelho claro sobre vinho profundo, ponto que pulsa só sem preferência de movimento reduzido) ou a fase ("Faltam 12 dias", "Já passou"). LinhaProximo é o bloco com borda do próximo item, com "em N min" em marinho claro e o horário à direita. LinhaOperacao é a linha compacta de Também agora, Depois, Ficou sem marcar e Feitos (horário, atividade, detalhe e ações no slot). ContatoUmToque são as pílulas Ligar e WhatsApp de 48 px. FaixaFaseDia diz que o dia ainda não chegou ou já passou. PainelAgoraProximo compõe tudo a partir dos itens e do minuto atual e é a mesma visão na tela interna e no link público (sem slots de ação no público). BarraAcaoFixa ganhou a variante "operacao": barra escura com a ação principal em marinho claro de 56 px. CartaoAgora, ItemRoteiro e PainelAgoraProximo aceitam rotuloMomento, que nomeia o horário principal pelo tipo do evento ("Hora da cerimônia", "Hora da festa", "Hora do evento") num selo textual junto do anel. A tela interna soma a frase do momento principal em Cormorant itálico com filete, os contatos do momento, os fornecedores do dia e as pessoas confirmadas (ListaFornecedoresDia e ConfirmadosGrandeDia). Rótulos em caixa normal (exceção ao board, que usa caixa alta espaçada, para leitura rápida).
+        O Grande Dia é a visão de operação do roteiro no momento atual, para o celular em uma mão. SuperficieOperacao leva o modo operação escuro para dentro do workspace com a classe global "tema-operacao" (o mesmo remapeamento de tokens da variante "operacao" do LayoutPublico). O único elemento claro da tela é o CartaoAgora (meia-noite 50, texto meia-noite, apoio cinza): atividade em 30 px, "Desde … · até …", local, quem e o slot de contatos. RelogioOperacao mostra a hora em 56 px tabular e o selo "Ao vivo" (vermelho claro sobre vinho profundo, ponto que pulsa só sem preferência de movimento reduzido) ou a fase ("Faltam 12 dias", "Já passou"). LinhaProximo é o bloco com borda do próximo item, com "em N min" em meia-noite 300 e o horário à direita. LinhaOperacao é a linha compacta de Também agora, Depois, Ficou sem marcar e Feitos (horário, atividade, detalhe e ações no slot). ContatoUmToque são as pílulas Ligar e WhatsApp de 48 px. FaixaFaseDia diz que o dia ainda não chegou ou já passou. PainelAgoraProximo compõe tudo a partir dos itens e do minuto atual e é a mesma visão na tela interna e no link público (sem slots de ação no público). BarraAcaoFixa ganhou a variante "operacao": barra escura com a ação principal em meia-noite 300 de 56 px. CartaoAgora, ItemRoteiro e PainelAgoraProximo aceitam rotuloMomento, que nomeia o horário principal pelo tipo do evento ("Hora da cerimônia", "Hora da festa", "Hora do evento") num selo textual junto do anel. A tela interna soma a frase do momento principal em Fraunces itálico com filete, os contatos do momento, os fornecedores do dia e as pessoas confirmadas (ListaFornecedoresDia e ConfirmadosGrandeDia). Rótulos em caixa normal (exceção ao board, que usa caixa alta espaçada, para leitura rápida).
       </p>
       <h3 class="guia__subtitulo">
         No dia (390 px)
@@ -3392,7 +3692,7 @@ const regras = [
         Duplicar evento
       </h2>
       <p class="guia__texto">
-        A tela Duplicar evento separa o que vai para o evento novo do que fica com os anfitriões de origem. OpcaoCopia é uma linha inteira clicável com caixa de seleção nativa, a quantidade em número editorial (marinho quando marcada, texto de apoio quando desmarcada ou desabilitada), título e descrição ligada por aria-describedby; o número visual é oculto do leitor de tela, que ouve a quantidade por extenso junto ao título. As opções vivem juntas numa única lista com borda e divisórias, nunca como cartões soltos. ListaNaoCopiado nomeia os anfitriões de origem ("Fica com Ana & João") e lista, em tom de apoio e com cadeado decorativo, os dados que nunca são copiados.
+        A tela Duplicar evento separa o que vai para o evento novo do que fica com os anfitriões de origem. OpcaoCopia é uma linha inteira clicável com caixa de seleção nativa, a quantidade em número editorial (meia-noite quando marcada, texto de apoio quando desmarcada ou desabilitada), título e descrição ligada por aria-describedby; o número visual é oculto do leitor de tela, que ouve a quantidade por extenso junto ao título. As opções vivem juntas numa única lista com borda e divisórias, nunca como cartões soltos. ListaNaoCopiado nomeia os anfitriões de origem ("Fica com Ana & João") e lista, em tom de apoio e com cadeado decorativo, os dados que nunca são copiados.
       </p>
       <h3 class="guia__subtitulo">
         Opções de cópia (marcada, desmarcada, desabilitada e carregando)
@@ -3460,7 +3760,7 @@ const regras = [
         Resumo do orçamento com pagamentos
       </h3>
       <p class="guia__texto">
-        ResumoOrcamento com exibir-pagamentos: a frase passa a "pagos de … contratados", o apoio traz a pagar, vencidos e orçado, e a régua ganha três camadas (pago em marinho, contratado a pagar em marinho claro e livre no orçamento no trilho) com legenda textual e rótulo acessível com os percentuais. Categoria com parcela vencida mostra o selo de erro com o valor.
+        ResumoOrcamento com exibir-pagamentos: a frase passa a "pagos de … contratados", o apoio traz a pagar, vencidos e orçado, e a régua ganha três camadas (pago em meia-noite, contratado a pagar em meia-noite 300 e livre no orçamento no trilho) com legenda textual e rótulo acessível com os percentuais. Categoria com parcela vencida mostra o selo de erro com o valor.
       </p>
       <ResumoOrcamento
         :resumo="RESUMO_PAGAMENTOS_DEMONSTRACAO"
@@ -3470,7 +3770,7 @@ const regras = [
         Parcelas e linha do hoje
       </h3>
       <p class="guia__texto">
-        LinhaParcela: bloco de data (dia em Jost leve, mês abreviado), "Fornecedor · número/total", observação e indicador de comprovante em apoio, valor à direita e a situação por BadgeStatus: Vencida (erro), Vence hoje e Vence em N dias (alerta), Pendente (neutro), Paga em … (sucesso). A variante histórico (fornecedor cancelado) usa tons de apoio. LinhaHoje separa passado e futuro com texto, não só cor.
+        LinhaParcela: bloco de data (dia em Fraunces, mês abreviado), "Fornecedor · número/total", observação e indicador de comprovante em apoio, valor à direita e a situação por BadgeStatus: Vencida (erro), Vence hoje e Vence em N dias (alerta), Pendente (neutro), Paga em … (sucesso). A variante histórico (fornecedor cancelado) usa tons de apoio. LinhaHoje separa passado e futuro com texto, não só cor.
       </p>
       <div class="guia__painel-fornecedores">
         <ul class="guia__lista-fornecedores">
@@ -4066,6 +4366,104 @@ const regras = [
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-controle);
+}
+
+.guia__tons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+  gap: var(--p-espaco-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guia__tom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-espaco-2);
+}
+
+.guia__tom-cartao {
+  --nomes-cor: var(--tom-profunda);
+  --nomes-conector: var(--tom-tinta);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-espaco-2);
+  padding: 1.125rem;
+  background: var(--tom-fundo);
+  border-radius: var(--p-raio-cartao-evento);
+}
+
+.guia__tom-nome {
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-etiqueta);
+  text-transform: uppercase;
+  color: var(--tom-tinta);
+}
+
+.guia__tom-nomes {
+  font-size: var(--p-fonte-tamanho-cartao-evento);
+}
+
+.guia__tom-data {
+  font-size: var(--p-fonte-tamanho-apoio);
+  color: var(--tom-data);
+}
+
+.guia__tom-faixa {
+  display: flex;
+  height: 1.5rem;
+  overflow: hidden;
+  border: 1px solid var(--p-cor-borda);
+  border-radius: var(--p-raio-tag);
+}
+
+.guia__tom-cor {
+  flex: 1;
+}
+
+.guia__busca {
+  max-width: 18rem;
+}
+
+.guia__cartao-titulo {
+  font-family: var(--p-fonte-display);
+  font-size: 1.375rem;
+  font-weight: var(--p-fonte-peso-regular);
+  color: var(--p-cor-titulo);
+}
+
+.guia__lista-simples {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guia__lista-simples li {
+  padding: var(--p-espaco-3) 0;
+  font-size: var(--p-fonte-tamanho-controle);
+  border-bottom: 1px solid var(--p-cor-divisoria);
+}
+
+.guia__navegacao-v2 {
+  max-width: var(--p-dimensao-largura-navegacao-evento);
+  padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo);
+  background: var(--p-cor-superficie);
+  border: 1px solid var(--p-cor-borda);
+  border-radius: var(--p-raio-painel);
+}
+
+.guia__marca-escura {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--p-espaco-4);
+  padding: var(--p-espaco-4) var(--p-espaco-6);
+  background: var(--p-cor-rail);
+  border-radius: var(--p-raio-painel);
 }
 
 .guia__linha {

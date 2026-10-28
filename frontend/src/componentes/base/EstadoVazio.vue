@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import type { NomeIcone } from '@/design/icones'
 
-withDefaults(defineProps<{ titulo: string; descricao?: string; icone?: NomeIcone }>(), {
+withDefaults(defineProps<{ titulo: string; descricao?: string; icone?: NomeIcone; variante?: 'cartao' | 'simples' }>(), {
   descricao: undefined,
   icone: 'arquivar',
+  variante: 'cartao',
 })
 </script>
 
 <template>
   <section
     class="estado-vazio"
+    :class="`estado-vazio--${variante}`"
     data-teste="estado-vazio"
   >
     <span
@@ -41,40 +43,51 @@ withDefaults(defineProps<{ titulo: string; descricao?: string; icone?: NomeIcone
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--p-espaco-3);
-  padding: var(--p-espaco-12) var(--p-espaco-6);
+  justify-content: center;
+  gap: 0.875rem;
+  padding: var(--p-espaco-12) var(--p-espaco-8);
   text-align: center;
+}
+
+.estado-vazio--cartao {
+  background: var(--p-cor-superficie);
+  border: 1px dashed var(--p-cor-borda-suave);
+  border-radius: var(--p-raio-cartao-amplo);
+}
+
+.estado-vazio--simples {
+  padding: var(--p-espaco-10) var(--p-espaco-6);
 }
 
 .estado-vazio__circulo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  font-size: 1.25rem;
-  color: var(--p-cor-primaria);
-  background: var(--p-cor-primaria-suave);
-  border-radius: var(--p-raio-total);
+  width: var(--p-dimensao-tile-vazio);
+  height: var(--p-dimensao-tile-vazio);
+  font-size: 1.75rem;
+  color: var(--p-cor-destaque-texto);
+  background: var(--p-cor-destaque);
+  border-radius: var(--p-raio-painel);
 }
 
 .estado-vazio .estado-vazio__titulo {
-  font-size: var(--p-fonte-tamanho-titulo);
-  line-height: 1.35;
+  font-size: var(--p-fonte-tamanho-secao);
+  line-height: var(--p-fonte-entrelinha-titulo);
 }
 
 .estado-vazio__descricao {
-  max-width: 28rem;
-  font-size: var(--p-fonte-tamanho-controle);
-  line-height: 1.55;
-  color: var(--p-cor-texto-secundario);
+  max-width: 21.25rem;
+  font-size: var(--p-fonte-tamanho-corpo);
+  line-height: var(--p-fonte-entrelinha-corpo);
+  color: var(--p-cor-texto-apoio);
 }
 
 .estado-vazio__acao {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--p-espaco-2);
-  margin-top: var(--p-espaco-2);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--p-espaco-3);
+  padding-top: 0.375rem;
 }
 </style>

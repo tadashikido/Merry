@@ -25,6 +25,7 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
       <MarcaProduto
         class="layout-autenticacao__logo"
         destaque
+        fundo="escuro"
       />
       <div class="layout-autenticacao__lema">
         <p class="layout-autenticacao__frase">
@@ -131,7 +132,8 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
   padding: var(--p-ritmo-bloco) var(--p-ritmo-cartao);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
+  border-radius: var(--p-raio-cartao-amplo);
+  box-shadow: var(--p-sombra-cartao);
 }
 
 .layout-autenticacao__lacre {
@@ -148,9 +150,10 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
   font-family: var(--p-fonte-display);
   font-variant-numeric: lining-nums;
   font-size: var(--p-fonte-tamanho-pagina-celular);
-  font-weight: var(--p-fonte-peso-leve);
-  line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  font-weight: var(--p-fonte-peso-regular);
+  line-height: var(--p-fonte-entrelinha-display);
+  letter-spacing: var(--p-fonte-espacamento-letras-display);
+  color: var(--p-cor-titulo);
 }
 
 .layout-autenticacao__titulo:focus {
@@ -205,7 +208,9 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
     gap: var(--p-ritmo-bloco);
     height: 100vh;
     padding: var(--p-ritmo-secao) var(--p-ritmo-bloco);
-    border-right: 1px solid var(--p-cor-borda);
+    color: var(--p-cor-lateral-escura-texto);
+    background: var(--p-cor-rail);
+    border-right: 0;
     border-bottom: 0;
   }
 
@@ -227,10 +232,11 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
   .layout-autenticacao__frase {
     max-width: 20ch;
     font-family: var(--p-fonte-serif);
+    font-style: italic;
     text-wrap: balance;
     font-size: var(--p-fonte-tamanho-secao);
     line-height: 1.45;
-    color: var(--p-cor-texto-apoio);
+    color: var(--p-cor-lateral-escura-texto);
     text-align: center;
   }
 
@@ -241,7 +247,7 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
     text-wrap: balance;
     font-size: var(--p-fonte-tamanho-titulo);
     line-height: var(--p-fonte-entrelinha-leitura);
-    color: var(--p-cor-texto-apoio);
+    color: var(--p-cor-lateral-escura-apoio);
     text-align: center;
   }
 

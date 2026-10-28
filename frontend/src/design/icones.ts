@@ -57,6 +57,12 @@ export const NOMES_ICONES = [
   'cronograma',
   'ao-vivo',
   'mesa',
+  'aneis',
+  'coroa',
+  'bolo',
+  'taca',
+  'capelo',
+  'centelha',
 ] as const
 
 export type NomeIcone = (typeof NOMES_ICONES)[number]

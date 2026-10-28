@@ -1,3 +1,5 @@
+import type { NomeIcone } from '@/design/icones'
+import { tonsCelebracao, type CoresTom, type TomCelebracao } from '@/design/tokens'
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import type { CategoriaFornecedor } from '@/tipos/fornecedores'
 
@@ -314,6 +316,42 @@ export function tiposEventoEmFrase(): string {
   const rotulos = TIPOS_EVENTO.map((tipo) => VOCABULARIO_TIPO_EVENTO[tipo].rotuloPlural.toLocaleLowerCase('pt-BR'))
   const ultimo = rotulos.pop() ?? ''
   return rotulos.length > 0 ? `${rotulos.join(', ')} e ${ultimo}` : ultimo
+}
+
+export const TOM_DO_TIPO: Record<TipoEvento, TomCelebracao> = {
+  Casamento: 'rose',
+  QuinzeAnos: 'orquidea',
+  Aniversario: 'tangerina',
+  Comemoracao: 'champanhe',
+}
+
+export const ICONE_DO_TOM: Record<TomCelebracao, NomeIcone> = {
+  rose: 'aneis',
+  orquidea: 'coroa',
+  tangerina: 'bolo',
+  champanhe: 'taca',
+  jade: 'capelo',
+  neutro: 'evento',
+}
+
+export function tomDoTipo(tipo: TipoEvento | null | undefined): TomCelebracao {
+  return ehTipoEvento(tipo) ? TOM_DO_TIPO[tipo] : 'neutro'
+}
+
+export function corDoTipo(tipo: TipoEvento | null | undefined): CoresTom {
+  return tonsCelebracao[tomDoTipo(tipo)]
+}
+
+export function classeTom(tom: TomCelebracao): string {
+  return `tom-tipo--${tom}`
+}
+
+export function classeTomDoTipo(tipo: TipoEvento | null | undefined): string {
+  return classeTom(tomDoTipo(tipo))
+}
+
+export function iconeDoTipo(tipo: TipoEvento | null | undefined): NomeIcone {
+  return ICONE_DO_TOM[tomDoTipo(tipo)]
 }
 
 export const TEXTOS_TIPO_EVENTO = {
