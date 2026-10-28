@@ -45,13 +45,26 @@ export function resumirCarteira(eventos: readonly EventoResumoDto[]): ResumoCart
   }
 }
 
-export function descreverCarteiraPorTipo(porTipo: readonly QuantidadePorTipo[]): string {
-  const partes = porTipo.map(({ tipo, quantidade }) => {
+export interface ParteCarteiraTipo {
+  tipo: TipoEvento
+  quantidade: number
+  texto: string
+  separador: string
+}
+
+export function partesCarteiraPorTipo(porTipo: readonly QuantidadePorTipo[]): ParteCarteiraTipo[] {
+  const ultimo = porTipo.length - 1
+  return porTipo.map(({ tipo, quantidade }, indice) => {
     const { singular, plural } = VOCABULARIO_TIPO_EVENTO[tipo].contagem
-    return `${formatarNumero(quantidade)} ${quantidade === 1 ? singular : plural}`
+    const separador = indice === ultimo ? '' : indice === ultimo - 1 ? ' e ' : ', '
+    return { tipo, quantidade, texto: `${formatarNumero(quantidade)} ${quantidade === 1 ? singular : plural}`, separador }
   })
-  const ultima = partes.pop() ?? ''
-  return partes.length > 0 ? `${partes.join(', ')} e ${ultima}` : ultima
+}
+
+export function descreverCarteiraPorTipo(porTipo: readonly QuantidadePorTipo[]): string {
+  return partesCarteiraPorTipo(porTipo)
+    .map((parte) => `${parte.texto}${parte.separador}`)
+    .join('')
 }
 
 export function contarPorTipo(eventos: readonly EventoResumoDto[]): QuantidadePorTipo[] {

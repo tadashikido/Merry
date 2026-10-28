@@ -5,6 +5,7 @@ import {
   contarPorTipo,
   descreverCarteiraPorTipo,
   filtrarEventos,
+  partesCarteiraPorTipo,
   resumirCarteira,
 } from '@/utilitarios/carteiraEventos'
 import { resumoEvento } from '@/views/eventos/__tests__/auxiliaresEventos'
@@ -86,5 +87,25 @@ describe('carteiraEventos', () => {
     expect(filtrarEventos(eventos, { tipo: 'Casamento', fase: null })).toEqual([casamentoReta, casamentoPlanejamento])
     expect(filtrarEventos(eventos, { tipo: null, fase: 'RetaFinal' })).toEqual([casamentoReta, quinzeReta])
     expect(filtrarEventos(eventos, { tipo: 'QuinzeAnos', fase: 'Planejamento' })).toEqual([])
+  })
+
+  it('[UNITÁRIO] partes da carteira por tipo trazem texto e separador que recompõem a frase', () => {
+    const porTipo = [
+      { tipo: 'Casamento' as const, quantidade: 2 },
+      { tipo: 'QuinzeAnos' as const, quantidade: 1 },
+      { tipo: 'Aniversario' as const, quantidade: 1 },
+    ]
+
+    const partes = partesCarteiraPorTipo(porTipo)
+
+    expect(partes.map((parte) => parte.texto)).toEqual(['2 casamentos', '1 festa de 15 anos', '1 aniversário'])
+    expect(partes.map((parte) => parte.separador)).toEqual([', ', ' e ', ''])
+    expect(partes.map((parte) => `${parte.texto}${parte.separador}`).join('')).toBe(descreverCarteiraPorTipo(porTipo))
+  })
+
+  it('[UNITÁRIO] carteira de um só tipo não tem separador', () => {
+    expect(partesCarteiraPorTipo([{ tipo: 'Comemoracao', quantidade: 3 }])).toEqual([
+      { tipo: 'Comemoracao', quantidade: 3, texto: '3 comemorações', separador: '' },
+    ])
   })
 })

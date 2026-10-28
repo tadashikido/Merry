@@ -23,9 +23,9 @@ import { TEXTOS_PAINEL } from '@/textos/autenticacao'
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import { TEXTOS_PAINEL_INICIO } from '@/textos/painelInicio'
 import { PASSOS_PRIMEIRO_ACESSO } from '@/textos/proximosPassos'
-import { VOCABULARIO_TIPO_EVENTO, tiposEventoEmFrase } from '@/textos/tiposEvento'
+import { VOCABULARIO_TIPO_EVENTO, classeTomDoTipo, tiposEventoEmFrase } from '@/textos/tiposEvento'
 import { TIPOS_EVENTO } from '@/tipos/eventos'
-import { descreverCarteiraPorTipo, resumirCarteira } from '@/utilitarios/carteiraEventos'
+import { descreverCarteiraPorTipo, partesCarteiraPorTipo, resumirCarteira } from '@/utilitarios/carteiraEventos'
 import { primeiroNome } from '@/utilitarios/formatacao'
 
 const autenticacao = useAutenticacaoStore()
@@ -49,6 +49,7 @@ const exibirResumoCarteira = computed(() => exibirPendencias.value && !eventos.c
 const exibirVerTodos = computed(() => ehAssessoria.value && (eventos.proximos.length > 0 || temRealizados.value))
 
 const carteira = computed(() => resumirCarteira(eventos.itens))
+const partesCarteira = computed(() => partesCarteiraPorTipo(carteira.value.porTipo))
 
 const indicadoresCarteira = computed<ItemContagem[]>(() => {
   const resumo = carteira.value
@@ -161,7 +162,39 @@ onMounted(carregar)
         :rotulo="TEXTOS_PAINEL_INICIO.resumoRotulo"
         variante="indicadores"
         data-teste="resumo-carteira"
-      />
+      >
+        <template #detalhe="{ item }">
+          <template v-if="item.chave === 'pela-frente'">
+            <span
+              class="carteira-tipos__barra"
+              aria-hidden="true"
+              data-teste="barra-carteira"
+            >
+              <span
+                v-for="parte in partesCarteira"
+                :key="parte.tipo"
+                class="carteira-tipos__segmento"
+                :class="classeTomDoTipo(parte.tipo)"
+                :style="{ flexGrow: parte.quantidade }"
+              />
+            </span>
+            <span class="carteira-tipos__frase"><template
+              v-for="parte in partesCarteira"
+              :key="parte.tipo"
+            ><span
+              class="carteira-tipos__parte"
+              :class="classeTomDoTipo(parte.tipo)"
+              data-teste="carteira-tipo"
+            ><span
+              class="carteira-tipos__ponto"
+              aria-hidden="true"
+            />{{ parte.texto }}</span>{{ parte.separador }}</template></span>
+          </template>
+          <template v-else>
+            {{ item.detalhe }}
+          </template>
+        </template>
+      </ResumoContagem>
 
       <div
         v-if="exibirPendencias"
@@ -286,6 +319,37 @@ onMounted(carregar)
 
 .painel-inicio :deep(.resumo-contagem--indicadores .resumo-contagem__itens.grade) {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.carteira-tipos__barra {
+  display: flex;
+  height: var(--p-dimensao-barra-composicao);
+  margin-block: var(--p-ritmo-campo);
+  overflow: hidden;
+  border-radius: var(--p-raio-total);
+}
+
+.carteira-tipos__segmento {
+  flex-basis: 0;
+  background: var(--tom-viva);
+}
+
+.carteira-tipos__frase {
+  display: block;
+}
+
+.carteira-tipos__parte {
+  white-space: nowrap;
+}
+
+.carteira-tipos__ponto {
+  display: inline-block;
+  width: var(--p-dimensao-ponto-fase);
+  height: var(--p-dimensao-ponto-fase);
+  margin-inline-end: var(--p-ritmo-campo);
+  vertical-align: 0.1em;
+  background: var(--tom-viva);
+  border-radius: var(--p-raio-total);
 }
 
 .painel-inicio__primeiro-acesso {

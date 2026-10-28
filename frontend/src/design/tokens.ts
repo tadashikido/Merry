@@ -345,6 +345,8 @@ export const dimensoes = {
   tileIcone: '3rem',
   tileVazio: '4rem',
   pontoFase: '0.4375rem',
+  fileteTipo: '0.25rem',
+  barraComposicao: '0.5rem',
   larguraAmpla: '96rem',
   larguraFormulario: '48rem',
   larguraLeitura: '38rem',

@@ -283,12 +283,13 @@ describe('PainelInicioView', () => {
     expect(estilo).toContain('var(--p-fonte-peso-leve)')
   })
 
-  it('[UNITÁRIO] cartão de evento e blocos do painel seguem a fundação: sem sombra e com padding do ritmo de cartão', () => {
+  it('[UNITÁRIO] cartão de evento e blocos do painel seguem a fundação: sombra do DS v2 e padding do ritmo de cartão', () => {
     const cartao = estiloDe(lerFonte('componentes/eventos/CartaoEvento.vue'))
     const tarefas = estiloDe(lerFonte('componentes/tarefas/BlocoPendenciasTarefas.vue'))
     const pagamentos = estiloDe(lerFonte('componentes/base/BlocoAlertasPagamentos.vue'))
 
-    expect(cartao).not.toMatch(/box-shadow/)
+    expect(cartao).toContain('box-shadow: var(--p-sombra-cartao)')
+    expect(cartao).toContain('border-radius: var(--p-raio-cartao-evento)')
     for (const estilo of [cartao, tarefas, pagamentos]) {
       expect(estilo).toContain('padding: var(--p-ritmo-cartao)')
     }
@@ -332,6 +333,13 @@ describe('PainelInicioView', () => {
     expect(pelaFrente.text()).toContain('3')
     expect(pelaFrente.text()).toContain(TEXTOS_PAINEL_INICIO.pelaFrente)
     expect(pelaFrente.text()).toContain('2 casamentos e 1 festa de 15 anos')
+    const partes = pelaFrente.findAll('[data-teste="carteira-tipo"]')
+    expect(partes.map((parte) => parte.text())).toEqual(['2 casamentos', '1 festa de 15 anos'])
+    expect(partes[0]?.classes()).toContain('tom-tipo--rose')
+    expect(partes[1]?.classes()).toContain('tom-tipo--orquidea')
+    const barra = pelaFrente.get('[data-teste="barra-carteira"]')
+    expect(barra.attributes('aria-hidden')).toBe('true')
+    expect(barra.findAll('.carteira-tipos__segmento')).toHaveLength(2)
     const semana = resumo.get('[data-teste="contagem-proximos-7-dias"]')
     expect(semana.text()).toContain('1')
     expect(semana.classes()).toContain('resumo-contagem__item--destaque')

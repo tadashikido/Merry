@@ -33,7 +33,10 @@ withDefaults(defineProps<{ itens: ItemContagem[]; rotulo: string; variante?: 'fa
         <span
           v-if="item.detalhe"
           class="resumo-contagem__detalhe"
-        >{{ item.detalhe }}</span>
+        ><slot
+          name="detalhe"
+          :item="item"
+        >{{ item.detalhe }}</slot></span>
       </li>
     </ul>
     <p
@@ -152,6 +155,15 @@ withDefaults(defineProps<{ itens: ItemContagem[]; rotulo: string; variante?: 'fa
   gap: var(--p-ritmo-campo);
   padding: var(--p-ritmo-cartao);
   border: 1px solid var(--p-cor-borda);
+}
+
+.resumo-contagem--indicadores .resumo-contagem__rotulo {
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  line-height: 1.33;
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
+  color: var(--p-cor-texto-apoio);
 }
 
 .resumo-contagem--indicadores .resumo-contagem__numero.numeros-tabulares {

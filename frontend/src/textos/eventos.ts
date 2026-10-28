@@ -1,4 +1,5 @@
 import type { VarianteStatus } from '@/componentes/base/tipos'
+import type { FaseEvento as FaseVisual } from '@/design/tokens'
 import type { FaseEvento, SituacaoListagemEventos } from '@/tipos/eventos'
 import { NOME_PRODUTO } from '@/textos/rotulos'
 import { tiposEventoEmFrase } from '@/textos/tiposEvento'
@@ -97,6 +98,14 @@ export const ROTULOS_FASE: Record<FaseEvento, string> = {
   SemanaDoEvento: 'Semana do evento',
   DiaDoEvento: 'Dia do evento',
   Realizado: 'Realizado',
+}
+
+export const FASE_VISUAL: Record<FaseEvento, FaseVisual> = {
+  Planejamento: 'planejamento',
+  RetaFinal: 'retaFinal',
+  SemanaDoEvento: 'retaFinal',
+  DiaDoEvento: 'retaFinal',
+  Realizado: 'realizado',
 }
 
 export const VARIANTE_FASE: Record<FaseEvento, VarianteStatus> = {

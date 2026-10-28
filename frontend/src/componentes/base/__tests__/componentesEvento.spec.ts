@@ -8,6 +8,7 @@ import ContagemRegressiva from '@/componentes/base/ContagemRegressiva.vue'
 import ListaDetalhes from '@/componentes/base/ListaDetalhes.vue'
 import NomesAnfitrioes from '@/componentes/base/NomesAnfitrioes.vue'
 import CartaoEvento from '@/componentes/eventos/CartaoEvento.vue'
+import EtiquetaFaseEvento from '@/componentes/eventos/EtiquetaFaseEvento.vue'
 import { rotas } from '@/router'
 import type { EventoResumoDto } from '@/tipos/eventos'
 
@@ -183,5 +184,37 @@ describe('CartaoEvento', () => {
     expect(wrapper.get('[data-teste="tipo-evento"]').text()).toBe('Aniversário')
     expect(wrapper.get('[data-teste="nomes-anfitrioes"]').text()).toBe('Helena')
     expect(wrapper.get('a').attributes('aria-label')).toMatch(/^Helena, Aniversário, /)
+  })
+
+  it('[COMPONENTE] usa a cor do tipo, tile e etiqueta de fase com ponto', async () => {
+    const roteador = createRouter({ history: createMemoryHistory(), routes: rotas })
+    const wrapper = mount(CartaoEvento, {
+      props: { evento: { ...evento, tipo: 'QuinzeAnos', fase: 'SemanaDoEvento' } },
+      global: { plugins: [...global.plugins, roteador] },
+    })
+    await flushPromises()
+
+    expect(wrapper.get('a').classes()).toContain('tom-tipo--orquidea')
+    expect(wrapper.get('[data-teste="tile-tipo"]').attributes('data-tom')).toBe('orquidea')
+    expect(wrapper.get('[data-teste="etiqueta-tipo"]').attributes('data-tom')).toBe('orquidea')
+    const fase = wrapper.get('[data-teste="etiqueta-fase"]')
+    expect(fase.attributes('data-fase')).toBe('retaFinal')
+    expect(fase.text()).toBe('Semana do evento')
+    expect(wrapper.find('[data-teste="badge-status"]').exists()).toBe(false)
+  })
+})
+
+describe('EtiquetaFaseEvento', () => {
+  it.each([
+    ['Planejamento', 'planejamento', 'Planejamento'],
+    ['RetaFinal', 'retaFinal', 'Reta final'],
+    ['SemanaDoEvento', 'retaFinal', 'Semana do evento'],
+    ['DiaDoEvento', 'retaFinal', 'Dia do evento'],
+    ['Realizado', 'realizado', 'Realizado'],
+  ] as const)('[COMPONENTE] fase %s usa a cor visual %s e o rótulo de domínio', (fase, visual, rotulo) => {
+    const wrapper = mount(EtiquetaFaseEvento, { props: { fase }, global })
+
+    expect(wrapper.attributes('data-fase')).toBe(visual)
+    expect(wrapper.text()).toBe(rotulo)
   })
 })

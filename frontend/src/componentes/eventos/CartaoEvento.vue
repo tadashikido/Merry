@@ -2,11 +2,13 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 
-import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
 import ContagemRegressiva from '@/componentes/base/ContagemRegressiva.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import NomesAnfitrioes from '@/componentes/base/NomesAnfitrioes.vue'
-import { ROTULOS_FASE, VARIANTE_FASE, descreverContagem } from '@/textos/eventos'
-import { vocabularioDoTipo } from '@/textos/tiposEvento'
+import TileTipo from '@/componentes/base/TileTipo.vue'
+import EtiquetaFaseEvento from '@/componentes/eventos/EtiquetaFaseEvento.vue'
+import { ROTULOS_FASE, descreverContagem } from '@/textos/eventos'
+import { classeTomDoTipo, vocabularioDoTipo } from '@/textos/tiposEvento'
 import type { EventoResumoDto } from '@/tipos/eventos'
 import { formatarDataCalendarioComDiaSemana, formatarNomesEmFrase } from '@/utilitarios/formatacao'
 
@@ -33,13 +35,22 @@ const nomeAcessivel = computed(() =>
 <template>
   <RouterLink
     class="cartao-evento"
+    :class="classeTomDoTipo(evento.tipo)"
     :to="{ name: 'evento', params: { id: evento.id } }"
     :aria-label="nomeAcessivel"
     data-teste="cartao-evento"
   >
-    <span class="cartao-evento__quando">
-      <span data-teste="tipo-evento">{{ tipo }}</span>
-      <span class="numeros-tabulares">{{ quando }}</span>
+    <span class="cartao-evento__topo">
+      <TileTipo :tipo="evento.tipo" />
+      <span class="cartao-evento__quando">
+        <span
+          class="cartao-evento__tipo"
+          data-teste="tipo-evento"
+        >
+          <EtiquetaTipo :tipo="evento.tipo" />
+        </span>
+        <span class="cartao-evento__data numeros-tabulares">{{ quando }}</span>
+      </span>
     </span>
     <NomesAnfitrioes
       class="cartao-evento__nomes"
@@ -48,10 +59,7 @@ const nomeAcessivel = computed(() =>
       tamanho="cartao"
     />
     <span class="cartao-evento__rodape">
-      <BadgeStatus
-        :texto="ROTULOS_FASE[evento.fase]"
-        :variante="VARIANTE_FASE[evento.fase]"
-      />
+      <EtiquetaFaseEvento :fase="evento.fase" />
       <ContagemRegressiva :dias="evento.diasRestantes" />
     </span>
   </RouterLink>
@@ -59,30 +67,58 @@ const nomeAcessivel = computed(() =>
 
 <style scoped>
 .cartao-evento {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--p-ritmo-campo);
+  gap: var(--p-ritmo-grupo);
   height: 100%;
   padding: var(--p-ritmo-cartao);
+  overflow: hidden;
   color: var(--p-cor-texto);
   text-decoration: none;
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
+  border-radius: var(--p-raio-cartao-evento);
+  box-shadow: var(--p-sombra-cartao);
+  transition: border-color var(--p-duracao-rapida);
+}
+
+.cartao-evento::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--p-dimensao-filete-tipo);
+  content: '';
+  background: var(--tom-viva);
 }
 
 .cartao-evento:hover {
-  border-color: var(--p-cor-borda-campo);
+  border-color: var(--tom-viva);
 }
 
 .cartao-evento:active {
   background: var(--p-cor-fundo);
 }
 
+.cartao-evento__topo {
+  display: flex;
+  align-items: center;
+  gap: var(--p-ritmo-campo);
+  min-width: 0;
+}
+
 .cartao-evento__quando {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0 var(--p-espaco-3);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--p-ritmo-campo);
+  min-width: 0;
+}
+
+.cartao-evento__tipo {
+  display: inline-flex;
+}
+
+.cartao-evento__data {
   font-size: var(--p-fonte-tamanho-controle);
   color: var(--p-cor-texto-apoio);
 }
@@ -96,8 +132,8 @@ const nomeAcessivel = computed(() =>
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--p-espaco-2);
-  padding-top: var(--p-espaco-3);
+  gap: var(--p-ritmo-campo);
+  padding-top: var(--p-ritmo-campo);
   border-top: 1px solid var(--p-cor-borda);
 }
 </style>
