@@ -181,4 +181,48 @@ describe('Andamento do evento', () => {
     expect(estilo).toMatch(/@container andamento \(min-width: 34rem\)/)
     expect(estilo).not.toMatch(/--p-espaco-/)
   })
+
+  it.each([
+    ['Casamento', 'rose'],
+    ['QuinzeAnos', 'orquidea'],
+    ['Aniversario', 'tangerina'],
+    ['Comemoracao', 'champanhe'],
+  ] as const)('[COMPONENTE] %s: capa do evento no tom %s com etiqueta de tipo com ícone e fase com ponto', async (tipo, tom) => {
+    const tela = await abrir(tipo)
+
+    const capa = tela.get('[data-teste="capa-evento"]')
+    expect(capa.classes()).toContain('evento__capa')
+    expect(capa.classes()).toContain(`tom-tipo--${tom}`)
+    const etiqueta = capa.get('[data-teste="tipo-evento"] [data-teste="etiqueta-tipo"]')
+    expect(etiqueta.attributes('data-tom')).toBe(tom)
+    expect(etiqueta.find('.etiqueta-tipo__icone').attributes('aria-hidden')).toBe('true')
+    const fase = capa.get('[data-teste="etiqueta-fase"]')
+    expect(fase.find('.etiqueta-fase__ponto').exists()).toBe(true)
+    expect(capa.find('[data-teste="badge-status"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] tipo desconhecido deixa a capa no tom neutro, nunca no de Casamento', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ tipo: 'Formatura' as TipoEvento }))),
+    )
+    const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}`)
+    wrapper = await montarView(RaizRotas, montagem)
+
+    const capa = wrapper.get('[data-teste="capa-evento"]')
+    expect(capa.classes()).toContain('tom-tipo--neutro')
+    expect(capa.classes()).not.toContain('tom-tipo--rose')
+    expect(capa.get('[data-teste="etiqueta-tipo"]').attributes('data-tom')).toBe('neutro')
+  })
+
+  it('[UNITÁRIO] rótulos do andamento seguem o padrão de rótulo do DS e a barra usa token de dimensão', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { resolve } = await import('node:path')
+    const fonte = readFileSync(resolve(__dirname, '../../../componentes/eventos/AndamentoEvento.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    const rotulo = estilo.slice(estilo.indexOf('.andamento .andamento__rotulo {'))
+    expect(rotulo.slice(0, rotulo.indexOf('}'))).toMatch(/text-transform: uppercase/)
+    expect(rotulo.slice(0, rotulo.indexOf('}'))).toMatch(/var\(--p-fonte-tamanho-rotulo\)/)
+    expect(estilo).toMatch(/height: var\(--p-dimensao-barra-composicao\)/)
+  })
 })

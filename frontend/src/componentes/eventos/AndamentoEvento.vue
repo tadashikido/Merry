@@ -207,10 +207,13 @@ const prazoAcessivel = computed(() => {
 }
 
 .andamento .andamento__rotulo {
-  font-family: var(--p-fonte-display);
-  font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-texto-secundario);
+  font-family: var(--p-fonte-interface);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  line-height: 1.33;
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
+  color: var(--p-cor-texto-apoio);
 }
 
 .andamento__valor {
@@ -229,7 +232,7 @@ const prazoAcessivel = computed(() => {
 .andamento__barra {
   display: block;
   width: 100%;
-  height: 0.25rem;
+  height: var(--p-dimensao-barra-composicao);
   overflow: hidden;
   border-radius: var(--p-raio-total);
   background: var(--p-cor-borda-controle);

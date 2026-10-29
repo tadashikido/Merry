@@ -277,6 +277,7 @@ function irParaAcessoAnfitriao() {
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
   background: var(--p-cor-superficie);
+  box-shadow: var(--p-sombra-cartao);
 }
 
 .proximos-passos__cabecalho {
@@ -296,8 +297,8 @@ function irParaAcessoAnfitriao() {
 .proximos-passos .proximos-passos__titulo {
   margin: 0;
   font-family: var(--p-fonte-display);
-  font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-medio);
+  font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-regular);
   font-variant-numeric: lining-nums;
   line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-texto);

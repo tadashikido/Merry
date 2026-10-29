@@ -5,6 +5,7 @@ import Button from 'primevue/button'
 
 import LayoutPainelUsuario from '@/layouts/LayoutPainelUsuario.vue'
 import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
 import ContagemRegressiva from '@/componentes/base/ContagemRegressiva.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
@@ -17,14 +18,15 @@ import BlocoAlertasPagamentos from '@/componentes/base/BlocoAlertasPagamentos.vu
 import BlocoConvidados from '@/componentes/convidados/BlocoConvidados.vue'
 import AndamentoEvento from '@/componentes/eventos/AndamentoEvento.vue'
 import BlocoProximosPassos from '@/componentes/eventos/BlocoProximosPassos.vue'
+import EtiquetaFaseEvento from '@/componentes/eventos/EtiquetaFaseEvento.vue'
 import type { ItemDetalhe } from '@/componentes/base/tipos'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useEventosStore } from '@/stores/eventos'
 import { useFinanceiroStore } from '@/stores/financeiro'
 import { TEXTOS_AREA_ANFITRIAO } from '@/textos/acessoAnfitriao'
-import { ROTULOS_FASE, TEXTOS_EVENTOS, VARIANTE_FASE } from '@/textos/eventos'
-import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { TEXTOS_EVENTOS } from '@/textos/eventos'
+import { classeTomDoTipo, ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import { TEXTOS_DUPLICACAO_EVENTO } from '@/textos/duplicacaoEvento'
 import {
   formatarDataCalendarioComDiaSemana,
@@ -58,6 +60,8 @@ const quando = computed(() => {
 const podeEditar = computed(() => !autenticacao.ehAnfitriao && Boolean(evento.value && !evento.value.arquivado))
 
 const vocabulario = computed(() => vocabularioOuNeutro(evento.value?.tipo))
+const tipoConhecido = computed(() => (evento.value && ehTipoEvento(evento.value.tipo) ? evento.value.tipo : null))
+const classeCapa = computed(() => classeTomDoTipo(tipoConhecido.value))
 
 const exibeProximosPassos = computed(() => !autenticacao.ehAnfitriao && Boolean(evento.value && !evento.value.arquivado))
 const exibeTopo = computed(() => Boolean(evento.value && !evento.value.arquivado))
@@ -186,6 +190,9 @@ async function desfazerArquivamento(id: string) {
       <CabecalhoPagina
         :titulo="nomes"
         tamanho="display"
+        class="evento__capa"
+        :class="classeCapa"
+        data-teste="capa-evento"
       >
         <template #titulo>
           <NomesAnfitrioes
@@ -195,14 +202,20 @@ async function desfazerArquivamento(id: string) {
           />
         </template>
         <template #detalhes>
-          <span data-teste="tipo-evento">{{ vocabulario.rotulo }}</span>
+          <span
+            class="evento__tipo"
+            data-teste="tipo-evento"
+          >
+            <EtiquetaTipo
+              :tipo="tipoConhecido"
+              :rotulo="vocabulario.rotulo"
+              com-icone
+            />
+          </span>
           <span class="numeros-tabulares evento__quando">{{ quando }}</span>
           <span v-if="evento.localCerimonia">{{ evento.localCerimonia }}</span>
           <span class="evento__situacao">
-            <BadgeStatus
-              :texto="ROTULOS_FASE[evento.fase]"
-              :variante="VARIANTE_FASE[evento.fase]"
-            />
+            <EtiquetaFaseEvento :fase="evento.fase" />
             <BadgeStatus
               v-if="evento.arquivado"
               :texto="TEXTOS_EVENTOS.statusArquivado"
@@ -352,6 +365,40 @@ async function desfazerArquivamento(id: string) {
   text-transform: uppercase;
 }
 
+.evento__capa {
+  --nomes-cor: var(--tom-profunda);
+  --nomes-conector: var(--tom-tinta);
+  padding: var(--p-ritmo-cartao) var(--p-ritmo-grupo);
+  background: var(--tom-fundo);
+  border-radius: var(--p-raio-cartao-amplo);
+}
+
+.evento__capa :deep(.cabecalho-pagina__trilha),
+.evento__capa :deep(.cabecalho-pagina__trilha a),
+.evento__capa :deep(.cabecalho-pagina__detalhes),
+.evento__capa :deep(.contagem__legenda) {
+  color: var(--tom-tinta);
+}
+
+.evento__capa :deep(.cabecalho-pagina__trilha [aria-current='page']),
+.evento__capa :deep(.contagem__numero),
+.evento__capa :deep(.contagem__frase) {
+  color: var(--tom-profunda);
+}
+
+.evento__capa :deep(.cabecalho-pagina__detalhes) {
+  align-items: center;
+}
+
+.evento__capa :deep(.etiqueta-tipo),
+.evento__capa :deep(.p-button-outlined) {
+  background: var(--p-cor-superficie);
+}
+
+.evento__tipo {
+  display: inline-flex;
+}
+
 .evento__situacao {
   display: inline-flex;
   flex-wrap: wrap;
@@ -374,6 +421,12 @@ async function desfazerArquivamento(id: string) {
   grid-template-columns: repeat(auto-fit, minmax(min(28rem, 100%), 1fr));
   gap: var(--p-ritmo-cartao);
   align-items: start;
+}
+
+@container aplicacao (min-width: 80rem) {
+  .evento__capa {
+    padding: var(--p-ritmo-bloco);
+  }
 }
 
 @container com-lateral (min-width: 52rem) {
