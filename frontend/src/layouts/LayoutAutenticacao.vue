@@ -21,7 +21,10 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
       v-if="!demonstracao"
       class="layout-autenticacao__editorial"
     >
-      <MarcaProduto class="layout-autenticacao__marca" />
+      <MarcaProduto
+        class="layout-autenticacao__marca"
+        fundo="escuro"
+      />
       <MarcaProduto
         class="layout-autenticacao__logo"
         destaque
@@ -104,9 +107,9 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--p-ritmo-grupo) var(--p-ritmo-grupo);
-  background: var(--p-cor-superficie);
-  border-bottom: 1px solid var(--p-cor-borda);
+  padding: var(--p-ritmo-grupo);
+  color: var(--p-cor-lateral-escura-texto);
+  background: var(--p-cor-rail);
 }
 
 .layout-autenticacao__logo,
@@ -161,6 +164,11 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
 }
 
 .layout-autenticacao__descricao {
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-apoio-editorial);
+  font-style: italic;
+  line-height: 1.5;
+  text-wrap: pretty;
   color: var(--p-cor-texto-apoio);
 }
 
@@ -209,9 +217,6 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
     height: 100vh;
     padding: var(--p-ritmo-secao) var(--p-ritmo-bloco);
     color: var(--p-cor-lateral-escura-texto);
-    background: var(--p-cor-rail);
-    border-right: 0;
-    border-bottom: 0;
   }
 
   .layout-autenticacao__marca {
