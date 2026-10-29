@@ -168,6 +168,89 @@
   border-top: 1px solid var(--p-cor-borda);
 }
 
+.formulario-cartao {
+  container: formulario / inline-size;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--p-ritmo-cartao);
+  background: var(--p-cor-superficie);
+  border: 1px solid var(--p-cor-borda);
+  border-radius: var(--p-raio-painel);
+  box-shadow: var(--p-sombra-cartao);
+}
+
+.formulario-secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-grupo);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.formulario-secao + .formulario-secao {
+  margin-top: var(--p-ritmo-cartao);
+}
+
+.formulario-secao + .formulario-secao > .formulario-secao__titulo,
+.formulario-secao + .formulario-acoes {
+  width: 100%;
+  padding-top: var(--p-ritmo-cartao);
+  border-top: 1px solid var(--p-cor-borda);
+}
+
+.formulario-secao + .formulario-acoes {
+  margin-top: var(--p-ritmo-cartao);
+}
+
+.formulario-secao__titulo {
+  margin: 0;
+  padding: 0;
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-regular);
+  line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-titulo);
+}
+
+legend.formulario-secao__titulo {
+  margin-bottom: var(--p-ritmo-grupo);
+}
+
+.formulario-colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
+}
+
+.formulario-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-campo);
+}
+
+@container formulario (min-width: 36rem) {
+  .formulario-colunas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .formulario-acoes {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--p-ritmo-grupo);
+  }
+}
+
+@container aplicacao (min-width: 64rem) {
+  .formulario-cartao {
+    padding: var(--p-ritmo-bloco);
+  }
+}
+
 .recolhivel__resumo {
   display: flex;
   align-items: center;

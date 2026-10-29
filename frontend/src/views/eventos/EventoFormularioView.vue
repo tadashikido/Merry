@@ -429,7 +429,7 @@ function cancelar() {
             />
 
             <form
-              class="pilha pilha--bloco"
+              class="formulario-cartao"
               novalidate
               data-teste="formulario-evento"
               @submit.prevent="enviar"
@@ -441,14 +441,14 @@ function cancelar() {
                 :erro="formulario.erros.tipo"
               />
 
-              <fieldset class="formulario-evento__grupo pilha pilha--grupo">
+              <fieldset class="formulario-secao">
                 <legend
-                  class="formulario-evento__legenda texto-rotulo"
+                  class="formulario-secao__titulo"
                   data-teste="legenda-homenageados"
                 >
                   {{ vocabulario.homenageados.grupo }}
                 </legend>
-                <div class="formulario-evento__colunas">
+                <div class="formulario-colunas">
                   <CampoFormulario
                     v-slot="{ id: idEntrada, invalido, descritoPor }"
                     :rotulo="vocabulario.homenageados.primeiro"
@@ -496,11 +496,11 @@ function cancelar() {
                 </div>
               </fieldset>
 
-              <fieldset class="formulario-evento__grupo pilha pilha--grupo">
-                <legend class="formulario-evento__legenda texto-rotulo">
+              <fieldset class="formulario-secao">
+                <legend class="formulario-secao__titulo">
                   {{ TEXTOS_EVENTOS.grupoQuando }}
                 </legend>
-                <div class="formulario-evento__colunas">
+                <div class="formulario-colunas">
                   <CampoFormulario
                     v-slot="{ id: idEntrada, invalido, descritoPor }"
                     :rotulo="TEXTOS_EVENTOS.data"
@@ -544,7 +544,7 @@ function cancelar() {
                     />
                   </CampoFormulario>
                 </div>
-                <div class="formulario-evento__colunas">
+                <div class="formulario-colunas">
                   <CampoFormulario
                     v-slot="{ id: idEntrada, invalido, descritoPor }"
                     :rotulo="TEXTOS_EVENTOS.dataLimiteRsvp"
@@ -570,11 +570,11 @@ function cancelar() {
                 </div>
               </fieldset>
 
-              <fieldset class="formulario-evento__grupo pilha pilha--grupo">
-                <legend class="formulario-evento__legenda texto-rotulo">
+              <fieldset class="formulario-secao">
+                <legend class="formulario-secao__titulo">
                   {{ TEXTOS_EVENTOS.grupoOnde }}
                 </legend>
-                <div class="formulario-evento__colunas">
+                <div class="formulario-colunas">
                   <CampoFormulario
                     v-slot="{ id: idEntrada, invalido, descritoPor }"
                     :rotulo="vocabulario.locais.campoPrincipal"
@@ -615,11 +615,11 @@ function cancelar() {
                 </div>
               </fieldset>
 
-              <fieldset class="formulario-evento__grupo pilha pilha--grupo">
-                <legend class="formulario-evento__legenda texto-rotulo">
+              <fieldset class="formulario-secao">
+                <legend class="formulario-secao__titulo">
                   {{ TEXTOS_EVENTOS.grupoPlanejamento }}
                 </legend>
-                <div class="formulario-evento__colunas">
+                <div class="formulario-colunas">
                   <CampoFormulario
                     v-slot="{ id: idEntrada, invalido, descritoPor }"
                     :rotulo="TEXTOS_EVENTOS.convidados"
@@ -664,7 +664,7 @@ function cancelar() {
                 </CampoFormulario>
               </fieldset>
 
-              <div class="formulario-evento__acoes">
+              <div class="formulario-acoes">
                 <Button
                   type="submit"
                   :label="rotuloSalvar"
@@ -687,7 +687,7 @@ function cancelar() {
           </div>
 
           <LateralFormularioEvento
-            class="formulario-evento__lateral com-lateral__lateral com-lateral__lateral--filete"
+            class="formulario-evento__lateral com-lateral__lateral"
             :tipo="formulario.valores.tipo"
             :mostrar-modelos="!edicao"
           />
@@ -722,11 +722,6 @@ function cancelar() {
 </template>
 
 <style scoped>
-.formulario-evento__principal {
-  container: formulario-evento-campos / inline-size;
-  min-width: 0;
-}
-
 .formulario-evento__alternativa {
   margin: 0;
   font-size: var(--p-fonte-tamanho-controle);
@@ -737,45 +732,5 @@ function cancelar() {
   align-items: center;
   gap: var(--p-ritmo-campo);
   min-height: var(--p-dimensao-alvo-toque);
-}
-
-.formulario-evento__grupo {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.formulario-evento__legenda {
-  padding: 0;
-  margin-bottom: var(--p-ritmo-grupo);
-}
-
-.formulario-evento__colunas {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
-}
-
-.formulario-evento__acoes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-ritmo-campo);
-}
-
-.formulario-evento__acoes :deep(.p-button) {
-  min-height: var(--p-dimensao-alvo-toque);
-}
-
-@container formulario-evento-campos (min-width: 36rem) {
-  .formulario-evento__colunas {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-
-  .formulario-evento__acoes {
-    flex-direction: row;
-    gap: var(--p-ritmo-grupo);
-  }
 }
 </style>

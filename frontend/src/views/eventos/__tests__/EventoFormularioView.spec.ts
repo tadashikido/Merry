@@ -49,7 +49,7 @@ function erroDe(campo: string) {
 }
 
 function colunaDe(campo: string) {
-  return wrapper!.get(`#evento-${campo}`).element.closest('.formulario-evento__colunas')
+  return wrapper!.get(`#evento-${campo}`).element.closest('.formulario-colunas')
 }
 
 describe('EventoFormularioView no design system Celebri', () => {
@@ -63,18 +63,18 @@ describe('EventoFormularioView no design system Celebri', () => {
     expect(pagina.find('[data-teste="a-partir-de-outro"]').exists()).toBe(true)
   })
 
-  it('[COMPONENTE] quatro seções nomeadas no ritmo de bloco e grupo', async () => {
+  it('[COMPONENTE] quatro seções nomeadas em Fraunces dentro do cartão do formulário', async () => {
     rotearFetch(fetchSimulado)
     await abrir('/eventos/novo')
 
     const formulario = wrapper!.get('[data-teste="formulario-evento"]')
-    expect(formulario.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    expect(formulario.classes()).toContain('formulario-cartao')
     expect(formulario.find('[data-teste="escolha-tipo-evento"]').exists()).toBe(true)
     const secoes = formulario.findAll('fieldset').filter((secao) => secao.attributes('data-teste') !== 'escolha-tipo-evento')
     expect(secoes).toHaveLength(4)
     for (const secao of secoes) {
-      expect(secao.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--grupo']))
-      expect(secao.get('legend').classes()).toContain('texto-rotulo')
+      expect(secao.classes()).toContain('formulario-secao')
+      expect(secao.get('legend').classes()).toContain('formulario-secao__titulo')
     }
     expect(secoes.map((secao) => secao.get('legend').text())).toEqual([
       VOCABULARIO_TIPO_EVENTO.Casamento.homenageados.grupo,
@@ -190,18 +190,18 @@ describe('EventoFormularioView no design system Celebri', () => {
     expect(fonte.match(/@update:model-value="formulario\.revalidarAoDigitar\('\w+'\)"/g)).toHaveLength(9)
   })
 
-  it('[UNITÁRIO] estilos usam só o ritmo e tokens, sem largura própria nem valores soltos', () => {
+  it('[UNITÁRIO] usa o padrão de formulário do DS v2 e estilos só com ritmo e tokens', () => {
     const fonte = readFileSync(resolve(__dirname, '../EventoFormularioView.vue'), 'utf-8')
     const estilo = fonte.slice(fonte.indexOf('<style scoped>'))
-    const semContainer = estilo.replace(/@container[^{]+\{/g, '').replace(/1px solid/g, '')
 
-    expect(estilo).toContain('gap: var(--p-ritmo-grupo) var(--p-ritmo-cartao)')
-    expect(estilo).toContain('margin-bottom: var(--p-ritmo-grupo)')
+    expect(fonte).toContain('class="formulario-cartao"')
+    expect(fonte.match(/<fieldset class="formulario-secao">/g)).toHaveLength(4)
+    expect(fonte.match(/class="formulario-secao__titulo"/g)).toHaveLength(4)
+    expect(fonte).toContain('class="formulario-colunas"')
+    expect(fonte).toContain('class="formulario-acoes"')
     expect(estilo).not.toContain('@media')
-    expect(estilo).toContain('@container formulario-evento-campos (min-width: 36rem)')
-    expect(estilo).not.toContain('@container formulario-evento ')
     expect(estilo).not.toContain('--p-espaco-')
-    expect(semContainer).not.toMatch(/\d+(px|rem|em)\b/)
+    expect(estilo).not.toMatch(/\d+(px|rem|em)\b/)
     expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
     expect(estilo).not.toMatch(/margin[^:]*:\s*-/)
   })
@@ -264,6 +264,26 @@ describe('EventoFormularioView com orientação por tipo de evento', () => {
     expect(lateral().get('[data-teste="orientacao-horario"] h3').text()).toBe(vocabulario.horario)
     expect(lateral().get('[data-teste="orientacao-local"] h3').text()).toBe(vocabulario.locais.campoPrincipal)
     expect(lateral().get('[data-teste="modelos-para-comecar"]').text()).toContain(vocabulario.referencia.contracaoDe)
+  })
+
+  it('[COMPONENTE] tiles do tipo usam o tom de cada celebração e a lateral acompanha o tom escolhido', async () => {
+    rotearComModelos()
+    await abrir('/eventos/novo')
+
+    const tons: Record<TipoEvento, string> = { Casamento: 'rose', QuinzeAnos: 'orquidea', Aniversario: 'tangerina', Comemoracao: 'champanhe' }
+    for (const tipo of TIPOS_EVENTO) {
+      const opcao = wrapper!.get(`label[for="evento-tipo-${tipo}"]`)
+      expect(opcao.classes()).toContain(`tom-tipo--${tons[tipo]}`)
+      expect(opcao.get('[data-teste="tile-tipo"]').attributes('data-tom')).toBe(tons[tipo])
+    }
+    expect(wrapper!.get('label[for="evento-tipo-Casamento"]').classes()).toContain('escolha-tipo-evento__opcao--marcada')
+    expect(lateral().classes()).toContain('tom-tipo--rose')
+
+    await escolherTipo('QuinzeAnos')
+    expect(wrapper!.get('label[for="evento-tipo-QuinzeAnos"]').classes()).toContain('escolha-tipo-evento__opcao--marcada')
+    expect(wrapper!.get('label[for="evento-tipo-Casamento"]').classes()).not.toContain('escolha-tipo-evento__opcao--marcada')
+    expect(lateral().classes()).toContain('tom-tipo--orquidea')
+    expect(lateral().get('[data-teste="orientacao-tipo-evento"] .lateral-destaque__rotulo').text()).toBe(VOCABULARIO_TIPO_EVENTO.QuinzeAnos.rotulo)
   })
 
   it('[UNITÁRIO] cada tipo tem sua frase do que costuma ter, sem citar casamento fora do Casamento', () => {

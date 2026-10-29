@@ -84,6 +84,15 @@ describe('fundação Celebri: primitivas de layout', () => {
     expect(cssLayout).toContain('var(--p-dimensao-largura-ampla)')
   })
 
+  it('[UNITÁRIO] declara o padrão de formulário do DS v2 com quebra por contêiner do próprio cartão', () => {
+    for (const classe of ['.formulario-cartao', '.formulario-secao', '.formulario-secao__titulo', '.formulario-colunas', '.formulario-acoes']) {
+      expect(cssLayout).toMatch(new RegExp(`${classe.replace('.', '\\.')}\\s*[,{]`))
+    }
+    expect(cssLayout).toMatch(/\.formulario-cartao\s*\{[^}]*container:\s*formulario \/ inline-size[^}]*box-shadow:\s*var\(--p-sombra-cartao\)/)
+    expect(cssLayout).toMatch(/\.formulario-secao__titulo\s*\{[^}]*font-family:\s*var\(--p-fonte-display\)/)
+    expect(cssLayout).toContain('@container formulario (min-width: 36rem)')
+  })
+
   it('[UNITÁRIO] as larguras de página são centralizadas', () => {
     expect(cssLayout).toMatch(/\.pagina-ampla,\s*\.pagina-formulario,\s*\.pagina-leitura\s*\{[^}]*margin-inline:\s*auto/)
   })

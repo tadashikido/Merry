@@ -155,6 +155,18 @@ describe('LateralDestaque', () => {
   })
 })
 
+describe('LateralDestaque nomeada', () => {
+  it('[COMPONENTE] com idTitulo, o h2 recebe o id e nomeia a região', () => {
+    const wrapper = mount(LateralDestaque, { props: { rotulo: 'Casamento', titulo: 'Como organizar o casamento', idTitulo: 'titulo-lateral' } })
+    expect(wrapper.get('h2').attributes('id')).toBe('titulo-lateral')
+    expect(wrapper.attributes('aria-labelledby')).toBe('titulo-lateral')
+
+    const semId = mount(LateralDestaque, { props: { rotulo: 'R', titulo: 'T' } })
+    expect(semId.attributes('aria-labelledby')).toBeUndefined()
+    expect(semId.get('h2').attributes('id')).toBeUndefined()
+  })
+})
+
 describe('EstadoVazio no DS v2', () => {
   it('[COMPONENTE] usa o cartão tracejado por padrão e a variante simples quando pedida', () => {
     const cartao = mount(EstadoVazio, { props: { titulo: 'Nenhuma tarefa ainda' }, global })

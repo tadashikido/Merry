@@ -1,7 +1,8 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ rotulo: string; titulo: string; descricao?: string; elemento?: 'aside' | 'section' }>(), {
+withDefaults(defineProps<{ rotulo: string; titulo: string; descricao?: string; elemento?: 'aside' | 'section'; idTitulo?: string }>(), {
   descricao: undefined,
   elemento: 'aside',
+  idTitulo: undefined,
 })
 </script>
 
@@ -9,11 +10,15 @@ withDefaults(defineProps<{ rotulo: string; titulo: string; descricao?: string; e
   <component
     :is="elemento"
     class="lateral-destaque"
+    :aria-labelledby="idTitulo"
     data-teste="lateral-destaque"
   >
     <header class="lateral-destaque__cabecalho">
       <span class="lateral-destaque__rotulo">{{ rotulo }}</span>
-      <h2 class="lateral-destaque__titulo">
+      <h2
+        :id="idTitulo"
+        class="lateral-destaque__titulo"
+      >
         {{ titulo }}
       </h2>
       <p

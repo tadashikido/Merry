@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 
-import OrientacaoAcesso, { type ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
+import LateralDestaque from '@/componentes/base/LateralDestaque.vue'
+import type { ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
 import { TEXTOS_FORMULARIO_EVENTO } from '@/textos/eventos'
-import { vocabularioDoTipo } from '@/textos/tiposEvento'
+import { classeTomDoTipo, vocabularioDoTipo } from '@/textos/tiposEvento'
 import type { TipoEvento } from '@/tipos/eventos'
 import { modelosDoTipo, type ModeloComTipo } from '@/utilitarios/modelosPorTipo'
 
@@ -102,19 +103,36 @@ onMounted(() => {
 
 <template>
   <div
-    class="lateral-formulario-evento pilha pilha--bloco"
+    class="lateral-formulario-evento pilha pilha--cartao"
+    :class="classeTomDoTipo(tipo)"
     data-teste="lateral-formulario-evento"
   >
-    <OrientacaoAcesso
+    <LateralDestaque
       id-titulo="titulo-orientacao-tipo-evento"
+      :rotulo="vocabulario.rotulo"
       :titulo="TEXTOS_FORMULARIO_EVENTO.orientacaoTitulo(vocabulario.referencia.artigo)"
-      :itens="itensOrientacao"
       data-teste="orientacao-tipo-evento"
-    />
+    >
+      <ul class="lateral-formulario-evento__itens">
+        <li
+          v-for="item in itensOrientacao"
+          :key="item.chave"
+          class="lateral-formulario-evento__item"
+          :data-teste="item.teste"
+        >
+          <h3 class="lateral-formulario-evento__pergunta">
+            {{ item.titulo }}
+          </h3>
+          <p class="lateral-formulario-evento__texto">
+            {{ item.texto }}
+          </p>
+        </li>
+      </ul>
+    </LateralDestaque>
 
     <section
       v-if="temModelos"
-      class="lateral-formulario-evento__modelos pilha pilha--grupo"
+      class="lateral-formulario-evento__modelos cartao pilha pilha--grupo"
       aria-labelledby="titulo-modelos-para-comecar"
       data-teste="modelos-para-comecar"
     >
@@ -166,12 +184,37 @@ onMounted(() => {
   min-width: 0;
 }
 
+.lateral-formulario-evento__itens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-grupo);
+  margin: 0;
+  padding: var(--p-ritmo-campo) 0;
+  list-style: none;
+}
+
+.lateral-formulario-evento__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-espaco-1);
+  padding-inline-start: var(--p-ritmo-grupo);
+  border-inline-start: 2px solid var(--tom-viva);
+}
+
+.lateral-formulario-evento__pergunta {
+  font-family: var(--p-fonte-interface);
+  font-size: var(--p-fonte-tamanho-controle);
+  font-weight: var(--p-fonte-peso-seminegrito);
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--p-cor-titulo);
+}
+
 .lateral-formulario-evento__titulo {
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-titulo);
   font-weight: var(--p-fonte-peso-regular);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .lateral-formulario-evento__texto {

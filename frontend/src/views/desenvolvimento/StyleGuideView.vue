@@ -1114,6 +1114,69 @@ const regras = [
           :grupos="gruposNavegacaoV2"
         />
       </div>
+
+      <h3 class="guia__subtitulo">
+        Formulário · cartão, seções e ações
+      </h3>
+      <form
+        class="formulario-cartao"
+        novalidate
+        data-teste="guia-formulario-v2"
+        @submit.prevent
+      >
+        <fieldset class="formulario-secao">
+          <legend class="formulario-secao__titulo">
+            Quando
+          </legend>
+          <div class="formulario-colunas">
+            <CampoFormulario
+              v-slot="{ id: idEntrada }"
+              rotulo="Data do evento"
+              id-campo="guia-v2-data"
+              obrigatorio
+            >
+              <InputText
+                :id="idEntrada"
+                type="date"
+              />
+            </CampoFormulario>
+            <CampoFormulario
+              v-slot="{ id: idEntrada }"
+              rotulo="Horário"
+              id-campo="guia-v2-horario"
+            >
+              <InputText
+                :id="idEntrada"
+                type="time"
+              />
+            </CampoFormulario>
+          </div>
+        </fieldset>
+        <fieldset class="formulario-secao">
+          <legend class="formulario-secao__titulo">
+            Onde
+          </legend>
+          <CampoFormulario
+            v-slot="{ id: idEntrada }"
+            rotulo="Local"
+            id-campo="guia-v2-local"
+          >
+            <InputText :id="idEntrada" />
+          </CampoFormulario>
+        </fieldset>
+        <div class="formulario-acoes">
+          <Button
+            type="submit"
+            label="Salvar"
+          />
+          <Button
+            type="button"
+            label="Cancelar"
+            severity="secondary"
+            text
+          />
+        </div>
+      </form>
     </section>
 
     <section

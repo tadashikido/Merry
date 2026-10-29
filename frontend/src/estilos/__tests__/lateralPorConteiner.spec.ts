@@ -101,7 +101,7 @@ describe('lateral de resumo por contêiner', () => {
     expect(fonte).toMatch(/class="pagina-formulario [a-z-]+__pagina com-lateral__pagina/)
     expect(fonte).toMatch(/class="[a-z-]+__corpo com-lateral__corpo"/)
     expect(fonte).toMatch(/com-lateral__principal/)
-    expect(fonte).toMatch(/com-lateral__lateral com-lateral__lateral--filete/)
+    expect(fonte).toMatch(/com-lateral__lateral(?: com-lateral__lateral--filete)?"/)
     expect(estilo).not.toMatch(/grid-template-areas:\s*'principal lateral'/)
     expect(estilo).not.toContain('sticky')
     expect(estilo).not.toContain('--p-dimensao-largura-gaveta')
