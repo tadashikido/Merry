@@ -6,10 +6,11 @@ import Button from 'primevue/button'
 import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import CampoSenha from '@/componentes/base/CampoSenha.vue'
-import LacreIcone from '@/componentes/base/LacreIcone.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import IndicadorAbertura from '@/componentes/base/IndicadorAbertura.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import OrientacaoAcesso, { type ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
+import TileTipo from '@/componentes/base/TileTipo.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore, type TipoFalha } from '@/stores/autenticacao'
@@ -226,8 +227,10 @@ function aoDigitarSenha() {
       class="convite-invalido"
       data-teste="convite-invalido"
     >
-      <LacreIcone
-        icone="ie-link"
+      <TileTipo
+        tom="champanhe"
+        icone="link"
+        tamanho="grande"
         data-teste="lacre-convite-invalido"
       />
     </div>
@@ -249,6 +252,14 @@ function aoDigitarSenha() {
         data-teste="formulario-aceite-anfitriao"
         @submit.prevent="enviar"
       >
+        <div
+          class="aceite__evento"
+          data-teste="evento-convite"
+        >
+          <TileTipo :tipo="convite.tipo" />
+          <EtiquetaTipo :tipo="convite.tipo" />
+        </div>
+
         <dl class="aceite__email pilha pilha--campo">
           <dt class="texto-rotulo">
             {{ TEXTOS_ACEITE_ANFITRIAO.email }}
@@ -355,6 +366,13 @@ function aoDigitarSenha() {
 .convite-invalido {
   display: flex;
   justify-content: center;
+}
+
+.aceite__evento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--p-ritmo-campo);
 }
 
 .aceite__email {

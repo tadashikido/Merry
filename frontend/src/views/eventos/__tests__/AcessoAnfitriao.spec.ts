@@ -725,8 +725,34 @@ describe('AceiteAcessoAnfitriaoView', () => {
     const lacre = wrapper!.get('[data-teste="convite-invalido"]').get('[data-teste="lacre-convite-invalido"]')
     expect(lacre.attributes('aria-hidden')).toBe('true')
     expect(lacre.find('.ie-link').exists()).toBe(true)
+    expect(lacre.classes()).toEqual(expect.arrayContaining(['tile-tipo', 'tile-tipo--grande', 'tom-tipo--champanhe']))
+    expect(wrapper!.find('.lacre-icone').exists()).toBe(false)
+    expect(wrapper!.find('[data-teste="evento-convite"]').exists()).toBe(false)
     expect(wrapper!.find('[data-teste="link-entrar"]').exists()).toBe(true)
     expect(document.activeElement?.id).toBe('autenticacao-titulo')
+  })
+
+  it.each([
+    { tipo: 'Casamento', tom: 'rose', rotulo: 'Casamento' },
+    { tipo: 'QuinzeAnos', tom: 'orquidea', rotulo: '15 anos' },
+    { tipo: 'Aniversario', tom: 'tangerina', rotulo: 'Aniversário' },
+    { tipo: 'Comemoracao', tom: 'champanhe', rotulo: 'Comemoração' },
+    { tipo: 'Desconhecido', tom: 'neutro', rotulo: 'Evento' },
+  ])('[COMPONENTE] identifica o evento do convite com tile e etiqueta no tom do tipo $tipo', async ({ tipo, tom, rotulo }) => {
+    rotear(
+      fetchSimulado,
+      null,
+      quando('POST', '/api/acesso-anfitriao/consulta', () => respostaJson({ ...CONVITE_ANFITRIAO, tipo })),
+    )
+    await abrir(`/acesso-anfitriao#token=${TOKEN_CONVITE}`)
+
+    const evento = wrapper!.get('[data-teste="formulario-aceite-anfitriao"]').get('[data-teste="evento-convite"]')
+    const tile = evento.get('[data-teste="tile-tipo"]')
+    expect(tile.attributes('data-tom')).toBe(tom)
+    expect(tile.attributes('aria-hidden')).toBe('true')
+    const etiqueta = evento.get('[data-teste="etiqueta-tipo"]')
+    expect(etiqueta.attributes('data-tom')).toBe(tom)
+    expect(etiqueta.text()).toBe(rotulo)
   })
 
   it('[COMPONENTE] organiza o formulário com as primitivas de ritmo da fundação', async () => {
