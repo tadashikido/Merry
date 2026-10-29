@@ -4,7 +4,7 @@ import { computed } from 'vue'
 import { descreverContagem, descreverContagemAcessivel, legendaContagemDestaque, REFERENCIA_EVENTO_GENERICA } from '@/textos/eventos'
 
 const props = withDefaults(
-  defineProps<{ dias: number; variante?: 'compacta' | 'destaque' | 'cabecalho'; referencia?: string }>(),
+  defineProps<{ dias: number; variante?: 'compacta' | 'tabela' | 'destaque' | 'cabecalho'; referencia?: string }>(),
   {
     variante: 'compacta',
     referencia: REFERENCIA_EVENTO_GENERICA,
@@ -15,6 +15,12 @@ const futuro = computed(() => props.dias > 0)
 const texto = computed(() => descreverContagem(props.dias))
 const textoAcessivel = computed(() => descreverContagemAcessivel(props.dias, props.referencia))
 const numero = computed(() => props.dias.toLocaleString('pt-BR'))
+const partesTabela = computed(() =>
+  texto.value
+    .split(/(\d[\d.]*)/)
+    .filter((parte) => parte !== '')
+    .map((parte) => ({ texto: parte, numero: /^\d/.test(parte) })),
+)
 </script>
 
 <template>
@@ -24,6 +30,19 @@ const numero = computed(() => props.dias.toLocaleString('pt-BR'))
     :class="{ 'contagem--passado': dias < 0 }"
     data-teste="contagem-regressiva"
   >{{ texto }}</span>
+
+  <span
+    v-else-if="variante === 'tabela'"
+    class="contagem contagem--tabela numeros-tabulares"
+    :class="{ 'contagem--passado': dias < 0 }"
+    data-teste="contagem-regressiva"
+  ><template
+    v-for="(parte, indice) in partesTabela"
+    :key="indice"
+  ><strong
+    v-if="parte.numero"
+    class="contagem__numero-tabela"
+  >{{ parte.texto }}</strong><template v-else>{{ parte.texto }}</template></template></span>
 
   <div
     v-else
@@ -68,6 +87,20 @@ const numero = computed(() => props.dias.toLocaleString('pt-BR'))
 .contagem--compacta.contagem--passado {
   font-weight: var(--p-fonte-peso-regular);
   color: var(--p-cor-texto-apoio);
+}
+
+.contagem--tabela {
+  font-size: var(--p-fonte-tamanho-controle);
+  color: var(--p-cor-texto-apoio);
+  white-space: nowrap;
+}
+
+.contagem__numero-tabela {
+  font-family: var(--p-fonte-display);
+  font-variant-numeric: lining-nums;
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--p-cor-titulo);
 }
 
 .contagem--destaque {

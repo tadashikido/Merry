@@ -142,7 +142,7 @@ describe('EventosView no design system Celebri', () => {
     expect(resumo().exists()).toBe(false)
   })
 
-  it('[COMPONENTE] "Novo evento" é a única ação primária e as ações de linha são texto neutro', async () => {
+  it('[COMPONENTE] "Novo evento" é a única ação primária e as ações de linha usam a ação de linha do DS', async () => {
     rotearFetch(fetchSimulado, quando('GET', '/api/eventos?situacao=Ativos', () => respostaJson(lista)))
     await abrir('/eventos')
 
@@ -157,9 +157,27 @@ describe('EventosView no design system Celebri', () => {
     )
     expect(deLinha.length).toBe(4)
     for (const botao of deLinha) {
-      expect(botao.props('severity')).toBe('secondary')
-      expect(botao.props('text')).toBe(true)
+      expect(botao.classes()).toContain('botao-acao-linha')
+      expect(botao.props('severity')).not.toBe('primary')
     }
+    const arquivar = deLinha.filter((botao) => botao.props('label') === TEXTOS_EVENTOS.arquivar)
+    expect(arquivar.every((botao) => botao.props('text') === true && botao.props('severity') === 'secondary')).toBe(true)
+  })
+
+  it('[COMPONENTE] cada linha tem tile e etiqueta na cor do tipo, fase com ponto e contagem com número destacado', async () => {
+    rotearFetch(fetchSimulado, quando('GET', '/api/eventos?situacao=Ativos', () => respostaJson(lista)))
+    await abrir('/eventos')
+
+    const tiles = wrapper!.findAll('[data-teste="listagem-tabela"] [data-teste="tile-tipo"]')
+    expect(tiles).toHaveLength(2)
+    expect(tiles.every((tile) => tile.attributes('aria-hidden') === 'true')).toBe(true)
+    const etiquetas = wrapper!.findAll('[data-teste="tipo-evento"] [data-teste="etiqueta-tipo"]')
+    expect(etiquetas.map((etiqueta) => etiqueta.attributes('data-tom'))).toEqual(tiles.map((tile) => tile.attributes('data-tom')))
+    const fases = wrapper!.findAll('[data-teste="listagem-tabela"] [data-teste="etiqueta-fase"]')
+    expect(fases).toHaveLength(2)
+    expect(fases.every((fase) => fase.find('.etiqueta-fase__ponto').exists())).toBe(true)
+    expect(wrapper!.findAll('.contagem--tabela .contagem__numero-tabela').map((numero) => numero.text())).toEqual(['42', '3'])
+    expect(wrapper!.findAll('[data-teste="link-evento"] .nomes-anfitrioes--cartao')).toHaveLength(2)
   })
 
   it('[COMPONENTE] nomes dos anfitriões ficam dentro do link e a data mantém o horário', async () => {
@@ -224,16 +242,30 @@ describe('EventosView com tipos e fases', () => {
     }),
   ]
 
-  function filtro(teste: 'filtro-tipo' | 'filtro-fase') {
+  function filtro(teste: 'filtro-fase') {
     return wrapper!.findAllComponents(Select).find((select) => select.attributes('data-teste') === teste)!
   }
 
-  function rotulosDe(teste: 'filtro-tipo' | 'filtro-fase') {
+  function rotulosDe(teste: 'filtro-fase') {
     return (filtro(teste).props('options') as { rotulo: string }[]).map((opcao) => opcao.rotulo)
   }
 
-  async function escolher(teste: 'filtro-tipo' | 'filtro-fase', valor: string | null) {
+  async function escolher(teste: 'filtro-fase', valor: string | null) {
     filtro(teste).vm.$emit('update:modelValue', valor)
+    await flushPromises()
+  }
+
+  function pilulasTipo() {
+    return wrapper!.findAll('[data-teste="filtro-tipo"] [data-teste="filtro-pilula"]')
+  }
+
+  function pilulaPressionada() {
+    return pilulasTipo().find((pilula) => pilula.attributes('aria-pressed') === 'true')
+  }
+
+  async function escolherTipo(rotulo: string) {
+    const pilula = pilulasTipo().find((item) => item.text().startsWith(rotulo))!
+    await pilula.trigger('click')
     await flushPromises()
   }
 
@@ -287,9 +319,17 @@ describe('EventosView com tipos e fases', () => {
     rotearFetch(fetchSimulado, quando('GET', '/api/eventos?situacao=Ativos', () => respostaJson(carteira)))
     await abrir('/eventos')
 
-    expect(rotulosDe('filtro-tipo')).toEqual([TEXTOS_EVENTOS.todosOsTipos, 'Casamento (2)', '15 anos (1)'])
+    expect(pilulasTipo().map((pilula) => pilula.text().replace(/\s+/g, ' '))).toEqual([
+      `${TEXTOS_EVENTOS.todosOsTipos} 3`,
+      'Casamento 2',
+      '15 anos 1',
+    ])
+    expect(wrapper!.get('[data-teste="filtro-tipo"]').attributes('role')).toBe('group')
+    expect(wrapper!.get('[data-teste="filtro-tipo"]').attributes('aria-label')).toBe(TEXTOS_EVENTOS.filtroTipo)
+    expect(pilulaPressionada()?.text()).toContain(TEXTOS_EVENTOS.todosOsTipos)
+    expect(pilulasTipo()[1]?.classes()).toContain('tom-tipo--rose')
+    expect(pilulasTipo()[2]?.classes()).toContain('tom-tipo--orquidea')
     expect(rotulosDe('filtro-fase')).toEqual([TEXTOS_EVENTOS.todasAsFases, 'Planejamento (1)', 'Reta final (2)'])
-    expect(filtro('filtro-tipo').get('[role="combobox"]').attributes('aria-label')).toBe(TEXTOS_EVENTOS.filtroTipo)
     expect(filtro('filtro-fase').get('[role="combobox"]').attributes('aria-label')).toBe(TEXTOS_EVENTOS.filtroFase)
   })
 
@@ -298,11 +338,12 @@ describe('EventosView com tipos e fases', () => {
     await abrir('/eventos')
     const requisicoes = chamadas(fetchSimulado, 'GET', '/api/eventos?situacao=Ativos').length
 
-    await escolher('filtro-tipo', 'QuinzeAnos')
+    await escolherTipo('15 anos')
     expect(nomesExibidos()).toEqual(['Júlia'])
     expect(resumo().text()).toBe('1 de 3 eventos ativos')
+    expect(pilulaPressionada()?.text()).toContain('15 anos')
 
-    await escolher('filtro-tipo', null)
+    await escolherTipo(TEXTOS_EVENTOS.todosOsTipos)
     await escolher('filtro-fase', 'RetaFinal')
     expect(nomesExibidos()).toHaveLength(2)
     expect(resumo().text()).toBe('2 de 3 eventos ativos')
@@ -317,7 +358,7 @@ describe('EventosView com tipos e fases', () => {
     rotearFetch(fetchSimulado, quando('GET', '/api/eventos?situacao=Ativos', () => respostaJson(carteira)))
     await abrir('/eventos')
 
-    await escolher('filtro-tipo', 'QuinzeAnos')
+    await escolherTipo('15 anos')
     await escolher('filtro-fase', 'Planejamento')
     expect(nomesExibidos()).toEqual([])
     expect(wrapper!.text()).toContain('Nenhum resultado para essa busca')
@@ -326,7 +367,7 @@ describe('EventosView com tipos e fases', () => {
     await flushPromises()
 
     expect(nomesExibidos()).toHaveLength(3)
-    expect(filtro('filtro-tipo').props('modelValue')).toBeNull()
+    expect(pilulaPressionada()?.text()).toContain(TEXTOS_EVENTOS.todosOsTipos)
     expect(filtro('filtro-fase').props('modelValue')).toBeNull()
     expect(resumo().text()).toBe('3 eventos ativos')
   })
@@ -384,14 +425,14 @@ describe('EventosView com tipos e fases', () => {
     expect(pedidosAtivos).toBe(1)
     expect(wrapper!.find('[data-teste="resumo-tipos"]').exists()).toBe(false)
     expect(resumo().exists()).toBe(false)
-    expect(rotulosDe('filtro-tipo')).toEqual([TEXTOS_EVENTOS.todosOsTipos])
-    expect(filtro('filtro-tipo').props('disabled')).toBe(true)
+    expect(pilulasTipo().map((pilula) => pilula.text())).toEqual([TEXTOS_EVENTOS.todosOsTipos])
+    expect(pilulasTipo().every((pilula) => pilula.attributes('disabled') !== undefined)).toBe(true)
     expect(filtro('filtro-fase').props('disabled')).toBe(true)
 
     liberarAtivos(respostaJson(carteira))
     await flushPromises()
 
     expect(wrapper!.get('[data-teste="resumo-tipos"]').text()).toBe('2 casamentos e 1 festa de 15 anos')
-    expect(filtro('filtro-tipo').props('disabled')).toBe(false)
+    expect(pilulasTipo().every((pilula) => pilula.attributes('disabled') === undefined)).toBe(true)
   })
 })

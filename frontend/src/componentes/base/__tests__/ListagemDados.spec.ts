@@ -111,3 +111,25 @@ describe('ListagemDados', () => {
     expect(wrapper.find('[data-teste="busca-listagem"]').exists()).toBe(false)
   })
 })
+
+describe('ListagemDados no design system v2', () => {
+  it('[COMPONENTE] filtros principais ficam numa faixa própria acima da barra de busca', async () => {
+    simularMatchMedia(false)
+    const wrapper = montar({}, { 'filtros-principais': '<div data-teste="pilulas">Pílulas</div>', filtros: '<div data-teste="outro">Fase</div>' })
+    await nextTick()
+
+    const faixa = wrapper.get('.listagem__filtros-principais')
+    expect(faixa.find('[data-teste="pilulas"]').exists()).toBe(true)
+    expect(wrapper.get('.listagem__barra').find('[data-teste="pilulas"]').exists()).toBe(false)
+    const ordem = wrapper.findAll('.listagem__filtros-principais, .listagem__barra').map((item) => item.classes()[0])
+    expect(ordem).toEqual(['listagem__filtros-principais', 'listagem__barra'])
+  })
+
+  it('[COMPONENTE] sem filtros principais não renderiza a faixa', async () => {
+    simularMatchMedia(false)
+    const wrapper = montar()
+    await nextTick()
+
+    expect(wrapper.find('.listagem__filtros-principais').exists()).toBe(false)
+  })
+})

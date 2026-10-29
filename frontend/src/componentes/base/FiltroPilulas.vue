@@ -2,7 +2,7 @@
 import type { OpcaoFiltroPilula } from './tipos'
 import { classeTom } from '@/textos/tiposEvento'
 
-defineProps<{ opcoes: OpcaoFiltroPilula<Valor>[]; rotulo: string }>()
+withDefaults(defineProps<{ opcoes: OpcaoFiltroPilula<Valor>[]; rotulo: string; desabilitado?: boolean }>(), { desabilitado: false })
 
 const selecionado = defineModel<Valor>({ required: true })
 </script>
@@ -21,6 +21,7 @@ const selecionado = defineModel<Valor>({ required: true })
       class="filtro-pilulas__opcao"
       :class="[opcao.tom ? classeTom(opcao.tom) : null, { 'filtro-pilulas__opcao--ativa': selecionado === opcao.valor }]"
       :aria-pressed="selecionado === opcao.valor"
+      :disabled="desabilitado"
       data-teste="filtro-pilula"
       @click="selecionado = opcao.valor"
     >
@@ -49,7 +50,7 @@ const selecionado = defineModel<Valor>({ required: true })
   display: inline-flex;
   align-items: center;
   gap: var(--p-espaco-2);
-  min-height: var(--p-dimensao-altura-pilula);
+  min-height: var(--p-dimensao-alvo-toque);
   padding: 0 var(--p-espaco-4);
   font: inherit;
   font-size: var(--p-fonte-tamanho-controle);
@@ -64,7 +65,12 @@ const selecionado = defineModel<Valor>({ required: true })
     color var(--p-duracao-rapida);
 }
 
-.filtro-pilulas__opcao:hover {
+.filtro-pilulas__opcao:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.filtro-pilulas__opcao:not(:disabled):hover {
   background: var(--p-cor-acento-suave);
 }
 

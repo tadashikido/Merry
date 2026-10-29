@@ -59,6 +59,20 @@ describe('ContagemRegressiva', () => {
     expect(wrapper.classes('contagem--passado')).toBe(dias < 0)
   })
 
+  it.each([
+    [42, 'Faltam 42 dias', ['42']],
+    [1200, 'Faltam 1.200 dias', ['1.200']],
+    [0, 'É hoje', []],
+    [-48, 'Foi há 48 dias', ['48']],
+  ])('[COMPONENTE] variante tabela com %i dias mantém o texto "%s" e destaca só o número', (dias, texto, numeros) => {
+    const wrapper = mount(ContagemRegressiva, { props: { dias, variante: 'tabela' }, global })
+
+    expect(wrapper.text()).toBe(texto)
+    expect(wrapper.classes()).toContain('contagem--tabela')
+    expect(wrapper.findAll('.contagem__numero-tabela').map((numero) => numero.text())).toEqual(numeros)
+    expect(wrapper.classes('contagem--passado')).toBe(dias < 0)
+  })
+
   it('[COMPONENTE] variante destaque mostra número, legenda e rótulo acessível completo', () => {
     const wrapper = mount(ContagemRegressiva, {
       props: { dias: 42, variante: 'destaque' },

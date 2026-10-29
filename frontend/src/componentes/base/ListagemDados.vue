@@ -81,6 +81,13 @@ function limparFiltros() {
     :aria-label="rotulo"
   >
     <div
+      v-if="$slots['filtros-principais']"
+      class="listagem__filtros-principais"
+    >
+      <slot name="filtros-principais" />
+    </div>
+
+    <div
       v-if="comBusca || $slots.filtros"
       class="listagem__barra"
     >
@@ -270,6 +277,12 @@ function limparFiltros() {
   gap: var(--p-espaco-4);
 }
 
+.listagem__filtros-principais {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--p-ritmo-campo);
+}
+
 .listagem__barra {
   display: flex;
   flex-wrap: wrap;
@@ -285,7 +298,11 @@ function limparFiltros() {
 .listagem__busca :deep(.p-iconfield),
 .listagem__busca :deep(.p-inputtext) {
   width: 100%;
-  min-height: var(--p-dimensao-alvo-toque);
+  min-height: var(--p-dimensao-altura-botao);
+}
+
+.listagem__busca :deep(.p-inputtext) {
+  border-radius: var(--p-raio-campo);
 }
 
 .listagem__filtros {
@@ -298,7 +315,32 @@ function limparFiltros() {
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
+  box-shadow: var(--p-sombra-cartao);
   overflow: hidden;
+}
+
+.listagem__tabela :deep(.p-datatable-column-title) {
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  line-height: 1.33;
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
+  color: var(--p-cor-texto-apoio);
+}
+
+.listagem__tabela :deep(th),
+.listagem__tabela :deep(td) {
+  vertical-align: middle;
+}
+
+.listagem__tabela :deep(th:first-child),
+.listagem__tabela :deep(td:first-child) {
+  padding-inline-start: var(--p-ritmo-cartao);
+}
+
+.listagem__tabela :deep(th:last-child),
+.listagem__tabela :deep(td:last-child) {
+  padding-inline-end: var(--p-ritmo-cartao);
 }
 
 .listagem__conteudo > .estado-carregando {

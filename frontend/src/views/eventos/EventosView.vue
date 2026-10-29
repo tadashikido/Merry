@@ -10,18 +10,25 @@ import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
 import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
 import ContagemRegressiva from '@/componentes/base/ContagemRegressiva.vue'
 import ListagemDados from '@/componentes/base/ListagemDados.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
+import FiltroPilulas from '@/componentes/base/FiltroPilulas.vue'
 import NomesAnfitrioes from '@/componentes/base/NomesAnfitrioes.vue'
-import type { ColunaListagem } from '@/componentes/base/tipos'
+import TileTipo from '@/componentes/base/TileTipo.vue'
+import type { ColunaListagem, OpcaoFiltroPilula } from '@/componentes/base/tipos'
+import EtiquetaFaseEvento from '@/componentes/eventos/EtiquetaFaseEvento.vue'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useEventosStore } from '@/stores/eventos'
-import { ROTULOS_FASE, TEXTOS_EVENTOS, VARIANTE_FASE, descreverContagem, resumoListaEventos } from '@/textos/eventos'
-import { vocabularioDoTipo } from '@/textos/tiposEvento'
+import { ROTULOS_FASE, TEXTOS_EVENTOS, descreverContagem, resumoListaEventos } from '@/textos/eventos'
+import { tomDoTipo, vocabularioDoTipo } from '@/textos/tiposEvento'
 import type { EventoResumoDto, FaseEvento, SituacaoListagemEventos, TipoEvento } from '@/tipos/eventos'
 import { contemTexto } from '@/utilitarios/busca'
 import { contarPorFase, contarPorTipo, descreverCarteiraPorTipo, filtrarEventos } from '@/utilitarios/carteiraEventos'
 import { formatarDataCalendario, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 
 const PARAMETRO_ARQUIVADOS = 'arquivados'
+const TODOS_OS_TIPOS = 'todos'
+
+type ValorFiltroTipo = TipoEvento | typeof TODOS_OS_TIPOS
 
 const store = useEventosStore()
 const rota = useRoute()
@@ -82,14 +89,27 @@ const composicaoPorTipo = computed(() =>
   resumo.value && quantidadesPorTipo.value.length > 1 ? descreverCarteiraPorTipo(quantidadesPorTipo.value) : null,
 )
 
-const opcoesTipo = computed<{ rotulo: string; valor: TipoEvento | null }[]>(() => [
-  { rotulo: TEXTOS_EVENTOS.todosOsTipos, valor: null },
+const tipoSelecionado = computed<ValorFiltroTipo>({
+  get: () => tipo.value ?? TODOS_OS_TIPOS,
+  set: (valor) => {
+    tipo.value = valor === TODOS_OS_TIPOS ? null : valor
+  },
+})
+
+const opcoesTipo = computed<OpcaoFiltroPilula<ValorFiltroTipo>[]>(() => [
+  {
+    valor: TODOS_OS_TIPOS,
+    rotulo: TEXTOS_EVENTOS.todosOsTipos,
+    contagem: listaEstavel.value && store.itens.length > 0 ? store.itens.length : undefined,
+  },
   ...quantidadesPorTipo.value.map(({ tipo: valor, quantidade }) => ({
-    rotulo: TEXTOS_EVENTOS.opcaoComQuantidade(vocabularioDoTipo(valor).rotulo, quantidade),
     valor,
+    rotulo: vocabularioDoTipo(valor).rotulo,
+    tom: tomDoTipo(valor),
+    contagem: quantidade,
   })),
   ...(tipo.value && !quantidadesPorTipo.value.some((item) => item.tipo === tipo.value)
-    ? [{ rotulo: vocabularioDoTipo(tipo.value).rotulo, valor: tipo.value }]
+    ? [{ valor: tipo.value, rotulo: vocabularioDoTipo(tipo.value).rotulo, tom: tomDoTipo(tipo.value) }]
     : []),
 ])
 
@@ -208,18 +228,17 @@ async function alternarArquivamento(evento: EventoResumoDto) {
         @tentar-novamente="carregar"
         @limpar-filtros="limparFiltros"
       >
-        <template #filtros>
-          <Select
-            v-model="tipo"
-            :options="opcoesTipo"
-            option-label="rotulo"
-            option-value="valor"
-            :placeholder="TEXTOS_EVENTOS.todosOsTipos"
-            :disabled="!listaEstavel"
-            :aria-label="TEXTOS_EVENTOS.filtroTipo"
-            class="eventos__filtro"
+        <template #filtros-principais>
+          <FiltroPilulas
+            v-model="tipoSelecionado"
+            :opcoes="opcoesTipo"
+            :rotulo="TEXTOS_EVENTOS.filtroTipo"
+            :desabilitado="!listaEstavel"
             data-teste="filtro-tipo"
           />
+        </template>
+
+        <template #filtros>
           <Select
             v-model="fase"
             :options="opcoesFase"
@@ -253,22 +272,34 @@ async function alternarArquivamento(evento: EventoResumoDto) {
         </template>
 
         <template #celula-nomePrimeiraPessoa="{ item }">
-          <RouterLink
-            class="eventos__link"
-            :to="{ name: 'evento', params: { id: item.id } }"
-            data-teste="link-evento"
-          >
-            <NomesAnfitrioes
-              :primeiro="item.nomePrimeiraPessoa"
-              :segundo="item.nomeSegundaPessoa"
-            />
-          </RouterLink>
-          <span class="eventos__apoio texto-legenda">
-            <span data-teste="tipo-evento">{{ vocabularioDoTipo(item.tipo).rotulo }}</span>
-            <span
-              v-if="item.convidadosEstimados"
-              data-teste="convidados-estimados"
-            >{{ TEXTOS_EVENTOS.convidadosEstimados(item.convidadosEstimados) }}</span>
+          <span class="eventos__evento">
+            <TileTipo :tipo="item.tipo" />
+            <span class="eventos__identificacao">
+              <RouterLink
+                class="eventos__link"
+                :to="{ name: 'evento', params: { id: item.id } }"
+                data-teste="link-evento"
+              >
+                <NomesAnfitrioes
+                  :primeiro="item.nomePrimeiraPessoa"
+                  :segundo="item.nomeSegundaPessoa"
+                  tamanho="cartao"
+                />
+              </RouterLink>
+              <span class="eventos__apoio">
+                <span
+                  class="eventos__tipo"
+                  data-teste="tipo-evento"
+                >
+                  <EtiquetaTipo :tipo="item.tipo" />
+                </span>
+                <span
+                  v-if="item.convidadosEstimados"
+                  class="texto-legenda"
+                  data-teste="convidados-estimados"
+                >{{ TEXTOS_EVENTOS.convidadosEstimados(item.convidadosEstimados) }}</span>
+              </span>
+            </span>
           </span>
         </template>
 
@@ -278,10 +309,7 @@ async function alternarArquivamento(evento: EventoResumoDto) {
 
         <template #celula-fase="{ item }">
           <span class="eventos__status">
-            <BadgeStatus
-              :texto="ROTULOS_FASE[item.fase]"
-              :variante="VARIANTE_FASE[item.fase]"
-            />
+            <EtiquetaFaseEvento :fase="item.fase" />
             <BadgeStatus
               v-if="item.arquivado"
               :texto="TEXTOS_EVENTOS.statusArquivado"
@@ -294,7 +322,10 @@ async function alternarArquivamento(evento: EventoResumoDto) {
         </template>
 
         <template #celula-diasRestantes="{ item }">
-          <ContagemRegressiva :dias="item.diasRestantes" />
+          <ContagemRegressiva
+            :dias="item.diasRestantes"
+            variante="tabela"
+          />
         </template>
 
         <template #acoes-linha="{ item }">
@@ -304,8 +335,7 @@ async function alternarArquivamento(evento: EventoResumoDto) {
             :aria-label="TEXTOS_EVENTOS.acaoComNome(TEXTOS_EVENTOS.editar, nomes(item))"
             :title="TEXTOS_EVENTOS.editar"
             icon="ie ie-editar"
-            severity="secondary"
-            text
+            class="botao-acao-linha"
             :disabled="idEmAndamento !== null"
             data-teste="editar-evento"
             @click="roteador.push({ name: 'evento-editar', params: { id: item.id } })"
@@ -317,6 +347,7 @@ async function alternarArquivamento(evento: EventoResumoDto) {
             "
             :title="item.arquivado ? TEXTOS_EVENTOS.restaurar : TEXTOS_EVENTOS.arquivar"
             :icon="item.arquivado ? 'ie ie-restaurar' : 'ie ie-arquivar'"
+            class="botao-acao-linha"
             severity="secondary"
             text
             :loading="idEmAndamento === item.id"
@@ -339,20 +370,40 @@ async function alternarArquivamento(evento: EventoResumoDto) {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
+.eventos__evento {
+  display: flex;
+  align-items: center;
+  gap: var(--p-ritmo-grupo);
+  min-width: 0;
+}
+
+.eventos__identificacao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--p-ritmo-campo);
+  min-width: 0;
+}
+
 .eventos__apoio {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 var(--p-ritmo-campo);
+  align-items: center;
+  gap: var(--p-ritmo-campo);
+}
+
+.eventos__tipo {
+  display: inline-flex;
 }
 
 .eventos__link {
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
   text-decoration: none;
   border-radius: var(--p-raio-campo);
 }
 
 .eventos__link:hover {
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
   text-decoration: underline;
   text-decoration-color: var(--p-cor-primaria);
 }

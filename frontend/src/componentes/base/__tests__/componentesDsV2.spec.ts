@@ -175,3 +175,19 @@ describe('NomesAnfitrioes no DS v2', () => {
     expect(wrapper.classes()).toContain('nomes-anfitrioes--navegacao')
   })
 })
+
+describe('FiltroPilulas desabilitado e alvo de toque', () => {
+  const opcoes: OpcaoFiltroPilula<'todos' | TipoEvento>[] = [
+    { valor: 'todos', rotulo: 'Todos' },
+    { valor: 'Casamento', rotulo: 'Casamento', tom: 'rose' },
+  ]
+
+  it('[COMPONENTE] desabilitado trava todas as pílulas e não emite troca', async () => {
+    const wrapper = mount(FiltroPilulas, { props: { opcoes, rotulo: 'Filtrar por tipo', modelValue: 'todos', desabilitado: true } })
+
+    const botoes = wrapper.findAll('button')
+    expect(botoes.every((botao) => botao.attributes('disabled') !== undefined)).toBe(true)
+    await botoes[1]!.trigger('click')
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+  })
+})

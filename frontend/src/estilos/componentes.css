@@ -100,6 +100,18 @@ body .p-button.botao-acao-linha:not(:disabled):hover {
   border-color: var(--p-cor-acento-claro);
 }
 
+body .p-button.botao-acao-linha.p-button-text {
+  color: var(--p-cor-texto-apoio);
+  background: transparent;
+  border-color: transparent;
+}
+
+body .p-button.botao-acao-linha.p-button-text:not(:disabled):hover {
+  color: var(--p-cor-titulo);
+  background: var(--p-cor-acento-suave);
+  border-color: var(--p-cor-acento-suave);
+}
+
 body .p-button:not(.p-button-icon-only):not(.p-button-sm):not(.p-button-link):not(.botao-acao-linha) {
   min-height: var(--p-dimensao-altura-botao);
 }
