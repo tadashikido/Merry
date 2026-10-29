@@ -54,4 +54,26 @@ describe('LayoutAutenticacao no design system v2', () => {
     expect(estiloLayout).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
     expect(estiloLayout).not.toMatch(/@media[^{]*width/)
   })
+
+  it('[COMPONENTE] marca em destaque e lema ficam juntos no painel interno do cabeçalho escuro', () => {
+    const wrapper = mount(LayoutAutenticacao, { props: { titulo: 'Crie a conta da sua assessoria' }, global })
+
+    const painel = wrapper.get('header .layout-autenticacao__painel')
+    expect(painel.find('.layout-autenticacao__logo').exists()).toBe(true)
+    expect(painel.find('[data-teste="tipos-atendidos"]').exists()).toBe(true)
+    expect(wrapper.get('header').element.firstElementChild?.classList).toContain('layout-autenticacao__marca')
+  })
+
+  it('[UNITÁRIO] no contêiner largo o fundo escuro acompanha a altura da página e só o painel interno fica fixo', () => {
+    const largo = estiloLayout.slice(estiloLayout.indexOf('@container aplicacao (min-width: 64rem)'))
+    const cabecalho = regra('.layout-autenticacao__editorial', largo)
+    expect(cabecalho).toContain('min-height: 100vh')
+    expect(cabecalho).not.toContain('position: sticky')
+    expect(cabecalho).not.toMatch(/(^|\s)height: 100vh/)
+
+    const painel = regra('.layout-autenticacao__painel', largo)
+    expect(painel).toContain('position: sticky')
+    expect(painel).toContain('top: 0')
+    expect(painel).toContain('height: 100vh')
+  })
 })

@@ -25,21 +25,23 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
         class="layout-autenticacao__marca"
         fundo="escuro"
       />
-      <MarcaProduto
-        class="layout-autenticacao__logo"
-        destaque
-        fundo="escuro"
-      />
-      <div class="layout-autenticacao__lema">
-        <p class="layout-autenticacao__frase">
-          {{ TEXTOS_AUTENTICACAO_LAYOUT.frase }}
-        </p>
-        <p
-          class="layout-autenticacao__tipos"
-          data-teste="tipos-atendidos"
-        >
-          {{ TIPOS_ATENDIDOS }}
-        </p>
+      <div class="layout-autenticacao__painel">
+        <MarcaProduto
+          class="layout-autenticacao__logo"
+          destaque
+          fundo="escuro"
+        />
+        <div class="layout-autenticacao__lema">
+          <p class="layout-autenticacao__frase">
+            {{ TEXTOS_AUTENTICACAO_LAYOUT.frase }}
+          </p>
+          <p
+            class="layout-autenticacao__tipos"
+            data-teste="tipos-atendidos"
+          >
+            {{ TIPOS_ATENDIDOS }}
+          </p>
+        </div>
       </div>
     </header>
     <div class="layout-autenticacao__area">
@@ -112,8 +114,7 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
   background: var(--p-cor-rail);
 }
 
-.layout-autenticacao__logo,
-.layout-autenticacao__lema {
+.layout-autenticacao__painel {
   display: none;
 }
 
@@ -210,21 +211,26 @@ const TIPOS_ATENDIDOS = TEXTOS_AUTENTICACAO_LAYOUT.tipos(tiposEventoEmFrase())
   }
 
   .layout-autenticacao__editorial {
-    position: sticky;
-    top: 0;
-    flex-direction: column;
-    gap: var(--p-ritmo-bloco);
-    height: 100vh;
-    padding: var(--p-ritmo-secao) var(--p-ritmo-bloco);
-    color: var(--p-cor-lateral-escura-texto);
+    align-items: stretch;
+    min-height: 100vh;
+    padding: 0 var(--p-ritmo-bloco);
   }
 
   .layout-autenticacao__marca {
     display: none;
   }
 
-  .layout-autenticacao__logo {
-    display: inline-flex;
+  .layout-autenticacao__painel {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--p-ritmo-bloco);
+    width: 100%;
+    height: 100vh;
+    padding-block: var(--p-ritmo-secao);
   }
 
   .layout-autenticacao__lema {
