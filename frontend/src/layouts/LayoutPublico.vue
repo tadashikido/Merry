@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
 
-withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convite' | 'operacao'; amplo?: boolean }>(), {
+withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convite' | 'operacao'; amplo?: boolean; vazio?: boolean }>(), {
   demonstracao: false,
   variante: 'padrao',
   amplo: false,
+  vazio: false,
 })
 </script>
 
 <template>
   <div
     class="layout-publico"
-    :class="[`layout-publico--${variante}`, { 'tema-operacao': variante === 'operacao', 'layout-publico--amplo': amplo }]"
+    :class="[`layout-publico--${variante}`, { 'tema-operacao': variante === 'operacao', 'layout-publico--amplo': amplo, 'layout-publico--vazio': vazio }]"
   >
     <header
       v-if="variante === 'padrao'"
@@ -66,6 +67,11 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-cartao-amplo);
   box-shadow: var(--p-sombra-cartao);
+}
+
+.layout-publico--vazio .layout-publico__folha {
+  border: 1px dashed var(--p-cor-borda-suave);
+  box-shadow: none;
 }
 
 .layout-publico__folha :deep(h1) {

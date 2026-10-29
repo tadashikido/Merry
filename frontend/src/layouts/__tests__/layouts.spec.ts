@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
@@ -277,6 +279,26 @@ describe('LayoutPublico', () => {
     expect(wrapper.classes()).toContain('layout-publico--convite')
     expect(wrapper.find('header').exists()).toBe(false)
     expect(wrapper.get('main').text()).toBe('Convite')
+  })
+
+  it('[COMPONENTE] folha de estado vazio é opcional e não muda as variantes existentes', () => {
+    const vazio = mount(LayoutPublico, { props: { vazio: true }, slots: { default: '<h1>Página não encontrada</h1>' } })
+    expect(vazio.classes()).toEqual(expect.arrayContaining(['layout-publico--padrao', 'layout-publico--vazio']))
+    expect(vazio.find('header').exists()).toBe(true)
+
+    expect(mount(LayoutPublico, { slots: { default: '<p>RSVP</p>' } }).classes()).not.toContain('layout-publico--vazio')
+    expect(mount(LayoutPublico, { props: { variante: 'convite' } }).classes()).not.toContain('layout-publico--vazio')
+  })
+
+  it('[UNITÁRIO] a folha de estado vazio segue o padrão do DS: borda tracejada suave e sem sombra', () => {
+    const fonte = readFileSync(resolve(__dirname, '../LayoutPublico.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    const inicio = estilo.indexOf('.layout-publico--vazio .layout-publico__folha {')
+    expect(inicio).toBeGreaterThanOrEqual(0)
+    const regra = estilo.slice(inicio, estilo.indexOf('}', inicio))
+    expect(regra).toContain('border: 1px dashed var(--p-cor-borda-suave)')
+    expect(regra).toContain('box-shadow: none')
+    expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}/)
   })
 
   it('[COMPONENTE] em modo demonstração não cria um segundo main', () => {

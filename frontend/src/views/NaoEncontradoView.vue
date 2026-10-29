@@ -4,7 +4,7 @@ import { RouterLink, type RouteLocationRaw } from 'vue-router'
 import Button from 'primevue/button'
 
 import LayoutPublico from '@/layouts/LayoutPublico.vue'
-import LacreIcone from '@/componentes/base/LacreIcone.vue'
+import TileTipo from '@/componentes/base/TileTipo.vue'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useEventosStore } from '@/stores/eventos'
 import { TEXTOS_NAO_ENCONTRADO } from '@/textos/naoEncontrado'
@@ -49,15 +49,17 @@ const dica = computed(() =>
 </script>
 
 <template>
-  <LayoutPublico>
+  <LayoutPublico vazio>
     <section
       class="nao-encontrado pilha pilha--bloco"
       aria-labelledby="nao-encontrado-titulo"
       :data-perfil="perfil"
     >
       <div class="pilha pilha--grupo nao-encontrado__mensagem">
-        <LacreIcone
-          icone="ie-busca"
+        <TileTipo
+          tom="champanhe"
+          icone="busca"
+          tamanho="grande"
           data-teste="lacre-nao-encontrado"
         />
         <h1 id="nao-encontrado-titulo">
