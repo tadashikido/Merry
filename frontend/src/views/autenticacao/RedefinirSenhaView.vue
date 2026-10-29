@@ -6,9 +6,9 @@ import Button from 'primevue/button'
 import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import CampoSenha from '@/componentes/base/CampoSenha.vue'
-import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import OrientacaoAcesso, { type ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
+import TileTipo from '@/componentes/base/TileTipo.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { useAutenticacaoStore, type TipoFalha } from '@/stores/autenticacao'
 import { MENSAGENS_AUTENTICACAO, ROTULOS_CAMPOS_AUTENTICACAO, TEXTOS_REDEFINIR_SENHA } from '@/textos/autenticacao'
@@ -156,9 +156,11 @@ function pedirNovoLink() {
       class="link-invalido pilha pilha--cartao"
       data-teste="link-invalido"
     >
-      <LacreIcone
+      <TileTipo
         class="link-invalido__lacre"
-        icone="ie-link"
+        tom="champanhe"
+        icone="link"
+        tamanho="grande"
         data-teste="lacre-link-invalido"
       />
       <Button
