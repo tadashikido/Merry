@@ -205,6 +205,11 @@
   margin-top: var(--p-ritmo-cartao);
 }
 
+.formulario-secao + .formulario-secao--com-filete {
+  padding-top: var(--p-ritmo-cartao);
+  border-top: 1px solid var(--p-cor-borda);
+}
+
 .formulario-secao__titulo {
   margin: 0;
   padding: 0;

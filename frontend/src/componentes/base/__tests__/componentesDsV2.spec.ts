@@ -8,6 +8,7 @@ import EtiquetaFase from '@/componentes/base/EtiquetaFase.vue'
 import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import FiltroPilulas from '@/componentes/base/FiltroPilulas.vue'
 import LateralDestaque from '@/componentes/base/LateralDestaque.vue'
+import LateralOrientacao from '@/componentes/base/LateralOrientacao.vue'
 import NomesAnfitrioes from '@/componentes/base/NomesAnfitrioes.vue'
 import TileTipo from '@/componentes/base/TileTipo.vue'
 import type { OpcaoFiltroPilula } from '@/componentes/base/tipos'
@@ -164,6 +165,22 @@ describe('LateralDestaque nomeada', () => {
     const semId = mount(LateralDestaque, { props: { rotulo: 'R', titulo: 'T' } })
     expect(semId.attributes('aria-labelledby')).toBeUndefined()
     expect(semId.get('h2').attributes('id')).toBeUndefined()
+  })
+})
+
+describe('LateralOrientacao', () => {
+  it('[COMPONENTE] lateral escura nomeada pelo título, com um item h3 + texto por orientação', () => {
+    const itens = [
+      { chave: 'a', titulo: 'O mesmo tipo', texto: 'Casamento gera casamento.', teste: 'item-a' },
+      { chave: 'b', titulo: 'O que vai', texto: 'Tarefas e cronograma.' },
+    ]
+    const wrapper = mount(LateralOrientacao, { props: { idTitulo: 'titulo-o', rotulo: 'Duplicar evento', titulo: 'Como funciona', itens } })
+    expect(wrapper.element.tagName).toBe('ASIDE')
+    expect(wrapper.attributes('aria-labelledby')).toBe('titulo-o')
+    expect(wrapper.get('h2#titulo-o').text()).toBe('Como funciona')
+    expect(wrapper.get('.lateral-destaque__rotulo').text()).toBe('Duplicar evento')
+    expect(wrapper.findAll('li h3').map((titulo) => titulo.text())).toEqual(['O mesmo tipo', 'O que vai'])
+    expect(wrapper.get('[data-teste="item-a"] p').text()).toBe('Casamento gera casamento.')
   })
 })
 

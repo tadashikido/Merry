@@ -12,11 +12,13 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
+import LateralOrientacao from '@/componentes/base/LateralOrientacao.vue'
 import ListaNaoCopiado from '@/componentes/base/ListaNaoCopiado.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import NomesAnfitrioes from '@/componentes/base/NomesAnfitrioes.vue'
 import OpcaoCopia from '@/componentes/base/OpcaoCopia.vue'
-import OrientacaoAcesso from '@/componentes/base/OrientacaoAcesso.vue'
+import TileTipo from '@/componentes/base/TileTipo.vue'
 import LateralFormularioEvento from '@/componentes/eventos/LateralFormularioEvento.vue'
 import ResumoDuplicacaoEvento from '@/componentes/eventos/ResumoDuplicacaoEvento.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
@@ -33,7 +35,7 @@ import { focarElemento } from '@/utilitarios/foco'
 import { formatarDataCalendarioCurta, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { LIMITES_EVENTO, dataEvento, horarioEvento, nomeAnfitrioes, textoOpcional } from '@/utilitarios/validacaoEvento'
 import { obrigatorio } from '@/utilitarios/validacao'
-import { aceitaSegundoNome, vocabularioDoTipo, type VocabularioTipoEvento } from '@/textos/tiposEvento'
+import { aceitaSegundoNome, classeTomDoTipo, vocabularioDoTipo, type VocabularioTipoEvento } from '@/textos/tiposEvento'
 import type { TipoEvento } from '@/tipos/eventos'
 
 const props = defineProps<{ origem?: string }>()
@@ -487,16 +489,21 @@ function cancelar() {
               />
 
               <form
-                class="pilha pilha--bloco"
+                class="formulario-cartao"
                 novalidate
                 data-teste="formulario-duplicacao"
                 @submit.prevent="enviar"
               >
                 <div
                   v-if="origemDaPrevia"
-                  class="duplicar__origem cartao"
+                  class="duplicar__origem cartao cartao--plano formulario-secao"
+                  :class="classeTomDoTipo(origemDaPrevia.tipo)"
                   data-teste="resumo-origem"
                 >
+                  <TileTipo
+                    class="duplicar__origem-tile"
+                    :tipo="origemDaPrevia.tipo"
+                  />
                   <p class="duplicar__origem-texto">
                     <span class="duplicar__origem-rotulo texto-rotulo">{{ TEXTOS_DUPLICACAO_EVENTO.origemRotulo }}</span>
                     <NomesAnfitrioes
@@ -506,7 +513,11 @@ function cancelar() {
                     />
                   </p>
                   <p class="duplicar__origem-detalhes">
-                    <span data-teste="tipo-origem">{{ vocabulario.rotulo }}</span>
+                    <span data-teste="tipo-origem"><EtiquetaTipo
+                      :tipo="origemDaPrevia.tipo"
+                      :rotulo="vocabulario.rotulo"
+                      com-icone
+                    /></span>
                     <span class="numeros-tabulares">{{ formatarDataCalendarioCurta(origemDaPrevia.data) }}</span>
                     <BadgeStatus
                       v-if="origemDaPrevia.arquivado"
@@ -537,6 +548,7 @@ function cancelar() {
                 <CampoFormulario
                   v-else
                   v-slot="{ id: idEntrada, invalido, descritoPor }"
+                  class="formulario-secao"
                   :rotulo="TEXTOS_DUPLICACAO_EVENTO.seletorOrigem"
                   :id-campo="idCampo('origem')"
                   :dica="TEXTOS_DUPLICACAO_EVENTO.seletorOrigemDica"
@@ -558,11 +570,11 @@ function cancelar() {
                   />
                 </CampoFormulario>
 
-                <fieldset class="duplicar__grupo pilha pilha--grupo">
-                  <legend class="duplicar__legenda texto-rotulo">
+                <fieldset class="formulario-secao">
+                  <legend class="formulario-secao__titulo">
                     {{ vocabulario.homenageados.grupo }}
                   </legend>
-                  <div class="duplicar__colunas">
+                  <div class="formulario-colunas">
                     <CampoFormulario
                       v-slot="{ id: idEntrada, invalido, descritoPor }"
                       :rotulo="vocabulario.homenageados.primeiro"
@@ -609,11 +621,11 @@ function cancelar() {
                   </div>
                 </fieldset>
 
-                <fieldset class="duplicar__grupo pilha pilha--grupo">
-                  <legend class="duplicar__legenda texto-rotulo">
+                <fieldset class="formulario-secao">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_EVENTOS.grupoQuando }}
                   </legend>
-                  <div class="duplicar__colunas">
+                  <div class="formulario-colunas">
                     <CampoFormulario
                       v-slot="{ id: idEntrada, invalido, descritoPor }"
                       :rotulo="TEXTOS_EVENTOS.data"
@@ -659,11 +671,11 @@ function cancelar() {
                   </div>
                 </fieldset>
 
-                <fieldset class="duplicar__grupo pilha pilha--grupo">
-                  <legend class="duplicar__legenda texto-rotulo">
+                <fieldset class="formulario-secao">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_EVENTOS.grupoOnde }}
                   </legend>
-                  <div class="duplicar__colunas">
+                  <div class="formulario-colunas">
                     <CampoFormulario
                       v-slot="{ id: idEntrada, invalido, descritoPor }"
                       :rotulo="vocabulario.locais.campoPrincipal"
@@ -705,15 +717,15 @@ function cancelar() {
                 </fieldset>
 
                 <div
-                  class="duplicar__reaproveitamento"
+                  class="duplicar__reaproveitamento formulario-secao formulario-secao--com-filete"
                   :class="{ 'duplicar__reaproveitamento--par': Boolean(origemDaPrevia) }"
                   data-teste="reaproveitamento"
                 >
                   <fieldset
-                    class="duplicar__grupo pilha pilha--grupo"
+                    class="duplicar__levar"
                     :disabled="!origemDaPrevia || enviando"
                   >
-                    <legend class="duplicar__legenda texto-rotulo">
+                    <legend class="formulario-secao__titulo">
                       {{ TEXTOS_DUPLICACAO_EVENTO.grupoLevar }}
                     </legend>
                     <ul
@@ -794,7 +806,7 @@ function cancelar() {
                   />
                 </div>
 
-                <div class="duplicar__acoes">
+                <div class="duplicar__acoes formulario-acoes">
                   <Button
                     type="submit"
                     :label="TEXTOS_DUPLICACAO_EVENTO.acaoCriar"
@@ -817,11 +829,12 @@ function cancelar() {
             </div>
 
             <div
-              class="duplicar__lateral com-lateral__lateral com-lateral__lateral--filete"
+              class="duplicar__lateral com-lateral__lateral"
               data-teste="lateral-duplicacao"
             >
               <template v-if="origemDaPrevia">
                 <ResumoDuplicacaoEvento
+                  class="cartao"
                   :tipo="tipoOrigem"
                   :data="dataValida"
                   :previa="previaDoResumo"
@@ -832,9 +845,10 @@ function cancelar() {
                   :mostrar-modelos="false"
                 />
               </template>
-              <OrientacaoAcesso
+              <LateralOrientacao
                 v-else
                 id-titulo="titulo-como-funciona-duplicacao"
+                :rotulo="TEXTOS_DUPLICACAO_EVENTO.titulo"
                 :titulo="TEXTOS_DUPLICACAO_EVENTO.comoFuncionaTitulo"
                 :itens="TEXTOS_DUPLICACAO_EVENTO.comoFuncionaItens"
                 data-teste="como-funciona-duplicacao"
@@ -855,9 +869,21 @@ function cancelar() {
 
 .duplicar__origem {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
-  align-items: center;
+  align-items: start;
+  padding: var(--p-ritmo-cartao);
+  color: var(--tom-tinta);
+  background: var(--tom-fundo);
+  border-color: transparent;
+  border-radius: var(--p-raio-cartao-evento);
+  --nomes-cor: var(--tom-profunda);
+  --nomes-conector: var(--tom-tinta);
+}
+
+.duplicar__origem-tile {
+  grid-row: 1 / span 3;
+  background: var(--p-cor-superficie);
 }
 
 .duplicar__origem-texto {
@@ -868,46 +894,47 @@ function cancelar() {
   margin: 0;
 }
 
+.duplicar__origem-rotulo {
+  color: var(--tom-tinta);
+}
+
 .duplicar__origem-detalhes {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--p-ritmo-campo);
-  grid-column: 1;
+  grid-column: 2;
   margin: 0;
   font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-secundario);
+  color: var(--tom-profunda);
+}
+
+.duplicar__origem-detalhes :deep(.etiqueta-tipo) {
+  background: var(--p-cor-superficie);
 }
 
 .duplicar__herdado {
-  grid-column: 1;
+  grid-column: 2;
   margin: 0;
   font-size: var(--p-fonte-tamanho-controle);
   line-height: var(--p-fonte-entrelinha-interface);
-  color: var(--p-cor-texto-apoio);
+  color: var(--tom-tinta);
 }
 
-.duplicar__trocar {
+.duplicar__origem :deep(.duplicar__trocar.p-button) {
   grid-column: 2;
-  grid-row: 1 / span 3;
+  justify-self: start;
+  color: var(--tom-profunda);
 }
 
-.duplicar__grupo {
+.duplicar__levar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-ritmo-grupo);
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
-}
-
-.duplicar__legenda {
-  padding: 0;
-  margin-bottom: var(--p-ritmo-grupo);
-}
-
-.duplicar__colunas {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
 }
 
 .duplicar__reaproveitamento {
@@ -922,7 +949,7 @@ function cancelar() {
   padding: 0;
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
+  border-radius: var(--p-raio-tile);
 }
 
 .duplicar__aviso {
@@ -939,25 +966,15 @@ function cancelar() {
   align-self: flex-start;
 }
 
-.duplicar__acoes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-ritmo-campo);
-}
-
-.duplicar__acoes :deep(.p-button) {
-  min-height: var(--p-dimensao-alvo-toque);
-}
-
 @container duplicar-campos (min-width: 36rem) {
-  .duplicar__colunas {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+  .duplicar__origem {
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
 
-  .duplicar__acoes {
-    flex-direction: row;
-    gap: var(--p-ritmo-grupo);
+  .duplicar__origem :deep(.duplicar__trocar.p-button) {
+    grid-column: 3;
+    grid-row: 1 / span 3;
+    align-self: center;
   }
 }
 

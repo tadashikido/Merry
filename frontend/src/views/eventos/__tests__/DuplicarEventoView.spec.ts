@@ -71,7 +71,7 @@ function erroDe(campo: string) {
 }
 
 function colunaDe(campo: string) {
-  return wrapper!.get(`#duplicacao-${campo}`).element.closest('.duplicar__colunas')
+  return wrapper!.get(`#duplicacao-${campo}`).element.closest('.formulario-colunas')
 }
 
 describe('DuplicarEventoView no design system Celebri', () => {
@@ -85,12 +85,25 @@ describe('DuplicarEventoView no design system Celebri', () => {
     expect(pagina.get('[data-teste="resumo-origem"]').classes()).toContain('cartao')
   })
 
-  it('[COMPONENTE] seções nomeadas no ritmo de bloco e grupo com legendas discretas', async () => {
+  it('[COMPONENTE] origem aparece no tom do tipo com tile e etiqueta; lateral sem filete com resumo em cartão', async () => {
+    rotearFetch(fetchSimulado, previaResponde(() => respostaJson(previa())))
+    await abrir()
+
+    const origem = wrapper!.get('[data-teste="resumo-origem"]')
+    expect(origem.classes()).toContain('tom-tipo--rose')
+    expect(origem.get('[data-teste="tile-tipo"]').attributes('data-tom')).toBe('rose')
+    expect(origem.get('[data-teste="tipo-origem"] [data-teste="etiqueta-tipo"]').attributes('data-tom')).toBe('rose')
+    const lateral = wrapper!.get('[data-teste="lateral-duplicacao"]')
+    expect(lateral.classes()).not.toContain('com-lateral__lateral--filete')
+    expect(lateral.get('[data-teste="resumo-duplicacao"]').classes()).toContain('cartao')
+  })
+
+  it('[COMPONENTE] seções nomeadas em Fraunces dentro do cartão do formulário', async () => {
     rotearFetch(fetchSimulado, previaResponde(() => respostaJson(previa())))
     await abrir()
 
     const formulario = wrapper!.get('[data-teste="formulario-duplicacao"]')
-    expect(formulario.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    expect(formulario.classes()).toContain('formulario-cartao')
     const secoes = formulario.findAll('fieldset')
     expect(secoes.map((secao) => secao.get('legend').text())).toEqual([
       VOCABULARIO_TIPO_EVENTO.Casamento.homenageados.grupo,
@@ -99,9 +112,12 @@ describe('DuplicarEventoView no design system Celebri', () => {
       TEXTOS_DUPLICACAO_EVENTO.grupoLevar,
     ])
     for (const secao of secoes) {
-      expect(secao.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--grupo']))
-      expect(secao.get('legend').classes()).toContain('texto-rotulo')
+      expect(secao.get('legend').classes()).toContain('formulario-secao__titulo')
     }
+    expect(formulario.get('[data-teste="reaproveitamento"]').classes()).toEqual(
+      expect.arrayContaining(['formulario-secao', 'formulario-secao--com-filete']),
+    )
+    expect(formulario.get('.duplicar__acoes').classes()).toContain('formulario-acoes')
   })
 
   it('[COMPONENTE] campos curtos formam pares na grade de duas colunas', async () => {

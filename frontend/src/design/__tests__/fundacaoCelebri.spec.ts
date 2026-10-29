@@ -91,6 +91,7 @@ describe('fundação Celebri: primitivas de layout', () => {
     expect(cssLayout).toMatch(/\.formulario-cartao\s*\{[^}]*container:\s*formulario \/ inline-size[^}]*box-shadow:\s*var\(--p-sombra-cartao\)/)
     expect(cssLayout).toMatch(/\.formulario-secao__titulo\s*\{[^}]*font-family:\s*var\(--p-fonte-display\)/)
     expect(cssLayout).toContain('@container formulario (min-width: 36rem)')
+    expect(cssLayout).toMatch(/\.formulario-secao \+ \.formulario-secao--com-filete\s*\{[^}]*border-top:\s*1px solid var\(--p-cor-borda\)/)
   })
 
   it('[UNITÁRIO] as larguras de página são centralizadas', () => {
