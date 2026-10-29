@@ -6,9 +6,9 @@ import InputText from 'primevue/inputtext'
 
 import LayoutAutenticacao from '@/layouts/LayoutAutenticacao.vue'
 import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
-import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import OrientacaoAcesso, { type ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.vue'
+import TileTipo from '@/componentes/base/TileTipo.vue'
 import { useFormulario } from '@/composables/useFormulario'
 import { useAutenticacaoStore, type TipoFalha } from '@/stores/autenticacao'
 import { MENSAGENS_AUTENTICACAO, ROTULOS_CAMPOS_AUTENTICACAO, TEXTOS_ESQUECI_SENHA } from '@/textos/autenticacao'
@@ -113,8 +113,10 @@ async function enviarDeNovo() {
       class="confirmacao-envio pilha pilha--grupo"
       data-teste="confirmacao-envio"
     >
-      <LacreIcone
-        icone="ie-email"
+      <TileTipo
+        tom="champanhe"
+        icone="email"
+        tamanho="grande"
         data-teste="lacre-envio"
       />
       <p class="confirmacao-envio__dica texto-legenda">

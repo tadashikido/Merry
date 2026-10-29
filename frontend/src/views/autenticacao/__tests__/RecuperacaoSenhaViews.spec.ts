@@ -173,7 +173,12 @@ describe('EsqueciSenhaView', () => {
 
     const confirmacao = wrapper!.get('[data-teste="confirmacao-envio"]')
     expect(confirmacao.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--grupo']))
-    expect(confirmacao.get('[data-teste="lacre-envio"]').attributes('aria-hidden')).toBe('true')
+    const tile = confirmacao.get('[data-teste="lacre-envio"]')
+    expect(tile.attributes('aria-hidden')).toBe('true')
+    expect(tile.classes()).toEqual(expect.arrayContaining(['tile-tipo', 'tile-tipo--grande', 'tom-tipo--champanhe']))
+    expect(tile.attributes('data-tom')).toBe('champanhe')
+    expect(tile.find('.ie-email').exists()).toBe(true)
+    expect(confirmacao.find('.lacre-icone').exists()).toBe(false)
     expect(confirmacao.get('p.texto-legenda').text()).toBe(TEXTOS_ESQUECI_SENHA.enviadoDica)
   })
 
