@@ -19,13 +19,17 @@ withDefaults(defineProps<{ rotulo: string; titulo: string; descricao?: string; e
         :id="idTitulo"
         class="lateral-destaque__titulo"
       >
-        {{ titulo }}
+        <slot name="titulo">
+          {{ titulo }}
+        </slot>
       </h2>
       <p
-        v-if="descricao"
+        v-if="descricao || $slots.descricao"
         class="lateral-destaque__descricao"
       >
-        {{ descricao }}
+        <slot name="descricao">
+          {{ descricao }}
+        </slot>
       </p>
     </header>
     <div

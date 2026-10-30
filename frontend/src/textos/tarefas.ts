@@ -15,6 +15,14 @@ function plural(quantidade: number, singular: string, varios: string): string {
   return quantidade === 1 ? singular : varios
 }
 
+function contagemAbertas(abertas: number): string {
+  return `${abertas} ${plural(abertas, 'aberta', 'abertas')}`
+}
+
+function contagemConcluidas(concluidas: number): string {
+  return `${concluidas} ${plural(concluidas, 'concluída', 'concluídas')}`
+}
+
 export const ROTULOS_STATUS_TAREFA: Record<StatusTarefa, string> = {
   AFazer: 'A fazer',
   EmAndamento: 'Em andamento',
@@ -66,8 +74,9 @@ export const TEXTOS_TAREFAS = {
   titulo: 'Tarefas',
   tituloAnfitriao: 'Tarefas de vocês',
   tituloDocumento: (nomes: string) => `Tarefas · ${nomes}`,
-  resumo: (abertas: number, concluidas: number) =>
-    `${abertas} ${plural(abertas, 'aberta', 'abertas')} · ${concluidas} ${plural(concluidas, 'concluída', 'concluídas')}`,
+  resumoAbertas: contagemAbertas,
+  resumoConcluidas: contagemConcluidas,
+  resumo: (abertas: number, concluidas: number) => `${contagemAbertas(abertas)} · ${contagemConcluidas(concluidas)}`,
   resumoAnfitriao: (abertas: number) =>
     abertas === 0 ? 'Tudo em dia' : `${abertas} esperando por vocês`,
   destaqueAtrasadas: (quantidade: number) => plural(quantidade, 'atrasada', 'atrasadas'),

@@ -10,11 +10,13 @@ import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
+import EtiquetaFase from '@/componentes/base/EtiquetaFase.vue'
 import ItemTarefa from '@/componentes/base/ItemTarefa.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import SugestaoTarefasModelo from '@/componentes/tarefas/SugestaoTarefasModelo.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
+import type { FaseEvento } from '@/design/tokens'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
@@ -90,6 +92,24 @@ const detalhes = computed(() => {
   return visaoDoAnfitriao.value
     ? TEXTOS_TAREFAS.resumoAnfitriao(resumo.value.abertas)
     : TEXTOS_TAREFAS.resumo(resumo.value.abertas, resumo.value.concluidas)
+})
+const contadores = computed<{ chave: string; fase: FaseEvento; texto: string }[]>(() => {
+  if (!resumo.value) {
+    return []
+  }
+  if (visaoDoAnfitriao.value) {
+    return [
+      {
+        chave: 'abertas',
+        fase: resumo.value.abertas === 0 ? 'realizado' : 'planejamento',
+        texto: TEXTOS_TAREFAS.resumoAnfitriao(resumo.value.abertas),
+      },
+    ]
+  }
+  return [
+    { chave: 'abertas', fase: 'planejamento', texto: TEXTOS_TAREFAS.resumoAbertas(resumo.value.abertas) },
+    { chave: 'concluidas', fase: 'realizado', texto: TEXTOS_TAREFAS.resumoConcluidas(resumo.value.concluidas) },
+  ]
 })
 const descricao = computed(() =>
   evento.value ? `${nomes.value}, ${formatarDataCalendarioComDiaSemana(evento.value.data)}` : undefined,
@@ -353,7 +373,18 @@ function novaTarefa() {
           v-if="detalhes"
           #detalhes
         >
-          <span data-teste="resumo-tarefas">{{ detalhes }}</span>
+          <span
+            class="tarefas__contadores"
+            data-teste="resumo-tarefas"
+          >
+            <EtiquetaFase
+              v-for="contador in contadores"
+              :key="contador.chave"
+              :fase="contador.fase"
+              :texto="contador.texto"
+              :data-teste="`contador-${contador.chave}`"
+            />
+          </span>
         </template>
         <template
           v-if="resumo && resumo.total > 0"
@@ -724,6 +755,12 @@ function novaTarefa() {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--p-ritmo-grupo);
+}
+
+.tarefas__contadores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--p-ritmo-campo);
 }
 
 .tarefas__titulo-grupo {

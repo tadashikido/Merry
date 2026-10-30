@@ -75,6 +75,7 @@ function alternar() {
           v-if="badge"
           :texto="badge.texto"
           :variante="badge.variante"
+          ponto
           class="item-tarefa__badge"
         />
       </div>

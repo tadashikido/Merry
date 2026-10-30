@@ -5,9 +5,10 @@ import Tag from 'primevue/tag'
 import { ICONES_STATUS, type VarianteStatus } from './tipos'
 import type { NomeIcone } from '@/design/icones'
 
-const props = withDefaults(defineProps<{ texto: string; variante?: VarianteStatus; icone?: NomeIcone }>(), {
+const props = withDefaults(defineProps<{ texto: string; variante?: VarianteStatus; icone?: NomeIcone; ponto?: boolean }>(), {
   variante: 'neutro',
   icone: undefined,
+  ponto: false,
 })
 
 const SEVERIDADES = {
@@ -19,7 +20,9 @@ const SEVERIDADES = {
 } as const
 
 const severidade = computed(() => SEVERIDADES[props.variante])
-const classeIcone = computed(() => `ie ie-${props.icone ?? ICONES_STATUS[props.variante]} badge-status__icone`)
+const classeIcone = computed(() =>
+  props.ponto ? 'badge-status__ponto' : `ie ie-${props.icone ?? ICONES_STATUS[props.variante]} badge-status__icone`,
+)
 </script>
 
 <template>
@@ -29,6 +32,7 @@ const classeIcone = computed(() => `ie ie-${props.icone ?? ICONES_STATUS[props.v
     :value="texto"
     :icon="classeIcone"
     :data-variante="variante"
+    :data-ponto="ponto || undefined"
     data-teste="badge-status"
   />
 </template>
@@ -44,5 +48,13 @@ const classeIcone = computed(() => `ie ie-${props.icone ?? ICONES_STATUS[props.v
 
 .badge-status[data-variante='neutro'] :deep(.badge-status__icone) {
   font-size: 0.625rem;
+}
+
+.badge-status :deep(.badge-status__ponto) {
+  flex: none;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  background: currentcolor;
+  border-radius: var(--p-raio-total);
 }
 </style>
