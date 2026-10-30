@@ -99,17 +99,18 @@ describe('TarefaFormularioView no design system Celebri', () => {
     expect(pagina.find('[data-teste="formulario-tarefa"]').exists()).toBe(true)
   })
 
-  it('[COMPONENTE] dois grupos nomeados no ritmo de bloco e grupo', async () => {
+  it('[COMPONENTE] dois grupos nomeados em Fraunces dentro do cartão do formulário', async () => {
     await abrir(CAMINHO_NOVA)
 
     const formulario = wrapper!.get('[data-teste="formulario-tarefa"]')
-    expect(formulario.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    expect(formulario.classes()).toContain('formulario-cartao')
     const grupos = formulario.findAll('fieldset')
     expect(grupos).toHaveLength(2)
     for (const grupo of grupos) {
-      expect(grupo.classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--grupo']))
-      expect(grupo.get('legend').classes()).toContain('texto-rotulo')
+      expect(grupo.classes()).toContain('formulario-secao')
+      expect(grupo.get('legend').classes()).toContain('formulario-secao__titulo')
     }
+    expect(formulario.find('.formulario-acoes [data-teste="salvar-tarefa"]').exists()).toBe(true)
     expect(grupos.map((grupo) => grupo.get('legend').text())).toEqual([
       TEXTOS_TAREFAS.grupoTarefa,
       TEXTOS_TAREFAS.grupoOrganizacao,
@@ -124,7 +125,7 @@ describe('TarefaFormularioView no design system Celebri', () => {
     expect(grupoDe('titulo')).toBe(tarefa)
     expect(grupoDe('descricao')).toBe(tarefa)
     expect(grupoDe('prazo')).toBe(organizacao)
-    const colunaPrazo = wrapper!.get('#tarefa-prazo').element.closest('.formulario-tarefa__colunas')
+    const colunaPrazo = wrapper!.get('#tarefa-prazo').element.closest('.formulario-colunas')
     expect(colunaPrazo).not.toBeNull()
     expect(colunaPrazo?.contains(wrapper!.get('[data-teste="campo-categoria"]').element)).toBe(true)
     expect(wrapper!.find('[data-teste="campo-status"]').exists()).toBe(false)
@@ -382,7 +383,8 @@ describe('TarefaFormularioView para eventos', () => {
     expect(estilo).not.toMatch(/@media/)
     expect(estilo).not.toMatch(/container: formulario-tarefa \//)
     expect(fonte).toContain('<div class="formulario-tarefa com-lateral">')
-    expect(estilo).toMatch(/@container formulario-tarefa-campos \(min-width: 36rem\)/)
+    expect(fonte).toContain('<div class="formulario-colunas">')
+    expect(fonte).toContain('class="formulario-tarefa__lateral com-lateral__lateral"')
     expect(estilo).not.toMatch(/@container formulario-tarefa /)
     expect(fonte).toMatch(/validarAoSair\('prazo'\)/)
     expect(fonte).toMatch(/revalidarAoDigitar\('prazo'\)/)

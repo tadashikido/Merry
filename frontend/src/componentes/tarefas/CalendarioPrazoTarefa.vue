@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 import { TEXTOS_TAREFAS } from '@/textos/tarefas'
-import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { classeTomDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { EventoDto } from '@/tipos/eventos'
 import { formatarDataCalendarioCurta } from '@/utilitarios/formatacao'
 import {
@@ -53,7 +53,8 @@ const linhas = computed<LinhaMarco[]>(() =>
 
 <template>
   <section
-    class="calendario-prazo"
+    class="calendario-prazo cartao"
+    :class="classeTomDoTipo(evento.tipo)"
     aria-labelledby="titulo-calendario-prazo"
     data-teste="calendario-prazo"
   >
@@ -78,7 +79,7 @@ const linhas = computed<LinhaMarco[]>(() =>
           v-for="linha in linhas"
           :key="linha.chave"
           class="calendario-prazo__marco"
-          :class="`calendario-prazo__marco--${linha.chave}`"
+          :class="[`calendario-prazo__marco--${linha.chave}`, { 'calendario-prazo__marco--passou': linha.alerta }]"
           :data-teste="`marco-${linha.chave}`"
         >
           <span
@@ -153,13 +154,13 @@ const linhas = computed<LinhaMarco[]>(() =>
   font-size: var(--p-fonte-tamanho-titulo);
   font-weight: var(--p-fonte-peso-regular);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .calendario-prazo__falta {
   margin: 0;
   font-family: var(--p-fonte-serif);
-  font-size: var(--p-fonte-tamanho-corpo);
+  font-size: var(--p-fonte-tamanho-apoio-editorial);
   font-style: italic;
   line-height: var(--p-fonte-entrelinha-leitura);
   color: var(--p-cor-texto-apoio);
@@ -198,14 +199,31 @@ const linhas = computed<LinhaMarco[]>(() =>
   background: var(--p-cor-superficie);
 }
 
+.calendario-prazo__marco--hoje .calendario-prazo__ponto {
+  border-color: var(--p-cor-fase-planejamento-ponto);
+  background: var(--p-cor-fase-planejamento-ponto);
+}
+
+.calendario-prazo__marco--confirmacoes .calendario-prazo__ponto {
+  border-color: var(--p-cor-fase-planejamento-ponto);
+}
+
 .calendario-prazo__marco--evento .calendario-prazo__ponto {
-  border-color: var(--p-cor-primaria);
+  border-color: var(--tom-viva);
+  background: var(--tom-viva);
+  box-shadow: 0 0 0 3px var(--tom-fundo);
 }
 
 .calendario-prazo__marco--prazo .calendario-prazo__ponto {
-  border-color: var(--p-cor-primaria);
-  background: var(--p-cor-primaria);
-  box-shadow: 0 0 0 3px var(--p-cor-primaria-suave);
+  border-color: var(--p-cor-fase-reta-final-ponto);
+  background: var(--p-cor-fase-reta-final-ponto);
+  box-shadow: 0 0 0 3px var(--p-cor-fase-reta-final-fundo);
+}
+
+.calendario-prazo__marco--passou .calendario-prazo__ponto {
+  border-color: var(--p-cor-fase-atrasado-ponto);
+  background: var(--p-cor-fase-atrasado-ponto);
+  box-shadow: 0 0 0 3px var(--p-cor-fase-atrasado-fundo);
 }
 
 .calendario-prazo__linha {
@@ -246,7 +264,12 @@ const linhas = computed<LinhaMarco[]>(() =>
 }
 
 .calendario-prazo__apoio--alerta {
-  color: var(--p-cor-alerta-texto);
+  color: var(--p-cor-fase-atrasado-texto);
+}
+
+.calendario-prazo__marco--evento .calendario-prazo__rotulo,
+.calendario-prazo__marco--evento .calendario-prazo__data {
+  color: var(--tom-profunda);
 }
 
 .calendario-prazo__notas {

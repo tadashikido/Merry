@@ -272,16 +272,16 @@ function cancelar() {
               />
 
               <form
-                class="pilha pilha--bloco"
+                class="formulario-cartao"
                 novalidate
                 data-teste="formulario-tarefa"
                 @submit.prevent="enviar"
               >
                 <fieldset
-                  class="formulario-tarefa__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   data-teste="grupo-tarefa"
                 >
-                  <legend class="formulario-tarefa__legenda texto-rotulo">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_TAREFAS.grupoTarefa }}
                   </legend>
                   <CampoFormulario
@@ -333,10 +333,10 @@ function cancelar() {
                 </fieldset>
 
                 <fieldset
-                  class="formulario-tarefa__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   data-teste="grupo-organizacao"
                 >
-                  <legend class="formulario-tarefa__legenda texto-rotulo">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_TAREFAS.grupoOrganizacao }}
                   </legend>
                   <CampoFormulario
@@ -360,7 +360,7 @@ function cancelar() {
                     />
                   </CampoFormulario>
 
-                  <div class="formulario-tarefa__colunas">
+                  <div class="formulario-colunas">
                     <CampoFormulario
                       v-slot="{ id: idEntrada, invalido, descritoPor }"
                       :rotulo="TEXTOS_TAREFAS.campoPrazo"
@@ -425,7 +425,7 @@ function cancelar() {
                   </CampoFormulario>
                 </fieldset>
 
-                <div class="formulario-tarefa__acoes">
+                <div class="formulario-acoes">
                   <Button
                     type="submit"
                     :label="rotuloSalvar"
@@ -450,7 +450,7 @@ function cancelar() {
 
           <CalendarioPrazoTarefa
             v-if="mostrarCalendario && evento"
-            class="formulario-tarefa__lateral com-lateral__lateral com-lateral__lateral--filete"
+            class="formulario-tarefa__lateral com-lateral__lateral"
             :evento="evento"
             :prazo="prazoValido"
             :gerada-de-modelo="original?.geradaDeModelo === true"
@@ -467,48 +467,8 @@ function cancelar() {
   min-width: 0;
 }
 
-.formulario-tarefa__grupo {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.formulario-tarefa__legenda {
-  padding: 0;
-  margin-bottom: var(--p-ritmo-grupo);
-}
-
-.formulario-tarefa__colunas {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
-}
-
 .formulario-tarefa__trilho {
   max-width: 100%;
   overflow-x: auto;
-}
-
-.formulario-tarefa__acoes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-ritmo-campo);
-}
-
-.formulario-tarefa__acoes :deep(.p-button) {
-  min-height: var(--p-dimensao-alvo-toque);
-}
-
-@container formulario-tarefa-campos (min-width: 36rem) {
-  .formulario-tarefa__colunas {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-
-  .formulario-tarefa__acoes {
-    flex-direction: row;
-    gap: var(--p-ritmo-grupo);
-  }
 }
 </style>

@@ -84,6 +84,22 @@ describe('CalendarioPrazoTarefa', () => {
     expect(wrapper.get('[data-teste="prazo-passou"]').text()).toBe(TEXTOS_TAREFAS.calendarioPrazoPassou)
   })
 
+  it('[COMPONENTE] cartão no tom do tipo e prazo passado marcado com o estado atrasado', () => {
+    const tons: Record<TipoEvento, string> = { Casamento: 'rose', QuinzeAnos: 'orquidea', Aniversario: 'tangerina', Comemoracao: 'champanhe' }
+    for (const tipo of TIPOS_EVENTO) {
+      const wrapper = montar({ tipo, prazo: '2027-03-01' })
+      expect(wrapper.get('section').classes()).toEqual(expect.arrayContaining(['cartao', `tom-tipo--${tons[tipo]}`]))
+      expect(wrapper.get('[data-teste="marco-prazo"]').classes()).not.toContain('calendario-prazo__marco--passou')
+      wrapper.unmount()
+    }
+    expect(montar({ prazo: '2027-02-01' }).get('[data-teste="marco-prazo"]').classes()).toContain('calendario-prazo__marco--passou')
+    const fonte = readFileSync(resolve(__dirname, '../CalendarioPrazoTarefa.vue'), 'utf-8')
+    expect(fonte).toContain('var(--p-cor-fase-reta-final-ponto)')
+    expect(fonte).toContain('var(--p-cor-fase-atrasado-ponto)')
+    expect(fonte).toContain('var(--tom-viva)')
+    expect(fonte).not.toContain('--p-cor-primaria')
+  })
+
   it('[COMPONENTE] tarefa do checklist informa a origem', () => {
     expect(montar({ prazo: '2027-03-01', geradaDeModelo: true }).get('[data-teste="calendario-origem"]').text()).toBe(
       TEXTOS_TAREFAS.calendarioOrigemChecklist,
