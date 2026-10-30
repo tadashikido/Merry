@@ -17,6 +17,7 @@ const props = defineProps<{
   pessoasPendentes: number
   tipo: TipoEvento | null
   prazo: DadosPrazoConfirmacao | null
+  pendentesFiltrados?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -148,6 +149,7 @@ const prazo = computed(() => {
             severity="secondary"
             outlined
             size="small"
+            :aria-pressed="props.pendentesFiltrados === true"
             data-teste="ver-pendentes"
             @click="emit('filtrar-pendentes')"
           />
@@ -240,8 +242,8 @@ const prazo = computed(() => {
 .acompanhamento__titulo {
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
-  font-weight: var(--p-fonte-peso-leve);
-  color: var(--p-cor-texto);
+  font-weight: var(--p-fonte-peso-regular);
+  color: var(--p-cor-titulo);
 }
 
 .acompanhamento__prazo {
@@ -277,12 +279,12 @@ const prazo = computed(() => {
 
 .acompanhamento__segmento--aguardando,
 .acompanhamento__marcador--aguardando {
-  background: color-mix(in srgb, var(--p-cor-primaria) 40%, var(--p-cor-superficie));
+  background: var(--p-cor-fase-reta-final-ponto);
 }
 
 .acompanhamento__segmento--respondidos,
 .acompanhamento__marcador--respondidos {
-  background: var(--p-cor-primaria);
+  background: var(--p-cor-fase-realizado-ponto);
 }
 
 .acompanhamento__etapas {
@@ -312,7 +314,7 @@ const prazo = computed(() => {
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1.1;
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .acompanhamento__legenda {
@@ -331,8 +333,11 @@ const prazo = computed(() => {
   flex: none;
   inline-size: var(--p-espaco-2);
   block-size: var(--p-espaco-2);
-  border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-total);
+}
+
+.acompanhamento__marcador--a-enviar {
+  box-shadow: inset 0 0 0 1px var(--p-cor-texto-apoio);
 }
 
 .acompanhamento__acao {

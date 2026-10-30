@@ -3,7 +3,6 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
-import SelectButton from 'primevue/selectbutton'
 
 import LayoutPainelUsuario from '@/layouts/LayoutPainelUsuario.vue'
 import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
@@ -11,12 +10,13 @@ import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
 import DialogoConfirmacao from '@/componentes/base/DialogoConfirmacao.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
+import FiltroPilulas from '@/componentes/base/FiltroPilulas.vue'
 import ListagemDados from '@/componentes/base/ListagemDados.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import ResumoContagem from '@/componentes/base/ResumoContagem.vue'
 import AcompanhamentoConvites from '@/componentes/convidados/AcompanhamentoConvites.vue'
-import type { ColunaListagem } from '@/componentes/base/tipos'
+import type { ColunaListagem, OpcaoFiltroPilula } from '@/componentes/base/tipos'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useConfirmarExclusao } from '@/composables/useConfirmarExclusao'
 import { useDesfazerExclusao } from '@/composables/useDesfazerExclusao'
@@ -146,7 +146,7 @@ const opcoesGrupo = computed(() => {
   ]
 })
 
-const opcoesResposta: { rotulo: string; valor: FiltroResposta }[] = [
+const opcoesResposta: OpcaoFiltroPilula<FiltroResposta>[] = [
   { rotulo: TEXTOS_CONVIDADOS.respostaTodas, valor: 'Todas' },
   ...RESPOSTAS_RSVP.map((valor) => ({ rotulo: ROTULOS_FILTRO_RESPOSTA[valor], valor })),
 ]
@@ -373,6 +373,7 @@ function excluir(convite: ConviteDto) {
             :pessoas-pendentes="lista.totais.pendentes.total"
             :tipo="tipoEvento"
             :prazo="prazoConfirmacao"
+            :pendentes-filtrados="resposta === 'Pendente'"
             @filtrar-pendentes="filtrarPendentes"
             @filtrar-grupo="filtrarGrupo"
           />
@@ -396,6 +397,16 @@ function excluir(convite: ConviteDto) {
             @tentar-novamente="store.carregar(id)"
             @limpar-filtros="limparFiltros"
           >
+            <template #filtros-principais>
+              <FiltroPilulas
+                v-model="resposta"
+                :opcoes="opcoesResposta"
+                :rotulo="TEXTOS_CONVIDADOS.filtroResposta"
+                :desabilitado="!lista || lista.convites.length === 0"
+                data-teste="filtro-resposta"
+              />
+            </template>
+
             <template #filtros>
               <Select
                 v-model="grupo"
@@ -405,16 +416,6 @@ function excluir(convite: ConviteDto) {
                 :aria-label="TEXTOS_CONVIDADOS.filtroGrupo"
                 :disabled="!lista || lista.convites.length === 0"
                 data-teste="filtro-grupo"
-              />
-              <SelectButton
-                v-model="resposta"
-                :options="opcoesResposta"
-                option-label="rotulo"
-                option-value="valor"
-                :allow-empty="false"
-                :aria-label="TEXTOS_CONVIDADOS.filtroResposta"
-                :disabled="!lista || lista.convites.length === 0"
-                data-teste="filtro-resposta"
               />
             </template>
 
@@ -474,6 +475,8 @@ function excluir(convite: ConviteDto) {
                     <BadgeStatus
                       :texto="ROTULOS_RESPOSTA[convidado.resposta]"
                       :variante="VARIANTE_RESPOSTA[convidado.resposta]"
+                      ponto
+                      data-teste="resposta-pessoa"
                     />
                     <span
                       v-if="convidado.resposta === 'Confirmado' && lista?.mesas"
@@ -499,6 +502,8 @@ function excluir(convite: ConviteDto) {
                 <BadgeStatus
                   :texto="ROTULOS_STATUS_ENVIO[item.filtrado.convite.statusEnvio]"
                   :variante="VARIANTE_STATUS_ENVIO[item.filtrado.convite.statusEnvio]"
+                  ponto
+                  data-teste="status-envio"
                 />
                 <span
                   v-if="item.filtrado.convite.respondidoEm"
@@ -646,11 +651,6 @@ function excluir(convite: ConviteDto) {
 
 .convidados__grupo {
   overflow-wrap: break-word;
-}
-
-.convidados__lista :deep(.p-selectbutton) {
-  flex-wrap: wrap;
-  max-width: 100%;
 }
 
 .convidados__mesa {

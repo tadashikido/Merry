@@ -219,7 +219,8 @@ describe('ConvidadosView — reestruturação da fundação', { timeout: 20_000 
 
     const estilo = estiloDaView()
     expect(estilo).toMatch(/\.convidados__nome-convite \{[^}]*overflow-wrap: anywhere;/)
-    expect(estilo).toMatch(/\.convidados__lista :deep\(\.p-selectbutton\) \{[^}]*flex-wrap: wrap;/)
+    const estiloPilulas = lerFonte('../../../componentes/base/FiltroPilulas.vue')
+    expect(estiloPilulas).toMatch(/\.filtro-pilulas \{[^}]*flex-wrap: wrap;/)
     expect(estilo).not.toContain('.listagem__acoes-linha')
     expect(estilo).not.toContain('.p-button-label')
     expect(estilo).not.toContain('hyphens')
@@ -235,6 +236,61 @@ describe('ConvidadosView — reestruturação da fundação', { timeout: 20_000 
     const fonte = lerFonte('../ConvidadosView.vue')
     expect(fonte).toMatch(/<ListagemDados[^>]*ocultar-secundarias-abaixo="larga"[^>]*acoes-somente-icone-abaixo="larga"/)
     expect(fonte).toMatch(/<div class="convidados pilha pilha--bloco">[\s\S]*class="convidados__lista/)
+  })
+
+  it('[COMPONENTE] resposta de cada pessoa e envio do convite aparecem como ponto + rótulo', async () => {
+    const tela = await abrir()
+
+    const respostas = tela.findAll('[data-teste="resposta-pessoa"]')
+    const envios = tela.findAll('[data-teste="status-envio"]')
+    expect(respostas.length).toBeGreaterThan(0)
+    expect(envios.length).toBeGreaterThan(0)
+    for (const selo of [...respostas, ...envios]) {
+      expect(selo.attributes('data-ponto')).toBe('true')
+      expect(selo.text().length).toBeGreaterThan(0)
+    }
+  })
+
+  it('[COMPONENTE] filtro de resposta em pílulas com aria-pressed e o atalho de pendentes marca quando está ativo', async () => {
+    const pendente = convite({
+      id: '44444444-4444-4444-8444-444444444444',
+      statusEnvio: 'Enviado',
+      convidados: [{ id: 'p2', nome: 'Rui Prado', telefone: null, email: null, faixaEtaria: 'Adulto', resposta: 'Pendente', acompanhante: false, possuiRestricao: false }],
+    })
+    const tela = await abrir(
+      SESSAO_EXEMPLO,
+      quando('GET', ROTA_CONVITES, () =>
+        respostaJson(
+          lista({
+            convites: [convite(), pendente],
+            totais: { ...lista().totais, convites: 2, pessoas: 2, adultos: 2, pendentes: { adultos: 1, criancas: 0, total: 1 } },
+          }),
+        ),
+      ),
+    )
+
+    const pilulas = tela.findAll('[data-teste="filtro-resposta"] button')
+    expect(pilulas.length).toBeGreaterThan(1)
+    expect(pilulas[0]!.attributes('aria-pressed')).toBe('true')
+    const atalho = tela.get('[data-teste="ver-pendentes"]')
+    expect(atalho.attributes('aria-pressed')).toBe('false')
+    await atalho.trigger('click')
+    await flushPromises()
+    expect(tela.get('[data-teste="ver-pendentes"]').attributes('aria-pressed')).toBe('true')
+    const ativa = tela.findAll('[data-teste="filtro-resposta"] button').filter((botao) => botao.attributes('aria-pressed') === 'true')
+    expect(ativa).toHaveLength(1)
+    expect(ativa[0]!.text()).not.toBe(pilulas[0]!.text())
+  })
+
+  it('[UNITÁRIO] acompanhamento usa as cores de fase nas etapas e a cor de título nos números', () => {
+    const fonte = lerFonte('../../../componentes/convidados/AcompanhamentoConvites.vue')
+    const estilo = fonte.slice(fonte.indexOf('<style scoped>'))
+
+    expect(estilo).toMatch(/--aguardando \{\s*background: var\(--p-cor-fase-reta-final-ponto\)/)
+    expect(estilo).toMatch(/--respondidos \{\s*background: var\(--p-cor-fase-realizado-ponto\)/)
+    expect(estilo).toMatch(/__numero \{[^}]*color: var\(--p-cor-titulo\)/)
+    expect(estilo).not.toContain('color-mix')
+    expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}/)
   })
 
   it('[UNITÁRIO] estilos só usam tokens de ritmo, sem px soltos nem margens negativas', () => {
