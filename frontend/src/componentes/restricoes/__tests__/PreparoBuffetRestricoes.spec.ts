@@ -177,11 +177,14 @@ describe('PreparoBuffetRestricoes', () => {
     expect(w.html()).not.toContain('v-html')
   })
 
-  it('[UNITÁRIO] estilos usam contêiner próprio, sem @media nem sticky', () => {
+  it('[UNITÁRIO] estilos usam contêiner próprio, sem @media nem sticky, alergia no estado erro e rótulo DS', () => {
     expect(ESTILO).toContain('container: preparo-buffet / inline-size')
     expect(ESTILO).toContain('@container preparo-buffet (min-width: 36rem)')
     expect(ESTILO).not.toMatch(/@media/)
     expect(ESTILO).not.toMatch(/sticky/)
+    expect(ESTILO).toMatch(/\.preparo__alergia \{[^}]*border-inline-start: 2px solid var\(--p-cor-erro\)/)
+    expect(ESTILO).toMatch(/\.preparo__alergia-titulo \.ie \{\s*color: var\(--p-cor-erro-texto\)/)
+    expect(ESTILO).toMatch(/\.preparo__subtitulo \{[^}]*--p-fonte-tamanho-rotulo[^}]*text-transform: uppercase/)
     expect(ESTILO).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
   })
 })

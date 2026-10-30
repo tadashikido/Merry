@@ -223,7 +223,7 @@ const temConferencia = computed(
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-leve);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .preparo__numeros {
@@ -253,7 +253,7 @@ const temConferencia = computed(
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1.1;
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .preparo__legenda {
@@ -276,7 +276,7 @@ const temConferencia = computed(
   flex-direction: column;
   gap: var(--p-espaco-1);
   padding-inline-start: var(--p-ritmo-campo);
-  border-inline-start: 2px solid var(--p-cor-primaria);
+  border-inline-start: 2px solid var(--p-cor-erro);
 }
 
 .preparo__alergia-titulo {
@@ -288,7 +288,7 @@ const temConferencia = computed(
 }
 
 .preparo__alergia-titulo .ie {
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-erro-texto);
 }
 
 .preparo__alergia-texto {
@@ -297,9 +297,12 @@ const temConferencia = computed(
 }
 
 .preparo__subtitulo {
-  font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-texto);
+  font-family: var(--p-fonte-interface);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
+  color: var(--p-cor-texto-apoio);
 }
 
 .preparo__orientacoes {

@@ -367,6 +367,7 @@ function selecionarAcao(pessoa: PessoaRestricaoAlimentarDto, acao: string) {
                 <BadgeStatus
                   :texto="ROTULOS_RESPOSTA[item.pessoa.resposta]"
                   :variante="VARIANTE_RESPOSTA[item.pessoa.resposta]"
+                  ponto
                 />
               </template>
               <template

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { defineComponent, h, ref } from 'vue'
@@ -163,6 +165,27 @@ describe('ResumoCardapio', () => {
     expect(wrapper.get('[data-teste="cardapio-SemGluten"] dd').text()).toBe('2')
     expect(wrapper.get('[data-teste="cardapio-Vegana"] dd').text()).toBe('1.000')
     expect(wrapper.text()).toContain('rodapé')
+  })
+
+  it('[COMPONENTE] variante cartão é o padrão e documento existe para a ficha impressa', () => {
+    wrapper = mount(ResumoCardapio, { props: { titulo: 'Para o buffet', linhas: [] }, global })
+    expect(wrapper.get('[data-teste="resumo-cardapio"]').classes()).toContain('resumo-cardapio--cartao')
+    wrapper.unmount()
+
+    wrapper = mount(ResumoCardapio, { props: { titulo: 'Contagem', linhas: [], variante: 'documento' }, global })
+    expect(wrapper.get('[data-teste="resumo-cardapio"]').classes()).toContain('resumo-cardapio--documento')
+  })
+
+  it('[UNITÁRIO] estilo DS v2: título e números em Fraunces na cor de título, sombra só no cartão', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ResumoCardapio.vue'), 'utf-8')
+    const css = fonte.slice(fonte.indexOf('<style scoped>'))
+
+    expect(css).toMatch(/\.resumo-cardapio--cartao \{\s*box-shadow: var\(--p-sombra-cartao\);\s*\}/)
+    expect(css.match(/box-shadow/g)).toHaveLength(1)
+    expect(css).toMatch(/\.resumo-cardapio__titulo \{[^}]*font-family: var\(--p-fonte-display\)[^}]*color: var\(--p-cor-titulo\)/)
+    expect(css).toMatch(/\.resumo-cardapio__valor \{[^}]*font-family: var\(--p-fonte-display\)[^}]*color: var\(--p-cor-titulo\)/)
+    expect(css).not.toContain('--p-cor-primaria')
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
   })
 
   it('[COMPONENTE] sem linhas mostra o texto de vazio', () => {

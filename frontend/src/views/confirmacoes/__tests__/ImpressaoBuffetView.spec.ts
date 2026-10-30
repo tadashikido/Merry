@@ -177,7 +177,7 @@ describe('ImpressaoBuffetView', () => {
     expect(cabecalho.text()).toContain('Gerada em')
     expect(cabecalho.findAll('h1')).toHaveLength(1)
     const resumos = ficha.get('.ficha__resumos')
-    expect(resumos.find('[data-teste="resumo-cardapio"]').exists()).toBe(true)
+    expect(resumos.get('[data-teste="resumo-cardapio"]').classes()).toContain('resumo-cardapio--documento')
     expect(resumos.find('#ficha-restricoes').exists()).toBe(true)
     expect(resumos.find('[data-teste="ficha-restricoes-pessoas"]').exists()).toBe(false)
     const tabela = ficha.get('[data-teste="ficha-restricoes-pessoas"]')

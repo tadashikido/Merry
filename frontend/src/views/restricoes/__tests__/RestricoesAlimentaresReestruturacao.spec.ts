@@ -109,6 +109,16 @@ describe('RestricoesAlimentaresView — reestruturação da fundação', { timeo
     expect(filhos.indexOf(lateral.element)).toBeLessThan(filhos.indexOf(principal.element))
   })
 
+  it('[COMPONENTE] DS v2: resumo em variante cartão e resposta com ponto + rótulo', async () => {
+    await abrir(() => respostaJson(relatorio()))
+
+    const lateral = wrapper!.get('[data-teste="restricoes-lateral"]')
+    expect(lateral.get('[data-teste="resumo-cardapio"]').classes()).toContain('resumo-cardapio--cartao')
+    const respostas = wrapper!.get('.restricoes__principal').findAll('[data-teste="badge-status"]')
+    expect(respostas.length).toBeGreaterThan(0)
+    expect(respostas.every((selo) => selo.attributes('data-ponto') === 'true')).toBe(true)
+  })
+
   it('[COMPONENTE] bloco "Para fechar o cardápio" vem depois da tabela no DOM, fora da lateral', async () => {
     await abrir(() => respostaJson(relatorio()))
 

@@ -228,6 +228,7 @@ function imprimir() {
       <div class="ficha__resumos">
         <ResumoCardapio
           class="ficha__bloco"
+          variante="documento"
           :titulo="TEXTOS_FICHA_BUFFET.contagem"
           :linhas="linhasContagem"
         >

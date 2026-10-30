@@ -4,7 +4,10 @@ import { useId } from 'vue'
 import type { LinhaCardapio } from './tipos'
 import { formatarNumero } from '@/utilitarios/formatacao'
 
-defineProps<{ titulo: string; linhas: LinhaCardapio[]; vazio?: string }>()
+withDefaults(defineProps<{ titulo: string; linhas: LinhaCardapio[]; vazio?: string; variante?: 'cartao' | 'documento' }>(), {
+  vazio: undefined,
+  variante: 'cartao',
+})
 
 const idTitulo = `${useId()}-resumo-cardapio`
 </script>
@@ -12,6 +15,7 @@ const idTitulo = `${useId()}-resumo-cardapio`
 <template>
   <section
     class="resumo-cardapio"
+    :class="`resumo-cardapio--${variante}`"
     :aria-labelledby="idTitulo"
     data-teste="resumo-cardapio"
   >
@@ -66,11 +70,16 @@ const idTitulo = `${useId()}-resumo-cardapio`
   border-radius: var(--p-raio-painel);
 }
 
+.resumo-cardapio--cartao {
+  box-shadow: var(--p-sombra-cartao);
+}
+
 .resumo-cardapio__titulo {
-  font-family: var(--p-fonte-interface);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-regular);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .resumo-cardapio__linhas {
@@ -102,8 +111,12 @@ const idTitulo = `${useId()}-resumo-cardapio`
 .resumo-cardapio__valor {
   order: 2;
   margin: 0;
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-primaria);
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-weight: var(--p-fonte-peso-regular);
+  line-height: 1;
+  color: var(--p-cor-titulo);
 }
 
 .resumo-cardapio__rodape {
