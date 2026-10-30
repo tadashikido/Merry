@@ -83,19 +83,22 @@ const visiveis = computed(() => props.segmentos.filter((segmento) => segmento.va
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
+  box-shadow: var(--p-sombra-cartao);
 }
 
 .barra-progresso__titulo {
-  font-family: var(--p-fonte-interface);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-regular);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .barra-progresso__total {
   font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-corpo);
-  font-weight: var(--p-fonte-peso-regular);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
   color: var(--p-cor-texto-apoio);
 }
 
@@ -169,7 +172,7 @@ const visiveis = computed(() => props.segmentos.filter((segmento) => segmento.va
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-medio);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .barra-progresso__rodape {

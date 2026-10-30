@@ -495,6 +495,7 @@ function importar() {
                   <BadgeStatus
                     :texto="ROTULOS_STATUS_ENVIO[item.pendente.statusEnvio]"
                     :variante="VARIANTE_STATUS_ENVIO[item.pendente.statusEnvio]"
+                    ponto
                   />
                 </template>
 
@@ -505,8 +506,7 @@ function importar() {
                     :aria-label="TEXTOS_ENVIO_CONVITE.acaoComNome(TEXTOS_ENVIO_CONVITE.enviarWhatsApp, item.nome)"
                     :title="TEXTOS_ENVIO_CONVITE.enviarWhatsApp"
                     icon="ie ie-whatsapp"
-                    severity="secondary"
-                    outlined
+                    class="botao-acao-linha"
                     :loading="conviteEmAndamento === item.id"
                     :disabled="conviteEmAndamento !== null && conviteEmAndamento !== item.id"
                     data-teste="enviar-whatsapp"

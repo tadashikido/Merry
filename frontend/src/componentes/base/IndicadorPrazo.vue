@@ -56,6 +56,8 @@ const complemento = computed(() => (encerrado.value ? null : TEXTOS_CONFIRMACOES
 
 <style scoped>
 .indicador-prazo {
+  --prazo-cor: var(--p-cor-fase-planejamento-ponto);
+
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -64,31 +66,26 @@ const complemento = computed(() => (encerrado.value ? null : TEXTOS_CONFIRMACOES
   color: var(--p-cor-texto);
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
-  border-left: 4px solid var(--p-cor-primaria);
+  border-left: 4px solid var(--prazo-cor);
   border-radius: var(--p-raio-painel);
+  box-shadow: var(--p-sombra-cartao);
 }
 
 .indicador-prazo--alerta {
-  background: var(--p-cor-alerta-suave);
-  border-left-color: var(--p-cor-alerta);
+  --prazo-cor: var(--p-cor-fase-reta-final-ponto);
+
+  background: var(--p-cor-fase-reta-final-fundo);
 }
 
 .indicador-prazo--encerrado {
+  --prazo-cor: var(--p-cor-neutro);
+
   background: var(--p-cor-neutro-suave);
-  border-left-color: var(--p-cor-neutro);
 }
 
 .indicador-prazo__icone {
   font-size: var(--p-fonte-tamanho-titulo);
-  color: var(--p-cor-primaria);
-}
-
-.indicador-prazo--alerta .indicador-prazo__icone {
-  color: var(--p-cor-alerta);
-}
-
-.indicador-prazo--encerrado .indicador-prazo__icone {
-  color: var(--p-cor-neutro);
+  color: var(--prazo-cor);
 }
 
 .indicador-prazo__textos {

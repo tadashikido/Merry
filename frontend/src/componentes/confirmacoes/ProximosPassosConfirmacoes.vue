@@ -213,7 +213,7 @@ const mesas = computed(() => (situacao.value.confirmadas > 0 ? TEXTOS.mesas(voca
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-leve);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .passos-confirmacoes__prazo {
@@ -254,7 +254,7 @@ const mesas = computed(() => (situacao.value.confirmadas > 0 ? TEXTOS.mesas(voca
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1.1;
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .passos-confirmacoes__legenda {

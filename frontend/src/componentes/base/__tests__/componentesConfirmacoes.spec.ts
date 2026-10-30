@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { h } from 'vue'
@@ -108,6 +110,35 @@ describe('IndicadorPrazo', () => {
     expect(wrapper.text()).toContain('Prazo encerrado em 12 de maio')
     expect(wrapper.find('[data-teste="indicador-prazo-complemento"]').exists()).toBe(false)
     expect(wrapper.text()).toContain('Alterar prazo')
+  })
+})
+
+describe('estilos DS v2 do painel de confirmações', () => {
+  const estilo = (arquivo: string) => {
+    const fonte = readFileSync(resolve(__dirname, arquivo), 'utf-8')
+    return fonte.slice(fonte.indexOf('<style scoped>'))
+  }
+
+  it('[UNITÁRIO] IndicadorPrazo usa a cor da fase por situação e sombra de cartão', () => {
+    const css = estilo('../IndicadorPrazo.vue')
+
+    expect(css).toMatch(/\.indicador-prazo \{\s*--prazo-cor: var\(--p-cor-fase-planejamento-ponto\);/)
+    expect(css).toMatch(/\.indicador-prazo--alerta \{\s*--prazo-cor: var\(--p-cor-fase-reta-final-ponto\);[^}]*background: var\(--p-cor-fase-reta-final-fundo\)/)
+    expect(css).toMatch(/\.indicador-prazo--encerrado \{\s*--prazo-cor: var\(--p-cor-neutro\);/)
+    expect(css).toContain('border-left: 4px solid var(--prazo-cor)')
+    expect(css).toMatch(/\.indicador-prazo__icone \{[^}]*color: var\(--prazo-cor\)/)
+    expect(css).toContain('box-shadow: var(--p-sombra-cartao)')
+    expect(css).not.toContain('--p-cor-primaria')
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
+  })
+
+  it('[UNITÁRIO] BarraProgressoEnvio tem título Fraunces, total como rótulo e sombra de cartão', () => {
+    const css = estilo('../BarraProgressoEnvio.vue')
+
+    expect(css).toMatch(/\.barra-progresso__titulo \{[^}]*font-family: var\(--p-fonte-display\)[^}]*color: var\(--p-cor-titulo\)/)
+    expect(css).toMatch(/\.barra-progresso__total \{[^}]*--p-fonte-tamanho-rotulo/)
+    expect(css).toMatch(/\.barra-progresso \{[^}]*box-shadow: var\(--p-sombra-cartao\)/)
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
   })
 })
 

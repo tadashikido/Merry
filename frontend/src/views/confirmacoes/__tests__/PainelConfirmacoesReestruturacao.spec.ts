@@ -199,6 +199,16 @@ describe('PainelConfirmacoesView — reestruturação da fundação', { timeout:
     expect(botao.attributes('aria-label')).toContain('Família Albuquerque Vasconcelos de Mendonça e Silva')
   })
 
+  it('[COMPONENTE] DS v2: WhatsApp é ação de linha 44 px e status de envio tem ponto + rótulo', async () => {
+    await abrir(() => respostaJson(painelExemplo({ pendentes: [pendenteCobravel()] })))
+
+    const botao = wrapper!.get('[data-teste="enviar-whatsapp"]')
+    expect(botao.classes()).toContain('botao-acao-linha')
+    expect(botao.classes()).not.toContain('p-button-outlined')
+    const selo = wrapper!.get('.confirmacoes__pendentes [data-teste="badge-status"]')
+    expect(selo.attributes('data-ponto')).toBe('true')
+  })
+
   it('[SEGURANÇA] erro do servidor não mostra indicadores, detalhes nem pendentes', async () => {
     await abrir(() => respostaProblema(500, { title: 'Erro' }))
 
