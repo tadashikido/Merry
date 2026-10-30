@@ -231,12 +231,28 @@ describe('ImpressaoBuffetView', () => {
     expect(estilo).not.toContain('box-shadow')
   })
 
+  it('[COMPONENTE] DS v2: títulos em Fraunces, rótulos em caixa alta e impressão em escala de cinza', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ImpressaoBuffetView.vue'), 'utf-8').replace(/\r\n/g, '\n')
+    const estilo = fonte.slice(fonte.indexOf('<style scoped>'))
+    const impressao = estilo.slice(estilo.indexOf('@media print'))
+
+    expect(estilo).toMatch(/\.ficha__titulo \{\s*font-family: var\(--p-fonte-display\)/)
+    expect(estilo).toMatch(/\.ficha__legenda-tabela \{[^}]*font-family: var\(--p-fonte-display\)/)
+    expect(estilo).toMatch(/\.ficha__detalhe dt \{[^}]*--p-fonte-tamanho-rotulo[^}]*text-transform: uppercase/)
+    expect(estilo).toMatch(/\.ficha__alergia \{[^}]*border-left: medium solid var\(--p-cor-erro\)/)
+    expect(impressao).toMatch(/\.ficha__tipo \{\s*color: var\(--p-cor-texto\);\s*background: none;\s*border: 1px solid var\(--p-cor-texto\);/)
+    expect(impressao).toMatch(/\.ficha__alergia \{\s*border-left-color: var\(--p-cor-texto\)/)
+    expect(impressao).toMatch(/\.ficha__titulo,[\s\S]*?color: var\(--p-cor-texto\)/)
+  })
+
   it('[COMPONENTE] festa de 15 anos identifica o tipo e rotula horário e locais sem falar de casamento', async () => {
     rotasComEvento({ tipo: 'QuinzeAnos', nomePrimeiraPessoa: 'Valentina', nomeSegundaPessoa: null })
     await abrir()
 
     const ficha = wrapper!.get('[data-teste="ficha-buffet"]')
     expect(ficha.get('[data-teste="ficha-tipo"]').text()).toBe('Festa de 15 anos')
+    expect(ficha.get('[data-teste="ficha-tipo"]').classes()).toContain('etiqueta-tipo')
+    expect(ficha.get('[data-teste="ficha-tipo"]').attributes('data-tom')).toBe('orquidea')
     expect(detalhe(ficha, 'horario')).toBe('Horário da festa 16:30')
     expect(detalhe(ficha, 'localPrincipal')).toBe('Festa Salão Aurora')
     expect(detalhe(ficha, 'localSecundario')).toBe('Outro local Igreja Matriz')
@@ -251,6 +267,7 @@ describe('ImpressaoBuffetView', () => {
 
     const ficha = wrapper!.get('[data-teste="ficha-buffet"]')
     expect(ficha.get('[data-teste="ficha-tipo"]').text()).toBe('Casamento')
+    expect(ficha.get('[data-teste="ficha-tipo"]').attributes('data-tom')).toBe('rose')
     expect(detalhe(ficha, 'localPrincipal')).toBe('Cerimônia Capela São José')
     expect(detalhe(ficha, 'localSecundario')).toBe('Recepção Espaço Jardim')
     expect(ficha.get('[data-teste="ficha-orientacao-SemGluten"] dd').text()).toContain('o bolo e os bem-casados')

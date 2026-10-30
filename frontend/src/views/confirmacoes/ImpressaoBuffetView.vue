@@ -6,6 +6,7 @@ import Button from 'primevue/button'
 import LayoutImpressao from '@/layouts/LayoutImpressao.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import ResumoCardapio from '@/componentes/base/ResumoCardapio.vue'
 import type { LinhaCardapio } from '@/componentes/base/tipos'
 import { useConfirmacoesStore } from '@/stores/confirmacoes'
@@ -195,13 +196,14 @@ function imprimir() {
           </p>
         </div>
         <div class="ficha__identificacao pilha pilha--campo">
-          <p
+          <EtiquetaTipo
             v-if="cabecalho?.tipoRotulo"
             class="ficha__tipo"
+            :tipo="cabecalho.tipo"
+            :rotulo="cabecalho.tipoRotulo"
+            com-icone
             data-teste="ficha-tipo"
-          >
-            {{ cabecalho.tipoRotulo }}
-          </p>
+          />
           <h1 class="ficha__anfitriao">
             {{ nomes }}
           </h1>
@@ -473,13 +475,7 @@ function imprimir() {
 }
 
 .ficha__tipo {
-  margin: 0;
-  font-family: var(--p-fonte-serif);
-  font-size: var(--p-fonte-tamanho-corpo);
-  font-style: italic;
-  font-variant-numeric: lining-nums;
-  line-height: var(--p-fonte-entrelinha-interface);
-  color: var(--p-cor-texto-apoio);
+  align-self: flex-start;
 }
 
 .ficha__detalhes {
@@ -496,7 +492,10 @@ function imprimir() {
 }
 
 .ficha__detalhe dt {
-  font-size: var(--p-fonte-tamanho-apoio);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
   color: var(--p-cor-texto-apoio);
 }
 
@@ -512,7 +511,7 @@ function imprimir() {
 
 .ficha__alergia {
   padding-left: var(--p-ritmo-grupo);
-  border-left: medium solid var(--p-cor-primaria);
+  border-left: medium solid var(--p-cor-erro);
 }
 
 .ficha__alergia-titulo {
@@ -628,7 +627,7 @@ function imprimir() {
 }
 
 .ficha__titulo {
-  font-family: var(--p-fonte-interface);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-regular);
   line-height: var(--p-fonte-entrelinha-titulo);
@@ -692,7 +691,7 @@ function imprimir() {
 
 .ficha__legenda-tabela {
   padding-bottom: var(--p-ritmo-grupo);
-  font-family: var(--p-fonte-interface);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
   line-height: var(--p-fonte-entrelinha-titulo);
   text-align: left;
@@ -816,6 +815,12 @@ function imprimir() {
     display: none;
   }
 
+  .ficha__tipo {
+    color: var(--p-cor-texto);
+    background: none;
+    border: 1px solid var(--p-cor-texto);
+  }
+
   .ficha__legenda-tabela {
     break-after: avoid;
   }
@@ -830,6 +835,12 @@ function imprimir() {
     columns: 2;
   }
 
+  .ficha__anfitriao,
+  .ficha__titulo,
+  .ficha__legenda-tabela,
+  .ficha__tabela th,
+  .ficha :deep(.resumo-cardapio__titulo),
+  .ficha :deep(.resumo-cardapio__valor),
   .ficha__nota,
   .ficha__tipo,
   .ficha__detalhe dt,
