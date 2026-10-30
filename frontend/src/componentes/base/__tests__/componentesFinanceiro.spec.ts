@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
@@ -60,6 +63,7 @@ describe('LinhaParcela', () => {
     expect(montado.get('[data-teste="parcela-titulo"]').text()).toBe('Fotografia Lumière · 3/4')
     expect(texto(montado.get('[data-teste="parcela-valor"]').text())).toBe('R$ 2.000,00')
     expect(montado.get('[data-teste="parcela-situacao"]').text()).toBe('Vencida há 2 dias')
+    expect(montado.get('[data-teste="parcela-situacao"]').attributes('data-ponto')).toBe('true')
     expect(montado.text()).toContain('Vencimento em 28 de setembro de 2026')
     expect(montado.classes()).toContain('linha-parcela--vencida')
   })
@@ -199,5 +203,16 @@ describe('contraste do financeiro', () => {
 
     expect(pares).toHaveLength(8)
     expect(pares.every(atendeContraste)).toBe(true)
+  })
+})
+
+describe('Financeiro no DS v2', () => {
+  it('[UNITÁRIO] o mês do evento usa a cor do tipo com recuo e o total fica na cor de título', () => {
+    const estilo = readFileSync(resolve(__dirname, '../../financeiro/PagamentosPorMes.vue'), 'utf-8').split('<style scoped>')[1] ?? ''
+
+    expect(estilo).toContain('border-inline-start: 2px solid var(--tom-viva, var(--p-cor-primaria))')
+    expect(estilo).toContain('color: var(--tom-tinta, var(--p-cor-primaria))')
+    expect(estilo).toMatch(/__numero \{[^}]*color: var\(--p-cor-titulo\)/)
+    expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}/)
   })
 })

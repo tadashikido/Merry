@@ -119,6 +119,7 @@ const tom = computed(() => {
         <BadgeStatus
           :texto="descricao.texto"
           :variante="historico ? 'neutro' : descricao.variante"
+          ponto
           data-teste="parcela-situacao"
         />
       </span>

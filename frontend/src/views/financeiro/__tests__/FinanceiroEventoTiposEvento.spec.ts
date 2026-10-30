@@ -17,7 +17,7 @@ import { ID_VINCULO_FINANCEIRO_2, financeiroExemplo, fornecedorFinanceiro, parce
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_FINANCEIRO, TEXTOS_PAGAMENTOS_MES } from '@/textos/financeiro'
-import { TIPO_EVENTO_NEUTRO, VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
+import { TIPO_EVENTO_NEUTRO, TOM_DO_TIPO, VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
 import type { SessaoDto } from '@/tipos/api'
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import type { FinanceiroEventoDto } from '@/tipos/financeiro'
@@ -161,6 +161,7 @@ describe('FinanceiroEventoView — pagamentos por mês', () => {
     const contracao = VOCABULARIO_TIPO_EVENTO[tipo].referencia.contracaoDe
     const mesEvento = tela.get('[data-teste="mes-2027-05"]')
     expect(mesEvento.classes()).toContain('pagamentos-mes__item--evento')
+    expect(tela.get('.financeiro__corpo').classes()).toContain(`tom-tipo--${TOM_DO_TIPO[tipo]}`)
     expect(mesEvento.get('[data-teste="mes-do-evento"]').text()).toContain(TEXTOS_PAGAMENTOS_MES.mesDoEvento(contracao))
     expect(tela.findAll('[data-teste="mes-do-evento"]')).toHaveLength(1)
     expect(texto(tela.get('[data-teste="pagamentos-mes-nota"]').text())).toBe(
@@ -172,6 +173,7 @@ describe('FinanceiroEventoView — pagamentos por mês', () => {
     const tela = await abrir('Formatura')
 
     const neutro = VOCABULARIO_TIPO_EVENTO[TIPO_EVENTO_NEUTRO].referencia.contracaoDe
+    expect(tela.get('.financeiro__corpo').classes()).toContain('tom-tipo--neutro')
     expect(tela.get('[data-teste="mes-do-evento"]').text()).toContain(TEXTOS_PAGAMENTOS_MES.mesDoEvento(neutro))
     expect(tela.get('[data-teste="pagamentos-por-mes"]').text().toLowerCase()).not.toContain('casamento')
   })

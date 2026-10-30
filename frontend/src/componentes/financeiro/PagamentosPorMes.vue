@@ -144,7 +144,7 @@ const restante = computed(() =>
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1.1;
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-titulo);
 }
 
 .pagamentos-mes__legenda {
@@ -176,7 +176,7 @@ const restante = computed(() =>
 
 .pagamentos-mes__item--evento {
   padding-inline-start: var(--p-espaco-3);
-  border-inline-start: 2px solid var(--p-cor-primaria);
+  border-inline-start: 2px solid var(--tom-viva, var(--p-cor-primaria));
 }
 
 .pagamentos-mes__mes {
@@ -193,7 +193,7 @@ const restante = computed(() =>
   font-family: var(--p-fonte-serif);
   font-size: var(--p-fonte-tamanho-corpo);
   font-style: italic;
-  color: var(--p-cor-primaria);
+  color: var(--tom-tinta, var(--p-cor-primaria));
 }
 
 .pagamentos-mes__valor {

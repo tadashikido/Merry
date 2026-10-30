@@ -28,7 +28,7 @@ import { useEventosStore } from '@/stores/eventos'
 import { useFinanceiroStore } from '@/stores/financeiro'
 import { TEXTOS_COMPROVANTE, TEXTOS_FINANCEIRO, TEXTOS_PARCELA } from '@/textos/financeiro'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
-import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { classeTomDoTipo, ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { FornecedorFinanceiroDto, ParcelaDto, ResultadoPagamento } from '@/tipos/financeiro'
 import { verificarArquivoComprovante, ACEITE_COMPROVANTE, formatarTamanhoArquivo } from '@/utilitarios/arquivo'
 import { deCentavos, paraCentavos, somarCentavos } from '@/utilitarios/centavos'
@@ -502,7 +502,10 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
             </li>
           </ul>
 
-          <div class="financeiro__corpo">
+          <div
+            class="financeiro__corpo"
+            :class="classeTomDoTipo(evento?.tipo)"
+          >
             <div
               class="financeiro__orcamento"
               data-teste="lateral-orcamento"
@@ -956,7 +959,7 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
   font-variant-numeric: lining-nums tabular-nums;
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .financeiro__indicador-valor--alerta {
@@ -1006,6 +1009,7 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
+  box-shadow: var(--p-sombra-cartao);
 }
 
 .financeiro .financeiro__titulo-painel {
@@ -1013,8 +1017,8 @@ function baixarAria(parcela: ParcelaDto, nomeEmpresa: string): string {
   padding-inline: var(--p-ritmo-grupo);
   font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-leve);
-  color: var(--p-cor-texto);
+  font-weight: var(--p-fonte-peso-regular);
+  color: var(--p-cor-titulo);
 }
 
 .financeiro__grupo {
