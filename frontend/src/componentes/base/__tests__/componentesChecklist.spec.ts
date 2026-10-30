@@ -45,6 +45,33 @@ describe('ProgressoChecklist', () => {
   })
 })
 
+describe('ReguaMarcos com fases', () => {
+  it('[COMPONENTE] marco com fase expõe a classe de fase e o destaque vira pílula com ponto; sem fase fica neutro', () => {
+    montado = mount(ReguaMarcos, {
+      props: {
+        rotulo: 'Itens por marco',
+        marcos: [
+          { chave: 'tresMeses', rotulo: '3 meses', fase: 'atrasado' },
+          { chave: 'retaFinal', rotulo: 'Reta final', destaque: 'Agora', fase: 'retaFinal' },
+          { chave: 'seisMeses', rotulo: '6 meses', fase: 'realizado', concluido: true },
+          { chave: 'dozeMeses', rotulo: '12 meses' },
+        ],
+      },
+    })
+
+    expect(montado.get('[data-teste="marco-tresMeses"]').classes()).toEqual(expect.arrayContaining(['regua__marco--fase', 'fase--atrasado']))
+    expect(montado.get('[data-teste="marco-tresMeses"]').attributes('data-fase')).toBe('atrasado')
+    expect(montado.get('[data-teste="marco-seisMeses"]').classes()).toContain('fase--realizado')
+    const atual = montado.get('[data-teste="marco-retaFinal"]')
+    expect(atual.classes()).toContain('fase--reta-final')
+    expect(atual.get('[data-teste="regua-destaque"]').text()).toBe('Agora')
+    expect(atual.get('.regua__destaque-ponto').attributes('aria-hidden')).toBe('true')
+    const neutro = montado.get('[data-teste="marco-dozeMeses"]')
+    expect(neutro.classes()).not.toContain('regua__marco--fase')
+    expect(neutro.attributes('data-fase')).toBeUndefined()
+  })
+})
+
 describe('ReguaMarcos', () => {
   it('[COMPONENTE] renderiza marcos em lista ordenada com títulos que rotulam o conteúdo', () => {
     montado = mount(ReguaMarcos, {

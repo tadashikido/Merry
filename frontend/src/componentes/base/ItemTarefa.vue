@@ -12,6 +12,7 @@ const props = withDefaults(
     badge?: { texto: string; variante: VarianteStatus } | null
     concluida?: boolean
     cancelada?: boolean
+    atrasada?: boolean
     podeAlternar?: boolean
     alternando?: boolean
     rotuloAlternar: string
@@ -22,6 +23,7 @@ const props = withDefaults(
     badge: null,
     concluida: false,
     cancelada: false,
+    atrasada: false,
     podeAlternar: true,
     alternando: false,
   },
@@ -44,6 +46,7 @@ function alternar() {
     :class="{
       'item-tarefa--concluida': concluida,
       'item-tarefa--cancelada': cancelada,
+      'item-tarefa--atrasada': atrasada && !concluida && !cancelada,
     }"
     data-teste="item-tarefa"
   >
@@ -124,6 +127,14 @@ function alternar() {
 
 .item-tarefa + .item-tarefa {
   border-top: 1px solid var(--p-cor-divisoria);
+}
+
+.item-tarefa--atrasada {
+  box-shadow: inset 3px 0 0 var(--p-cor-fase-atrasado-ponto);
+}
+
+.item-tarefa--atrasada .item-tarefa__anel {
+  color: var(--p-cor-fase-atrasado-ponto);
 }
 
 .item-tarefa__anel {

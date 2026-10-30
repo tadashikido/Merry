@@ -318,6 +318,9 @@ describe('ChecklistView — reestruturação da fundação', () => {
     expect(wrapper.get('[data-teste="marco-trintaDias"]').classes()).not.toContain('regua__marco--concluido')
     expect(wrapper.get('[data-teste="resumo-marco-dozeMeses"]').classes()).toContain('checklist__marco--concluido')
     expect(wrapper.get('[data-teste="resumo-marco-trintaDias"]').classes()).not.toContain('checklist__marco--concluido')
+    expect(doze.attributes('data-fase')).toBe('realizado')
+    expect(wrapper.get('[data-teste="resumo-marco-dozeMeses"]').classes()).toContain('fase--realizado')
+    expect(wrapper.get('[data-teste="resumo-marco-dozeMeses"] .checklist__ponto-marco').attributes('aria-hidden')).toBe('true')
   })
 
   it('[COMPONENTE] sem checklist a lateral explica os marcos depois da coluna principal e o painel de aplicar fica em cartão', async () => {
@@ -466,6 +469,11 @@ describe('ChecklistView — evoluída para eventos', () => {
     expect(wrapper.get('[data-teste="marco-trintaDias"] [data-teste="regua-destaque"]').text()).toBe('Agora')
     expect(wrapper.get('[data-teste="marco-dozeMeses"]').classes()).not.toContain('regua__marco--atual')
     expect(wrapper.get('[data-teste="marco-dozeMeses"]').text()).toContain('1 de 3 concluídas, 1 atrasada')
+    expect(wrapper.get('[data-teste="marco-dozeMeses"]').attributes('data-fase')).toBe('atrasado')
+    expect(doze.classes()).toContain('fase--atrasado')
+    expect(wrapper.get('[data-teste="marco-trintaDias"]').attributes('data-fase')).toBe('retaFinal')
+    const itemAtrasado = wrapper.findAll('[data-teste="item-tarefa"]').find((item) => item.text().includes('Fechar decoração'))
+    expect(itemAtrasado?.classes()).toContain('item-tarefa--atrasada')
   })
 
   it('[COMPONENTE] abrir Aplicar outro modelo leva o foco ao painel e Cancelar devolve ao botão; o progresso não repete rótulo', async () => {

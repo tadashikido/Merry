@@ -19,6 +19,15 @@ function montarItem(props: Record<string, unknown> = {}) {
   })
 }
 
+describe('ItemTarefa atrasada', () => {
+  it('[COMPONENTE] tarefa atrasada aberta fica no estado de erro; concluída ou cancelada não', () => {
+    expect(montarItem({ atrasada: true }).classes()).toContain('item-tarefa--atrasada')
+    expect(montarItem({ atrasada: true, concluida: true }).classes()).not.toContain('item-tarefa--atrasada')
+    expect(montarItem({ atrasada: true, cancelada: true }).classes()).not.toContain('item-tarefa--atrasada')
+    expect(montarItem().classes()).not.toContain('item-tarefa--atrasada')
+  })
+})
+
 describe('ItemTarefa', () => {
   it('[COMPONENTE] anel é um botão com rótulo acessível e estado pressionado', async () => {
     const wrapper = montarItem({ metadados: ['Anfitriões', 'venceu há 3 dias'], badge: { texto: 'Atrasada', variante: 'erro' } })

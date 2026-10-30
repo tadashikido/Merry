@@ -16,7 +16,8 @@ import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import ProgressoChecklist from '@/componentes/base/ProgressoChecklist.vue'
 import ReguaMarcos from '@/componentes/base/ReguaMarcos.vue'
 import SugestaoTarefasModelo from '@/componentes/tarefas/SugestaoTarefasModelo.vue'
-import type { ItemMenuAcoes, MarcoRegua } from '@/componentes/base/tipos'
+import { CLASSE_FASE, type ItemMenuAcoes, type MarcoRegua } from '@/componentes/base/tipos'
+import type { FaseEvento } from '@/design/tokens'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useEventosStore } from '@/stores/eventos'
 import { useChecklistStore } from '@/stores/checklist'
@@ -108,6 +109,21 @@ const resumoMarcos = computed(() =>
   }),
 )
 
+function faseDoMarco(marco: { atrasadas: number; concluido: boolean; atual: boolean }): FaseEvento | null {
+  if (marco.atrasadas > 0) {
+    return 'atrasado'
+  }
+  if (marco.concluido) {
+    return 'realizado'
+  }
+  return marco.atual ? 'retaFinal' : null
+}
+
+function classeFaseDoMarco(marco: { atrasadas: number; concluido: boolean; atual: boolean }): string | null {
+  const fase = faseDoMarco(marco)
+  return fase ? CLASSE_FASE[fase] : null
+}
+
 const marcos = computed<MarcoRegua[]>(() =>
   resumoMarcos.value.map((marco) => ({
     chave: marco.chave,
@@ -116,6 +132,7 @@ const marcos = computed<MarcoRegua[]>(() =>
     detalhe: marco.detalhe,
     concluido: marco.concluido,
     destaque: marco.atual ? TEXTOS_CHECKLIST.marcoAgora : null,
+    fase: faseDoMarco(marco),
   })),
 )
 
@@ -474,10 +491,17 @@ async function recalcular() {
                       v-for="marco in resumoMarcos"
                       :key="marco.chave"
                       class="checklist__marco"
-                      :class="{ 'checklist__marco--concluido': marco.concluido, 'checklist__marco--atual': marco.atual }"
+                      :class="[
+                        { 'checklist__marco--concluido': marco.concluido, 'checklist__marco--atual': marco.atual },
+                        classeFaseDoMarco(marco),
+                      ]"
                       :data-teste="`resumo-marco-${marco.chave}`"
                     >
                       <dt>
+                        <span
+                          class="checklist__ponto-marco"
+                          aria-hidden="true"
+                        />
                         {{ marco.rotulo }}
                         <span
                           v-if="marco.atual"
@@ -633,6 +657,7 @@ async function recalcular() {
                       :badge="badgeTarefa(tarefa)"
                       :concluida="tarefa.status === 'Concluida'"
                       :cancelada="tarefa.status === 'Cancelada'"
+                      :atrasada="tarefa.atrasada"
                       :pode-alternar="!arquivado"
                       :alternando="tarefaEmAndamento === tarefa.id"
                       :rotulo-alternar="rotuloAlternar(tarefa)"
@@ -745,7 +770,19 @@ async function recalcular() {
 }
 
 .checklist__marco dt {
+  display: flex;
+  align-items: baseline;
+  gap: var(--p-ritmo-campo);
   color: var(--p-cor-texto);
+}
+
+.checklist__ponto-marco {
+  flex: none;
+  align-self: center;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  background: var(--fase-ponto, var(--p-cor-borda-campo));
+  border-radius: var(--p-raio-total);
 }
 
 .checklist__marco dd {

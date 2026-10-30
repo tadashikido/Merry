@@ -1,6 +1,6 @@
 import type { RouteLocationRaw } from 'vue-router'
 import type { NomeIcone } from '@/design/icones'
-import type { TomCelebracao } from '@/design/tokens'
+import type { FaseEvento, TomCelebracao } from '@/design/tokens'
 
 export type VarianteStatus = 'neutro' | 'sucesso' | 'alerta' | 'erro' | 'informacao'
 
@@ -122,6 +122,13 @@ export interface PassoPrimeiroAcesso {
   concluido: boolean
 }
 
+export const CLASSE_FASE: Record<FaseEvento, string> = {
+  planejamento: 'fase--planejamento',
+  retaFinal: 'fase--reta-final',
+  realizado: 'fase--realizado',
+  atrasado: 'fase--atrasado',
+}
+
 export interface MarcoRegua {
   chave: string
   rotulo: string
@@ -129,6 +136,7 @@ export interface MarcoRegua {
   detalhe?: string | null
   concluido?: boolean
   destaque?: string | null
+  fase?: FaseEvento | null
 }
 
 export interface ItemIndiceCategorias<C extends string = string> {

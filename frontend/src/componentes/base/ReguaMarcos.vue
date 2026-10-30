@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import { useId } from 'vue'
 
-import type { MarcoRegua } from './tipos'
+import { CLASSE_FASE, type MarcoRegua } from './tipos'
 
 defineProps<{ marcos: MarcoRegua[]; rotulo: string }>()
 
 defineSlots<{ marco(props: { marco: MarcoRegua; idTitulo: string }): unknown }>()
 
 const prefixo = `regua-${useId()}`
+
+function classesDoMarco(marco: MarcoRegua) {
+  return [
+    marco.fase ? ['regua__marco--fase', CLASSE_FASE[marco.fase]] : [],
+    { 'regua__marco--concluido': marco.concluido, 'regua__marco--atual': Boolean(marco.destaque) },
+  ]
+}
 
 function idTitulo(chave: string): string {
   return `${prefixo}-${chave}`
@@ -24,7 +31,8 @@ function idTitulo(chave: string): string {
       v-for="marco in marcos"
       :key="marco.chave"
       class="regua__marco"
-      :class="{ 'regua__marco--concluido': marco.concluido, 'regua__marco--atual': Boolean(marco.destaque) }"
+      :class="classesDoMarco(marco)"
+      :data-fase="marco.fase ?? undefined"
       :data-teste="`marco-${marco.chave}`"
     >
       <div class="regua__cabeca">
@@ -42,7 +50,10 @@ function idTitulo(chave: string): string {
           v-if="marco.destaque"
           class="regua__destaque"
           data-teste="regua-destaque"
-        >{{ marco.destaque }}</span>
+        ><span
+          class="regua__destaque-ponto"
+          aria-hidden="true"
+        />{{ marco.destaque }}</span>
         <span
           v-if="marco.detalhe"
           class="regua__detalhe numeros-tabulares"
@@ -140,15 +151,35 @@ function idTitulo(chave: string): string {
 }
 
 .regua__destaque {
-  font-family: var(--p-fonte-serif);
-  font-size: var(--p-fonte-tamanho-controle);
-  font-style: italic;
-  color: var(--p-cor-acento-texto);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--p-espaco-2);
+  padding: var(--p-espaco-1) var(--p-espaco-3);
+  font-size: var(--p-fonte-tamanho-apoio);
+  font-weight: var(--p-fonte-peso-seminegrito);
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--fase-texto, var(--p-cor-acento-texto));
+  background: var(--fase-fundo, var(--p-cor-acento-suave));
+  border-radius: var(--p-raio-total);
+}
+
+.regua__destaque-ponto {
+  flex: none;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  background: currentcolor;
+  border-radius: var(--p-raio-total);
 }
 
 .regua__marco--atual .regua__no {
   border-color: var(--p-cor-acento-texto);
   box-shadow: 0 0 0 3px var(--p-cor-superficie), 0 0 0 4px var(--p-cor-acento-texto);
+}
+
+.regua__marco--fase .regua__no {
+  background: var(--fase-ponto);
+  border-color: var(--fase-ponto);
+  box-shadow: 0 0 0 3px var(--fase-fundo);
 }
 
 @container regua (min-width: 36rem) {
