@@ -80,6 +80,7 @@ const resumoParcelas = computed(() => {
         <BadgeStatus
           :texto="ROTULOS_STATUS_FORNECEDOR_EVENTO[status]"
           :variante="VARIANTES_STATUS_FORNECEDOR_EVENTO[status]"
+          ponto
           data-teste="status-vinculo"
         />
       </span>

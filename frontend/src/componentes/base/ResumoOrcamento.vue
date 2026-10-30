@@ -71,7 +71,7 @@ const totalExcedente = computed(() =>
   >
     <h2
       :id="idTitulo"
-      class="resumo-orcamento__titulo"
+      class="resumo-orcamento__titulo texto-rotulo"
     >
       {{ TEXTOS_RESUMO_ORCAMENTO.titulo }}
     </h2>
@@ -317,17 +317,11 @@ const totalExcedente = computed(() =>
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
+  box-shadow: var(--p-sombra-cartao);
 }
 
 .resumo-orcamento .resumo-orcamento__titulo {
   margin: 0;
-  font-family: var(--p-fonte-display);
-  font-size: var(--p-fonte-tamanho-rotulo);
-  font-weight: var(--p-fonte-peso-medio);
-  line-height: 1.33;
-  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
-  text-transform: uppercase;
-  color: var(--p-cor-texto-apoio);
 }
 
 .resumo-orcamento__frase {
@@ -344,11 +338,11 @@ const totalExcedente = computed(() =>
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
   font-variant-numeric: lining-nums tabular-nums;
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-titulo);
 }
 
 .resumo-orcamento__numero--orcado {
-  color: var(--p-cor-texto);
+  color: var(--p-cor-texto-secundario);
 }
 
 .resumo-orcamento__ligacao {
@@ -380,7 +374,7 @@ const totalExcedente = computed(() =>
 
 .resumo-orcamento__linha {
   display: grid;
-  grid-template-columns: minmax(min-content, 1fr) minmax(0, max-content);
+  grid-template-columns: minmax(min-content, max-content) minmax(0, 1fr);
   grid-template-areas:
     'categoria contratado'
     'orcado orcado'
@@ -530,6 +524,11 @@ const totalExcedente = computed(() =>
 
 .resumo-orcamento__valor--contratado {
   grid-area: contratado;
+}
+
+.resumo-orcamento__valor :deep(.badge-status) {
+  white-space: normal;
+  text-align: start;
 }
 
 .resumo-orcamento__valor--orcado {

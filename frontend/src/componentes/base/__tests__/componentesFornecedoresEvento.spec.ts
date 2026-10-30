@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { afterEach, describe, expect, it } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
@@ -53,6 +56,7 @@ describe('ResumoOrcamento', () => {
     expect(frase).toBe('R$ 18.500,00 contratados de R$ 33.800,00 orçados')
     expect(montado.get('[data-teste="resumo-apoio"]').text()).toBe('2 fornecedores · 1 contratado')
     expect(montado.get('h2').text()).toBe(TEXTOS_RESUMO_ORCAMENTO.titulo)
+    expect(montado.get('h2').classes()).toContain('texto-rotulo')
   })
 
   it('[COMPONENTE] uma linha por categoria não cancelada, régua proporcional e selo quando passa do orçado', () => {
@@ -112,6 +116,7 @@ describe('LinhaFornecedorEvento', () => {
 
     expect(montado.get('[data-teste="link-vinculo"]').attributes('href')).toBe('/editar')
     expect(montado.get('[data-teste="status-vinculo"]').text()).toContain('Contratado')
+    expect(montado.get('[data-teste="status-vinculo"]').attributes('data-ponto')).toBe('true')
     expect(montado.get('[data-teste="servico-vinculo"]').text()).toBe('Jantar para 200')
     expect(texto(montado.get('[data-teste="orcado-vinculo"]').text())).toBe('R$ 18.000,00')
     expect(texto(montado.get('[data-teste="contratado-vinculo"]').text())).toBe('R$ 18.500,00')
@@ -193,5 +198,22 @@ describe('AnexoContrato', () => {
 
     const enviando = montar({ contrato: null, enviando: true })
     expect(enviando.get('[data-teste="anexo-contrato"]').attributes('aria-busy')).toBe('true')
+  })
+})
+
+describe('Fornecedores do evento no DS v2', () => {
+  const estilo = (arquivo: string) => readFileSync(resolve(__dirname, arquivo), 'utf-8').split('<style scoped>')[1] ?? ''
+
+  it('[UNITÁRIO] a contratação marca cada situação com a cor de fase e o resumo usa números na cor de título', () => {
+    const contratacao = estilo('../../fornecedoresEvento/ContratacaoFornecedoresEvento.vue')
+    const resumo = estilo('../ResumoOrcamento.vue')
+
+    expect(contratacao).toMatch(/--Cotacao \{\s*--situacao-cor: var\(--p-cor-fase-planejamento-ponto\)/)
+    expect(contratacao).toMatch(/--EmNegociacao \{\s*--situacao-cor: var\(--p-cor-fase-reta-final-ponto\)/)
+    expect(contratacao).toMatch(/--Contratado \{\s*--situacao-cor: var\(--p-cor-fase-realizado-ponto\)/)
+    expect(contratacao).not.toContain('--p-cor-primaria')
+    expect(resumo).toMatch(/__numero \{[^}]*color: var\(--p-cor-titulo\)/)
+    expect(resumo).toContain('box-shadow: var(--p-sombra-cartao)')
+    expect(`${contratacao}${resumo}`).not.toMatch(/#[0-9a-fA-F]{3,8}/)
   })
 })

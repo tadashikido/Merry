@@ -120,7 +120,7 @@ const emConversa = computed(() =>
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1.1;
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-titulo);
 }
 
 .contratacao__legenda {
@@ -150,26 +150,41 @@ const emConversa = computed(() =>
   font-size: var(--p-fonte-tamanho-controle);
 }
 
+.contratacao__item {
+  --situacao-cor: var(--p-cor-texto-apoio);
+}
+
+.contratacao__item--Cotacao {
+  --situacao-cor: var(--p-cor-fase-planejamento-ponto);
+}
+
+.contratacao__item--EmNegociacao {
+  --situacao-cor: var(--p-cor-fase-reta-final-ponto);
+}
+
+.contratacao__item--Contratado {
+  --situacao-cor: var(--p-cor-fase-realizado-ponto);
+}
+
 .contratacao__marcador {
   box-sizing: border-box;
   width: var(--p-espaco-3);
   height: var(--p-espaco-3);
-  border: 1.5px solid var(--p-cor-primaria);
+  border: 1.5px solid var(--situacao-cor);
   border-radius: var(--p-raio-total);
 }
 
 .contratacao__item--SemFornecedor .contratacao__marcador {
   border-style: dashed;
-  border-color: var(--p-cor-texto-apoio);
 }
 
 .contratacao__item--Cotacao .contratacao__marcador,
 .contratacao__item--EmNegociacao .contratacao__marcador {
-  background: linear-gradient(90deg, var(--p-cor-primaria) 50%, transparent 50%);
+  background: linear-gradient(90deg, var(--situacao-cor) 50%, transparent 50%);
 }
 
 .contratacao__item--Contratado .contratacao__marcador {
-  background: var(--p-cor-primaria);
+  background: var(--situacao-cor);
 }
 
 .contratacao__categoria {
@@ -184,7 +199,8 @@ const emConversa = computed(() =>
 }
 
 .contratacao__item--Contratado .contratacao__situacao {
-  color: var(--p-cor-texto);
+  font-weight: var(--p-fonte-peso-seminegrito);
+  color: var(--p-cor-fase-realizado-texto);
 }
 
 .contratacao__conversa {
