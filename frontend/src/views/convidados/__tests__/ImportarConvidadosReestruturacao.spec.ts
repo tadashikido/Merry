@@ -98,6 +98,21 @@ describe('ImportarConvidadosView — reestruturação da fundação', () => {
     expect(principal.find('[data-teste="baixar-correcao"]').exists()).toBe(true)
   })
 
+  it('[COMPONENTE] etapa 2 marca problemas e convites fora com ponto + rótulo em listas com sombra de cartão', async () => {
+    await abrir(quando('POST', ROTA_PREVIA, () => respostaJson(previaExemplo())))
+
+    await escolherArquivo()
+
+    const problemas = wrapper!.get('[data-teste="previa-problemas"]').findAll('[data-teste="badge-status"]')
+    expect(problemas.length).toBeGreaterThan(0)
+    expect(problemas.every((selo) => selo.attributes('data-ponto') === 'true')).toBe(true)
+    const fora = wrapper!.findAll('.previa__convite--fora [data-teste="badge-status"]')
+    expect(fora[0]!.text()).toBe(TEXTOS_IMPORTACAO.ficaDeFora)
+    expect(fora[0]!.attributes('data-ponto')).toBe('true')
+    expect(ESTILO_PREVIA).toMatch(/\.previa__convites \{[^}]*box-shadow: var\(--p-sombra-cartao\)/)
+    expect(ESTILO_VIEW).toMatch(/\.importacao__lista-erros \{[^}]*border-inline-start: 2px solid var\(--p-cor-erro\)/)
+  })
+
   it('[COMPONENTE] sem convite pronto nem avisos a grade não reserva coluna lateral vazia', async () => {
     const previa = previaExemplo()
     previa.resumo.convitesValidos = 0
@@ -122,7 +137,7 @@ describe('ImportarConvidadosView — reestruturação da fundação', () => {
     expect(ESTILO_PREVIA).toMatch(/\.previa__grade--com-lateral \{\s*grid-template-rows: auto auto auto 1fr;\s*grid-template-columns: minmax\(0, 1fr\) 20rem;/)
   })
 
-  it('[COMPONENTE] etapa 3 usa o lacre padronizado em vez do selo colorido', async () => {
+  it('[COMPONENTE] etapa 3 usa o tile champanhe do DS v2 em vez do selo colorido', async () => {
     const previa = previaExemplo({ linhasComProblema: [] })
     previa.convites = previa.convites.filter((convite) => convite.valido)
     await abrir(
@@ -136,7 +151,11 @@ describe('ImportarConvidadosView — reestruturação da fundação', () => {
 
     const concluida = wrapper!.get('[data-teste="importacao-concluida"]')
     expect(concluida.classes()).toContain('cartao')
-    expect(concluida.find('[data-teste="lacre-concluida"]').exists()).toBe(true)
+    const tile = concluida.get('[data-teste="lacre-concluida"]')
+    expect(tile.classes()).toContain('tile-tipo--grande')
+    expect(tile.attributes('data-tom')).toBe('champanhe')
+    expect(tile.find('.ie-concluir').exists()).toBe(true)
+    expect(concluida.find('.lacre-icone').exists()).toBe(false)
     expect(concluida.find('.importacao__selo').exists()).toBe(false)
     expect(concluida.get('.importacao__titulo-concluida').text()).toBe(TEXTOS_IMPORTACAO.sucessoTitulo)
   })
@@ -159,12 +178,13 @@ describe('ImportarConvidadosView — reestruturação da fundação', () => {
     expect(ESTILO_PREVIA).toContain('@container previa (min-width: 56rem)')
   })
 
-  it('[UNITÁRIO] estilos usam só tokens da fundação: ritmo, sem cor solta, sem sombra nem gradiente', () => {
+  it('[UNITÁRIO] estilos usam só tokens da fundação: ritmo, sem cor solta, sombra só a do cartão, sem gradiente', () => {
     for (const css of [ESTILO_VIEW, ESTILO_PREVIA]) {
       expect(css).not.toMatch(/--p-espaco-/)
       expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
       expect(css).not.toMatch(/rgba?\(/)
-      expect(css).not.toMatch(/box-shadow|gradient/)
+      expect(css).not.toMatch(/gradient/)
+      expect(css).not.toMatch(/box-shadow:(?!\s*var\(--p-sombra-cartao\))/)
       expect(css).not.toMatch(/margin[^:]*:\s*-/)
       expect(css).toMatch(/--p-ritmo-/)
     }

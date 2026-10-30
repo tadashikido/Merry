@@ -67,9 +67,11 @@ function situacao(indice: number): 'concluida' | 'atual' | 'futura' {
 
 .indicador-etapas__compacto {
   margin: 0;
-  font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
+  color: var(--p-cor-titulo);
 }
 
 .indicador-etapas__lista {
@@ -125,8 +127,10 @@ function situacao(indice: number): 'concluida' | 'atual' | 'futura' {
     justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
+    font-family: var(--p-fonte-display);
     font-size: var(--p-fonte-tamanho-controle);
-    font-weight: var(--p-fonte-peso-seminegrito);
+    font-variant-numeric: lining-nums;
+    font-weight: var(--p-fonte-peso-regular);
     color: var(--p-cor-texto-apoio);
     border: 1px solid var(--p-cor-borda-campo);
     border-radius: var(--p-raio-total);
@@ -138,7 +142,10 @@ function situacao(indice: number): 'concluida' | 'atual' | 'futura' {
     height: auto;
     clip-path: none;
     overflow: hidden;
-    font-size: var(--p-fonte-tamanho-controle);
+    font-size: var(--p-fonte-tamanho-rotulo);
+    font-weight: var(--p-fonte-peso-negrito);
+    letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+    text-transform: uppercase;
     color: var(--p-cor-texto-apoio);
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -156,8 +163,7 @@ function situacao(indice: number): 'concluida' | 'atual' | 'futura' {
   }
 
   .indicador-etapas__etapa--atual .indicador-etapas__nome {
-    font-weight: var(--p-fonte-peso-seminegrito);
-    color: var(--p-cor-texto);
+    color: var(--p-cor-titulo);
   }
 }
 </style>

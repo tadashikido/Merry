@@ -10,8 +10,8 @@ import EnvioArquivo from '@/componentes/base/EnvioArquivo.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import IndicadorEtapas from '@/componentes/base/IndicadorEtapas.vue'
-import LacreIcone from '@/componentes/base/LacreIcone.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import TileTipo from '@/componentes/base/TileTipo.vue'
 import type { TextosEnvioArquivo } from '@/componentes/base/tipos'
 import PreviaImportacao from '@/componentes/convidados/PreviaImportacao.vue'
 import { useNotificacao } from '@/composables/useNotificacao'
@@ -495,8 +495,10 @@ function importarOutra() {
           class="importacao__concluida cartao"
           data-teste="importacao-concluida"
         >
-          <LacreIcone
-            icone="ie-concluir"
+          <TileTipo
+            tom="champanhe"
+            icone="concluir"
+            tamanho="grande"
             data-teste="lacre-concluida"
           />
           <div class="importacao__mensagem-concluida pilha pilha--campo">
@@ -565,7 +567,7 @@ function importarOutra() {
   gap: var(--p-ritmo-grupo);
   margin: 0;
   padding-inline-start: var(--p-ritmo-grupo);
-  border-inline-start: 2px solid var(--p-cor-primaria);
+  border-inline-start: 2px solid var(--p-cor-erro);
 }
 
 .importacao__erro {

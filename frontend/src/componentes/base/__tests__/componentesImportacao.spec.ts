@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
@@ -55,6 +57,15 @@ describe('IndicadorEtapas', () => {
     expect(etapas[0]!.text()).toContain('(concluída)')
     expect(wrapper.get('nav').attributes('aria-label')).toBe('Etapas')
     expect(wrapper.text()).toContain('Etapa 2 de 3: Confira')
+  })
+
+  it('[UNITÁRIO] usa rótulo DS nos nomes e número em Fraunces no marcador', () => {
+    const css = readFileSync(resolve(__dirname, '../IndicadorEtapas.vue'), 'utf-8').split('<style scoped>')[1]!
+
+    expect(css).toMatch(/\.indicador-etapas__nome \{[^}]*--p-fonte-tamanho-rotulo[^}]*text-transform: uppercase/)
+    expect(css).toMatch(/\.indicador-etapas__marcador \{[^}]*font-family: var\(--p-fonte-display\)/)
+    expect(css).toMatch(/\.indicador-etapas__etapa--atual \.indicador-etapas__nome \{\s*color: var\(--p-cor-titulo\)/)
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,6}\b/)
   })
 
   it('[COMPONENTE] limita o índice às etapas existentes', () => {
@@ -136,6 +147,7 @@ describe('ListaProblemasLinha', () => {
     expect(item.text()).toContain('Linha 6')
     expect(item.text()).toContain('Pessoa 6')
     expect(item.get('[data-teste="badge-status"]').text()).toBe('Erro')
+    expect(item.get('[data-teste="badge-status"]').attributes('data-ponto')).toBe('true')
     expect(item.text()).toContain('Telefone: Mensagem 6')
     expect(wrapper.get('ul').attributes('aria-label')).toBe('Linhas para corrigir')
   })

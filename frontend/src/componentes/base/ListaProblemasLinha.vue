@@ -117,6 +117,7 @@ watch(
               :key="problema.tipo"
               :texto="problema.rotuloTipo"
               :variante="problema.variante"
+              ponto
             />
           </span>
         </div>
@@ -174,6 +175,7 @@ watch(
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
+  box-shadow: var(--p-sombra-cartao);
 }
 
 .lista-problemas__item {
@@ -195,8 +197,10 @@ watch(
 }
 
 .lista-problemas__linha {
-  font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
   color: var(--p-cor-texto-apoio);
 }
 

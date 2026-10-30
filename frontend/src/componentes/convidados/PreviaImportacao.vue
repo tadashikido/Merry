@@ -184,6 +184,7 @@ const convitesExibidos = computed(() =>
                   v-if="!convite.valido"
                   :texto="TEXTOS_IMPORTACAO.ficaDeFora"
                   variante="alerta"
+                  ponto
                 />
               </div>
               <p class="previa__convite-detalhe">
@@ -300,8 +301,10 @@ const convitesExibidos = computed(() =>
 
 .previa__contagem {
   font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-regular);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
   color: var(--p-cor-texto-apoio);
 }
 
@@ -328,6 +331,7 @@ const convitesExibidos = computed(() =>
   background: var(--p-cor-superficie);
   border: 1px solid var(--p-cor-borda);
   border-radius: var(--p-raio-painel);
+  box-shadow: var(--p-sombra-cartao);
 }
 
 .previa__convite {
