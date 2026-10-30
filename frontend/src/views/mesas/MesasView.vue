@@ -32,7 +32,7 @@ import { useConvidadosStore } from '@/stores/convidados'
 import { useEventosStore } from '@/stores/eventos'
 import { useMesasStore } from '@/stores/mesas'
 import { TEXTOS_MESAS } from '@/textos/mesas'
-import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { classeTomDoTipo, ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { FalhaEvento } from '@/stores/eventos'
 import type { MesaDto, PessoaMesaDto } from '@/tipos/mesas'
 import { baixarTexto } from '@/utilitarios/arquivo'
@@ -817,8 +817,8 @@ function acaoCabecalho(chave: string) {
                   <section
                     v-for="item in mesasVisiveis"
                     :key="item.mesa.id"
-                    class="mesas__mesa"
-                    :class="{ 'mesas__mesa--especial': item.mesa.especial }"
+                    class="mesas__mesa cartao"
+                    :class="item.mesa.especial ? ['mesas__mesa--especial', classeTomDoTipo(evento?.tipo ?? null)] : []"
                     :aria-labelledby="`mesa-${item.mesa.id}`"
                     data-teste="mesa"
                   >
@@ -879,6 +879,7 @@ function acaoCabecalho(chave: string) {
                             <BadgeStatus
                               :texto="TEXTOS_MESAS.conviteDividido"
                               variante="alerta"
+                              ponto
                             />
                           </template>
                         </LinhaPessoaMesa>
@@ -1083,7 +1084,10 @@ function acaoCabecalho(chave: string) {
 }
 
 .mesas__coluna-contagem {
-  font-size: var(--p-fonte-tamanho-apoio);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
   color: var(--p-cor-texto-apoio);
 }
 
@@ -1192,7 +1196,7 @@ function acaoCabecalho(chave: string) {
 }
 
 .mesas__mesa--especial {
-  border-inline-start: var(--p-dimensao-fio-cronograma) solid var(--p-cor-acento);
+  border-top: var(--p-dimensao-filete-tipo) solid var(--tom-viva);
 }
 
 .mesas__mesa-cabecalho {
@@ -1222,7 +1226,7 @@ function acaoCabecalho(chave: string) {
 }
 
 .mesas__mesa--especial .mesas__mesa-titulo {
-  color: var(--p-cor-acento-texto);
+  color: var(--tom-profunda);
 }
 
 .mesas__mesa .mesas__nota {

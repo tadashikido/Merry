@@ -61,11 +61,13 @@ const idApoio = computed(() => (props.apoio ? `${idCampo}-apoio` : undefined))
       <BadgeStatus
         v-if="crianca"
         :texto="TEXTOS_MESAS.crianca"
+        ponto
       />
       <BadgeStatus
         v-if="acompanhante"
         :texto="TEXTOS_MESAS.acompanhante"
         variante="informacao"
+        ponto
       />
       <slot name="extra" />
     </span>

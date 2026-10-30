@@ -80,7 +80,12 @@ const lugares = computed(() =>
 }
 
 .ocupacao-mesa--completa .ocupacao-mesa__texto {
-  color: var(--p-cor-sucesso-texto);
+  color: var(--p-cor-fase-realizado-texto);
+}
+
+.ocupacao-mesa--completa .ocupacao-mesa__lugar--ocupado {
+  border-color: var(--p-cor-fase-realizado-ponto);
+  background: var(--p-cor-fase-realizado-ponto);
 }
 
 .ocupacao-mesa--compacta .ocupacao-mesa__lugar {

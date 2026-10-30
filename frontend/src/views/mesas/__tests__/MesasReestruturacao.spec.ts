@@ -109,6 +109,35 @@ describe('MesasView reestruturada', { timeout: 30_000 }, () => {
     expect(mesas[1]!.attributes('aria-labelledby')).toBe(cabecalho.get('h3').attributes('id'))
   })
 
+  it.each([
+    ['Casamento', 'rose'],
+    ['Corporativo', 'neutro'],
+  ] as const)('[COMPONENTE] DS v2: mesas em cartão e mesa especial no tom do tipo %s', async (tipo, tom) => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', ROTA_EVENTO, () => respostaJson(eventoCompleto({ tipo: tipo as ReturnType<typeof eventoCompleto>['tipo'] }))),
+      quando('GET', ROTA_MESAS, () => respostaJson(mapaExemplo())),
+    )
+    const montagem = await prepararAplicacao(`/eventos/${ID_EVENTO}/mesas`)
+    wrapper = await montarView(RaizRotas, montagem)
+    await flushPromises()
+
+    const mesas = wrapper!.findAll('[data-teste="mesa"]')
+    expect(mesas.every((mesa) => mesa.classes().includes('cartao'))).toBe(true)
+    expect(mesas[0]!.classes()).toEqual(expect.arrayContaining(['mesas__mesa--especial', `tom-tipo--${tom}`]))
+    expect(mesas[1]!.classes().some((classe) => classe.startsWith('tom-tipo--'))).toBe(false)
+    const selos = wrapper!.findAll('[data-teste="coluna-sem-mesa"] [data-teste="badge-status"]')
+    expect(selos.length).toBeGreaterThan(0)
+    expect(selos.every((selo) => selo.attributes('data-ponto') === 'true')).toBe(true)
+  })
+
+  it('[UNITÁRIO] DS v2: mesa especial usa filete e título do tom; contagem da coluna é rótulo', () => {
+    expect(ESTILO_VIEW).toMatch(/\.mesas__mesa--especial \{\s*border-top: var\(--p-dimensao-filete-tipo\) solid var\(--tom-viva\);/)
+    expect(ESTILO_VIEW).toMatch(/\.mesas__mesa--especial \.mesas__mesa-titulo \{\s*color: var\(--tom-profunda\);/)
+    expect(ESTILO_VIEW).toMatch(/\.mesas__coluna-contagem \{[^}]*--p-fonte-tamanho-rotulo[^}]*text-transform: uppercase/)
+    expect(ESTILO_VIEW).not.toContain('--p-cor-acento')
+  })
+
   it('[COMPONENTE] no celular a grade de colunas fica em uma coluna por abas', async () => {
     simularMatchMedia(true)
     await abrir()
@@ -182,5 +211,14 @@ describe('OcupacaoMesa', () => {
     expect(css).toMatch(/\.ocupacao-mesa__lugar \{[^}]*border: 1px dashed var\(--p-cor-borda-campo\)/)
     expect(css).toMatch(/\.ocupacao-mesa__lugar--ocupado \{[^}]*background: var\(--p-cor-primaria\)/)
     expect(css).not.toMatch(/--p-espaco-2\) var\(--p-espaco-3\)/)
+  })
+
+  it('[UNITÁRIO] mesa completa usa o estado de fase realizado nos lugares e no texto', () => {
+    const css = estilo('../../../componentes/base/OcupacaoMesa.vue')
+    expect(css).toMatch(/\.ocupacao-mesa--completa \.ocupacao-mesa__texto \{\s*color: var\(--p-cor-fase-realizado-texto\);/)
+    expect(css).toMatch(/\.ocupacao-mesa--completa \.ocupacao-mesa__lugar--ocupado \{[^}]*background: var\(--p-cor-fase-realizado-ponto\)/)
+    const ocupacao = mount(OcupacaoMesa, { props: { ocupados: 8, lugares: 8 } })
+    expect(ocupacao.classes()).toContain('ocupacao-mesa--completa')
+    ocupacao.unmount()
   })
 })
