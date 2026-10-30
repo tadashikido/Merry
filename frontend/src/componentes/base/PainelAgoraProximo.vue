@@ -73,7 +73,7 @@ const quandoProximo = computed(() => {
     >
       <h2
         :id="`${prefixo}-agora`"
-        class="painel-agora-proximo__titulo"
+        class="painel-agora-proximo__nada-titulo"
         tabindex="-1"
       >
         {{ TEXTOS_GRANDE_DIA.nadaAgora }}
@@ -91,7 +91,7 @@ const quandoProximo = computed(() => {
     >
       <h2
         :id="`${prefixo}-tambem-agora`"
-        class="painel-agora-proximo__titulo"
+        class="painel-agora-proximo__titulo texto-rotulo"
       >
         {{ TEXTOS_GRANDE_DIA.tambemAgora }}
       </h2>
@@ -140,7 +140,7 @@ const quandoProximo = computed(() => {
     >
       <h2
         :id="`${prefixo}-depois`"
-        class="painel-agora-proximo__titulo"
+        class="painel-agora-proximo__titulo texto-rotulo"
       >
         {{ TEXTOS_GRANDE_DIA.depois }}
       </h2>
@@ -181,14 +181,15 @@ const quandoProximo = computed(() => {
 
 .painel-agora-proximo__titulo {
   margin: 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
   color: var(--p-cor-operacao-apoio);
 }
 
-.painel-agora-proximo__nada .painel-agora-proximo__titulo {
-  font-size: var(--p-fonte-tamanho-titulo);
+.painel-agora-proximo__nada-titulo {
+  margin: 0;
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-regular);
+  line-height: var(--p-fonte-entrelinha-titulo);
   color: var(--p-cor-operacao-texto);
 }
 

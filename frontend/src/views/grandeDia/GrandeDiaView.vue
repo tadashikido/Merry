@@ -10,6 +10,7 @@ import ContatoUmToque from '@/componentes/base/ContatoUmToque.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import FaixaFaseDia from '@/componentes/base/FaixaFaseDia.vue'
 import ItemRoteiro from '@/componentes/base/ItemRoteiro.vue'
 import LinhaOperacao from '@/componentes/base/LinhaOperacao.vue'
@@ -25,7 +26,7 @@ import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useConvidadosStore } from '@/stores/convidados'
 import { useGrandeDiaStore } from '@/stores/grandeDia'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
-import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { classeTomDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { ItemPainelGrandeDia } from '@/tipos/grandeDia'
 import type { FalhaEvento } from '@/stores/eventos'
 import { agruparRoteiro, ehHorarioDaCerimonia, montarLocaisOperacao } from '@/utilitarios/cronogramaPublico'
@@ -238,14 +239,23 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
       <div
         v-else-if="dados"
         class="grande-dia"
-        :class="{
-          'grande-dia--com-lateral': temLateral,
-          'grande-dia--com-acao': temAcaoPrincipal,
-        }"
+        :class="[
+          classeTomDoTipo(dados.tipo),
+          {
+            'grande-dia--com-lateral': temLateral,
+            'grande-dia--com-acao': temAcaoPrincipal,
+          },
+        ]"
         data-teste="grande-dia"
       >
         <div class="grande-dia__topo">
           <div class="grande-dia__identificacao">
+            <EtiquetaTipo
+              class="grande-dia__tipo"
+              :tipo="dados.tipo"
+              com-icone
+              data-teste="grande-dia-tipo"
+            />
             <CabecalhoOperacao
               :primeiro="dados.nomePrimeiraPessoa"
               :segundo="dados.nomeSegundaPessoa"
@@ -615,13 +625,16 @@ function feitoAs(item: ItemPainelGrandeDia): string | null {
 .grande-dia__resumo {
   margin: 0;
   font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  line-height: var(--p-fonte-entrelinha-interface);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
   color: var(--p-cor-operacao-apoio);
 }
 
-.grande-dia__titulo::first-letter {
-  text-transform: uppercase;
+.grande-dia__tipo {
+  align-self: flex-start;
 }
 
 .grande-dia__resumo {

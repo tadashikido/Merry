@@ -50,7 +50,7 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
   >
     <h2
       :id="idTitulo"
-      class="cartao-agora__rotulo"
+      class="cartao-agora__rotulo texto-rotulo"
       tabindex="-1"
     >
       {{ TEXTOS_GRANDE_DIA.agora }}
@@ -142,18 +142,28 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
 
 .cartao-agora__rotulo {
   margin: 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
   color: var(--p-cor-operacao-cartao-apoio);
 }
 
 .cartao-agora__atividade {
   margin: 0;
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-pagina-celular);
-  font-weight: var(--p-fonte-peso-negrito);
+  font-weight: var(--p-fonte-peso-medio);
   line-height: var(--p-fonte-entrelinha-titulo);
+  letter-spacing: var(--p-fonte-espacamento-letras-display);
   overflow-wrap: anywhere;
+}
+
+.cartao-agora--cerimonia {
+  color: var(--tom-profunda, var(--p-cor-operacao-cartao-texto));
+  background: var(--tom-fundo, var(--p-cor-operacao-cartao));
+}
+
+.cartao-agora--cerimonia .cartao-agora__rotulo,
+.cartao-agora--cerimonia .cartao-agora__quando,
+.cartao-agora--cerimonia .cartao-agora__quem {
+  color: var(--tom-tinta, var(--p-cor-operacao-cartao-apoio));
 }
 
 .cartao-agora__momento {
@@ -162,8 +172,8 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
   padding: var(--p-espaco-1) var(--p-espaco-3);
   font-size: var(--p-fonte-tamanho-apoio);
   font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-operacao-cartao-texto);
-  border: 1px solid var(--p-cor-operacao-cartao-texto);
+  color: var(--tom-tinta, var(--p-cor-operacao-cartao-texto));
+  border: 1px solid var(--tom-tinta, var(--p-cor-operacao-cartao-texto));
   border-radius: var(--p-raio-total);
 }
 
@@ -199,7 +209,7 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
 }
 
 .cartao-agora--cerimonia .cartao-agora__instrucoes {
-  border-left-color: var(--p-cor-acento-texto);
+  border-left-color: var(--tom-tinta, var(--p-cor-acento-texto));
 }
 
 .cartao-agora__contatos,

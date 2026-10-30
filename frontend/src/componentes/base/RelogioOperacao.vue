@@ -21,7 +21,6 @@ withDefaults(defineProps<{ hora: string; selo: string; aoVivo?: boolean }>(), { 
       data-teste="relogio-operacao-selo"
     >
       <span
-        v-if="aoVivo"
         class="relogio-operacao__ponto"
         aria-hidden="true"
       />
@@ -40,8 +39,9 @@ withDefaults(defineProps<{ hora: string; selo: string; aoVivo?: boolean }>(), { 
 }
 
 .relogio-operacao__hora {
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-relogio);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-regular);
   font-variant-numeric: tabular-nums;
   line-height: var(--p-fonte-entrelinha-display);
   color: var(--p-cor-operacao-texto);
@@ -68,12 +68,16 @@ withDefaults(defineProps<{ hora: string; selo: string; aoVivo?: boolean }>(), { 
 .relogio-operacao__ponto {
   width: var(--p-espaco-2);
   height: var(--p-espaco-2);
-  background: currentcolor;
+  background: var(--p-cor-operacao-destaque);
   border-radius: var(--p-raio-total);
 }
 
+.relogio-operacao__selo--ao-vivo .relogio-operacao__ponto {
+  background: currentcolor;
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  .relogio-operacao__ponto {
+  .relogio-operacao__selo--ao-vivo .relogio-operacao__ponto {
     animation: relogio-operacao-pulso calc(var(--p-duracao-lenta) * 8) ease-in-out infinite;
   }
 }

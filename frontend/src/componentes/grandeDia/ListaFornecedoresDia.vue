@@ -42,7 +42,10 @@ function temContato(fornecedor: FornecedorDoDia): boolean {
             v-if="mostrarSituacao && situacao(fornecedor)"
             class="fornecedores-dia__situacao"
             data-teste="fornecedor-dia-situacao"
-          >{{ situacao(fornecedor) }}</span>
+          ><span
+            class="fornecedores-dia__ponto"
+            aria-hidden="true"
+          />{{ situacao(fornecedor) }}</span>
         </p>
         <p class="fornecedores-dia__detalhe">
           {{ detalhe(fornecedor) }}
@@ -104,8 +107,18 @@ function temContato(fornecedor: FornecedorDoDia): boolean {
 }
 
 .fornecedores-dia__situacao {
+  display: inline-flex;
+  gap: var(--p-espaco-2);
+  align-items: center;
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-operacao-destaque);
+}
+
+.fornecedores-dia__ponto {
+  width: var(--p-espaco-2);
+  height: var(--p-espaco-2);
+  background: currentcolor;
+  border-radius: var(--p-raio-total);
 }
 
 .fornecedores-dia__detalhe,

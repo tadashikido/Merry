@@ -133,8 +133,9 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
 }
 
 .item-roteiro__inicio {
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-operacao);
-  font-weight: var(--p-fonte-peso-negrito);
+  font-weight: var(--p-fonte-peso-regular);
   font-variant-numeric: tabular-nums;
   line-height: var(--p-fonte-entrelinha-display);
   color: var(--p-cor-operacao-texto);
@@ -195,7 +196,7 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
 .item-roteiro--cerimonia .item-roteiro__no {
   margin-left: calc(var(--p-dimensao-no-cronograma) / -3);
   background: var(--p-cor-operacao-fundo);
-  border-color: var(--p-cor-operacao-destaque);
+  border-color: var(--tom-viva, var(--p-cor-operacao-destaque));
 }
 
 .item-roteiro__anel {
@@ -204,7 +205,7 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
   left: calc(var(--p-dimensao-no-cronograma) / 2);
   width: var(--p-dimensao-no-cronograma);
   height: var(--p-dimensao-no-cronograma);
-  border: var(--p-dimensao-fio-cronograma) solid var(--p-cor-operacao-destaque);
+  border: var(--p-dimensao-fio-cronograma) solid var(--tom-viva, var(--p-cor-operacao-destaque));
   border-radius: var(--p-raio-total);
 }
 
@@ -234,15 +235,17 @@ const quem = computed(() => [props.responsavel, props.fornecedor].filter((valor)
 }
 
 .item-roteiro--cerimonia .item-roteiro__atividade {
-  color: var(--p-cor-operacao-destaque);
+  font-family: var(--p-fonte-display);
+  font-weight: var(--p-fonte-peso-medio);
+  color: var(--tom-viva, var(--p-cor-operacao-destaque));
 }
 
 .item-roteiro__momento {
   padding: var(--p-espaco-1) var(--p-espaco-3);
   font-size: var(--p-fonte-tamanho-apoio);
   font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-operacao-destaque);
-  border: 1px solid var(--p-cor-operacao-borda);
+  color: var(--tom-viva, var(--p-cor-operacao-destaque));
+  border: 1px solid var(--tom-viva, var(--p-cor-operacao-borda));
   border-radius: var(--p-raio-total);
 }
 

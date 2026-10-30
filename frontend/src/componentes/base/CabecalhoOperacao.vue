@@ -85,9 +85,11 @@ const tituloOculto = computed(() => TEXTOS_CRONOGRAMA_PUBLICO.tituloOculto(forma
 .cabecalho-operacao__nomes {
   margin: 0;
   font-family: var(--p-fonte-display);
-  font-size: var(--p-fonte-tamanho-operacao);
-  font-weight: var(--p-fonte-peso-seminegrito);
-  line-height: var(--p-fonte-entrelinha-titulo);
+  font-size: var(--p-fonte-tamanho-pagina-celular);
+  font-weight: var(--p-fonte-peso-regular);
+  line-height: var(--p-fonte-entrelinha-display);
+  letter-spacing: var(--p-fonte-espacamento-letras-display);
+  overflow-wrap: anywhere;
   color: var(--p-cor-operacao-texto);
   text-align: left;
 }
@@ -147,5 +149,11 @@ const tituloOculto = computed(() => TEXTOS_CRONOGRAMA_PUBLICO.tituloOculto(forma
   margin: 0;
   color: var(--p-cor-operacao-texto);
   overflow-wrap: anywhere;
+}
+
+@container (min-width: 48rem) {
+  .cabecalho-operacao__nomes {
+    font-size: var(--p-fonte-tamanho-pagina);
+  }
 }
 </style>

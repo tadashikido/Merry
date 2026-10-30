@@ -59,8 +59,9 @@ withDefaults(defineProps<{ inicio: string; atividade: string; detalhe?: string |
 .linha-operacao__horario {
   flex-shrink: 0;
   width: var(--p-dimensao-coluna-horario-cronograma-celular);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-regular);
   font-variant-numeric: tabular-nums;
   color: var(--p-cor-operacao-texto);
 }

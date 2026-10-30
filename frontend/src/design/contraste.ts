@@ -148,6 +148,8 @@ export const PARES_CONTRASTE: ParContraste[] = [
   { descricao: 'Grande Dia: ação principal sobre fundo', frente: cores.operacaoAcao, fundo: cores.operacaoFundo, nivel: 'componente' },
   { descricao: 'Grande Dia: relógio sobre superfície', frente: cores.operacaoTexto, fundo: cores.operacaoSuperficie, nivel: 'textoGrande' },
   { descricao: 'Grande Dia: anel de foco sobre o cartão Agora', frente: cores.acentoTexto, fundo: cores.operacaoCartao, nivel: 'componente' },
+  { descricao: 'Operação: contorno de controle sobre fundo', frente: cores.operacaoBorda, fundo: cores.operacaoFundo, nivel: 'componente' },
+  { descricao: 'Operação: contorno de controle sobre superfície', frente: cores.operacaoBorda, fundo: cores.operacaoSuperficie, nivel: 'componente' },
   ...paresDosTons(),
   ...paresDasFases(),
 ]
@@ -160,6 +162,7 @@ function paresDosTons(): ParContraste[] {
       { descricao: `Tom ${tom}: nome em tinta profunda sobre fundo`, frente: cor.tintaProfunda, fundo: cor.fundo, nivel: 'texto' as const },
       { descricao: `Tom ${tom}: data sobre fundo`, frente: cor.data, fundo: cor.fundo, nivel: 'texto' as const },
       { descricao: `Tom ${tom}: título meia-noite sobre fundo`, frente: cores.titulo, fundo: cor.fundo, nivel: 'texto' as const },
+      { descricao: `Tom ${tom}: viva sobre o fundo de operação`, frente: cor.viva, fundo: cores.operacaoFundo, nivel: 'texto' as const },
     ]
   })
 }

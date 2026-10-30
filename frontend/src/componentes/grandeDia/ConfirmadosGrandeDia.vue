@@ -14,7 +14,7 @@ defineProps<{ totais: TotaisConvidadosDto }>()
   >
     <h2
       id="grande-dia-convidados"
-      class="confirmados-grande-dia__titulo"
+      class="confirmados-grande-dia__titulo texto-rotulo"
     >
       {{ TEXTOS_GRANDE_DIA.convidadosTitulo }}
     </h2>
@@ -47,9 +47,6 @@ defineProps<{ totais: TotaisConvidadosDto }>()
 
 .confirmados-grande-dia__titulo {
   margin: 0 0 var(--p-espaco-1);
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
   color: var(--p-cor-operacao-apoio);
 }
 

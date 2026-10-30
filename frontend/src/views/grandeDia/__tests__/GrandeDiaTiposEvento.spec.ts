@@ -9,6 +9,7 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CADASTRO } from '@/textos/autenticacao'
 import { ROTULOS_MODULOS_EVENTO } from '@/textos/rotulos'
+import { TOM_DO_TIPO, vocabularioDoTipo } from '@/textos/tiposEvento'
 import type { SessaoDto } from '@/tipos/api'
 import type { TotaisConvidadosDto } from '@/tipos/convidados'
 import type { TipoEvento } from '@/tipos/eventos'
@@ -191,6 +192,22 @@ describe('GrandeDiaView — tipos de evento', () => {
 
     expect(wrapper!.find('[data-teste="grande-dia-momento"]').exists()).toBe(false)
     expect(wrapper!.find('[data-teste="cartao-agora-momento"]').exists()).toBe(false)
+  })
+
+  it.each(TIPOS)('[COMPONENTE] %s: a raiz usa o tom do tipo e o topo mostra a etiqueta do tipo', async (tipo) => {
+    await abrir(grandeDia({ tipo }))
+
+    expect(wrapper!.get('[data-teste="grande-dia"]').classes()).toContain(`tom-tipo--${TOM_DO_TIPO[tipo]}`)
+    expect(wrapper!.get('[data-teste="grande-dia-tipo"]').text()).toBe(vocabularioDoTipo(tipo).rotulo)
+    expect(wrapper!.get('[data-teste="cartao-agora"]').classes()).toContain('cartao-agora--cerimonia')
+  })
+
+  it('[COMPONENTE] tipo desconhecido cai no tom neutro, nunca no de casamento', async () => {
+    await abrir(grandeDia({ tipo: 'Desconhecido' as TipoEvento }))
+
+    const raiz = wrapper!.get('[data-teste="grande-dia"]')
+    expect(raiz.classes()).toContain('tom-tipo--neutro')
+    expect(raiz.classes()).not.toContain('tom-tipo--rose')
   })
 
   it('[COMPONENTE] o nome do modo é Grande Dia também na tela de cadastro', () => {

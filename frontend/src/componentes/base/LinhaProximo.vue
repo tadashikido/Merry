@@ -16,7 +16,7 @@ withDefaults(
     <div class="linha-proximo__texto">
       <h2
         :id="idTitulo"
-        class="linha-proximo__rotulo"
+        class="linha-proximo__rotulo texto-rotulo"
       >
         <span>{{ TEXTOS_GRANDE_DIA.proximo }}</span>
         <span
@@ -64,9 +64,6 @@ withDefaults(
 
 .linha-proximo__rotulo {
   margin: 0;
-  font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
   color: var(--p-cor-operacao-apoio);
 }
 
@@ -92,8 +89,9 @@ withDefaults(
 
 .linha-proximo__horario {
   flex-shrink: 0;
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-operacao);
-  font-weight: var(--p-fonte-peso-negrito);
+  font-weight: var(--p-fonte-peso-regular);
   font-variant-numeric: tabular-nums;
   color: var(--p-cor-operacao-texto);
 }

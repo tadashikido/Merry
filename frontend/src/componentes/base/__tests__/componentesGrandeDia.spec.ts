@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { describe, expect, it } from 'vitest'
 import { h } from 'vue'
 import { mount } from '@vue/test-utils'
@@ -31,11 +34,13 @@ describe('RelogioOperacao', () => {
     expect(wrapper.find('.relogio-operacao__ponto').exists()).toBe(true)
   })
 
-  it('[COMPONENTE] fora do dia o selo traz a fase sem ponto', () => {
+  it('[COMPONENTE] fora do dia o selo traz a fase com ponto estático e sem a marca de ao vivo', () => {
     const wrapper = mount(RelogioOperacao, { props: { hora: '10:12', selo: 'Faltam 12 dias' } })
 
-    expect(wrapper.get('[data-teste="relogio-operacao-selo"]').text()).toBe('Faltam 12 dias')
-    expect(wrapper.find('.relogio-operacao__ponto').exists()).toBe(false)
+    const selo = wrapper.get('[data-teste="relogio-operacao-selo"]')
+    expect(selo.text()).toBe('Faltam 12 dias')
+    expect(selo.classes()).not.toContain('relogio-operacao__selo--ao-vivo')
+    expect(wrapper.get('.relogio-operacao__ponto').attributes('aria-hidden')).toBe('true')
   })
 })
 
@@ -212,5 +217,45 @@ describe('style guide do Grande Dia', () => {
       icone: 'ao-vivo',
       rota: 'evento-grande-dia',
     })
+  })
+})
+
+describe('Modo operação no DS v2', () => {
+  const estilo = (arquivo: string) => readFileSync(resolve(__dirname, '..', arquivo), 'utf-8').split('<style scoped>')[1] ?? ''
+
+  it('[UNITÁRIO] o momento principal consome o tom do tipo com recuo para as cores atuais', () => {
+    const cartao = estilo('CartaoAgora.vue')
+    const roteiro = estilo('ItemRoteiro.vue')
+
+    expect(cartao).toContain('var(--tom-fundo, var(--p-cor-operacao-cartao))')
+    expect(cartao).toContain('var(--tom-tinta, var(--p-cor-operacao-cartao-texto))')
+    expect(roteiro).toContain('var(--tom-viva, var(--p-cor-operacao-destaque))')
+    expect(`${cartao}${roteiro}`).not.toMatch(/#[0-9a-fA-F]{3,8}/)
+  })
+
+  it('[UNITÁRIO] nomes, relógio e horários usam Fraunces; títulos de bloco usam o rótulo do DS', () => {
+    expect(estilo('CabecalhoOperacao.vue')).toMatch(/__nomes \{[^}]*font-family: var\(--p-fonte-display\)/)
+    expect(estilo('CabecalhoOperacao.vue')).toContain('@container (min-width: 48rem)')
+    expect(estilo('RelogioOperacao.vue')).toMatch(/__hora \{[^}]*font-family: var\(--p-fonte-display\)/)
+    expect(estilo('LinhaProximo.vue')).toMatch(/__horario \{[^}]*font-family: var\(--p-fonte-display\)/)
+    expect(estilo('LinhaOperacao.vue')).toMatch(/__horario \{[^}]*font-family: var\(--p-fonte-display\)/)
+    expect(estilo('ItemRoteiro.vue')).toMatch(/__inicio \{[^}]*font-family: var\(--p-fonte-display\)/)
+
+    const painel = mount(PainelAgoraProximo, {
+      props: {
+        itens: [
+          itemPainel({ chave: 'a', atividade: 'Cerimônia', situacao: 'Agora' }),
+          itemPainel({ chave: 'b', atividade: 'Maquiagem', situacao: 'Agora' }),
+          itemPainel({ chave: 'c', atividade: 'Jantar', inicio: '19:00', situacao: 'Proximo' }),
+          itemPainel({ chave: 'd', atividade: 'Bolo', inicio: '21:00', situacao: 'Depois' }),
+        ],
+        minutoAtual: 994,
+        prefixo: 'p',
+      },
+      global: { plugins: [PrimeVue] },
+    })
+    expect(painel.get('#p-agora').classes()).toContain('texto-rotulo')
+    expect(painel.get('#p-proximo').classes()).toContain('texto-rotulo')
+    expect(painel.get('#p-tambem-agora').classes()).toContain('texto-rotulo')
   })
 })
