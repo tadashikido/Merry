@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
+import LateralDestaque from '@/componentes/base/LateralDestaque.vue'
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { TEXTOS_TAREFAS } from '@/textos/tarefas'
 import { vocabularioOuNeutro } from '@/textos/tiposEvento'
@@ -71,128 +72,72 @@ onMounted(() => {
 </script>
 
 <template>
-  <section
+  <LateralDestaque
     v-if="visivel && principal && detalhe"
-    class="sugestao-modelo cartao"
+    elemento="section"
+    id-titulo="titulo-sugestao-tarefas"
+    class="sugestao-modelo"
     :class="{ 'sugestao-modelo--sem-acao': semAcao }"
-    aria-labelledby="titulo-sugestao-tarefas"
+    :rotulo="TEXTOS_TAREFAS.sugestaoTitulo"
+    :titulo="detalhe.nome"
     data-teste="sugestao-tarefas-modelo"
   >
-    <div class="sugestao-modelo__corpo">
-      <div class="sugestao-modelo__introducao pilha pilha--grupo">
-        <h2
-          id="titulo-sugestao-tarefas"
-          class="texto-rotulo"
-        >
-          {{ TEXTOS_TAREFAS.sugestaoTitulo }}
-        </h2>
-        <p class="sugestao-modelo__texto">
-          {{ texto ?? TEXTOS_TAREFAS.sugestaoTexto(vocabulario.referencia.indefinido) }}
-        </p>
-        <div class="sugestao-modelo__modelo">
-          <p
-            class="sugestao-modelo__nome"
-            data-teste="sugestao-modelo-nome"
-          >
-            {{ detalhe.nome }}
-          </p>
-          <p
-            class="sugestao-modelo__apoio"
-            data-teste="sugestao-modelo-quantidade"
-          >
-            {{ TEXTOS_TAREFAS.sugestaoQuantidade(detalhe.itens.length) }}
-          </p>
-        </div>
-      </div>
-      <div class="sugestao-modelo__exemplos pilha pilha--campo">
-        <ul
-          class="sugestao-modelo__itens"
-          :aria-label="TEXTOS_TAREFAS.sugestaoListaRotulo"
-        >
-          <li
-            v-for="item in exemplos"
-            :key="item.id"
-            class="sugestao-modelo__item"
-            data-teste="sugestao-item"
-          >
-            {{ item.titulo }}
-          </li>
-        </ul>
-        <p
-          v-if="restantes > 0"
-          class="sugestao-modelo__apoio"
-          data-teste="sugestao-mais"
-        >
-          {{ TEXTOS_TAREFAS.sugestaoMais(restantes) }}
-        </p>
-      </div>
+    <template #titulo>
+      <span data-teste="sugestao-modelo-nome">{{ detalhe.nome }}</span>
+    </template>
+    <template #descricao>
+      <span data-teste="sugestao-modelo-quantidade">{{ TEXTOS_TAREFAS.sugestaoQuantidade(detalhe.itens.length) }}</span>
+    </template>
+    <p class="sugestao-modelo__texto">
+      {{ texto ?? TEXTOS_TAREFAS.sugestaoTexto(vocabulario.referencia.indefinido) }}
+    </p>
+    <ul
+      class="sugestao-modelo__itens"
+      :aria-label="TEXTOS_TAREFAS.sugestaoListaRotulo"
+    >
+      <li
+        v-for="item in exemplos"
+        :key="item.id"
+        class="sugestao-modelo__item"
+        data-teste="sugestao-item"
+      >
+        <span
+          class="sugestao-modelo__caixa"
+          aria-hidden="true"
+        />
+        <span class="sugestao-modelo__titulo-item">{{ item.titulo }}</span>
+      </li>
+    </ul>
+    <template
+      v-if="restantes > 0 || !semAcao"
+      #rodape
+    >
+      <span
+        v-if="restantes > 0"
+        class="sugestao-modelo__apoio"
+        data-teste="sugestao-mais"
+      >{{ TEXTOS_TAREFAS.sugestaoMais(restantes) }}</span>
       <RouterLink
         v-if="!semAcao"
         class="sugestao-modelo__aplicar"
         :to="{ name: 'evento-checklist', params: { id: eventoId } }"
         data-teste="sugestao-aplicar"
       >
+        <span
+          class="ie ie-centelha sugestao-modelo__centelha"
+          aria-hidden="true"
+        />
         {{ TEXTOS_TAREFAS.sugestaoAplicar }}
       </RouterLink>
-    </div>
-  </section>
+    </template>
+  </LateralDestaque>
 </template>
 
 <style scoped>
-.sugestao-modelo {
-  container: sugestao-modelo / inline-size;
-}
-
-.sugestao-modelo__corpo {
-  display: grid;
-  grid-template-areas:
-    'introducao'
-    'exemplos'
-    'acao';
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-ritmo-grupo);
-}
-
-.sugestao-modelo__introducao {
-  grid-area: introducao;
-  min-width: 0;
-}
-
-.sugestao-modelo__exemplos {
-  grid-area: exemplos;
-  min-width: 0;
-}
-
-.sugestao-modelo h2 {
-  margin: 0;
-}
-
 .sugestao-modelo__texto {
   margin: 0;
+  padding-block: var(--p-ritmo-campo);
   font-size: var(--p-fonte-tamanho-controle);
-  line-height: var(--p-fonte-entrelinha-interface);
-  color: var(--p-cor-texto-apoio);
-}
-
-.sugestao-modelo__modelo {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.sugestao-modelo__nome {
-  margin: 0;
-  font-family: var(--p-fonte-serif);
-  font-size: var(--p-fonte-tamanho-titulo);
-  font-style: italic;
-  line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
-  overflow-wrap: anywhere;
-}
-
-.sugestao-modelo__apoio {
-  margin: 0;
-  font-size: var(--p-fonte-tamanho-apoio);
   line-height: var(--p-fonte-entrelinha-interface);
   color: var(--p-cor-texto-apoio);
 }
@@ -200,61 +145,69 @@ onMounted(() => {
 .sugestao-modelo__itens {
   display: flex;
   flex-direction: column;
-  gap: var(--p-ritmo-campo);
   margin: 0;
-  padding: 0 0 0 var(--p-ritmo-grupo);
+  padding: 0;
   list-style: none;
-  border-inline-start: 2px solid var(--p-cor-primaria);
 }
 
 .sugestao-modelo__item {
+  display: flex;
+  align-items: center;
+  gap: var(--p-ritmo-grupo);
+  padding-block: var(--p-ritmo-grupo);
   font-size: var(--p-fonte-tamanho-controle);
   line-height: var(--p-fonte-entrelinha-interface);
   color: var(--p-cor-texto);
   overflow-wrap: anywhere;
 }
 
+.sugestao-modelo__item + .sugestao-modelo__item {
+  border-top: 1px solid var(--p-cor-divisoria);
+}
+
+.sugestao-modelo__caixa {
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1.5px solid var(--p-cor-borda-controle);
+  border-radius: var(--p-raio-tag);
+}
+
+.sugestao-modelo__titulo-item {
+  min-width: 0;
+}
+
+.sugestao-modelo__apoio {
+  font-size: var(--p-fonte-tamanho-apoio);
+  line-height: var(--p-fonte-entrelinha-interface);
+  color: var(--p-cor-texto-apoio);
+}
+
 .sugestao-modelo__aplicar {
-  grid-area: acao;
   display: inline-flex;
   align-items: center;
-  align-self: flex-start;
+  gap: var(--p-ritmo-campo);
+  min-height: var(--p-dimensao-alvo-toque);
+  margin-inline-start: auto;
+  padding-inline: var(--p-ritmo-grupo);
   font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-acento-texto);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+  font-weight: var(--p-fonte-peso-seminegrito);
+  color: var(--p-cor-destaque-texto);
+  text-decoration: none;
+  background: var(--p-cor-destaque);
+  border-radius: var(--p-raio-controle);
 }
 
-.sugestao-modelo--sem-acao .sugestao-modelo__corpo {
-  grid-template-areas:
-    'introducao'
-    'exemplos';
+.sugestao-modelo__aplicar:hover {
+  background: var(--p-cor-tom-champanhe-viva);
 }
 
-@container sugestao-modelo (min-width: 36rem) {
-  .sugestao-modelo__corpo {
-    grid-template-areas:
-      'introducao exemplos'
-      'acao exemplos';
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-    column-gap: var(--p-ritmo-bloco);
-  }
-
-  .sugestao-modelo--sem-acao .sugestao-modelo__corpo {
-    grid-template-areas: 'introducao exemplos';
-    grid-template-rows: auto;
-  }
-
-  .sugestao-modelo__exemplos {
-    padding-left: var(--p-ritmo-bloco);
-    border-left: 1px solid var(--p-cor-divisoria);
-  }
+.sugestao-modelo__aplicar:focus-visible {
+  outline: var(--p-focus-ring-width) var(--p-focus-ring-style) var(--p-focus-ring-color);
+  outline-offset: var(--p-focus-ring-offset);
 }
 
-@media (pointer: coarse) {
-  .sugestao-modelo__aplicar {
-    min-height: var(--p-dimensao-alvo-toque);
-  }
+.sugestao-modelo__centelha {
+  color: var(--p-cor-centelha);
 }
 </style>

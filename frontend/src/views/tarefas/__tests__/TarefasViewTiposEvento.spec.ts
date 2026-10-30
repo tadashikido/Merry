@@ -191,7 +191,10 @@ describe('TarefasView — tarefas típicas por tipo de evento', () => {
     expect(tela.text()).toContain(`Registre o que falta fazer para ${vocabulario.referencia.artigo}.`)
     expect(tela.find('[data-teste="nova-tarefa-vazio"]').exists()).toBe(true)
     const sugestao = tela.get('[data-teste="sugestao-tarefas-modelo"]')
-    expect(sugestao.get('h2').text()).toBe(TEXTOS_TAREFAS.sugestaoTitulo)
+    expect(sugestao.get('.lateral-destaque__rotulo').text()).toBe(TEXTOS_TAREFAS.sugestaoTitulo)
+    expect(sugestao.get('h2').text()).toBe(NOME_MODELO[tipo])
+    expect(sugestao.attributes('aria-labelledby')).toBe('titulo-sugestao-tarefas')
+    expect(sugestao.findAll('[data-teste="sugestao-item"] .sugestao-modelo__caixa[aria-hidden="true"]').length).toBeGreaterThan(0)
     expect(sugestao.text()).toContain(`O modelo sugerido para ${vocabulario.referencia.indefinido}`)
     expect(sugestao.get('[data-teste="sugestao-modelo-nome"]').text()).toBe(NOME_MODELO[tipo])
     for (const outro of TIPOS_EVENTO.filter((valor) => valor !== tipo)) {

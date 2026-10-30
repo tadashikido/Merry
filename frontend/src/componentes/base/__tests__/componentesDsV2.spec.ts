@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 
+import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
 import CampoBusca from '@/componentes/base/CampoBusca.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
 import EtiquetaFase from '@/componentes/base/EtiquetaFase.vue'
@@ -165,6 +166,30 @@ describe('LateralDestaque nomeada', () => {
     const semId = mount(LateralDestaque, { props: { rotulo: 'R', titulo: 'T' } })
     expect(semId.attributes('aria-labelledby')).toBeUndefined()
     expect(semId.get('h2').attributes('id')).toBeUndefined()
+  })
+})
+
+describe('LateralDestaque com slots de título e descrição', () => {
+  it('[COMPONENTE] slots substituem título e descrição mantendo o h2 nomeado', () => {
+    const wrapper = mount(LateralDestaque, {
+      props: { rotulo: 'Tarefas típicas', titulo: 'Reserva', idTitulo: 't' },
+      slots: { titulo: '<span data-teste="nome">Checklist essencial</span>', descricao: '<span data-teste="qtd">26 tarefas</span>' },
+    })
+    expect(wrapper.get('h2#t [data-teste="nome"]').text()).toBe('Checklist essencial')
+    expect(wrapper.get('.lateral-destaque__descricao [data-teste="qtd"]').text()).toBe('26 tarefas')
+  })
+})
+
+describe('BadgeStatus com ponto', () => {
+  it('[COMPONENTE] ponto troca o ícone por um ponto na cor do texto; sem ponto mantém o ícone', () => {
+    const comPonto = mount(BadgeStatus, { props: { texto: 'Atrasada', variante: 'erro', ponto: true }, global })
+    expect(comPonto.attributes('data-ponto')).toBe('true')
+    expect(comPonto.find('.badge-status__ponto').exists()).toBe(true)
+    expect(comPonto.find('.badge-status__icone').exists()).toBe(false)
+
+    const comIcone = mount(BadgeStatus, { props: { texto: 'Atrasada', variante: 'erro' }, global })
+    expect(comIcone.attributes('data-ponto')).toBeUndefined()
+    expect(comIcone.find('.badge-status__icone').exists()).toBe(true)
   })
 })
 
