@@ -5,6 +5,7 @@ import { mount, type VueWrapper } from '@vue/test-utils'
 
 import PreviaConvite, { type PessoaPreviaConvite } from '@/componentes/convidados/PreviaConvite.vue'
 import { TEXTOS_PREVIA_CONVITE } from '@/textos/convidados'
+import { TOM_DO_TIPO } from '@/textos/tiposEvento'
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 
 const CELEBRACOES: Record<TipoEvento, string> = {
@@ -56,6 +57,7 @@ describe('PreviaConvite', () => {
 
     expect(previa.get('[data-teste="previa-celebracao"]').text()).toBe(CELEBRACOES[tipo])
     expect(previa.get('[data-teste="previa-nomes"]').text()).toBe(SEGUNDO_NOME[tipo] ? 'Ana e Rui' : 'Ana')
+    expect(previa.classes()).toContain(`tom-tipo--${TOM_DO_TIPO[tipo]}`)
   })
 
   it('[COMPONENTE] tipo sem segundo nome espelha o convite: só o primeiro nome, no singular', () => {
@@ -70,6 +72,18 @@ describe('PreviaConvite', () => {
 
     expect(previa.get('[data-teste="previa-celebracao"]').text()).toBe('vai celebrar')
     expect(previa.text()).not.toMatch(/casar|casamento/i)
+    expect(previa.classes()).toContain('tom-tipo--neutro')
+  })
+
+  it('[UNITÁRIO] o cartão da prévia usa o filete e as tintas do tom do tipo', () => {
+    const fonte = readFileSync(resolve(__dirname, '../PreviaConvite.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style scoped>'))
+
+    expect(estilo).toContain('border-top: var(--p-dimensao-filete-tipo) solid var(--tom-viva)')
+    expect(estilo).toMatch(/__nomes \{[^}]*color: var\(--tom-profunda\)/)
+    expect(estilo).toMatch(/__celebracao \{[^}]*color: var\(--tom-tinta\)/)
+    expect(estilo).not.toContain('--p-cor-primaria')
+    expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}/)
   })
 
   it('[COMPONENTE] sem nome mostra marcadores e usa o nome da primeira pessoa quando houver', async () => {

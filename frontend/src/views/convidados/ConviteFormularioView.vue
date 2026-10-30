@@ -470,13 +470,13 @@ function excluir() {
               />
 
               <form
-                class="formulario-convite pilha pilha--bloco"
+                class="formulario-convite formulario-cartao"
                 novalidate
                 data-teste="formulario-convite"
                 @submit.prevent="enviar"
               >
-                <fieldset class="formulario-convite__grupo pilha pilha--grupo">
-                  <legend class="formulario-convite__legenda texto-rotulo">
+                <fieldset class="formulario-secao">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_CONVIDADOS.grupoConvite }}
                   </legend>
                   <CampoFormulario
@@ -543,12 +543,12 @@ function excluir() {
                 </fieldset>
 
                 <section
-                  class="formulario-convite__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   aria-labelledby="titulo-pessoas"
                 >
                   <h2
                     id="titulo-pessoas"
-                    class="formulario-convite__titulo-secao texto-rotulo"
+                    class="formulario-secao__titulo"
                   >
                     {{ TEXTOS_CONVIDADOS.secaoPessoas }}
                   </h2>
@@ -684,7 +684,7 @@ function excluir() {
                   </ListaRepetivel>
                 </section>
 
-                <div class="formulario-convite__acoes">
+                <div class="formulario-acoes formulario-convite__acoes">
                   <div class="formulario-convite__acoes-principais">
                     <Button
                       type="submit"
@@ -722,7 +722,7 @@ function excluir() {
 
           <div
             v-if="mostrarPrevia && evento"
-            class="formulario-convite-tela__lateral com-lateral__lateral com-lateral__lateral--filete"
+            class="formulario-convite-tela__lateral com-lateral__lateral"
           >
             <PreviaConvite
               :tipo="evento.tipo"
@@ -743,22 +743,7 @@ function excluir() {
 
 <style scoped>
 .formulario-convite {
-  container: formulario-convite / inline-size;
-}
-
-.formulario-convite__grupo {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.formulario-convite__legenda {
-  padding: 0;
-  margin-bottom: var(--p-ritmo-grupo);
-}
-
-.formulario-convite__titulo-secao {
-  margin: 0;
+  container: formulario-convite formulario / inline-size;
 }
 
 .formulario-convite__pessoa {

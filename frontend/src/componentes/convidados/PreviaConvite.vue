@@ -3,6 +3,7 @@ import { computed, useId } from 'vue'
 
 import { TEXTOS_PREVIA_CONVITE } from '@/textos/convidados'
 import { TEXTOS_RSVP } from '@/textos/rsvp'
+import { classeTomDoTipo } from '@/textos/tiposEvento'
 import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 import { formatarDataCalendarioExtenso, formatarNomesEmFrase } from '@/utilitarios/formatacao'
 import { celebracaoDoConvite, formatarDiaMes, segundoNomeDoConvite } from '@/utilitarios/rsvp'
@@ -59,6 +60,7 @@ const nomeExibido = computed(() => {
 <template>
   <section
     class="previa-convite"
+    :class="classeTomDoTipo(tipo)"
     :aria-labelledby="idTitulo"
     data-teste="previa-convite"
   >
@@ -197,7 +199,7 @@ const nomeExibido = computed(() => {
   font-size: var(--p-fonte-tamanho-titulo);
   font-weight: var(--p-fonte-peso-regular);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .previa-convite__subtitulo,
@@ -216,7 +218,7 @@ const nomeExibido = computed(() => {
   min-width: 0;
   padding: var(--p-ritmo-cartao);
   border: 1px solid var(--p-cor-borda);
-  border-top: 2px solid var(--p-cor-primaria);
+  border-top: var(--p-dimensao-filete-tipo) solid var(--tom-viva);
   border-radius: var(--p-raio-painel);
   background: var(--p-cor-superficie);
   overflow-wrap: anywhere;
@@ -236,7 +238,7 @@ const nomeExibido = computed(() => {
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-regular);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-primaria);
+  color: var(--tom-profunda);
 }
 
 .previa-convite__celebracao {
@@ -244,13 +246,13 @@ const nomeExibido = computed(() => {
   font-size: var(--p-fonte-tamanho-corpo);
   font-style: italic;
   line-height: var(--p-fonte-entrelinha-leitura);
-  color: var(--p-cor-texto-secundario);
+  color: var(--tom-tinta);
 }
 
 .previa-convite__data {
   font-size: var(--p-fonte-tamanho-apoio);
   line-height: var(--p-fonte-entrelinha-interface);
-  color: var(--p-cor-texto-apoio);
+  color: var(--tom-data);
 }
 
 .previa-convite__dados {
@@ -322,7 +324,7 @@ const nomeExibido = computed(() => {
   flex-direction: column;
   gap: var(--p-ritmo-campo);
   padding-inline-start: var(--p-ritmo-grupo);
-  border-inline-start: 2px solid var(--p-cor-primaria);
+  border-inline-start: 2px solid var(--p-cor-borda);
 }
 
 @container previa-convite (min-width: 36rem) {
