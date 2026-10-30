@@ -133,6 +133,9 @@ describe('CronogramaView — tipos de evento', () => {
     expect(linhas[1]!.text()).toContain(esperado.hora)
     const resumo = wrapper!.get('[data-teste="resumo-cerimonia"]')
     expect(resumo.text()).toContain(esperado.horario)
+    const tons: Record<TipoEvento, string> = { Casamento: 'rose', QuinzeAnos: 'orquidea', Aniversario: 'tangerina', Comemoracao: 'champanhe' }
+    expect(wrapper!.get('.cronograma__corpo').classes()).toContain(`tom-tipo--${tons[tipo]}`)
+    expect(linhas[1]!.classes()).toContain('linha-cronograma--cerimonia')
     const lateral = wrapper!.get('[data-teste="lateral-cronograma"]').text()
     expect(lateral).toContain(esperado.principal)
     expect(lateral).toContain(esperado.secundario)

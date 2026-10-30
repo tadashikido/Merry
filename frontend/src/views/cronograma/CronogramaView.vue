@@ -34,7 +34,7 @@ import {
   TEXTOS_RECALCULO_HORARIOS,
   TEXTOS_SALVAR_COMO_MODELO,
 } from '@/textos/modelosCronograma'
-import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { classeTomDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { ItemCronogramaDto } from '@/tipos/cronograma'
 import {
   agruparPorDia,
@@ -420,6 +420,7 @@ function excluir(item: ItemCronogramaDto) {
         <div
           v-else-if="cronograma && !semItens"
           class="cronograma__corpo"
+          :class="classeTomDoTipo(evento?.tipo)"
         >
           <div class="cronograma__principal pilha pilha--bloco">
             <MensagemFormulario
@@ -701,7 +702,11 @@ function excluir(item: ItemCronogramaDto) {
 
 .cronograma__rotulo-cerimonia {
   font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-texto-secundario);
+  color: var(--tom-tinta);
+}
+
+.cronograma__cerimonia .cronograma__sem-horario {
+  color: var(--tom-tinta);
 }
 
 .cronograma__horario-cerimonia {
@@ -710,7 +715,14 @@ function excluir(item: ItemCronogramaDto) {
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--tom-profunda);
+}
+
+.cronograma__cerimonia {
+  padding: var(--p-ritmo-grupo);
+  color: var(--tom-tinta);
+  background: var(--tom-fundo);
+  border-radius: var(--p-raio-tile);
 }
 
 .cronograma__sem-horario {

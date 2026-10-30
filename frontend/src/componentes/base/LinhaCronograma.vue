@@ -204,10 +204,16 @@ const metadados = computed(() =>
 }
 
 .linha-cronograma__inicio {
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-weight: var(--p-fonte-peso-regular);
+  font-variant-numeric: lining-nums tabular-nums;
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
+}
+
+.linha-cronograma--cerimonia .linha-cronograma__inicio {
+  color: var(--tom-profunda, var(--p-cor-titulo));
 }
 
 .linha-cronograma__termino {
@@ -238,7 +244,7 @@ const metadados = computed(() =>
   left: 50%;
   width: var(--p-dimensao-fio-cronograma);
   content: '';
-  background: var(--p-cor-primaria);
+  background: var(--p-cor-borda-controle);
   transform: translateX(-50%);
 }
 
@@ -261,8 +267,8 @@ const metadados = computed(() =>
   width: var(--p-dimensao-no-cronograma);
   height: var(--p-dimensao-no-cronograma);
   margin-top: calc(var(--p-espaco-4) + var(--p-espaco-1) / 2);
-  background: var(--p-cor-primaria);
-  border: var(--p-dimensao-fio-cronograma) solid var(--p-cor-primaria);
+  background: var(--p-cor-titulo);
+  border: var(--p-dimensao-fio-cronograma) solid var(--p-cor-titulo);
   border-radius: var(--p-raio-total);
 }
 
@@ -274,7 +280,7 @@ const metadados = computed(() =>
 .linha-cronograma--cerimonia .linha-cronograma__no {
   margin-left: calc(var(--p-dimensao-no-cronograma) / -3);
   background: var(--p-cor-superficie);
-  border-color: var(--p-cor-acento);
+  border-color: var(--tom-tinta, var(--p-cor-acento));
 }
 
 .linha-cronograma__anel--segundo {
@@ -283,8 +289,30 @@ const metadados = computed(() =>
   left: calc(var(--p-dimensao-no-cronograma) / 2);
   width: var(--p-dimensao-no-cronograma);
   height: var(--p-dimensao-no-cronograma);
-  border: var(--p-dimensao-fio-cronograma) solid var(--p-cor-acento);
+  border: var(--p-dimensao-fio-cronograma) solid var(--tom-tinta, var(--p-cor-acento));
   border-radius: var(--p-raio-total);
+}
+
+.linha-cronograma--cerimonia .linha-cronograma__conteudo {
+  background: var(--tom-fundo, var(--p-cor-acento-suave));
+  border-radius: var(--p-raio-controle);
+}
+
+.linha-cronograma--cerimonia .linha-cronograma__atividade {
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-weight: var(--p-fonte-peso-regular);
+  color: var(--tom-profunda, var(--p-cor-titulo));
+}
+
+.linha-cronograma--cerimonia .linha-cronograma__metadados,
+.linha-cronograma--cerimonia .linha-cronograma__instrucoes,
+.linha-cronograma--cerimonia .linha-cronograma__nota {
+  color: var(--tom-tinta, var(--p-cor-texto-apoio));
+}
+
+.linha-cronograma--cerimonia + .linha-cronograma .linha-cronograma__conteudo {
+  border-top-color: transparent;
 }
 
 .linha-cronograma__conteudo {
@@ -315,6 +343,11 @@ const metadados = computed(() =>
   background: var(--p-cor-primaria-suave);
 }
 
+.linha-cronograma--cerimonia.linha-cronograma--editavel .linha-cronograma__conteudo:hover {
+  background: var(--tom-fundo, var(--p-cor-superficie-sutil));
+  box-shadow: inset 0 0 0 1px var(--tom-tinta, var(--p-cor-borda));
+}
+
 .linha-cronograma__cabeca {
   display: flex;
   flex-direction: column;
@@ -338,7 +371,7 @@ const metadados = computed(() =>
 
 .linha-cronograma--cerimonia .linha-cronograma__relativo {
   font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-acento-texto);
+  color: var(--tom-tinta, var(--p-cor-acento-texto));
 }
 
 .linha-cronograma__metadados {

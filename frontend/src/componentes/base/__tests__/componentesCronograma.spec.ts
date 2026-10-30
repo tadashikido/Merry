@@ -129,6 +129,14 @@ describe('LinhaCronograma — detalhes lado a lado', () => {
     expect(wrapper.find('.linha-cronograma__metadados').exists()).toBe(false)
   })
 
+  it('[ESTILO] momento principal usa a cor do tipo com recuo neutro e horários em Fraunces', () => {
+    expect(montarLinha({ ehCerimonia: true }).classes()).toContain('linha-cronograma--cerimonia')
+    expect(fonte).toMatch(/\.linha-cronograma--cerimonia \.linha-cronograma__conteudo \{[^}]*background: var\(--tom-fundo, var\(--p-cor-acento-suave\)\)/)
+    expect(fonte).toMatch(/\.linha-cronograma--cerimonia \.linha-cronograma__relativo \{[^}]*color: var\(--tom-tinta, var\(--p-cor-acento-texto\)\)/)
+    expect(fonte).toMatch(/\.linha-cronograma__inicio \{[^}]*font-family: var\(--p-fonte-display\)/)
+    expect(fonte).not.toContain('--p-cor-primaria)')
+  })
+
   it('[COMPONENTE] a coluna de detalhes depende da largura da própria linha via container', () => {
     expect(fonte).toMatch(/container:\s*linha-cronograma\s*\/\s*inline-size/)
     expect(fonte).toMatch(/@container linha-cronograma \(min-width: 42rem\)/)
