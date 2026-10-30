@@ -6,11 +6,12 @@ import Button from 'primevue/button'
 import LayoutImpressao from '@/layouts/LayoutImpressao.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import OcupacaoMesa from '@/componentes/base/OcupacaoMesa.vue'
 import { useEventosStore } from '@/stores/eventos'
 import { useMesasStore } from '@/stores/mesas'
 import { TEXTOS_FECHAMENTO_MESAS, TEXTOS_IMPRESSAO_MESAS, TEXTOS_MESAS } from '@/textos/mesas'
-import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { classeTomDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { PessoaMesaDto } from '@/tipos/mesas'
 import { cabecalhoFichaEvento, origemInterna } from '@/utilitarios/fichaBuffet'
 import { formatarDataHora, formatarNomesAnfitrioes, formatarNumero } from '@/utilitarios/formatacao'
@@ -159,6 +160,7 @@ function imprimir() {
     <article
       v-else-if="mapa"
       class="mapa pilha pilha--bloco"
+      :class="classeTomDoTipo(cabecalho?.tipo ?? null)"
       data-teste="mapa-mesas-impressao"
     >
       <header class="mapa__cabecalho pilha pilha--grupo">
@@ -171,13 +173,14 @@ function imprimir() {
           </p>
         </div>
         <div class="mapa__identificacao pilha pilha--campo">
-          <p
+          <EtiquetaTipo
             v-if="cabecalho?.tipoRotulo"
             class="mapa__tipo"
+            :tipo="cabecalho.tipo"
+            :rotulo="cabecalho.tipoRotulo"
+            com-icone
             data-teste="mapa-tipo"
-          >
-            {{ cabecalho.tipoRotulo }}
-          </p>
+          />
           <h1 class="mapa__anfitriao">
             {{ nomes }}
           </h1>
@@ -402,13 +405,7 @@ function imprimir() {
 }
 
 .mapa__tipo {
-  margin: 0;
-  font-family: var(--p-fonte-serif);
-  font-size: var(--p-fonte-tamanho-corpo);
-  font-style: italic;
-  font-variant-numeric: lining-nums;
-  line-height: var(--p-fonte-entrelinha-interface);
-  color: var(--p-cor-texto-apoio);
+  align-self: flex-start;
 }
 
 .mapa__detalhes {
@@ -425,7 +422,10 @@ function imprimir() {
 }
 
 .mapa__detalhe dt {
-  font-size: var(--p-fonte-tamanho-apoio);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
   color: var(--p-cor-texto-apoio);
 }
 
@@ -455,7 +455,7 @@ function imprimir() {
 }
 
 .mapa__resumo-numero {
-  font-family: var(--p-fonte-interface);
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-titulo);
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
@@ -476,7 +476,7 @@ function imprimir() {
   font-weight: var(--p-fonte-peso-medio);
   line-height: var(--p-fonte-entrelinha-leitura);
   color: var(--p-cor-texto);
-  border-left: medium solid var(--p-cor-primaria);
+  border-left: medium solid var(--p-cor-alerta);
 }
 
 .mapa__legenda {
@@ -513,7 +513,7 @@ function imprimir() {
 .mapa__amostra-especial {
   flex: none;
   inline-size: 1.25em;
-  border-top: medium solid var(--p-cor-primaria);
+  border-top: medium solid var(--tom-viva);
 }
 
 .mapa__nota {
@@ -541,7 +541,7 @@ function imprimir() {
 
 .mapa__mesa--especial {
   border-color: var(--p-cor-texto-apoio);
-  border-top: medium solid var(--p-cor-primaria);
+  border-top: medium solid var(--tom-viva);
 }
 
 .mapa__mesa-resumo {
@@ -567,8 +567,8 @@ function imprimir() {
 
 .mapa__mesa-titulo,
 .mapa__secao-titulo {
-  font-family: var(--p-fonte-interface);
-  font-weight: var(--p-fonte-peso-medio);
+  font-family: var(--p-fonte-display);
+  font-weight: var(--p-fonte-peso-regular);
   line-height: var(--p-fonte-entrelinha-titulo);
   overflow-wrap: anywhere;
 }
@@ -681,6 +681,16 @@ function imprimir() {
     border-top-color: var(--p-cor-texto);
   }
 
+  .mapa__tipo {
+    color: var(--p-cor-texto);
+    background: none;
+    border: 1px solid var(--p-cor-texto);
+  }
+
+  .mapa__anfitriao,
+  .mapa__mesa-titulo,
+  .mapa__secao-titulo,
+  .mapa__resumo-numero,
   .mapa__nota,
   .mapa__gerado,
   .mapa__selo,

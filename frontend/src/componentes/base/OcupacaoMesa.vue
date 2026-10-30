@@ -101,5 +101,10 @@ const lugares = computed(() =>
   .ocupacao-mesa__lugar {
     print-color-adjust: exact;
   }
+
+  .ocupacao-mesa--completa .ocupacao-mesa__lugar--ocupado {
+    border-color: var(--p-cor-primaria);
+    background: var(--p-cor-primaria);
+  }
 }
 </style>

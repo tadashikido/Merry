@@ -57,6 +57,9 @@ describe('ImpressaoMesasView reestruturada', () => {
     expect(cabecalho.findAll('h1')).toHaveLength(1)
     expect(cabecalho.get('h1').text()).toBe('Ana Beatriz & Bruno')
     expect(cabecalho.get('[data-teste="mapa-tipo"]').text()).toBe('Casamento')
+    expect(cabecalho.get('[data-teste="mapa-tipo"]').classes()).toContain('etiqueta-tipo')
+    expect(cabecalho.get('[data-teste="mapa-tipo"]').attributes('data-tom')).toBe('rose')
+    expect(wrapper!.get('[data-teste="mapa-mesas-impressao"]').classes()).toContain('tom-tipo--rose')
     const detalhes = cabecalho.get('[data-teste="mapa-detalhes"]')
     expect(detalhes.element.tagName).toBe('DL')
     expect(detalhes.attributes('aria-label')).toBe(TEXTOS_IMPRESSAO_MESAS.detalhesRotulo)
@@ -153,6 +156,7 @@ describe('ImpressaoMesasView reestruturada', () => {
     await abrir({ tipo: 'Corporativo' as EventoDto['tipo'] })
 
     expect(wrapper!.find('[data-teste="mapa-tipo"]').exists()).toBe(false)
+    expect(wrapper!.get('[data-teste="mapa-mesas-impressao"]').classes()).toContain('tom-tipo--neutro')
     expect(wrapper!.findAll('[data-teste="mesa-impressao"]')[0]!.get('h2').text()).toBe('Mesa de honra')
     expect(wrapper!.get('[data-teste="mapa-detalhe-horario"] dt').text()).toBe('Horário do evento')
     expect(wrapper!.get('[data-teste="mapa-mesas-impressao"]').text()).not.toMatch(/casamento|noiv|anfitri/i)
@@ -269,5 +273,25 @@ describe('ImpressaoMesasView reestruturada', () => {
     expect(estilo).not.toMatch(/background:\s*var\(--p-cor/)
     expect(estilo).not.toContain('box-shadow')
     expect(estilo).not.toContain('seminegrito')
+  })
+
+  it('[COMPONENTE] DS v2: Fraunces em títulos e números, rótulos em caixa alta, tom na tela e escala de cinza na impressão', () => {
+    const fonte = readFileSync(resolve(__dirname, '../ImpressaoMesasView.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style scoped>'))
+    const impressao = estilo.slice(estilo.indexOf('@media print'))
+
+    expect(estilo).toMatch(/\.mapa__resumo-numero \{\s*font-family: var\(--p-fonte-display\)/)
+    expect(estilo).toMatch(/\.mapa__mesa-titulo,\s*\.mapa__secao-titulo \{\s*font-family: var\(--p-fonte-display\)/)
+    expect(estilo).toMatch(/\.mapa__detalhe dt \{[^}]*--p-fonte-tamanho-rotulo[^}]*text-transform: uppercase/)
+    expect(estilo).toMatch(/\.mapa__mesa--especial \{[^}]*border-top: medium solid var\(--tom-viva\)/)
+    expect(estilo).toMatch(/\.mapa__amostra-especial \{[^}]*border-top: medium solid var\(--tom-viva\)/)
+    expect(estilo).toMatch(/\.mapa__faltam \{[^}]*border-left: medium solid var\(--p-cor-alerta\)/)
+    expect(impressao).toMatch(/\.mapa__tipo \{\s*color: var\(--p-cor-texto\);\s*background: none;\s*border: 1px solid var\(--p-cor-texto\);/)
+    expect(impressao).toMatch(/\.mapa__mesa--especial \{\s*border-color: var\(--p-cor-texto\)/)
+    expect(impressao).toMatch(/\.mapa__mesa-titulo,[\s\S]*?color: var\(--p-cor-texto\)/)
+
+    const ocupacao = readFileSync(resolve(__dirname, '../../../componentes/base/OcupacaoMesa.vue'), 'utf-8')
+    const impressaoOcupacao = ocupacao.slice(ocupacao.indexOf('@media print'))
+    expect(impressaoOcupacao).toMatch(/\.ocupacao-mesa--completa \.ocupacao-mesa__lugar--ocupado \{[^}]*background: var\(--p-cor-primaria\)/)
   })
 })
