@@ -412,16 +412,16 @@ async function removerContrato() {
             />
 
             <form
-              class="pilha pilha--bloco"
+              class="formulario-cartao"
               novalidate
               data-teste="formulario-vinculo"
               @submit.prevent="enviar"
             >
               <fieldset
-                class="formulario-vinculo__grupo pilha pilha--grupo"
+                class="formulario-secao"
                 data-teste="grupo-fornecedor"
               >
-                <legend class="formulario-vinculo__legenda texto-rotulo">
+                <legend class="formulario-secao__titulo">
                   {{ TEXTOS_FORNECEDORES_EVENTO.grupoFornecedor }}
                 </legend>
 
@@ -500,10 +500,10 @@ async function removerContrato() {
               </fieldset>
 
               <fieldset
-                class="formulario-vinculo__grupo pilha pilha--grupo"
+                class="formulario-secao"
                 data-teste="grupo-contratacao"
               >
-                <legend class="formulario-vinculo__legenda texto-rotulo">
+                <legend class="formulario-secao__titulo">
                   {{ TEXTOS_FORNECEDORES_EVENTO.grupoContratacao }}
                 </legend>
 
@@ -553,7 +553,7 @@ async function removerContrato() {
                   </div>
                 </CampoFormulario>
 
-                <div class="formulario-vinculo__colunas">
+                <div class="formulario-colunas">
                   <CampoFormulario
                     v-slot="{ id: idEntrada, invalido, descritoPor }"
                     :rotulo="TEXTOS_FORNECEDORES_EVENTO.campoOrcado"
@@ -632,7 +632,7 @@ async function removerContrato() {
                 </CampoFormulario>
               </fieldset>
 
-              <div class="pilha pilha--grupo">
+              <div class="formulario-acoes formulario-vinculo__rodape">
                 <div class="formulario-vinculo__acoes">
                   <Button
                     type="submit"
@@ -665,7 +665,7 @@ async function removerContrato() {
 
           <div
             v-if="comLateral"
-            class="formulario-vinculo__lateral com-lateral__lateral com-lateral__lateral--filete"
+            class="formulario-vinculo__lateral com-lateral__lateral"
             data-teste="lateral-vinculo"
           >
             <aside
@@ -725,24 +725,6 @@ async function removerContrato() {
   min-width: 0;
 }
 
-.formulario-vinculo__grupo {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.formulario-vinculo__legenda {
-  padding: 0;
-  margin-bottom: var(--p-ritmo-grupo);
-}
-
-.formulario-vinculo__colunas {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-ritmo-grupo) var(--p-ritmo-cartao);
-}
-
 .formulario-vinculo__trilho {
   max-width: 100%;
 }
@@ -752,7 +734,7 @@ async function removerContrato() {
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
   overflow-wrap: anywhere;
 }
 
@@ -775,10 +757,14 @@ async function removerContrato() {
   min-height: var(--p-dimensao-alvo-toque);
 }
 
+.formulario-vinculo__rodape {
+  align-items: stretch;
+}
+
 @container formulario-vinculo-campos (min-width: 36rem) {
-  .formulario-vinculo__colunas {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+  .formulario-vinculo__rodape {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .formulario-vinculo__acoes {

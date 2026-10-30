@@ -22,7 +22,7 @@ const resumo = computed(() => (props.participacoes ? resumirParticipacoes(props.
 
 <template>
   <section
-    class="historico pilha pilha--grupo"
+    class="historico cartao pilha pilha--grupo"
     :aria-labelledby="idTitulo"
     data-teste="historico-fornecedor"
   >
@@ -112,7 +112,10 @@ const resumo = computed(() => (props.participacoes ? resumirParticipacoes(props.
             <span
               class="historico__situacao"
               :class="{ 'historico__situacao--contratado': participacao.status === 'Contratado' }"
-            >{{ ROTULOS_STATUS_FORNECEDOR_EVENTO[participacao.status] }}<template v-if="participacao.eventoArquivado"> · {{ TEXTOS_HISTORICO_FORNECEDOR_EVENTO.arquivado }}</template></span>
+            ><span
+              class="historico__ponto"
+              aria-hidden="true"
+            />{{ ROTULOS_STATUS_FORNECEDOR_EVENTO[participacao.status] }}<template v-if="participacao.eventoArquivado"> · {{ TEXTOS_HISTORICO_FORNECEDOR_EVENTO.arquivado }}</template></span>
           </li>
         </ul>
 
@@ -161,7 +164,7 @@ const resumo = computed(() => (props.participacoes ? resumirParticipacoes(props.
   display: grid;
   gap: var(--p-ritmo-campo);
   padding-inline-start: var(--p-ritmo-grupo);
-  border-inline-start: 2px solid var(--p-cor-primaria);
+  border-inline-start: 2px solid var(--p-cor-borda);
 }
 
 .historico__frase {
@@ -184,7 +187,7 @@ const resumo = computed(() => (props.participacoes ? resumirParticipacoes(props.
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1.1;
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-titulo);
 }
 
 .historico__legenda {
@@ -229,11 +232,28 @@ const resumo = computed(() => (props.participacoes ? resumirParticipacoes(props.
 }
 
 .historico__situacao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--p-espaco-2);
   text-align: end;
 }
 
+.historico__ponto {
+  flex: none;
+  width: var(--p-espaco-2);
+  height: var(--p-espaco-2);
+  background: var(--p-cor-fase-planejamento-ponto);
+  border-radius: var(--p-raio-total);
+}
+
 .historico__situacao--contratado {
-  color: var(--p-cor-texto);
+  font-weight: var(--p-fonte-peso-seminegrito);
+  color: var(--p-cor-fase-realizado-texto);
+}
+
+.historico__situacao--contratado .historico__ponto {
+  background: var(--p-cor-fase-realizado-ponto);
 }
 
 @container historico-vinculo (min-width: 30rem) {
