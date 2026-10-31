@@ -209,6 +209,14 @@ describe('ModelosCronogramaView', () => {
     expect(wrapper.findAll('[data-teste="modelo-cronograma"] h3')).toHaveLength(6)
     expect(cartao('Roteiro da casa').text()).not.toMatch(/cerimônia|casamento/i)
     expect(cartao('Formatura').text()).not.toMatch(/cerimônia|casamento/i)
+    const tom = (nome: string, teste: string) => cartao(nome).get(`[data-teste="${teste}"]`).attributes('data-tom')
+    expect(tom('Roteiro casamento', 'tile-tipo')).toBe('rose')
+    expect(tom('Roteiro casamento', 'selo-sugerido')).toBe('rose')
+    expect(tom('Roteiro 15 anos', 'selo-sugerido')).toBe('orquidea')
+    expect(tom('Roteiro aniversário', 'tile-tipo')).toBe('tangerina')
+    expect(tom('Roteiro comemoração', 'tile-tipo')).toBe('champanhe')
+    expect(tom('Formatura', 'tile-tipo')).toBe('neutro')
+    expect(tom('Roteiro da casa', 'tile-tipo')).toBe('neutro')
   })
 
   it('[COMPONENTE] lateral por tipo com reaproveitamento do cronograma, depois dos grupos', async () => {

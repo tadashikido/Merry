@@ -77,7 +77,7 @@ function executarAcao(modelo: ModeloCronogramaResumoDto, chave: string) {
         #detalhes
       >
         <p
-          class="texto-legenda"
+          class="texto-apoio"
           aria-live="polite"
           data-teste="resumo-modelos"
         >
@@ -166,6 +166,7 @@ function executarAcao(modelo: ModeloCronogramaResumoDto, chave: string) {
               :rotulo-acoes="TEXTOS_MODELOS_CRONOGRAMA.maisAcoes"
               :rotulo-acessivel-acoes="TEXTOS_MODELOS_CRONOGRAMA.maisAcoesAria(modelo.nome)"
               :nivel-titulo="3"
+              :tipo="modelo.tipoEvento"
               @selecionar="executarAcao(modelo, $event)"
             >
               <template #detalhes>
