@@ -364,11 +364,11 @@ describe('ModeloChecklistView', () => {
   })
 
   it.each([
-    ['Casamento', 'casamento', 'do casamento', 'Abra um casamento e entre em Checklist.'],
-    ['QuinzeAnos', 'festa de 15 anos', 'da festa de 15 anos', 'Abra uma festa de 15 anos e entre em Checklist.'],
-    ['Aniversario', 'aniversário', 'do aniversário', 'Abra um aniversário e entre em Checklist.'],
-    ['Comemoracao', 'comemoração', 'da comemoração', 'Abra uma comemoração e entre em Checklist.'],
-  ] as const)('[COMPONENTE] modelo sugerido de %s mostra o tipo, onde aparece e fala da data do tipo', async (tipo, singular, contracaoDe, abrirEvento) => {
+    ['Casamento', 'casamento', 'do casamento', 'Abra um casamento e entre em Checklist.', 'rose'],
+    ['QuinzeAnos', 'festa de 15 anos', 'da festa de 15 anos', 'Abra uma festa de 15 anos e entre em Checklist.', 'orquidea'],
+    ['Aniversario', 'aniversário', 'do aniversário', 'Abra um aniversário e entre em Checklist.', 'tangerina'],
+    ['Comemoracao', 'comemoração', 'da comemoração', 'Abra uma comemoração e entre em Checklist.', 'champanhe'],
+  ] as const)('[COMPONENTE] modelo sugerido de %s mostra o tipo, onde aparece e fala da data do tipo', async (tipo, singular, contracaoDe, abrirEvento, tom) => {
     rotearFetch(
       fetchSimulado,
       quando('GET', ROTA_MODELO, () =>
@@ -386,6 +386,10 @@ describe('ModeloChecklistView', () => {
     const resumo = wrapper.get('[data-teste="resumo-modelo"]')
     expect(resumo.text()).toContain(TEXTOS_MODELOS_POR_TIPO.sugeridoPara(singular))
     expect(resumo.find('[data-teste="origem-modelo"]').exists()).toBe(false)
+    const selo = resumo.get('[data-teste="selo-sugerido"]')
+    expect(selo.attributes('data-tom')).toBe(tom)
+    expect(selo.find('.ie-centelha').exists()).toBe(true)
+    expect(wrapper.get('.modelo__principal').classes()).toContain(`tom-tipo--${tom}`)
     expect(wrapper.get('[data-teste="onde-aparece-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.notaTipo('checklist', singular))
     expect(wrapper.get('[data-teste="marco-seisMeses"] h2').text()).toContain(`antes ${contracaoDe}`)
     expect(wrapper.get('[data-teste="marco-noDia"] h2').text()).toContain(contracaoDe)
@@ -411,6 +415,7 @@ describe('ModeloChecklistView', () => {
     expect(wrapper.get('[data-teste="primeiro-prazo-modelo"]').text()).toBe('30 dias antes do evento')
     expect(wrapper.find('[data-teste="ultimo-prazo-modelo"]').exists()).toBe(false)
     expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(TEXTOS_MODELOS_POR_TIPO.abrirQualquerEvento())
+    expect(wrapper.get('.modelo__principal').classes()).toContain('tom-tipo--neutro')
     expect(wrapper.get('main').text()).not.toMatch(/casamento|comemoração/i)
   })
 

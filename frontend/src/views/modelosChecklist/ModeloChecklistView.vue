@@ -4,7 +4,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 
 import LayoutPainelUsuario from '@/layouts/LayoutPainelUsuario.vue'
-import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
@@ -31,6 +31,7 @@ import {
   rotuloSugeridoDoModelo,
 } from '@/textos/modelos'
 import { ROTULOS_CATEGORIA_TAREFA, ROTULOS_RESPONSAVEL_TAREFA } from '@/textos/tarefas'
+import { classeTomDoTipo } from '@/textos/tiposEvento'
 import type { ItemModeloChecklistDto } from '@/tipos/checklist'
 import { RESPONSAVEIS_TAREFA } from '@/tipos/tarefas'
 import { agruparPorMarco, alcanceDosPrazos } from '@/utilitarios/checklist'
@@ -167,11 +168,14 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
             class="modelo__detalhes texto-legenda"
             data-teste="resumo-modelo"
           >
-            <BadgeStatus
+            <EtiquetaTipo
               v-if="modelo.sugerido"
-              :texto="rotuloSugerido"
-              variante="informacao"
-              icone="informacao"
+              class="modelo__sugerido"
+              :tipo="modelo.tipoEvento"
+              :rotulo="rotuloSugerido"
+              com-icone
+              icone="centelha"
+              data-teste="selo-sugerido"
             />
             <span
               v-else
@@ -252,7 +256,10 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
           v-else-if="modelo"
           class="modelo__corpo"
         >
-          <div class="modelo__principal">
+          <div
+            class="modelo__principal"
+            :class="classeTomDoTipo(modelo.tipoEvento)"
+          >
             <ReguaMarcos
               :marcos="marcos"
               :rotulo="TEXTOS_MODELOS_CHECKLIST.regua"
@@ -420,6 +427,14 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
   align-items: start;
 }
 
+.modelo__principal {
+  --regua-no: var(--tom-tinta);
+}
+
+.modelo__sugerido {
+  white-space: normal;
+}
+
 .modelo__principal,
 .modelo__lateral,
 .modelo__aplicar {
@@ -495,7 +510,7 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .modelo__bloco {
@@ -524,7 +539,10 @@ function executarAcao(item: ItemModeloChecklistDto, chave: string) {
 
 .modelo__contagem dd {
   margin: 0;
-  color: var(--p-cor-texto-secundario);
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--p-cor-titulo);
 }
 
 .modelo__voltar {

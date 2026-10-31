@@ -66,7 +66,7 @@ const idTitulo = useId()
   gap: var(--p-ritmo-grupo);
   min-width: 0;
   padding-left: var(--p-ritmo-grupo);
-  border-left: 2px solid var(--p-cor-primaria);
+  border-left: 2px solid var(--p-cor-centelha);
 }
 
 .como-aplicar .como-aplicar__titulo,
@@ -100,7 +100,7 @@ const idTitulo = useId()
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1;
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-titulo);
 }
 
 .como-aplicar__nota {

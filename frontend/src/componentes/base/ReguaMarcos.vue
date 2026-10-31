@@ -119,7 +119,7 @@ function idTitulo(chave: string): string {
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums;
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .regua__complemento,
@@ -140,7 +140,7 @@ function idTitulo(chave: string): string {
   width: var(--p-espaco-3);
   height: var(--p-espaco-3);
   background: var(--p-cor-superficie);
-  border: 2px solid var(--p-cor-borda-campo);
+  border: 2px solid var(--regua-no, var(--p-cor-borda-campo));
   border-radius: var(--p-raio-total);
   transform: translateX(-50%);
 }

@@ -38,7 +38,9 @@ const texto = computed(() => props.rotulo ?? (ehTipoEvento(props.tipo) ? vocabul
   align-items: center;
   gap: 0.375rem;
   padding: 0.375rem var(--p-espaco-3);
+  font-family: var(--p-fonte-interface);
   font-size: var(--p-fonte-tamanho-apoio);
+  font-style: normal;
   font-weight: var(--p-fonte-peso-seminegrito);
   line-height: 1.2;
   color: var(--tom-tinta);

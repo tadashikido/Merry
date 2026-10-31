@@ -133,3 +133,21 @@ describe('AbasSecao segmentada', () => {
     expect(estilo).not.toContain('border-bottom')
   })
 })
+
+describe('Detalhe do modelo no DS v2', () => {
+  it('[UNITÁRIO] régua aceita o tom pela variável --regua-no e o detalhe usa a tinta do tipo', () => {
+    expect(lerEstilo('../../base/ReguaMarcos.vue')).toContain('border: 2px solid var(--regua-no, var(--p-cor-borda-campo))')
+    expect(lerEstilo('../../../views/modelosChecklist/ModeloChecklistView.vue')).toMatch(/\.modelo__principal\s*\{[^}]*--regua-no: var\(--tom-tinta\)/)
+  })
+
+  it('[UNITÁRIO] como aplicar com filete centelha e números meia-noite', () => {
+    const estilo = lerEstilo('../ComoAplicarModelo.vue')
+    expect(estilo).toContain('border-left: 2px solid var(--p-cor-centelha)')
+    expect(estilo).toMatch(/\.como-aplicar__numero\s*\{[^}]*color: var\(--p-cor-titulo\)/)
+  })
+
+  it('[COMPONENTE] etiqueta não herda fonte serif itálica do parágrafo', () => {
+    const estilo = lerEstilo('../../base/EtiquetaTipo.vue')
+    expect(estilo).toMatch(/\.etiqueta-tipo\s*\{[^}]*font-family: var\(--p-fonte-interface\);[^}]*font-style: normal;/)
+  })
+})
