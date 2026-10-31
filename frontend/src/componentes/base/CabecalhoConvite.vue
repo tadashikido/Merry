@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 import { TEXTOS_RSVP } from '@/textos/rsvp'
-import { vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { classeTomDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
 import { formatarDataCalendarioComDiaSemana } from '@/utilitarios/formatacao'
 import { celebracaoDoConvite, formatarHorarioConvite, locaisDoConvite, segundoNomeDoConvite } from '@/utilitarios/rsvp'
@@ -39,7 +39,7 @@ const locais = computed(() =>
 <template>
   <header
     class="cabecalho-convite"
-    :class="`cabecalho-convite--${variante}`"
+    :class="[`cabecalho-convite--${variante}`, classeTomDoTipo(tipo)]"
     data-teste="cabecalho-convite"
   >
     <svg
@@ -125,14 +125,16 @@ const locais = computed(() =>
   text-align: center;
   background: var(--p-cor-cartao-convite);
   border: 1px solid var(--p-cor-borda-convite);
-  border-radius: var(--p-raio-tag);
+  border-top: var(--p-dimensao-filete-tipo) solid var(--tom-viva);
+  border-radius: var(--p-raio-cartao-evento);
+  box-shadow: var(--p-sombra-cartao);
 }
 
 .cabecalho-convite__aneis {
   width: 2.75rem;
   height: 2.75rem;
   fill: none;
-  stroke: var(--p-cor-acento);
+  stroke: var(--tom-viva);
   stroke-width: 1.1;
 }
 
@@ -143,7 +145,7 @@ const locais = computed(() =>
   font-size: 1.1875rem;
   font-style: italic;
   line-height: 1.45;
-  color: var(--p-cor-texto-publico);
+  color: var(--tom-tinta);
 }
 
 .cabecalho-convite__quem {
@@ -159,7 +161,7 @@ const locais = computed(() =>
   font-size: 1.1875rem;
   font-style: italic;
   line-height: 1.45;
-  color: var(--p-cor-texto-publico);
+  color: var(--tom-tinta);
   overflow-wrap: anywhere;
 }
 
@@ -172,7 +174,7 @@ const locais = computed(() =>
   font-size: 3.25rem;
   font-weight: var(--p-fonte-peso-leve);
   line-height: 1;
-  color: var(--p-cor-texto);
+  color: var(--tom-profunda);
   text-align: center;
   overflow-wrap: anywhere;
 }
@@ -184,14 +186,14 @@ const locais = computed(() =>
   font-weight: var(--p-fonte-peso-regular);
   font-style: italic;
   line-height: 1;
-  color: var(--p-cor-acento-texto);
+  color: var(--tom-tinta);
 }
 
 .cabecalho-convite__data-numerica {
   margin-top: var(--p-espaco-2);
   font-size: var(--p-fonte-tamanho-corpo);
   letter-spacing: 0.3em;
-  color: var(--p-cor-texto);
+  color: var(--tom-data);
 }
 
 .cabecalho-convite__quando {
@@ -222,9 +224,9 @@ const locais = computed(() =>
 }
 
 .cabecalho-convite__local dt {
-  font-size: 0.6875rem;
-  font-weight: var(--p-fonte-peso-seminegrito);
-  letter-spacing: 0.14em;
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
   text-transform: uppercase;
   color: var(--p-cor-apoio-publico);
 }

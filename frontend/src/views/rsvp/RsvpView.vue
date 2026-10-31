@@ -19,6 +19,7 @@ import ListaRepetivel from '@/componentes/base/ListaRepetivel.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import SeloConfirmacao from '@/componentes/base/SeloConfirmacao.vue'
 import SeletorRestricaoAlimentar from '@/componentes/base/SeletorRestricaoAlimentar.vue'
+import TileTipo from '@/componentes/base/TileTipo.vue'
 import ParaODiaRsvp from '@/componentes/rsvp/ParaODiaRsvp.vue'
 import { TEXTOS_PREVIA_RSVP } from '@/textos/confirmacoes'
 import { useRsvpStore } from '@/stores/rsvp'
@@ -88,6 +89,8 @@ const prazo = computed(() => (dados.value ? formatarDiaMes(dados.value.dataLimit
 const statusBarra = computed(() =>
   faltam.value > 0 ? TEXTOS_RSVP.faltam(faltam.value) : TEXTOS_RSVP.contador(quantosVao.value, pessoas.value.length),
 )
+
+const linkIndisponivel = computed(() => !tokenValido.value || store.falha?.tipo === 'linkInativo')
 
 const estadoErro = computed(() => {
   if (!tokenValido.value || store.falha?.tipo === 'linkInativo') {
@@ -344,7 +347,8 @@ function alterarResposta() {
 
 <template>
   <LayoutPublico
-    variante="convite"
+    :variante="linkIndisponivel ? 'padrao' : 'convite'"
+    :vazio="linkIndisponivel"
     :amplo="conviteAmplo"
   >
     <EstadoCarregando
@@ -352,6 +356,27 @@ function alterarResposta() {
       variante="cartao"
       :linhas="3"
     />
+
+    <section
+      v-else-if="linkIndisponivel"
+      class="rsvp-indisponivel pilha pilha--grupo"
+      role="alert"
+      aria-labelledby="rsvp-indisponivel-titulo"
+      data-teste="estado-erro"
+    >
+      <TileTipo
+        tom="champanhe"
+        icone="link"
+        tamanho="grande"
+        data-teste="lacre-link-inativo"
+      />
+      <h1 id="rsvp-indisponivel-titulo">
+        {{ TEXTOS_RSVP.linkInativoTitulo }}
+      </h1>
+      <p class="rsvp-indisponivel__texto texto-destaque">
+        {{ TEXTOS_RSVP.linkInativoTexto }}
+      </p>
+    </section>
 
     <EstadoErro
       v-else-if="estadoErro"
@@ -402,6 +427,7 @@ function alterarResposta() {
           >
             <SeloConfirmacao
               ref="selo"
+              :tipo="dados.evento.tipo"
               :titulo="recemEnviado ? TEXTOS_RSVP.enviada : TEXTOS_RSVP.suaResposta"
               :animado="recemEnviado"
             >
@@ -432,7 +458,10 @@ function alterarResposta() {
                 <span
                   class="rsvp__resposta-resumo"
                   :class="{ 'rsvp__resposta-resumo--vai': pessoa.resposta === 'Confirmado' }"
-                >{{ pessoa.resposta === 'Confirmado' ? TEXTOS_RSVP.vai : TEXTOS_RSVP.naoVai }}</span>
+                ><span
+                  class="rsvp__ponto"
+                  aria-hidden="true"
+                />{{ pessoa.resposta === 'Confirmado' ? TEXTOS_RSVP.vai : TEXTOS_RSVP.naoVai }}</span>
               </li>
               <li
                 v-for="acompanhante in dados.acompanhantes"
@@ -449,7 +478,10 @@ function alterarResposta() {
                     data-teste="rsvp-resumo-restricao"
                   />
                 </span>
-                <span class="rsvp__resposta-resumo rsvp__resposta-resumo--vai">{{ TEXTOS_RSVP.vai }}</span>
+                <span class="rsvp__resposta-resumo rsvp__resposta-resumo--vai"><span
+                  class="rsvp__ponto"
+                  aria-hidden="true"
+                />{{ TEXTOS_RSVP.vai }}</span>
               </li>
             </ul>
 
@@ -718,7 +750,7 @@ function alterarResposta() {
   font-size: var(--p-fonte-tamanho-pagina-celular);
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
   overflow-wrap: anywhere;
 }
 
@@ -789,13 +821,38 @@ function alterarResposta() {
 }
 
 .rsvp__resposta-resumo {
+  --situacao-cor: var(--p-cor-texto-apoio);
+
+  display: inline-flex;
   flex-shrink: 0;
+  align-items: center;
+  gap: var(--p-ritmo-campo);
   color: var(--p-cor-texto-apoio);
 }
 
 .rsvp__resposta-resumo--vai {
+  --situacao-cor: var(--p-cor-fase-realizado-ponto);
+
   font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-fase-realizado-texto);
+}
+
+.rsvp__ponto {
+  flex: none;
+  width: var(--p-dimensao-ponto-fase);
+  height: var(--p-dimensao-ponto-fase);
+  background: var(--situacao-cor);
+  border-radius: var(--p-raio-total);
+}
+
+.rsvp-indisponivel {
+  align-items: center;
+  text-align: center;
+}
+
+.rsvp-indisponivel .rsvp-indisponivel__texto {
+  max-width: 28rem;
+  margin: 0;
 }
 
 .rsvp__formulario .rsvp__barra {

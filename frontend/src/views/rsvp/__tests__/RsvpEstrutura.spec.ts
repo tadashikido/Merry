@@ -9,6 +9,7 @@ import { montarView, prepararAplicacao, respostaJson, respostaProblema, simularF
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import ListaRepetivel from '@/componentes/base/ListaRepetivel.vue'
 import SeloConfirmacao from '@/componentes/base/SeloConfirmacao.vue'
+import { tomDoTipo } from '@/textos/tiposEvento'
 import LayoutPublico from '@/layouts/LayoutPublico.vue'
 import { TEXTOS_LISTA_ACOMPANHANTES, TEXTOS_RSVP } from '@/textos/rsvp'
 import type { RsvpPublicoDto } from '@/tipos/rsvp'
@@ -129,7 +130,7 @@ describe('RsvpView — estrutura da fundação', () => {
     expect(wrapper!.find('.layout-publico--amplo').exists()).toBe(false)
   })
 
-  it('[COMPONENTE] resumo usa o lacre de confirmação', async () => {
+  it('[COMPONENTE] resumo usa o tile de confirmação no tom do evento e respostas com ponto', async () => {
     rotearFetch(
       fetchSimulado,
       quando('POST', ROTA_CONSULTA, () =>
@@ -144,7 +145,13 @@ describe('RsvpView — estrutura da fundação', () => {
 
     await abrir()
 
-    expect(wrapper!.find('[data-teste="rsvp-resumo"] .lacre-icone .ie-concluir').exists()).toBe(true)
+    const tile = wrapper!.get('[data-teste="rsvp-resumo"] [data-teste="tile-tipo"]')
+    expect(tile.attributes('data-tom')).toBe(tomDoTipo('Casamento'))
+    expect(tile.find('.ie-concluir').exists()).toBe(true)
+    expect(wrapper!.find('[data-teste="rsvp-resumo"] .lacre-icone').exists()).toBe(false)
+    for (const resposta of wrapper!.findAll('.rsvp__resposta-resumo--vai')) {
+      expect(resposta.get('.rsvp__ponto').attributes('aria-hidden')).toBe('true')
+    }
     expect(wrapper!.get('.selo-confirmacao__titulo').text()).toBe(TEXTOS_RSVP.suaResposta)
   })
 })
@@ -176,12 +183,17 @@ describe('ListaRepetivel — cabeçalho do bloco', () => {
   })
 })
 
-describe('SeloConfirmacao — lacre', () => {
-  it('[COMPONENTE] usa o LacreIcone decorativo e mantém o título focável', () => {
-    wrapper = mount(SeloConfirmacao, { props: { titulo: 'Resposta enviada' }, global })
+describe('SeloConfirmacao — tile do DS', () => {
+  it('[COMPONENTE] usa TileTipo decorativo no tom do tipo (neutro sem tipo) e mantém o título focável', () => {
+    wrapper = mount(SeloConfirmacao, { props: { titulo: 'Resposta enviada', tipo: 'QuinzeAnos' }, global })
 
-    expect(wrapper.get('.lacre-icone').attributes('aria-hidden')).toBe('true')
-    expect(wrapper.get('.lacre-icone .ie').classes()).toContain('ie-concluir')
+    expect(wrapper.get('[data-teste="tile-tipo"]').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.get('[data-teste="tile-tipo"]').attributes('data-tom')).toBe(tomDoTipo('QuinzeAnos'))
+    expect(wrapper.get('[data-teste="tile-tipo"] .ie').classes()).toContain('ie-concluir')
+    expect(wrapper.find('.lacre-icone').exists()).toBe(false)
+    wrapper.unmount()
+    wrapper = mount(SeloConfirmacao, { props: { titulo: 'Resposta enviada' }, global })
+    expect(wrapper.get('[data-teste="tile-tipo"]').attributes('data-tom')).toBe('neutro')
     expect(wrapper.get('h2').attributes('tabindex')).toBe('-1')
   })
 })
@@ -225,5 +237,30 @@ describe('Estilos — ritmo e sem margem negativa', () => {
     expect(arquivos.rsvp).toMatch(/\.rsvp__nome-convite \{[^}]*--p-fonte-peso-leve/)
     expect(arquivos.selo).toMatch(/--p-fonte-peso-leve/)
     expect(arquivos.rsvp).not.toMatch(/border-radius: \d+px/)
+  })
+})
+
+describe('RSVP no DS v2', () => {
+  const ler = (relativo: string) => fonte(relativo).split('<style scoped>')[1] ?? ''
+
+  it('[UNITÁRIO] cartão do convite no tom do tipo e rótulos de local no padrão DS', () => {
+    const cabecalho = fonte('../../../componentes/base/CabecalhoConvite.vue')
+    const estilo = ler('../../../componentes/base/CabecalhoConvite.vue')
+
+    expect(cabecalho).toContain('classeTomDoTipo(tipo)')
+    expect(estilo).toContain('border-top: var(--p-dimensao-filete-tipo) solid var(--tom-viva)')
+    expect(estilo).toMatch(/__anfitriao \{[^}]*color: var\(--tom-profunda\)/)
+    expect(estilo).toMatch(/__data-numerica \{[^}]*color: var\(--tom-data\)/)
+    expect(estilo).toMatch(/__local dt \{[^}]*font-size: var\(--p-fonte-tamanho-rotulo\)/)
+    expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}\b|@media/)
+  })
+
+  it('[UNITÁRIO] link indisponível usa a folha vazia do LayoutPublico e o selo não usa mais o LacreIcone', () => {
+    const view = fonte('../RsvpView.vue')
+
+    expect(view).toContain(':vazio="linkIndisponivel"')
+    expect(view).toContain(':variante="linkIndisponivel ? \'padrao\' : \'convite\'"')
+    expect(view).toMatch(/<TileTipo\s+tom="champanhe"\s+icone="link"/)
+    expect(fonte('../../../componentes/base/SeloConfirmacao.vue')).not.toContain('LacreIcone')
   })
 })

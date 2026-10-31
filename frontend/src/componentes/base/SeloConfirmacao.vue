@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import LacreIcone from './LacreIcone.vue'
+import type { TipoEvento } from '@/tipos/eventos'
 
-withDefaults(defineProps<{ titulo: string; animado?: boolean }>(), { animado: false })
+import TileTipo from './TileTipo.vue'
+
+withDefaults(defineProps<{ titulo: string; animado?: boolean; tipo?: TipoEvento | null }>(), { animado: false, tipo: null })
 
 const tituloRef = ref<HTMLHeadingElement | null>(null)
 
@@ -20,9 +22,11 @@ defineExpose({ focar })
     :class="{ 'selo-confirmacao--animado': animado }"
     data-teste="selo-confirmacao"
   >
-    <LacreIcone
+    <TileTipo
       class="selo-confirmacao__marca"
-      icone="ie-concluir"
+      :tipo="tipo"
+      icone="concluir"
+      tamanho="grande"
     />
     <h2
       ref="tituloRef"
@@ -55,6 +59,7 @@ defineExpose({ focar })
   font-size: 2.375rem;
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-titulo);
 }
 
 .selo-confirmacao__titulo:focus {
