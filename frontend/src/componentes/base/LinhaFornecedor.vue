@@ -39,7 +39,7 @@ withDefaults(
     <div class="linha-fornecedor__textos">
       <span
         v-if="categoria"
-        class="linha-fornecedor__categoria"
+        class="linha-fornecedor__categoria texto-rotulo"
       >{{ categoria }}</span>
       <span class="linha-fornecedor__titulo">
         <RouterLink
@@ -51,7 +51,7 @@ withDefaults(
           v-if="arquivado"
           :texto="rotuloArquivado"
           variante="neutro"
-          icone="arquivar"
+          ponto
         />
       </span>
       <span
@@ -102,9 +102,8 @@ withDefaults(
   min-width: 0;
 }
 
-.linha-fornecedor__categoria {
-  font-size: var(--p-fonte-tamanho-rotulo);
-  color: var(--p-cor-texto-apoio);
+.linha-fornecedor .linha-fornecedor__categoria {
+  margin: 0;
 }
 
 .linha-fornecedor__titulo {
@@ -117,14 +116,14 @@ withDefaults(
 .linha-fornecedor__nome {
   font-size: var(--p-fonte-tamanho-titulo);
   font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
   text-decoration: none;
   overflow-wrap: anywhere;
 }
 
 .linha-fornecedor__nome:hover {
-  color: var(--p-cor-primaria);
   text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .linha-fornecedor__responsavel {

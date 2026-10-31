@@ -76,6 +76,10 @@ function apoio(item: CategoriaSemFornecedor): string {
           class="cobertura__completa"
           data-teste="cobertura-todas"
         >
+          <span
+            class="cobertura__ponto"
+            aria-hidden="true"
+          />
           {{ TEXTOS_COBERTURA_FORNECEDORES.todas }}
         </p>
         <template v-else>
@@ -181,7 +185,7 @@ function apoio(item: CategoriaSemFornecedor): string {
 
 .cobertura__frase {
   padding-left: var(--p-ritmo-grupo);
-  border-left: 2px solid var(--p-cor-primaria);
+  border-left: 2px solid var(--p-cor-borda);
   font-family: var(--p-fonte-serif);
   font-size: var(--p-fonte-tamanho-corpo);
   font-style: italic;
@@ -202,7 +206,7 @@ function apoio(item: CategoriaSemFornecedor): string {
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1.1;
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-titulo);
 }
 
 .cobertura__legenda {
@@ -220,10 +224,21 @@ function apoio(item: CategoriaSemFornecedor): string {
 }
 
 .cobertura__completa {
+  display: flex;
+  align-items: baseline;
+  gap: var(--p-espaco-2);
   font-family: var(--p-fonte-serif);
   font-size: var(--p-fonte-tamanho-corpo);
   font-style: italic;
-  color: var(--p-cor-texto);
+  color: var(--p-cor-fase-realizado-texto);
+}
+
+.cobertura__ponto {
+  flex: none;
+  width: var(--p-espaco-2);
+  height: var(--p-espaco-2);
+  background: var(--p-cor-fase-realizado-ponto);
+  border-radius: var(--p-raio-total);
 }
 
 .cobertura__lista,
@@ -248,13 +263,16 @@ function apoio(item: CategoriaSemFornecedor): string {
   padding: 0;
   font: inherit;
   font-size: var(--p-fonte-tamanho-controle);
-  color: var(--p-cor-primaria-escura);
+  font-weight: var(--p-fonte-peso-seminegrito);
+  color: var(--p-cor-titulo);
   cursor: pointer;
   background: none;
   border: 0;
 }
 
 .cobertura__item {
+  --situacao-cor: var(--p-cor-fase-reta-final-ponto);
+
   display: grid;
   grid-template-columns: var(--p-espaco-3) minmax(0, 1fr);
   gap: var(--p-espaco-3);
@@ -267,7 +285,7 @@ function apoio(item: CategoriaSemFornecedor): string {
   box-sizing: border-box;
   width: var(--p-espaco-3);
   height: var(--p-espaco-3);
-  border: 1.5px dashed var(--p-cor-texto-apoio);
+  border: 1.5px dashed var(--situacao-cor);
   border-radius: var(--p-raio-total);
 }
 
@@ -300,7 +318,7 @@ function apoio(item: CategoriaSemFornecedor): string {
   display: grid;
   gap: var(--p-espaco-2);
   padding-left: var(--p-ritmo-grupo);
-  border-left: 2px solid var(--p-cor-primaria);
+  border-left: 2px solid var(--p-cor-borda);
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-texto-secundario);
 }

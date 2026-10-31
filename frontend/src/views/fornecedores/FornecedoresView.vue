@@ -399,7 +399,12 @@ function executarAcao(fornecedor: FornecedorResumoDto, chave: string) {
 .fornecedores__busca :deep(.p-inputtext),
 .fornecedores__categoria :deep(.p-select) {
   width: 100%;
-  min-height: var(--p-dimensao-alvo-toque);
+  min-height: var(--p-dimensao-altura-botao);
+}
+
+.fornecedores__busca :deep(.p-inputtext),
+.fornecedores__categoria :deep(.p-select) {
+  border-radius: var(--p-raio-campo);
 }
 
 .fornecedores__categoria {
