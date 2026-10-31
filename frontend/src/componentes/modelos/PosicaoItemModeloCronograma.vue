@@ -3,6 +3,7 @@ import { computed, useId } from 'vue'
 
 import { ROTULOS_DIA_CRONOGRAMA } from '@/textos/cronograma'
 import { momentoDoModelo } from '@/textos/modelos'
+import { classeTomDoTipo } from '@/textos/tiposEvento'
 import { TEXTOS_ITEM_MODELO_CRONOGRAMA, TEXTOS_MODELOS_CRONOGRAMA } from '@/textos/modelosCronograma'
 import type { TipoEvento } from '@/tipos/eventos'
 import type { ItemModeloCronogramaDto } from '@/tipos/modelosCronograma'
@@ -104,6 +105,7 @@ const comAtividadePropria = computed(() => props.atividade.trim() !== '')
 <template>
   <section
     class="posicao-cronograma"
+    :class="classeTomDoTipo(tipo)"
     :aria-labelledby="idTitulo"
     data-teste="posicao-item-modelo-cronograma"
   >
@@ -216,13 +218,13 @@ const comAtividadePropria = computed(() => props.atividade.trim() !== '')
 .posicao-cronograma__previa {
   margin: 0;
   padding-left: var(--p-ritmo-campo);
-  border-left: 2px solid var(--p-cor-primaria);
+  border-left: 2px solid var(--tom-viva);
   font-family: var(--p-fonte-serif);
   font-size: var(--p-fonte-tamanho-secao);
   font-style: italic;
   font-variant-numeric: lining-nums;
   line-height: var(--p-fonte-entrelinha-leitura);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .posicao-cronograma__previa--vazia {
@@ -271,9 +273,9 @@ const comAtividadePropria = computed(() => props.atividade.trim() !== '')
 }
 
 .posicao-cronograma__dia--atual .posicao-cronograma__no {
-  border-color: var(--p-cor-primaria);
-  background: var(--p-cor-primaria);
-  box-shadow: 0 0 0 3px var(--p-cor-primaria-suave);
+  border-color: var(--tom-tinta);
+  background: var(--tom-tinta);
+  box-shadow: 0 0 0 3px var(--tom-fundo);
 }
 
 .posicao-cronograma__cabeca {
@@ -288,12 +290,12 @@ const comAtividadePropria = computed(() => props.atividade.trim() !== '')
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-interface);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .posicao-cronograma__dia--atual .posicao-cronograma__rotulo {
   font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-primaria);
+  color: var(--tom-tinta);
 }
 
 .posicao-cronograma__contagem {
@@ -320,7 +322,7 @@ const comAtividadePropria = computed(() => props.atividade.trim() !== '')
 
 .posicao-cronograma__item--este {
   padding-inline-start: var(--p-ritmo-campo);
-  border-inline-start: 2px solid var(--p-cor-primaria);
+  border-inline-start: 2px solid var(--tom-tinta);
 }
 
 .posicao-cronograma__item-atividade {

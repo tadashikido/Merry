@@ -382,16 +382,16 @@ function excluir() {
               />
 
               <form
-                class="pilha pilha--bloco"
+                class="formulario-cartao"
                 novalidate
                 data-teste="formulario-item-modelo-cronograma"
                 @submit.prevent="salvar(false)"
               >
                 <fieldset
-                  class="formulario-item-cronograma__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   data-teste="grupo-atividade"
                 >
-                  <legend class="formulario-item-cronograma__legenda texto-rotulo">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_ITEM_MODELO_CRONOGRAMA.grupoAtividade }}
                   </legend>
 
@@ -488,10 +488,10 @@ function excluir() {
                 </fieldset>
 
                 <fieldset
-                  class="formulario-item-cronograma__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   data-teste="grupo-horario-local"
                 >
-                  <legend class="formulario-item-cronograma__legenda texto-rotulo">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_ITEM_MODELO_CRONOGRAMA.grupoHorarioLocal }}
                   </legend>
 
@@ -608,7 +608,7 @@ function excluir() {
                   </CampoFormulario>
                 </fieldset>
 
-                <div class="formulario-item-cronograma__rodape">
+                <div class="formulario-acoes formulario-item-cronograma__rodape">
                   <div class="formulario-item-cronograma__acoes">
                     <Button
                       type="submit"
@@ -655,7 +655,7 @@ function excluir() {
 
           <div
             v-if="mostrarLateral && modeloCarregado"
-            class="formulario-item-tela__lateral com-lateral__lateral com-lateral__lateral--filete"
+            class="formulario-item-tela__lateral com-lateral__lateral"
             data-teste="lateral-formulario-item"
           >
             <PosicaoItemModeloCronograma
@@ -684,17 +684,11 @@ function excluir() {
   min-width: 0;
 }
 
-.formulario-item-cronograma__grupo,
 .formulario-item-cronograma__quando {
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
-}
-
-.formulario-item-cronograma__legenda {
-  padding: 0;
-  margin-bottom: var(--p-ritmo-grupo);
 }
 
 .formulario-item-cronograma__legenda-campo {
@@ -747,10 +741,6 @@ function excluir() {
   display: flex;
   flex-direction: column;
   gap: var(--p-ritmo-campo);
-}
-
-.formulario-item-cronograma__rodape :deep(.p-button) {
-  min-height: var(--p-dimensao-alvo-toque);
 }
 
 @container formulario-item-cronograma (min-width: 40rem) {

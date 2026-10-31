@@ -905,12 +905,16 @@ describe('Formulários de modelo de cronograma', () => {
     const pagina = wrapper.get('.pagina-formulario')
     expect(pagina.get('h1').text()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.novo)
     expect(pagina.get('.cabecalho-pagina__descricao').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00', 'a cerimônia'))
-    expect(wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    const formulario = wrapper.get('[data-teste="formulario-item-modelo-cronograma"]')
+    expect(formulario.classes()).toContain('formulario-cartao')
+    expect(formulario.find('.formulario-secao + .formulario-acoes').exists()).toBe(true)
+    expect(wrapper.get('[data-teste="lateral-formulario-item"]').classes()).not.toContain('com-lateral__lateral--filete')
 
     const grupoAtividade = pagina.get('[data-teste="grupo-atividade"]')
     expect(grupoAtividade.element.tagName).toBe('FIELDSET')
     expect(grupoAtividade.get('legend').text()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.grupoAtividade)
-    expect(grupoAtividade.get('legend').classes()).toContain('texto-rotulo')
+    expect(grupoAtividade.classes()).toContain('formulario-secao')
+    expect(grupoAtividade.get('legend').classes()).toContain('formulario-secao__titulo')
     for (const campo of ['campo-atividade', 'campo-responsavel', 'campo-categoria', 'campo-instrucoes']) {
       expect(grupoAtividade.find(`[data-teste="${campo}"]`).exists()).toBe(true)
     }
@@ -919,7 +923,8 @@ describe('Formulários de modelo de cronograma', () => {
     const grupoHorario = pagina.get('[data-teste="grupo-horario-local"]')
     expect(grupoHorario.element.tagName).toBe('FIELDSET')
     expect(grupoHorario.get('legend').text()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.grupoHorarioLocal)
-    expect(grupoHorario.get('legend').classes()).toContain('texto-rotulo')
+    expect(grupoHorario.classes()).toContain('formulario-secao')
+    expect(grupoHorario.get('legend').classes()).toContain('formulario-secao__titulo')
     const subgrupoQuando = grupoHorario.get('[data-teste="campo-quando"]')
     expect(subgrupoQuando.element.tagName).toBe('FIELDSET')
     expect(subgrupoQuando.get('legend').text()).toBe(TEXTOS_ITEM_MODELO_CRONOGRAMA.campoQuando)

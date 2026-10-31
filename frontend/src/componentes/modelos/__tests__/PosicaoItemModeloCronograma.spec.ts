@@ -29,11 +29,11 @@ function atual(inicio: string, minutos: number, extra: Partial<ItemNaPosicao> = 
 
 describe('PosicaoItemModeloCronograma', () => {
   it.each([
-    ['Casamento', '30 min antes da cerimônia', '15:00, 1 h antes da cerimônia'],
-    ['QuinzeAnos', '30 min antes da festa', '15:00, 1 h antes da festa'],
-    ['Aniversario', '30 min antes da festa', '15:00, 1 h antes da festa'],
-    ['Comemoracao', '30 min antes do evento', '15:00, 1 h antes do evento'],
-  ] as const)('[COMPONENTE] %s traduz a prévia e os vizinhos para o momento principal', (tipo, previa, vizinho) => {
+    ['Casamento', '30 min antes da cerimônia', '15:00, 1 h antes da cerimônia', 'rose'],
+    ['QuinzeAnos', '30 min antes da festa', '15:00, 1 h antes da festa', 'orquidea'],
+    ['Aniversario', '30 min antes da festa', '15:00, 1 h antes da festa', 'tangerina'],
+    ['Comemoracao', '30 min antes do evento', '15:00, 1 h antes do evento', 'champanhe'],
+  ] as const)('[COMPONENTE] %s traduz a prévia e os vizinhos para o momento principal, no tom do tipo', (tipo, previa, vizinho, tom) => {
     const wrapper = mount(PosicaoItemModeloCronograma, { props: { itens: ITENS, atual: atual('15:30', -30), tipo, atividade: 'Chegada' } })
 
     expect(wrapper.get('[data-teste="previa-horario-item"]').text()).toBe(previa)
@@ -41,6 +41,7 @@ describe('PosicaoItemModeloCronograma', () => {
     expect(dia.classes()).toContain('posicao-cronograma__dia--atual')
     expect(dia.text()).toContain(TEXTOS_ITEM_MODELO_CRONOGRAMA.esteItemEntraAqui)
     expect(dia.text()).toContain(vizinho)
+    expect(wrapper.get('[data-teste="posicao-item-modelo-cronograma"]').classes()).toContain(`tom-tipo--${tom}`)
   })
 
   it.each([
@@ -51,6 +52,16 @@ describe('PosicaoItemModeloCronograma', () => {
 
     expect(wrapper.get('[data-teste="previa-horario-item"]').text()).toBe('Hora do evento')
     expect(wrapper.text()).not.toMatch(/casamento|comemoração|cerimônia/i)
+    expect(wrapper.get('[data-teste="posicao-item-modelo-cronograma"]').classes()).toContain('tom-tipo--neutro')
+  })
+
+  it('[UNITÁRIO] destaque do dia atual, prévia e este item no tom do tipo, sem primária', () => {
+    const fonte = readFileSync(resolve(__dirname, '../PosicaoItemModeloCronograma.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(estilo).toMatch(/\.posicao-cronograma__dia--atual \.posicao-cronograma__no\s*\{[^}]*background: var\(--tom-tinta\);[^}]*box-shadow: 0 0 0 3px var\(--tom-fundo\)/)
+    expect(estilo).toMatch(/\.posicao-cronograma__previa\s*\{[^}]*border-left: 2px solid var\(--tom-viva\)/)
+    expect(estilo).toMatch(/\.posicao-cronograma__item--este\s*\{[^}]*border-inline-start: 2px solid var\(--tom-tinta\)/)
+    expect(estilo).not.toContain('--p-cor-primaria')
   })
 
   it('[COMPONENTE] lista até 4 vizinhos por horário com o item na posição real e o restante do dia', () => {
