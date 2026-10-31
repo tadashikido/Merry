@@ -4,7 +4,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 
 import LayoutPainelUsuario from '@/layouts/LayoutPainelUsuario.vue'
-import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import CabecalhoPagina from '@/componentes/base/CabecalhoPagina.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
@@ -14,6 +14,7 @@ import ComoAplicarModelo from '@/componentes/modelos/ComoAplicarModelo.vue'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
 import { ROTULOS_DIA_CRONOGRAMA } from '@/textos/cronograma'
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
+import { classeTomDoTipo } from '@/textos/tiposEvento'
 import {
   TEXTOS_MODELOS_POR_TIPO,
   abrirEventoDoModelo,
@@ -178,11 +179,14 @@ function editarModelo() {
             class="modelo-cronograma__detalhes texto-legenda"
             data-teste="resumo-modelo"
           >
-            <BadgeStatus
+            <EtiquetaTipo
               v-if="modelo.sugerido"
-              :texto="rotuloSugerido"
-              variante="informacao"
-              icone="informacao"
+              class="modelo-cronograma__sugerido"
+              :tipo="modelo.tipoEvento"
+              :rotulo="rotuloSugerido"
+              com-icone
+              icone="centelha"
+              data-teste="selo-sugerido"
             />
             <span
               v-else
@@ -264,7 +268,10 @@ function editarModelo() {
           v-else-if="modelo"
           class="modelo-cronograma__corpo"
         >
-          <div class="modelo-cronograma__principal pilha pilha--bloco">
+          <div
+            class="modelo-cronograma__principal pilha pilha--bloco"
+            :class="classeTomDoTipo(modelo.tipoEvento)"
+          >
             <section
               v-for="grupo in grupos"
               :key="grupo.dia"
@@ -540,6 +547,10 @@ function editarModelo() {
   align-items: start;
 }
 
+.modelo-cronograma__sugerido {
+  white-space: normal;
+}
+
 .modelo-cronograma__principal,
 .modelo-cronograma__lateral,
 .modelo-cronograma__aplicar {
@@ -598,7 +609,7 @@ function editarModelo() {
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .modelo-cronograma__alcance {
@@ -660,6 +671,13 @@ function editarModelo() {
   overflow-wrap: anywhere;
 }
 
+.modelo-cronograma__dado:not(.modelo-cronograma__dado--empilhado) dd {
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--p-cor-titulo);
+}
+
 .modelo-cronograma__voltar {
   align-self: flex-start;
   font-size: var(--p-fonte-tamanho-controle);
@@ -680,7 +698,7 @@ function editarModelo() {
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
   letter-spacing: var(--p-fonte-espacamento-letras-display);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .modelo-cronograma__contagem {

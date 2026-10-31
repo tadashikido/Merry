@@ -501,6 +501,10 @@ describe('ModeloCronogramaView', () => {
       expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(passo)
       expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[2]!.text()).toContain(`horário ${contracao} marcado`)
       expect(wrapper.get('main').text()).not.toMatch(proibido)
+      const tom = { Casamento: 'rose', QuinzeAnos: 'orquidea', Aniversario: 'tangerina', Comemoracao: 'champanhe' }[tipo]
+      expect(wrapper.get('[data-teste="selo-sugerido"]').attributes('data-tom')).toBe(tom)
+      expect(wrapper.get('.modelo-cronograma__principal').classes()).toContain(`tom-tipo--${tom}`)
+      expect(linhas[1]!.classes()).toContain('linha-cronograma--cerimonia')
     },
   )
 
@@ -518,6 +522,7 @@ describe('ModeloCronogramaView', () => {
     expect(wrapper.findAll('[data-teste="linha-cronograma"]')[0]!.text()).toContain('2 h antes do evento')
     expect(wrapper.findAll('[data-teste="linha-cronograma"]')[0]!.text()).toContain('Local principal')
     expect(wrapper.get('[data-teste="resumo-cerimonia"] h3').text()).toBe('Em relação ao evento')
+    expect(wrapper.get('.modelo-cronograma__principal').classes()).toContain('tom-tipo--neutro')
     expect(wrapper.findAll('[data-teste="passo-aplicar-modelo"]')[0]!.text()).toContain(passo)
     expect(wrapper.get('main').text()).not.toMatch(/casamento|cerimônia|comemoração/i)
   })

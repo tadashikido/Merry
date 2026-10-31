@@ -177,3 +177,11 @@ describe('OrientacaoFormularioModelo no DS v2', () => {
     expect(estilo).not.toContain('--p-cor-primaria')
   })
 })
+
+describe('Detalhe do modelo de cronograma no DS v2', () => {
+  it('[UNITÁRIO] números do resumo em Fraunces meia-noite, frases empilhadas na fonte de interface', () => {
+    const estilo = lerEstilo('../../../views/modelosCronograma/ModeloCronogramaView.vue')
+    expect(estilo).toMatch(/\.modelo-cronograma__dado:not\(\.modelo-cronograma__dado--empilhado\) dd\s*\{[^}]*font-family: var\(--p-fonte-display\);[^}]*color: var\(--p-cor-titulo\)/)
+    expect(estilo).toMatch(/\.modelo-cronograma__total\s*\{[^}]*color: var\(--p-cor-titulo\)/)
+  })
+})
