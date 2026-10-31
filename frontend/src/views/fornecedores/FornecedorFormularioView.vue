@@ -12,7 +12,7 @@ import CampoFormulario from '@/componentes/base/CampoFormulario.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
-import OrientacaoAcesso from '@/componentes/base/OrientacaoAcesso.vue'
+import LateralOrientacao from '@/componentes/base/LateralOrientacao.vue'
 import AtuacaoFornecedor from '@/componentes/fornecedores/AtuacaoFornecedor.vue'
 import { useAlteracoesNaoSalvas } from '@/composables/useAlteracoesNaoSalvas'
 import { useFormulario } from '@/composables/useFormulario'
@@ -278,20 +278,20 @@ function cancelar() {
               />
 
               <form
-                class="pilha pilha--bloco"
+                class="formulario-cartao"
                 novalidate
                 data-teste="formulario-fornecedor"
                 @submit.prevent="enviar"
               >
                 <fieldset
-                  class="formulario-fornecedor__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   data-teste="grupo-empresa"
                 >
-                  <legend class="formulario-fornecedor__legenda texto-rotulo">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_FORNECEDORES.grupoEmpresa }}
                   </legend>
 
-                  <div class="formulario-fornecedor__colunas">
+                  <div class="formulario-colunas">
                     <CampoFormulario
                       v-slot="{ id: idEntrada, invalido, descritoPor }"
                       :rotulo="TEXTOS_FORNECEDORES.campoCategoria"
@@ -346,7 +346,7 @@ function cancelar() {
                     </CampoFormulario>
                   </div>
 
-                  <div class="formulario-fornecedor__colunas">
+                  <div class="formulario-colunas">
                     <CampoFormulario
                       v-slot="{ id: idEntrada, invalido, descritoPor }"
                       :rotulo="TEXTOS_FORNECEDORES.campoSite"
@@ -397,14 +397,14 @@ function cancelar() {
                 </fieldset>
 
                 <fieldset
-                  class="formulario-fornecedor__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   data-teste="grupo-contato"
                 >
-                  <legend class="formulario-fornecedor__legenda texto-rotulo">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_FORNECEDORES.grupoContato }}
                   </legend>
 
-                  <div class="formulario-fornecedor__colunas">
+                  <div class="formulario-colunas">
                     <CampoFormulario
                       v-slot="{ id: idEntrada, invalido, descritoPor }"
                       :rotulo="TEXTOS_FORNECEDORES.campoResponsavel"
@@ -452,35 +452,37 @@ function cancelar() {
                     </CampoFormulario>
                   </div>
 
-                  <CampoFormulario
-                    v-slot="{ id: idEntrada, invalido, descritoPor }"
-                    :rotulo="TEXTOS_FORNECEDORES.campoEmail"
-                    :id-campo="idCampo('email')"
-                    :erro="formulario.erros.email"
-                  >
-                    <InputText
-                      :id="idEntrada"
-                      v-model="formulario.valores.email"
-                      type="email"
-                      inputmode="email"
-                      autocomplete="off"
-                      :maxlength="LIMITES_FORNECEDOR.emailMaximo"
-                      :invalid="invalido"
-                      :aria-invalid="invalido"
-                      :aria-describedby="descritoPor"
-                      :readonly="enviando"
-                      data-teste="campo-email"
-                      @update:model-value="formulario.revalidarAoDigitar('email')"
-                      @blur="formulario.validarAoSair('email')"
-                    />
-                  </CampoFormulario>
+                  <div class="formulario-colunas">
+                    <CampoFormulario
+                      v-slot="{ id: idEntrada, invalido, descritoPor }"
+                      :rotulo="TEXTOS_FORNECEDORES.campoEmail"
+                      :id-campo="idCampo('email')"
+                      :erro="formulario.erros.email"
+                    >
+                      <InputText
+                        :id="idEntrada"
+                        v-model="formulario.valores.email"
+                        type="email"
+                        inputmode="email"
+                        autocomplete="off"
+                        :maxlength="LIMITES_FORNECEDOR.emailMaximo"
+                        :invalid="invalido"
+                        :aria-invalid="invalido"
+                        :aria-describedby="descritoPor"
+                        :readonly="enviando"
+                        data-teste="campo-email"
+                        @update:model-value="formulario.revalidarAoDigitar('email')"
+                        @blur="formulario.validarAoSair('email')"
+                      />
+                    </CampoFormulario>
+                  </div>
                 </fieldset>
 
                 <fieldset
-                  class="formulario-fornecedor__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   data-teste="grupo-interno"
                 >
-                  <legend class="formulario-fornecedor__legenda texto-rotulo">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_FORNECEDORES.grupoInterno }}
                   </legend>
 
@@ -508,7 +510,7 @@ function cancelar() {
                   </CampoFormulario>
                 </fieldset>
 
-                <div class="formulario-fornecedor__acoes">
+                <div class="formulario-acoes">
                   <Button
                     type="submit"
                     :label="edicao ? TEXTOS_FORNECEDORES.salvarEdicao : TEXTOS_FORNECEDORES.salvarNovo"
@@ -532,7 +534,7 @@ function cancelar() {
 
           <div
             v-if="comLateral"
-            class="formulario-fornecedor-tela__lateral com-lateral__lateral com-lateral__lateral--filete"
+            class="formulario-fornecedor-tela__lateral com-lateral__lateral"
             data-teste="lateral-fornecedor"
           >
             <AtuacaoFornecedor
@@ -540,8 +542,9 @@ function cancelar() {
               :resumo="atuacao"
             />
 
-            <OrientacaoAcesso
+            <LateralOrientacao
               :id-titulo="idOrientacao"
+              :rotulo="TEXTOS_FORNECEDORES.titulo"
               :titulo="TEXTOS_FORMULARIO_FORNECEDOR.orientacaoTitulo"
               :itens="orientacao"
               data-teste="orientacao-fornecedor"
@@ -555,7 +558,6 @@ function cancelar() {
 
 <style scoped>
 .formulario-fornecedor {
-  container: formulario-fornecedor / inline-size;
   min-width: 0;
 }
 
@@ -568,44 +570,7 @@ function cancelar() {
   display: none;
 }
 
-.formulario-fornecedor__grupo {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.formulario-fornecedor__legenda {
-  padding: 0;
-  margin-bottom: var(--p-ritmo-grupo);
-}
-
-.formulario-fornecedor__colunas {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-ritmo-grupo);
-}
-
-.formulario-fornecedor__acoes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-ritmo-campo);
-}
-
-.formulario-fornecedor__acoes :deep(.p-button) {
+.formulario-acoes :deep(.p-button) {
   min-height: var(--p-dimensao-alvo-toque);
-}
-
-@container formulario-fornecedor (min-width: 40rem) {
-  .formulario-fornecedor__colunas {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-
-  .formulario-fornecedor__acoes {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: var(--p-ritmo-grupo);
-  }
 }
 </style>

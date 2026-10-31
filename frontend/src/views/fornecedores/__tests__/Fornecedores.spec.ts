@@ -657,17 +657,21 @@ describe('FornecedorFormularioView — reestruturação da fundação', () => {
     expect(pagina.text()).toContain(TEXTOS_FORNECEDORES.formNovoDescricao)
     expect(pagina.find('[data-teste="formulario-fornecedor"]').exists()).toBe(true)
     expect(wrapper.get('.formulario-fornecedor').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--cartao']))
-    expect(wrapper.get('[data-teste="formulario-fornecedor"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    expect(wrapper.get('[data-teste="formulario-fornecedor"]').classes()).toContain('formulario-cartao')
+    expect(wrapper.get('[data-teste="formulario-fornecedor"]').find('.formulario-acoes [data-teste="salvar-fornecedor"]').exists()).toBe(true)
 
     expect(legendas(wrapper)).toEqual([TEXTOS_FORNECEDORES.grupoEmpresa, TEXTOS_FORNECEDORES.grupoContato, TEXTOS_FORNECEDORES.grupoInterno])
+    for (const grupo of wrapper.findAll('fieldset')) {
+      expect(grupo.classes()).toContain('formulario-secao')
+    }
     for (const legenda of wrapper.findAll('fieldset > legend')) {
-      expect(legenda.classes()).toContain('texto-rotulo')
+      expect(legenda.classes()).toContain('formulario-secao__titulo')
     }
     expect(camposDoGrupo(wrapper, 'grupo-empresa')).toEqual(['campo-categoria', 'campo-nome-empresa', 'campo-site', 'campo-instagram'])
     expect(camposDoGrupo(wrapper, 'grupo-contato')).toEqual(['campo-responsavel', 'campo-telefone', 'campo-email'])
     expect(camposDoGrupo(wrapper, 'grupo-interno')).toEqual(['campo-observacoes'])
-    expect(wrapper.get('[data-teste="grupo-empresa"]').findAll('.formulario-fornecedor__colunas')).toHaveLength(2)
-    expect(wrapper.get('[data-teste="grupo-contato"]').findAll('.formulario-fornecedor__colunas')).toHaveLength(1)
+    expect(wrapper.get('[data-teste="grupo-empresa"]').findAll('.formulario-colunas')).toHaveLength(2)
+    expect(wrapper.get('[data-teste="grupo-contato"]').findAll('.formulario-colunas')).toHaveLength(2)
 
     expect(wrapper.findComponent({ name: 'Select' }).props('placeholder')).toBe(TEXTOS_FORNECEDORES.categoriaPlaceholder)
     expect(wrapper.get('[data-teste="grupo-interno"]').text()).toContain('Só a assessoria vê.')
@@ -763,8 +767,11 @@ describe('FornecedorFormularioView — reestruturação da fundação', () => {
     expect(fonte).toMatch(/@blur="formulario\.validarAoSair\('nomeEmpresa'\)"/)
     expect(fonte).toMatch(/@update:model-value="formulario\.revalidarAoDigitar\('nomeEmpresa'\)"/)
     expect(fonte).toMatch(/const CAMPOS = \['categoria', 'nomeEmpresa', 'site', 'instagram', 'responsavel', 'telefone', 'email', 'observacoes'\]/)
-    expect(estilo).toMatch(/container:\s*formulario-fornecedor\s*\/\s*inline-size/)
-    expect(estilo).toMatch(/@container formulario-fornecedor \(min-width: 40rem\)\s*\{\s*\.formulario-fornecedor__colunas\s*\{\s*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/)
+    expect(fonte).toContain('class="formulario-cartao"')
+    expect(fonte).toContain('<LateralOrientacao')
+    expect(fonte).not.toContain('OrientacaoAcesso')
+    expect(fonte).not.toContain('com-lateral__lateral--filete')
+    expect(estilo).not.toMatch(/formulario-fornecedor__colunas|formulario-fornecedor__legenda/)
     expect(estilo).not.toMatch(/@media/)
     expect(estilo).not.toMatch(/largura-leitura/)
     expect(estilo).not.toMatch(/--p-espaco-/)
