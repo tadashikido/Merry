@@ -4,7 +4,8 @@ import { computed, useId } from 'vue'
 import { ROTULOS_CATEGORIA_FORNECEDOR, TEXTOS_ATUACAO_FORNECEDOR } from '@/textos/fornecedores'
 import type { CategoriaFornecedor } from '@/tipos/fornecedores'
 import type { ResumoAtuacaoFornecedor } from '@/utilitarios/atuacaoFornecedor'
-import { descreverCarteiraPorTipo } from '@/utilitarios/carteiraEventos'
+import { classeTomDoTipo } from '@/textos/tiposEvento'
+import { partesCarteiraPorTipo } from '@/utilitarios/carteiraEventos'
 import type { EssencialidadeCategoria } from '@/utilitarios/coberturaFornecedores'
 import { formatarDataCalendarioCurta, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 
@@ -38,6 +39,7 @@ const proximo = computed(() => {
     : null
 })
 
+const partesPorTipo = computed(() => partesCarteiraPorTipo(props.resumo.porTipo))
 const mostrarPorTipo = computed(() => props.resumo.tiposConhecidos && (props.resumo.porTipo.length > 0 || props.resumo.semTipo > 0))
 </script>
 
@@ -126,7 +128,17 @@ const mostrarPorTipo = computed(() => props.resumo.tiposConhecidos && (props.res
             class="atuacao__valor"
             data-teste="atuacao-tipos"
           >
-            {{ descreverCarteiraPorTipo(resumo.porTipo) }}
+            <span><template
+              v-for="parte in partesPorTipo"
+              :key="parte.tipo"
+            ><span
+              class="atuacao__tipo"
+              :class="classeTomDoTipo(parte.tipo)"
+              data-teste="atuacao-tipo"
+            ><span
+              class="atuacao__ponto"
+              aria-hidden="true"
+            />{{ parte.texto }}</span>{{ parte.separador }}</template></span>
           </dd>
           <dd
             v-if="resumo.semTipo > 0"
@@ -176,7 +188,7 @@ const mostrarPorTipo = computed(() => props.resumo.tiposConhecidos && (props.res
   display: grid;
   gap: var(--p-ritmo-campo);
   padding-inline-start: var(--p-ritmo-grupo);
-  border-inline-start: 2px solid var(--p-cor-primaria);
+  border-inline-start: 2px solid var(--p-cor-borda);
 }
 
 .atuacao__frase {
@@ -192,7 +204,7 @@ const mostrarPorTipo = computed(() => props.resumo.tiposConhecidos && (props.res
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: 1.1;
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-titulo);
 }
 
 .atuacao__legenda {
@@ -222,7 +234,11 @@ const mostrarPorTipo = computed(() => props.resumo.tiposConhecidos && (props.res
 }
 
 .atuacao__rotulo {
-  font-size: var(--p-fonte-tamanho-apoio);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  line-height: 1.33;
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
   color: var(--p-cor-texto-apoio);
 }
 
@@ -231,6 +247,24 @@ const mostrarPorTipo = computed(() => props.resumo.tiposConhecidos && (props.res
   font-variant-numeric: lining-nums;
   color: var(--p-cor-texto);
   overflow-wrap: anywhere;
+}
+
+.atuacao__tipo {
+  white-space: nowrap;
+}
+
+.atuacao__tipo + .atuacao__tipo {
+  margin-inline-start: var(--p-ritmo-campo);
+}
+
+.atuacao__ponto {
+  display: inline-block;
+  width: var(--p-dimensao-ponto-fase);
+  height: var(--p-dimensao-ponto-fase);
+  margin-inline-end: var(--p-ritmo-campo);
+  vertical-align: 0.1em;
+  background: var(--tom-viva);
+  border-radius: var(--p-raio-total);
 }
 
 .atuacao__apoio {

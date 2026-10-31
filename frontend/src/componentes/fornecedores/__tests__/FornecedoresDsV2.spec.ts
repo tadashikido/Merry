@@ -7,8 +7,9 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { resumoFornecedor } from '@/__tests__/auxiliaresFornecedores'
 import IndiceCategorias from '@/componentes/base/IndiceCategorias.vue'
 import LinhaFornecedor from '@/componentes/base/LinhaFornecedor.vue'
+import AtuacaoFornecedor from '@/componentes/fornecedores/AtuacaoFornecedor.vue'
 import CoberturaCategoriasFornecedores from '@/componentes/fornecedores/CoberturaCategoriasFornecedores.vue'
-import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
+import { VOCABULARIO_TIPO_EVENTO, classeTomDoTipo } from '@/textos/tiposEvento'
 import { coberturaDaCarteira } from '@/utilitarios/coberturaFornecedores'
 import { resumoEvento } from '@/views/eventos/__tests__/auxiliaresEventos'
 
@@ -80,5 +81,46 @@ describe('Fornecedores da assessoria no DS v2', () => {
     expect(view).toContain('min-height: var(--p-dimensao-altura-botao)')
     expect(view).toContain('border-radius: var(--p-raio-campo)')
     expect(`${linha}${cobertura}${view}`).not.toMatch(/#[0-9a-fA-F]{3,8}\b|@media/)
+  })
+})
+
+describe('Fornecedor (detalhe) no DS v2', () => {
+  const resumo = {
+    total: 3,
+    contratados: 2,
+    pelaFrente: 2,
+    proximo: null,
+    ultimaAtuacao: null,
+    porTipo: [
+      { tipo: 'Casamento' as const, quantidade: 2 },
+      { tipo: 'QuinzeAnos' as const, quantidade: 1 },
+    ],
+    semTipo: 0,
+    tiposConhecidos: true,
+  }
+
+  it('[COMPONENTE] atuação por tipo mostra um ponto no tom de cada tipo sem mudar o texto', () => {
+    const montado = mount(AtuacaoFornecedor, { props: { resumo } })
+    const partes = montado.findAll('[data-teste="atuacao-tipo"]')
+
+    expect(montado.get('[data-teste="atuacao-tipos"]').text()).toBe('2 casamentos e 1 festa de 15 anos')
+    expect(partes).toHaveLength(2)
+    expect(partes[0]!.classes()).toContain(classeTomDoTipo('Casamento'))
+    expect(partes[1]!.classes()).toContain(classeTomDoTipo('QuinzeAnos'))
+    expect(partes[0]!.get('.atuacao__ponto').attributes('aria-hidden')).toBe('true')
+  })
+
+  it('[UNITÁRIO] histórico usa EtiquetaTipo e status com ponto; atuação com número em cor de título', () => {
+    const view = readFileSync(resolve(raiz, 'views/fornecedores/FornecedorView.vue'), 'utf-8')
+    const atuacao = estilo('componentes/fornecedores/AtuacaoFornecedor.vue')
+
+    expect(view).toMatch(/data-teste="tipo-participacao"\s*>\s*<EtiquetaTipo :tipo="tipoDoEvento\(participacao\.eventoId\)" \/>/)
+    expect((view.match(/^\s+ponto$/gm) ?? []).length).toBe(3)
+    expect(view).not.toContain('icone="arquivar"')
+    expect(view).not.toContain('VOCABULARIO_TIPO_EVENTO')
+    expect(atuacao).toMatch(/__numero \{[^}]*color: var\(--p-cor-titulo\)/)
+    expect(atuacao).toMatch(/__ponto \{[^}]*background: var\(--tom-viva\)/)
+    expect(atuacao).not.toContain('--p-cor-primaria')
+    expect(`${atuacao}${estilo('views/fornecedores/FornecedorView.vue')}`).not.toMatch(/#[0-9a-fA-F]{3,8}\b|@media/)
   })
 })

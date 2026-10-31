@@ -11,6 +11,7 @@ import DialogoConfirmacao from '@/componentes/base/DialogoConfirmacao.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
@@ -21,7 +22,7 @@ import { useEventosStore } from '@/stores/eventos'
 import { useFornecedoresStore } from '@/stores/fornecedores'
 import { ROTULOS_CATEGORIA_FORNECEDOR, TEXTOS_FORNECEDORES } from '@/textos/fornecedores'
 import { ROTULOS_STATUS_FORNECEDOR_EVENTO, TEXTOS_HISTORICO_FORNECEDOR } from '@/textos/fornecedoresEvento'
-import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
+import type { TipoEvento } from '@/tipos/eventos'
 import type { FornecedorDto } from '@/tipos/fornecedores'
 import { resumirAtuacaoFornecedor, tiposDasParticipacoes } from '@/utilitarios/atuacaoFornecedor'
 import { essencialidadeDaCategoria } from '@/utilitarios/coberturaFornecedores'
@@ -49,9 +50,8 @@ const tiposPorEvento = computed(() => tiposDasParticipacoes(participacoes.value 
 const atuacao = computed(() => (participacoes.value ? resumirAtuacaoFornecedor(participacoes.value, carteira.value, hojeEmSaoPaulo()) : null))
 const essencialidade = computed(() => (fornecedor.value ? essencialidadeDaCategoria(fornecedor.value.categoria, carteira.value) : null))
 
-function tipoDaParticipacao(eventoId: string): string | null {
-  const tipo = tiposPorEvento.value.get(eventoId)
-  return tipo ? VOCABULARIO_TIPO_EVENTO[tipo].rotulo : null
+function tipoDoEvento(eventoId: string): TipoEvento | null {
+  return tiposPorEvento.value.get(eventoId) ?? null
 }
 
 const acoes = computed<ItemMenuAcoes[]>(() => [
@@ -181,7 +181,7 @@ function arquivarEmVezDeExcluir() {
               v-if="fornecedor.arquivado"
               :texto="TEXTOS_FORNECEDORES.badgeArquivado"
               variante="neutro"
-              icone="arquivar"
+              ponto
             />
           </span>
         </template>
@@ -378,11 +378,11 @@ function arquivarEmVezDeExcluir() {
                         {{ formatarNomesAnfitrioes(participacao.nomePrimeiraPessoa, participacao.nomeSegundaPessoa) }}
                       </RouterLink>
                       <span
-                        v-if="tipoDaParticipacao(participacao.eventoId)"
+                        v-if="tipoDoEvento(participacao.eventoId)"
                         class="fornecedor__participacao-tipo"
                         data-teste="tipo-participacao"
                       >
-                        {{ tipoDaParticipacao(participacao.eventoId) }}
+                        <EtiquetaTipo :tipo="tipoDoEvento(participacao.eventoId)" />
                       </span>
                     </span>
                     <span class="fornecedor__participacao-data numeros-tabulares">{{ formatarDataCalendarioCurta(participacao.dataEvento) }}</span>
@@ -390,12 +390,13 @@ function arquivarEmVezDeExcluir() {
                       <BadgeStatus
                         :texto="ROTULOS_STATUS_FORNECEDOR_EVENTO[participacao.status]"
                         :variante="VARIANTES_STATUS_FORNECEDOR_EVENTO[participacao.status]"
+                        ponto
                       />
                       <BadgeStatus
                         v-if="participacao.eventoArquivado"
                         :texto="TEXTOS_HISTORICO_FORNECEDOR.eventoArquivado"
                         variante="neutro"
-                        icone="arquivar"
+                        ponto
                       />
                     </span>
                   </li>
@@ -498,21 +499,23 @@ function arquivarEmVezDeExcluir() {
 }
 
 .fornecedor__participacao-evento {
-  display: grid;
+  display: flex;
   flex: 1 1 100%;
-  gap: var(--p-ritmo-campo);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
   min-width: 0;
 }
 
 .fornecedor__participacao-nomes {
   min-width: 0;
   font-weight: var(--p-fonte-peso-seminegrito);
+  color: var(--p-cor-titulo);
   overflow-wrap: anywhere;
 }
 
 .fornecedor__participacao-tipo {
-  font-size: var(--p-fonte-tamanho-apoio);
-  color: var(--p-cor-texto-apoio);
+  display: inline-flex;
 }
 
 .fornecedor__participacao-data {
