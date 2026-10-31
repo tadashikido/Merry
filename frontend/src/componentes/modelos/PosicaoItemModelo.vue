@@ -3,6 +3,7 @@ import { computed, useId } from 'vue'
 
 import { ROTULOS_MARCO_CHECKLIST, TEXTOS_ITEM_MODELO, TEXTOS_MODELOS_CHECKLIST, complementoMarcoModelo, descreverPrazoRelativo } from '@/textos/checklist'
 import { referenciaDoModelo } from '@/textos/modelos'
+import { classeTomDoTipo } from '@/textos/tiposEvento'
 import type { ItemModeloChecklistDto } from '@/tipos/checklist'
 import type { TipoEvento } from '@/tipos/eventos'
 import { descreverPrazoAproximado, posicaoItemNoModelo } from '@/utilitarios/prazoModelo'
@@ -91,6 +92,7 @@ const comTituloProprio = computed(() => props.titulo.trim() !== '')
 <template>
   <section
     class="posicao-item"
+    :class="classeTomDoTipo(tipo)"
     :aria-labelledby="idTitulo"
     data-teste="posicao-item-modelo"
   >
@@ -209,13 +211,13 @@ const comTituloProprio = computed(() => props.titulo.trim() !== '')
 .posicao-item__previa {
   margin: 0;
   padding-left: var(--p-ritmo-campo);
-  border-left: 2px solid var(--p-cor-primaria);
+  border-left: 2px solid var(--tom-viva);
   font-family: var(--p-fonte-serif);
   font-size: var(--p-fonte-tamanho-secao);
   font-style: italic;
   font-variant-numeric: lining-nums;
   line-height: var(--p-fonte-entrelinha-leitura);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .posicao-item__previa--vazia {
@@ -264,9 +266,9 @@ const comTituloProprio = computed(() => props.titulo.trim() !== '')
 }
 
 .posicao-item__marco--atual .posicao-item__no {
-  border-color: var(--p-cor-primaria);
-  background: var(--p-cor-primaria);
-  box-shadow: 0 0 0 3px var(--p-cor-primaria-suave);
+  border-color: var(--tom-tinta);
+  background: var(--tom-tinta);
+  box-shadow: 0 0 0 3px var(--tom-fundo);
 }
 
 .posicao-item__cabeca {
@@ -288,12 +290,12 @@ const comTituloProprio = computed(() => props.titulo.trim() !== '')
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums;
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .posicao-item__marco--atual .posicao-item__rotulo {
   font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-primaria);
+  color: var(--tom-tinta);
 }
 
 .posicao-item__contagem {
@@ -321,7 +323,7 @@ const comTituloProprio = computed(() => props.titulo.trim() !== '')
 
 .posicao-item__item--este {
   padding-inline-start: var(--p-ritmo-campo);
-  border-inline-start: 2px solid var(--p-cor-primaria);
+  border-inline-start: 2px solid var(--tom-tinta);
 }
 
 .posicao-item__item-titulo {

@@ -731,12 +731,14 @@ describe('Formulários de modelo e item', () => {
     const pagina = wrapper.get('.pagina-formulario')
     expect(pagina.get('h1').text()).toBe(TEXTOS_ITEM_MODELO.formNovo)
     expect(pagina.get('.cabecalho-pagina__descricao').text()).toBe('Checklist essencial')
-    expect(wrapper.get('[data-teste="formulario-item-modelo"]').classes()).toEqual(expect.arrayContaining(['pilha', 'pilha--bloco']))
+    expect(wrapper.get('[data-teste="formulario-item-modelo"]').classes()).toContain('formulario-cartao')
+    expect(wrapper.find('[data-teste="formulario-item-modelo"] .formulario-secao + .formulario-acoes').exists()).toBe(true)
 
     const grupoItem = pagina.get('[data-teste="grupo-item"]')
     expect(grupoItem.element.tagName).toBe('FIELDSET')
     expect(grupoItem.get('legend').text()).toBe(TEXTOS_ITEM_MODELO.grupoItem)
-    expect(grupoItem.get('legend').classes()).toContain('texto-rotulo')
+    expect(grupoItem.classes()).toContain('formulario-secao')
+    expect(grupoItem.get('legend').classes()).toContain('formulario-secao__titulo')
     for (const campo of ['campo-titulo', 'campo-categoria', 'campo-descricao']) {
       expect(grupoItem.find(`[data-teste="${campo}"]`).exists()).toBe(true)
     }
@@ -744,7 +746,8 @@ describe('Formulários de modelo e item', () => {
     const grupoPrazo = pagina.get('[data-teste="grupo-prazo"]')
     expect(grupoPrazo.element.tagName).toBe('FIELDSET')
     expect(grupoPrazo.get('legend').text()).toBe(TEXTOS_ITEM_MODELO.grupoPrazo)
-    expect(grupoPrazo.get('legend').classes()).toContain('texto-rotulo')
+    expect(grupoPrazo.classes()).toContain('formulario-secao')
+    expect(grupoPrazo.get('legend').classes()).toContain('formulario-secao__titulo')
     for (const campo of ['campo-quando', 'campo-dias', 'campo-sentido', 'campo-responsavel']) {
       expect(grupoPrazo.find(`[data-teste="${campo}"]`).exists()).toBe(true)
     }
@@ -821,6 +824,7 @@ describe('Formulários de modelo e item', () => {
     expect(wrapper.get('[data-teste="campo-quando"]').text()).toContain(`${previa}.`)
     expect(wrapper.get('.formulario-item-tela__pagina').classes()).toContain('com-lateral__pagina--ativa')
     const lateral = wrapper.get('[data-teste="lateral-formulario-item"]')
+    expect(lateral.classes()).not.toContain('com-lateral__lateral--filete')
     expect(lateral.get('[data-teste="previa-prazo-item"]').text()).toBe(previa)
     expect(lateral.get('[data-teste="marco-item-seisMeses"]').classes()).toContain('posicao-item__marco--atual')
     expect(lateral.findAll('[data-teste="vizinho-item"]').map((vizinho) => vizinho.text())).toEqual([expect.stringContaining('Contratar o buffet')])

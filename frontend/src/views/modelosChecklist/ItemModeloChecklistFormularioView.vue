@@ -265,16 +265,16 @@ function alterarSentido() {
               />
 
               <form
-                class="pilha pilha--bloco"
+                class="formulario-cartao"
                 novalidate
                 data-teste="formulario-item-modelo"
                 @submit.prevent="enviar"
               >
                 <fieldset
-                  class="formulario-item__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   data-teste="grupo-item"
                 >
-                  <legend class="formulario-item__legenda texto-rotulo">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_ITEM_MODELO.grupoItem }}
                   </legend>
 
@@ -345,10 +345,10 @@ function alterarSentido() {
                 </fieldset>
 
                 <fieldset
-                  class="formulario-item__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   data-teste="grupo-prazo"
                 >
-                  <legend class="formulario-item__legenda texto-rotulo">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_ITEM_MODELO.grupoPrazo }}
                   </legend>
 
@@ -428,7 +428,7 @@ function alterarSentido() {
                   </CampoFormulario>
                 </fieldset>
 
-                <div class="formulario-item__acoes">
+                <div class="formulario-acoes">
                   <Button
                     type="submit"
                     :label="edicao ? TEXTOS_ITEM_MODELO.salvar : TEXTOS_ITEM_MODELO.criar"
@@ -452,7 +452,7 @@ function alterarSentido() {
 
           <div
             v-if="mostrarLateral && modeloCarregado"
-            class="formulario-item-tela__lateral com-lateral__lateral com-lateral__lateral--filete"
+            class="formulario-item-tela__lateral com-lateral__lateral"
             data-teste="lateral-formulario-item"
           >
             <PosicaoItemModelo
@@ -480,17 +480,11 @@ function alterarSentido() {
   min-width: 0;
 }
 
-.formulario-item__grupo,
 .formulario-item__quando {
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
-}
-
-.formulario-item__legenda {
-  padding: 0;
-  margin-bottom: var(--p-ritmo-grupo);
 }
 
 .formulario-item__legenda-campo {
@@ -509,6 +503,7 @@ function alterarSentido() {
 
 .formulario-item__colunas :deep(.p-selectbutton) {
   display: flex;
+  flex-wrap: nowrap;
   width: 100%;
 }
 
@@ -518,25 +513,10 @@ function alterarSentido() {
   white-space: normal;
 }
 
-.formulario-item__acoes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-ritmo-campo);
-}
-
-.formulario-item__acoes :deep(.p-button) {
-  min-height: var(--p-dimensao-alvo-toque);
-}
-
 @container formulario-item (min-width: 40rem) {
   .formulario-item__colunas {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
     align-items: start;
-  }
-
-  .formulario-item__acoes {
-    flex-direction: row;
-    gap: var(--p-ritmo-grupo);
   }
 }
 </style>

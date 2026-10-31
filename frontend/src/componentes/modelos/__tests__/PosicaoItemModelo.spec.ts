@@ -19,11 +19,11 @@ const ITENS = [item('a', 'Definir orçamento', 400), item('b', 'Contratar o buff
 
 describe('PosicaoItemModelo', () => {
   it.each([
-    ['Casamento', 'Cerca de 6 meses antes do casamento', 'antes do casamento'],
-    ['QuinzeAnos', 'Cerca de 6 meses antes da festa de 15 anos', 'antes da festa de 15 anos'],
-    ['Aniversario', 'Cerca de 6 meses antes do aniversário', 'antes do aniversário'],
-    ['Comemoracao', 'Cerca de 6 meses antes da comemoração', 'antes da comemoração'],
-  ] as const)('[COMPONENTE] %s traduz a prévia e a régua para o tipo', (tipo, previa, complemento) => {
+    ['Casamento', 'Cerca de 6 meses antes do casamento', 'antes do casamento', 'rose'],
+    ['QuinzeAnos', 'Cerca de 6 meses antes da festa de 15 anos', 'antes da festa de 15 anos', 'orquidea'],
+    ['Aniversario', 'Cerca de 6 meses antes do aniversário', 'antes do aniversário', 'tangerina'],
+    ['Comemoracao', 'Cerca de 6 meses antes da comemoração', 'antes da comemoração', 'champanhe'],
+  ] as const)('[COMPONENTE] %s traduz a prévia e a régua para o tipo, no tom do tipo', (tipo, previa, complemento, tom) => {
     const wrapper = mount(PosicaoItemModelo, { props: { itens: ITENS, dias: 180, tipo, titulo: 'Escolher o vestido' } })
 
     expect(wrapper.get('[data-teste="previa-prazo-item"]').text()).toBe(previa)
@@ -31,6 +31,7 @@ describe('PosicaoItemModelo', () => {
     expect(atual.classes()).toContain('posicao-item__marco--atual')
     expect(atual.text()).toContain(complemento)
     expect(atual.text()).toContain(TEXTOS_ITEM_MODELO.esteItemEntraAqui)
+    expect(wrapper.get('[data-teste="posicao-item-modelo"]').classes()).toContain(`tom-tipo--${tom}`)
   })
 
   it.each([
@@ -41,6 +42,16 @@ describe('PosicaoItemModelo', () => {
 
     expect(wrapper.get('[data-teste="previa-prazo-item"]').text()).toBe('No dia do evento')
     expect(wrapper.text()).not.toMatch(/casamento|comemoração/i)
+    expect(wrapper.get('[data-teste="posicao-item-modelo"]').classes()).toContain('tom-tipo--neutro')
+  })
+
+  it('[UNITÁRIO] destaque do marco atual, prévia e este item no tom do tipo, sem primária', () => {
+    const fonte = readFileSync(resolve(__dirname, '../PosicaoItemModelo.vue'), 'utf-8')
+    const estilo = fonte.slice(fonte.indexOf('<style'))
+    expect(estilo).toMatch(/\.posicao-item__marco--atual \.posicao-item__no\s*\{[^}]*background: var\(--tom-tinta\);[^}]*box-shadow: 0 0 0 3px var\(--tom-fundo\)/)
+    expect(estilo).toMatch(/\.posicao-item__previa\s*\{[^}]*border-left: 2px solid var\(--tom-viva\)/)
+    expect(estilo).toMatch(/\.posicao-item__item--este\s*\{[^}]*border-inline-start: 2px solid var\(--tom-tinta\)/)
+    expect(estilo).not.toContain('--p-cor-primaria')
   })
 
   it('[COMPONENTE] lista os vizinhos do marco com o item atual na posição do prazo', () => {
