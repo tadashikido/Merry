@@ -13,12 +13,14 @@ import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
 import PainelAgoraProximo from '@/componentes/base/PainelAgoraProximo.vue'
 import RelogioOperacao from '@/componentes/base/RelogioOperacao.vue'
+import TileTipo from '@/componentes/base/TileTipo.vue'
 import ParaODiaCronograma from '@/componentes/cronogramaPublico/ParaODiaCronograma.vue'
 import { useAtualizacaoPeriodica, useRelogioDispositivo } from '@/composables/useAtualizacaoPeriodica'
 import { useCronogramaPublicoStore } from '@/stores/cronogramaPublico'
 import { TEXTOS_CRONOGRAMA_PUBLICO } from '@/textos/cronogramaPublico'
 import { TEXTOS_GRANDE_DIA } from '@/textos/grandeDia'
 import { momentoDoModelo, referenciaDoModelo } from '@/textos/modelos'
+import { classeTomDoTipo } from '@/textos/tiposEvento'
 import { TEXTOS_PARA_O_DIA } from '@/textos/rsvp'
 import { agruparRoteiro, ehHorarioDaCerimonia, rotuloFiltro } from '@/utilitarios/cronogramaPublico'
 import { temConteudoParaODia } from '@/utilitarios/paraODiaCronograma'
@@ -57,6 +59,7 @@ const seloFase = computed(() => {
   return atual.fase === 'AntesDoDia' ? TEXTOS_GRANDE_DIA.faltamDias(atual.diasParaOEvento) : TEXTOS_GRANDE_DIA.diaPassou
 })
 const aoVivo = computed(() => grupos.value.length > 0 && fase.value === 'NoDia')
+const linkIndisponivel = computed(() => dados.value === null && store.falha === 'linkInativo')
 const semConexaoComDados = computed(() => dados.value !== null && store.falha !== null && store.falha !== 'linkInativo')
 
 const filtrado = computed(() => dados.value !== null && dados.value.filtro.tipo !== 'Geral')
@@ -128,7 +131,8 @@ onBeforeUnmount(() => store.limpar())
 
 <template>
   <LayoutPublico
-    variante="operacao"
+    :variante="linkIndisponivel ? 'padrao' : 'operacao'"
+    :vazio="linkIndisponivel"
     :amplo="dados !== null"
   >
     <EstadoCarregando
@@ -136,6 +140,27 @@ onBeforeUnmount(() => store.limpar())
       variante="cartao"
       :linhas="4"
     />
+
+    <section
+      v-else-if="linkIndisponivel"
+      class="cronograma-indisponivel pilha pilha--grupo"
+      role="alert"
+      aria-labelledby="cronograma-indisponivel-titulo"
+      data-teste="cronograma-publico-erro"
+    >
+      <TileTipo
+        tom="champanhe"
+        icone="cronograma"
+        tamanho="grande"
+        data-teste="lacre-cronograma-inativo"
+      />
+      <h1 id="cronograma-indisponivel-titulo">
+        {{ TEXTOS_CRONOGRAMA_PUBLICO.inativoTitulo }}
+      </h1>
+      <p class="cronograma-indisponivel__texto texto-destaque">
+        {{ TEXTOS_CRONOGRAMA_PUBLICO.inativoTexto }}
+      </p>
+    </section>
 
     <EstadoErro
       v-else-if="estadoErro"
@@ -149,6 +174,7 @@ onBeforeUnmount(() => store.limpar())
     <div
       v-else-if="dados"
       class="cronograma-publico"
+      :class="classeTomDoTipo(dados.evento.tipo)"
     >
       <div
         class="cronograma-publico__conteudo"
@@ -301,7 +327,10 @@ onBeforeUnmount(() => store.limpar())
       </div>
     </div>
 
-    <template #rodape>
+    <template
+      v-if="!linkIndisponivel"
+      #rodape
+    >
       <MarcaProduto
         somente-simbolo
         tom="claro"
@@ -368,18 +397,26 @@ onBeforeUnmount(() => store.limpar())
   min-width: 0;
 }
 
+.cronograma-indisponivel {
+  align-items: center;
+  text-align: center;
+}
+
+.cronograma-indisponivel .cronograma-indisponivel__texto {
+  max-width: 28rem;
+  margin: 0;
+}
+
 .cronograma-publico__titulo-dia {
   margin: 0;
   padding-bottom: var(--p-ritmo-campo);
   font-family: var(--p-fonte-interface);
-  font-size: var(--p-fonte-tamanho-apoio);
-  font-weight: var(--p-fonte-peso-seminegrito);
+  font-size: var(--p-fonte-tamanho-rotulo);
+  font-weight: var(--p-fonte-peso-negrito);
+  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
+  text-transform: uppercase;
   color: var(--p-cor-operacao-apoio);
   border-bottom: 1px solid var(--p-cor-operacao-divisoria);
-}
-
-.cronograma-publico__titulo-dia::first-letter {
-  text-transform: uppercase;
 }
 
 .cronograma-publico__lista {

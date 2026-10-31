@@ -268,13 +268,34 @@ describe('CronogramaPublicoView — estrutura da fundação', () => {
     expect(conteudo.find('.cronograma-publico__identificacao [data-teste="relogio-operacao"]').exists()).toBe(true)
   })
 
-  it('[COMPONENTE] erro e carregamento ficam na coluna estreita, sem folha ampla', async () => {
+  it('[COMPONENTE] link indisponível fica na folha vazia estreita do LayoutPublico, com tile e sem rodapé de marca clara', async () => {
     rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaProblema(404, { title: 'Recurso não encontrado.' })))
 
     await abrir()
 
-    expect(wrapper!.get('.layout-publico--operacao').classes()).not.toContain('layout-publico--amplo')
+    const layout = wrapper!.get('.layout-publico')
+    expect(layout.classes()).toEqual(expect.arrayContaining(['layout-publico--padrao', 'layout-publico--vazio']))
+    expect(layout.classes()).not.toContain('layout-publico--amplo')
+    expect(wrapper!.get('[data-teste="cronograma-publico-erro"]').attributes('role')).toBe('alert')
+    expect(wrapper!.get('[data-teste="lacre-cronograma-inativo"]').attributes('data-tom')).toBe('champanhe')
+    expect(wrapper!.find('.layout-publico__rodape').exists()).toBe(false)
     expect(wrapper!.find('[data-teste="cronograma-publico"]').exists()).toBe(false)
+  })
+
+  it('[COMPONENTE] 429 continua no modo operação, estreito, com tentar de novo', async () => {
+    rotearFetch(fetchSimulado, quando('POST', ROTA_CONSULTA, () => respostaProblema(429, { title: 'Muitas tentativas.' })))
+
+    await abrir()
+
+    expect(wrapper!.get('.layout-publico').classes()).toContain('layout-publico--operacao')
+    expect(wrapper!.get('.layout-publico').classes()).not.toContain('layout-publico--vazio')
+    expect(wrapper!.find('[data-teste="cronograma-publico-erro"] button').exists()).toBe(true)
+  })
+
+  it('[UNITÁRIO] contêiner recebe a classe de tom do tipo e o título do dia é rótulo DS', () => {
+    expect(readFileSync(resolve(__dirname, '../CronogramaPublicoView.vue'), 'utf-8')).toContain(':class="classeTomDoTipo(dados.evento.tipo)"')
+    expect(estiloView).toMatch(/__titulo-dia \{[^}]*font-size: var\(--p-fonte-tamanho-rotulo\)[^}]*text-transform: uppercase/)
+    expect(estiloView).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
   })
 
   it('[UNITÁRIO] estilos da tela usam só o ritmo, ajustes por contêiner e nenhuma sombra ou gradiente', () => {
