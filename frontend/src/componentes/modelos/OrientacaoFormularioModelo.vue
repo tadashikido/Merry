@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
 
-import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import SecaoRecolhivel from '@/componentes/base/SecaoRecolhivel.vue'
 import { TEXTOS_MODELOS_POR_TIPO, exemplosNomeModelo, ondeApareceModelo, rotuloSugeridoDoModelo } from '@/textos/modelos'
+import { classeTomDoTipo } from '@/textos/tiposEvento'
 import type { TipoEvento } from '@/tipos/eventos'
 
 const props = withDefaults(
@@ -50,11 +51,13 @@ const exemplos = exemplosNomeModelo()
           {{ TEXTOS_MODELOS_POR_TIPO.ondeTitulo }}
         </h2>
         <p class="orientacao-modelo__selo">
-          <BadgeStatus
+          <EtiquetaTipo
             v-if="edicao && sugerido"
-            :texto="selo"
-            variante="informacao"
-            icone="informacao"
+            class="orientacao-modelo__sugerido"
+            :tipo="tipo"
+            :rotulo="selo"
+            com-icone
+            icone="centelha"
             data-teste="selo-modelo"
           />
           <span
@@ -113,7 +116,14 @@ const exemplos = exemplosNomeModelo()
               class="orientacao-modelo__exemplo"
               :data-teste="`exemplo-nome-${exemplo.tipo}`"
             >
-              <dt class="orientacao-modelo__tipo">
+              <dt
+                class="orientacao-modelo__tipo"
+                :class="classeTomDoTipo(exemplo.tipo)"
+              >
+                <span
+                  class="orientacao-modelo__ponto"
+                  aria-hidden="true"
+                />
                 {{ exemplo.rotulo }}
               </dt>
               <dd class="orientacao-modelo__nome">
@@ -180,12 +190,12 @@ const exemplos = exemplosNomeModelo()
 .orientacao-modelo__onde {
   margin: 0;
   padding-left: var(--p-ritmo-campo);
-  border-left: 2px solid var(--p-cor-primaria);
+  border-left: 2px solid var(--p-cor-centelha);
   font-family: var(--p-fonte-serif);
   font-size: var(--p-fonte-tamanho-secao);
   font-style: italic;
   line-height: var(--p-fonte-entrelinha-leitura);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .orientacao-modelo__nota,
@@ -215,9 +225,24 @@ const exemplos = exemplosNomeModelo()
   border-bottom: 1px solid var(--p-cor-divisoria);
 }
 
+.orientacao-modelo__sugerido {
+  white-space: normal;
+}
+
 .orientacao-modelo__tipo {
+  display: flex;
+  align-items: center;
+  gap: var(--p-ritmo-campo);
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-texto-secundario);
+}
+
+.orientacao-modelo__ponto {
+  flex: none;
+  width: var(--p-dimensao-ponto-fase);
+  height: var(--p-dimensao-ponto-fase);
+  background: var(--tom-tinta);
+  border-radius: var(--p-raio-total);
 }
 
 .orientacao-modelo__nome {
@@ -226,7 +251,7 @@ const exemplos = exemplosNomeModelo()
   font-size: var(--p-fonte-tamanho-secao);
   font-style: italic;
   font-variant-numeric: lining-nums;
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
   overflow-wrap: anywhere;
 }
 
@@ -236,7 +261,7 @@ const exemplos = exemplosNomeModelo()
   gap: var(--p-ritmo-campo);
   margin: var(--p-ritmo-campo) 0 0;
   padding: 0 0 0 var(--p-ritmo-grupo);
-  border-left: 2px solid var(--p-cor-primaria);
+  border-left: 2px solid var(--p-cor-centelha);
   list-style: none;
   font-size: var(--p-fonte-tamanho-controle);
   line-height: var(--p-fonte-entrelinha-leitura);

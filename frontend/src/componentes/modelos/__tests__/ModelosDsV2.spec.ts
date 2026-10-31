@@ -8,6 +8,7 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import CartaoModelo from '@/componentes/base/CartaoModelo.vue'
 import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import CoberturaModelosPorTipo from '@/componentes/modelos/CoberturaModelosPorTipo.vue'
+import OrientacaoFormularioModelo from '@/componentes/modelos/OrientacaoFormularioModelo.vue'
 import { PARES_CONTRASTE, atendeContraste } from '@/design/contraste'
 import { TEXTOS_MODELOS_CHECKLIST } from '@/textos/checklist'
 import type { TipoEvento } from '@/tipos/eventos'
@@ -149,5 +150,30 @@ describe('Detalhe do modelo no DS v2', () => {
   it('[COMPONENTE] etiqueta não herda fonte serif itálica do parágrafo', () => {
     const estilo = lerEstilo('../../base/EtiquetaTipo.vue')
     expect(estilo).toMatch(/\.etiqueta-tipo\s*\{[^}]*font-family: var\(--p-fonte-interface\);[^}]*font-style: normal;/)
+  })
+})
+
+describe('OrientacaoFormularioModelo no DS v2', () => {
+  it('[COMPONENTE] edição de sugerido mostra selo no tom do tipo com centelha', () => {
+    const wrapper = mount(OrientacaoFormularioModelo, {
+      props: { recurso: 'checklist', rotuloSugerido: 'Sugerido', dicas: [], edicao: true, tipo: 'QuinzeAnos', sugerido: true, contagem: '7 itens' },
+    })
+    const selo = wrapper.get('[data-teste="selo-modelo"]')
+    expect(selo.attributes('data-tom')).toBe('orquidea')
+    expect(selo.find('.ie-centelha').exists()).toBe(true)
+  })
+
+  it('[COMPONENTE] exemplos de nome têm ponto no tom de cada tipo', () => {
+    const wrapper = mount(OrientacaoFormularioModelo, { props: { recurso: 'checklist', rotuloSugerido: 'Sugerido', dicas: [] } })
+    const tons = wrapper.findAll('.orientacao-modelo__tipo').map((dt) => dt.classes().find((classe) => classe.startsWith('tom-tipo--')))
+    expect(tons).toEqual(['tom-tipo--rose', 'tom-tipo--orquidea', 'tom-tipo--tangerina', 'tom-tipo--champanhe'])
+    expect(wrapper.findAll('.orientacao-modelo__ponto').every((ponto) => ponto.attributes('aria-hidden') === 'true')).toBe(true)
+  })
+
+  it('[UNITÁRIO] filetes em centelha e ponto na tinta do tom, sem primária', () => {
+    const estilo = lerEstilo('../OrientacaoFormularioModelo.vue')
+    expect(estilo).toMatch(/\.orientacao-modelo__ponto\s*\{[^}]*background: var\(--tom-tinta\)/)
+    expect(estilo).toContain('border-left: 2px solid var(--p-cor-centelha)')
+    expect(estilo).not.toContain('--p-cor-primaria')
   })
 })

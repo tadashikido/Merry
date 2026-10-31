@@ -197,16 +197,16 @@ function cancelar() {
               />
 
               <form
-                class="pilha pilha--bloco"
+                class="formulario-cartao"
                 novalidate
                 data-teste="formulario-modelo"
                 @submit.prevent="enviar"
               >
                 <fieldset
-                  class="formulario-modelo__grupo pilha pilha--grupo"
+                  class="formulario-secao"
                   data-teste="grupo-modelo"
                 >
-                  <legend class="formulario-modelo__legenda texto-rotulo">
+                  <legend class="formulario-secao__titulo">
                     {{ TEXTOS_MODELOS_CHECKLIST.grupoModelo }}
                   </legend>
                   <CampoFormulario
@@ -257,7 +257,7 @@ function cancelar() {
                   </CampoFormulario>
                 </fieldset>
 
-                <div class="formulario-modelo__acoes">
+                <div class="formulario-acoes">
                   <Button
                     type="submit"
                     :label="edicao ? TEXTOS_MODELOS_CHECKLIST.salvar : TEXTOS_MODELOS_CHECKLIST.criar"
@@ -281,7 +281,7 @@ function cancelar() {
 
           <div
             v-if="mostrarLateral"
-            class="formulario-modelo-tela__lateral com-lateral__lateral com-lateral__lateral--filete"
+            class="formulario-modelo-tela__lateral com-lateral__lateral"
             data-teste="lateral-formulario-modelo"
           >
             <OrientacaoFormularioModelo
@@ -314,32 +314,4 @@ function cancelar() {
   min-width: 0;
 }
 
-.formulario-modelo__grupo {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.formulario-modelo__legenda {
-  padding: 0;
-  margin-bottom: var(--p-ritmo-grupo);
-}
-
-.formulario-modelo__acoes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-ritmo-campo);
-}
-
-.formulario-modelo__acoes :deep(.p-button) {
-  min-height: var(--p-dimensao-alvo-toque);
-}
-
-@container formulario-modelo (min-width: 40rem) {
-  .formulario-modelo__acoes {
-    flex-direction: row;
-    gap: var(--p-ritmo-grupo);
-  }
-}
 </style>
