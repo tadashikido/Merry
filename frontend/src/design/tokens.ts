@@ -156,6 +156,7 @@ export const cores = {
   lateralEscura: paletas.meiaNoite[800],
   lateralEscuraTexto: neutros.branco,
   lateralEscuraApoio: paletas.meiaNoite[200],
+  lateralEscuraDivisoria: paletas.meiaNoite[700],
   primaria: paletas.meiaNoite[800],
   primariaEscura: paletas.meiaNoite[900],
   primariaSuave: paletas.meiaNoite[100],

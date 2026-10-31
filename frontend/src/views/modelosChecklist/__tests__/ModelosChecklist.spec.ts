@@ -154,7 +154,7 @@ describe('ModelosChecklistView', () => {
     expect(grupos.map((grupo) => grupo.get('h2').text())).toEqual(['Casamentos', 'Festas de 15 anos', 'Aniversários', 'Comemorações', 'Para qualquer tipo de evento', 'Outros tipos de evento'])
     const selo = (nome: string) => {
       const cartao = wrapper.findAll('[data-teste="modelo-checklist"]').find((item) => item.text().includes(nome))!
-      return cartao.find('[data-teste="badge-status"]').exists() ? cartao.get('[data-teste="badge-status"]').text() : cartao.get('[data-teste="origem-modelo"]').text()
+      return cartao.find('[data-teste="selo-sugerido"]').exists() ? cartao.get('[data-teste="selo-sugerido"]').text() : cartao.get('[data-teste="origem-modelo"]').text()
     }
     expect(selo('Essencial casamento')).toBe('Sugerido para casamento')
     expect(selo('Essencial 15 anos')).toBe('Sugerido para festa de 15 anos')
@@ -163,6 +163,13 @@ describe('ModelosChecklistView', () => {
     expect(selo('Formatura')).toBe(TEXTOS_MODELOS_CHECKLIST.sugerido)
     expect(selo('Evento no campo')).toBe(TEXTOS_MODELOS_POR_TIPO.origemAssessoria)
     expect(wrapper.findAll('[data-teste="modelo-checklist"] h3')).toHaveLength(6)
+    const tom = (nome: string, teste: string) =>
+      wrapper.findAll('[data-teste="modelo-checklist"]').find((item) => item.text().includes(nome))!.get(`[data-teste="${teste}"]`).attributes('data-tom')
+    expect(tom('Essencial casamento', 'tile-tipo')).toBe('rose')
+    expect(tom('Essencial casamento', 'selo-sugerido')).toBe('rose')
+    expect(tom('Essencial 15 anos', 'selo-sugerido')).toBe('orquidea')
+    expect(tom('Formatura', 'tile-tipo')).toBe('neutro')
+    expect(tom('Evento no campo', 'tile-tipo')).toBe('neutro')
     expect(wrapper.find('[data-teste="modelo-checklist"] h2').exists()).toBe(false)
   })
 

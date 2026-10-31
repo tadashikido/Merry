@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink, type RouteLocationRaw } from 'vue-router'
 
-import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
+import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import MenuAcoes from '@/componentes/base/MenuAcoes.vue'
+import TileTipo from '@/componentes/base/TileTipo.vue'
 import type { ItemMenuAcoes } from '@/componentes/base/tipos'
+import type { TipoEvento } from '@/tipos/eventos'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     nome: string
     descricao: string | null
@@ -17,18 +20,29 @@ withDefaults(
     rotuloAcoes: string
     rotuloAcessivelAcoes: string
     nivelTitulo?: 2 | 3
+    tipo?: TipoEvento | null
   }>(),
-  { nivelTitulo: 2 },
+  { nivelTitulo: 2, tipo: undefined },
 )
+
+const partesContagem = computed(() => {
+  const encontrado = /^([\d.]+)(\s.*)$/.exec(props.contagem)
+  return encontrado ? { numero: encontrado[1], resto: encontrado[2] } : null
+})
 
 const emit = defineEmits<{ selecionar: [chave: string] }>()
 </script>
 
 <template>
-  <article class="cartao-modelo">
+  <article class="cartao-modelo cartao">
     <div class="cartao-modelo__corpo">
       <div class="cartao-modelo__textos">
         <div class="cartao-modelo__topo">
+          <TileTipo
+            v-if="tipo !== undefined"
+            class="cartao-modelo__tile"
+            :tipo="tipo"
+          />
           <component
             :is="`h${nivelTitulo}`"
             class="cartao-modelo__nome"
@@ -61,18 +75,21 @@ const emit = defineEmits<{ selecionar: [chave: string] }>()
       </div>
       <div class="cartao-modelo__rodape">
         <span class="cartao-modelo__selos">
-          <BadgeStatus
+          <EtiquetaTipo
             v-if="sugerido"
-            :texto="rotuloSugerido"
-            variante="informacao"
-            icone="informacao"
+            class="cartao-modelo__sugerido"
+            :tipo="tipo ?? null"
+            :rotulo="rotuloSugerido"
+            com-icone
+            icone="centelha"
+            data-teste="selo-sugerido"
           />
           <slot name="detalhes" />
         </span>
         <span
           class="cartao-modelo__contagem numeros-tabulares"
           data-teste="contagem-modelo"
-        >{{ contagem }}</span>
+        ><template v-if="partesContagem"><strong class="cartao-modelo__numero">{{ partesContagem.numero }}</strong>{{ partesContagem.resto }}</template><template v-else>{{ contagem }}</template></span>
       </div>
     </div>
   </article>
@@ -83,9 +100,7 @@ const emit = defineEmits<{ selecionar: [chave: string] }>()
   container: cartao-modelo / inline-size;
   position: relative;
   height: 100%;
-  background: var(--p-cor-superficie);
-  border: 1px solid var(--p-cor-borda);
-  border-radius: var(--p-raio-painel);
+  padding: 0;
 }
 
 .cartao-modelo:hover {
@@ -112,10 +127,11 @@ const emit = defineEmits<{ selecionar: [chave: string] }>()
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--p-ritmo-campo);
+  gap: var(--p-ritmo-grupo);
 }
 
 .cartao-modelo__nome {
+  flex: 1;
   min-width: 0;
   margin: 0;
   font-family: var(--p-fonte-display);
@@ -126,12 +142,12 @@ const emit = defineEmits<{ selecionar: [chave: string] }>()
 }
 
 .cartao-modelo__link {
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
   text-decoration: none;
 }
 
 .cartao-modelo__link:hover {
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
   text-decoration: none;
 }
 
@@ -188,7 +204,7 @@ const emit = defineEmits<{ selecionar: [chave: string] }>()
   gap: var(--p-ritmo-campo);
 }
 
-.cartao-modelo__selos :deep(.badge-status) {
+.cartao-modelo__sugerido {
   white-space: normal;
 }
 
@@ -202,9 +218,21 @@ const emit = defineEmits<{ selecionar: [chave: string] }>()
   color: var(--p-cor-texto-apoio);
 }
 
+.cartao-modelo__numero {
+  font-family: var(--p-fonte-display);
+  font-size: var(--p-fonte-tamanho-titulo);
+  font-weight: var(--p-fonte-peso-medio);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--p-cor-titulo);
+}
+
 @container cartao-modelo (max-width: 17.99rem) {
   .cartao-modelo__corpo {
     padding: var(--p-ritmo-grupo);
+  }
+
+  .cartao-modelo__tile {
+    display: none;
   }
 }
 </style>

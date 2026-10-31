@@ -125,7 +125,7 @@ function notaDoGrupo(grupo: GrupoModelos<T>): string {
   font-size: var(--p-fonte-tamanho-secao);
   font-weight: var(--p-fonte-peso-leve);
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-texto);
+  color: var(--p-cor-titulo);
 }
 
 .grupos-modelos__quantidade {

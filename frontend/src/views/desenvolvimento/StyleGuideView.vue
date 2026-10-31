@@ -427,6 +427,7 @@ const nomesCores: Record<keyof typeof cores, string> = {
   lateralEscura: 'Lateral de destaque escura',
   lateralEscuraTexto: 'Lateral escura · texto',
   lateralEscuraApoio: 'Lateral escura · apoio',
+  lateralEscuraDivisoria: 'Lateral escura · divisória',
   titulo: 'Título · meia-noite 800',
   bordaSuave: 'Borda tracejada do estado vazio',
   navegacao: 'Navegação',

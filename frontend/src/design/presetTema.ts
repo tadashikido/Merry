@@ -297,6 +297,7 @@ export const presetTema = definePreset(Aura, {
       lateralEscura: cores.lateralEscura,
       lateralEscuraTexto: cores.lateralEscuraTexto,
       lateralEscuraApoio: cores.lateralEscuraApoio,
+      lateralEscuraDivisoria: cores.lateralEscuraDivisoria,
       titulo: cores.titulo,
       bordaSuave: cores.bordaSuave,
       tom: tonsCelebracao,

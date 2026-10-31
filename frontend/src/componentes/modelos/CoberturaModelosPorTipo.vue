@@ -4,7 +4,7 @@ import { computed, useId } from 'vue'
 import SecaoRecolhivel from '@/componentes/base/SecaoRecolhivel.vue'
 
 import { TEXTOS_MODELOS_POR_TIPO } from '@/textos/modelos'
-import { VOCABULARIO_TIPO_EVENTO } from '@/textos/tiposEvento'
+import { VOCABULARIO_TIPO_EVENTO, classeTomDoTipo } from '@/textos/tiposEvento'
 import { coberturaPorTipo, situacaoComumCobertura, type CoberturaTipoModelos, type ModeloComTipoESugestao } from '@/utilitarios/modelosPorTipo'
 
 const props = defineProps<{
@@ -29,6 +29,7 @@ const tipos = computed(() =>
     return {
       ...cobertura,
       rotulo: vocabulario.rotuloPlural,
+      classeTom: classeTomDoTipo(cobertura.tipo),
       apoio: apoioDaCobertura(cobertura, vocabulario.contagem.singular),
     }
   }),
@@ -57,7 +58,7 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
 
 <template>
   <section
-    class="cobertura cartao"
+    class="cobertura"
     :aria-labelledby="idTitulo"
     data-teste="cobertura-modelos"
   >
@@ -68,7 +69,7 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
       >
         {{ TEXTOS_MODELOS_POR_TIPO.coberturaTitulo }}
       </h2>
-      <p class="cobertura__apoio texto-legenda">
+      <p class="cobertura__apoio">
         {{ TEXTOS_MODELOS_POR_TIPO.coberturaApoio(recurso) }}
       </p>
     </div>
@@ -81,11 +82,16 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
         v-for="item in tipos"
         :key="item.tipo"
         class="cobertura__tipo"
-        :class="{ 'cobertura__tipo--sem-modelo': item.disponiveis === 0 }"
+        :class="[item.classeTom, { 'cobertura__tipo--sem-modelo': item.disponiveis === 0 }]"
         :data-tipo="item.tipo"
         data-teste="cobertura-tipo"
       >
         <dt class="cobertura__rotulo">
+          <span
+            class="cobertura__ponto"
+            aria-hidden="true"
+            data-teste="cobertura-ponto"
+          />
           {{ item.rotulo }}
         </dt>
         <dd class="cobertura__valor">
@@ -147,6 +153,11 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
   flex-direction: column;
   gap: var(--p-ritmo-grupo);
   min-width: 0;
+  padding: var(--p-ritmo-cartao);
+  color: var(--p-cor-lateral-escura-texto);
+  background: var(--p-cor-lateral-escura);
+  border-radius: var(--p-raio-cartao-amplo);
+  --p-focus-ring-color: var(--p-cor-centelha);
 }
 
 .cobertura__topo {
@@ -162,17 +173,26 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
 }
 
 .cobertura .cobertura__titulo {
+  font-family: var(--p-fonte-display);
   font-size: var(--p-fonte-tamanho-secao);
+  font-weight: var(--p-fonte-peso-leve);
+  line-height: var(--p-fonte-entrelinha-titulo);
+  color: var(--p-cor-lateral-escura-texto);
 }
 
 .cobertura__apoio {
-  color: var(--p-cor-texto-secundario);
+  font-family: var(--p-fonte-serif);
+  font-size: var(--p-fonte-tamanho-corpo);
+  font-style: italic;
+  line-height: var(--p-fonte-entrelinha-leitura);
+  color: var(--p-cor-lateral-escura-apoio);
 }
 
 .cobertura__tipos {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   margin: 0;
+  border-bottom: 1px solid var(--p-cor-lateral-escura-divisoria);
 }
 
 .cobertura__tipo {
@@ -181,14 +201,24 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
   gap: var(--p-ritmo-campo);
   min-width: 0;
   padding-block: var(--p-ritmo-grupo);
-  border-top: 1px solid var(--p-cor-divisoria);
+  border-top: 1px solid var(--p-cor-lateral-escura-divisoria);
 }
 
 .cobertura__rotulo {
-  font-family: var(--p-fonte-display);
+  display: flex;
+  align-items: center;
+  gap: var(--p-ritmo-campo);
   font-size: var(--p-fonte-tamanho-controle);
   font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-texto-secundario);
+  color: var(--p-cor-lateral-escura-texto);
+}
+
+.cobertura__ponto {
+  flex: none;
+  width: 0.625rem;
+  height: 0.625rem;
+  background: var(--tom-viva);
+  border-radius: var(--p-raio-total);
 }
 
 .cobertura__valor {
@@ -200,32 +230,32 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
 
 .cobertura__numero {
   font-family: var(--p-fonte-display);
-  font-size: var(--p-fonte-tamanho-secao);
+  font-size: var(--p-fonte-tamanho-titulo);
   font-weight: var(--p-fonte-peso-leve);
   font-variant-numeric: lining-nums tabular-nums;
   line-height: var(--p-fonte-entrelinha-titulo);
-  color: var(--p-cor-primaria);
+  color: var(--p-cor-lateral-escura-texto);
 }
 
 .cobertura__tipo--sem-modelo .cobertura__numero {
-  color: var(--p-cor-texto-apoio);
+  color: var(--p-cor-lateral-escura-apoio);
 }
 
 .cobertura__nota {
   font-family: var(--p-fonte-serif);
   font-size: var(--p-fonte-tamanho-controle);
+  font-style: italic;
   font-variant-numeric: lining-nums;
   line-height: var(--p-fonte-entrelinha-leitura);
-  color: var(--p-cor-texto-secundario);
+  color: var(--p-cor-lateral-escura-apoio);
 }
 
 .cobertura__tipos--comum .cobertura__tipo {
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   column-gap: var(--p-ritmo-grupo);
-  padding-block: var(--p-ritmo-campo);
 }
 
 .cobertura__comum {
@@ -237,14 +267,18 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
   flex-direction: column;
   gap: var(--p-ritmo-campo);
   padding-left: var(--p-ritmo-grupo);
-  border-left: 2px solid var(--p-cor-primaria);
+  border-left: 2px solid var(--p-cor-centelha);
 }
 
 .cobertura .cobertura__subtitulo {
-  font-family: var(--p-fonte-display);
+  font-family: var(--p-fonte-interface);
   font-size: var(--p-fonte-tamanho-controle);
-  font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-texto);
+  font-weight: var(--p-fonte-peso-seminegrito);
+  color: var(--p-cor-centelha);
+}
+
+.cobertura__reaproveitamento :deep(.recolhivel__resumo) {
+  color: var(--p-cor-centelha);
 }
 
 .cobertura__lista {
@@ -256,7 +290,7 @@ function apoioDaCobertura(cobertura: CoberturaTipoModelos, singular: string): st
   list-style: none;
   font-size: var(--p-fonte-tamanho-controle);
   line-height: var(--p-fonte-entrelinha-leitura);
-  color: var(--p-cor-texto-secundario);
+  color: var(--p-cor-lateral-escura-apoio);
 }
 
 @container cobertura-modelos (min-width: 36rem) {

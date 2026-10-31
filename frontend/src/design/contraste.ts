@@ -163,6 +163,7 @@ function paresDosTons(): ParContraste[] {
       { descricao: `Tom ${tom}: data sobre fundo`, frente: cor.data, fundo: cor.fundo, nivel: 'texto' as const },
       { descricao: `Tom ${tom}: título meia-noite sobre fundo`, frente: cores.titulo, fundo: cor.fundo, nivel: 'texto' as const },
       { descricao: `Tom ${tom}: viva sobre o fundo de operação`, frente: cor.viva, fundo: cores.operacaoFundo, nivel: 'texto' as const },
+      { descricao: `Tom ${tom}: ponto viva sobre a lateral escura`, frente: cor.viva, fundo: cores.lateralEscura, nivel: 'componente' as const },
     ]
   })
 }

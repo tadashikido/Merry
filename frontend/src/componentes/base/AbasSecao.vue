@@ -38,17 +38,19 @@ defineProps<{
 
 <style scoped>
 .abas-secao {
+  display: flex;
   max-width: 100%;
   overflow-x: auto;
-  border-bottom: 1px solid var(--p-cor-divisoria);
 }
 
 .abas-secao__lista {
-  display: flex;
+  display: inline-flex;
   gap: var(--p-espaco-1);
   margin: 0;
-  padding: 0 0 var(--p-espaco-2);
+  padding: var(--p-espaco-1);
   list-style: none;
+  background: var(--p-cor-trilho);
+  border-radius: var(--p-raio-trilho-abas);
 }
 
 .abas-secao__item {
@@ -59,26 +61,31 @@ defineProps<{
   display: inline-flex;
   align-items: center;
   min-height: var(--p-dimensao-alvo-toque);
-  padding: var(--p-espaco-1) var(--p-espaco-4);
+  padding: var(--p-espaco-1) var(--p-espaco-5);
   font-family: var(--p-fonte-interface);
   font-size: var(--p-fonte-tamanho-controle);
   font-weight: var(--p-fonte-peso-medio);
   color: var(--p-cor-texto-secundario);
   text-decoration: none;
   white-space: nowrap;
-  border-radius: var(--p-raio-controle);
+  border-radius: var(--p-raio-aba);
 }
 
 .abas-secao__aba:hover {
-  color: var(--p-cor-texto);
-  background: var(--p-cor-superficie-sutil);
+  color: var(--p-cor-titulo);
 }
 
 .abas-secao__aba--ativa,
 .abas-secao__aba--ativa:hover {
   font-weight: var(--p-fonte-peso-seminegrito);
-  color: var(--p-cor-primaria);
-  background: var(--p-cor-primaria-suave);
+  color: var(--p-cor-titulo);
+  background: var(--p-cor-superficie);
+  box-shadow: var(--p-sombra-suave);
+}
+
+.abas-secao__aba:focus-visible {
+  outline: var(--p-focus-ring-width) var(--p-focus-ring-style) var(--p-focus-ring-color);
+  outline-offset: var(--p-focus-ring-offset);
 }
 
 @media (pointer: coarse) {

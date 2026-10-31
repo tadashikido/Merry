@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { classeIcone } from '@/design/icones'
+import { classeIcone, type NomeIcone } from '@/design/icones'
 import type { TomCelebracao } from '@/design/tokens'
 import { ROTULOS_NAVEGACAO } from '@/textos/rotulos'
 import { ICONE_DO_TOM, classeTom, ehTipoEvento, tomDoTipo, vocabularioDoTipo } from '@/textos/tiposEvento'
 import type { TipoEvento } from '@/tipos/eventos'
 
 const props = withDefaults(
-  defineProps<{ tipo?: TipoEvento | null; tom?: TomCelebracao | null; rotulo?: string; comIcone?: boolean }>(),
-  { tipo: null, tom: null, rotulo: undefined, comIcone: false },
+  defineProps<{ tipo?: TipoEvento | null; tom?: TomCelebracao | null; rotulo?: string; comIcone?: boolean; icone?: NomeIcone }>(),
+  { tipo: null, tom: null, rotulo: undefined, comIcone: false, icone: undefined },
 )
 
 const tomAplicado = computed<TomCelebracao>(() => props.tom ?? tomDoTipo(props.tipo))
@@ -25,7 +25,7 @@ const texto = computed(() => props.rotulo ?? (ehTipoEvento(props.tipo) ? vocabul
   >
     <span
       v-if="comIcone"
-      :class="[classeIcone(ICONE_DO_TOM[tomAplicado]), 'etiqueta-tipo__icone']"
+      :class="[classeIcone(icone ?? ICONE_DO_TOM[tomAplicado]), 'etiqueta-tipo__icone']"
       aria-hidden="true"
     />
     {{ texto }}

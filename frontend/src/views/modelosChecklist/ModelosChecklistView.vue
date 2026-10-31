@@ -78,7 +78,7 @@ function executarAcao(modelo: ModeloChecklistResumoDto, chave: string) {
         #detalhes
       >
         <p
-          class="texto-legenda"
+          class="texto-apoio"
           aria-live="polite"
           data-teste="resumo-modelos"
         >
@@ -167,6 +167,7 @@ function executarAcao(modelo: ModeloChecklistResumoDto, chave: string) {
               :rotulo-acoes="TEXTOS_MODELOS_CHECKLIST.maisAcoes"
               :rotulo-acessivel-acoes="TEXTOS_MODELOS_CHECKLIST.maisAcoesAria(modelo.nome)"
               :nivel-titulo="3"
+              :tipo="modelo.tipoEvento"
               @selecionar="executarAcao(modelo, $event)"
             >
               <template
