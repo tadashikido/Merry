@@ -439,6 +439,7 @@ function excluir() {
           :options="opcoesFornecedor"
           option-label="rotulo"
           option-value="valor"
+          :placeholder="TEXTOS_CRONOGRAMA.nenhumFornecedor"
           :invalid="invalido"
           :aria-describedby="descritoPor"
           :disabled="executando"

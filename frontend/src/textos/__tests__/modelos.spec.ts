@@ -51,7 +51,8 @@ describe('textos de modelos por tipo', () => {
     expect(complementoMarcoModelo('dozeMeses', 'da festa de 15 anos')).toBe('ou mais antes da festa de 15 anos')
     expect(complementoMarcoModelo('seisMeses', 'do aniversário')).toBe('antes do aniversário')
     expect(complementoMarcoModelo('trintaDias', 'do evento')).toBe('antes do evento')
-    expect(complementoMarcoModelo('retaFinal', 'do casamento')).toBe('último mês')
+    expect(complementoMarcoModelo('retaFinal', 'do casamento')).toBe('último mês antes do casamento')
+    expect(complementoMarcoModelo('retaFinal', 'da festa de 15 anos')).toBe('último mês antes da festa de 15 anos')
     expect(complementoMarcoModelo('noDia', 'da comemoração')).toBe('da comemoração')
     expect(complementoMarcoModelo('depois', 'do evento')).toBe('do evento')
     expect(complementoMarcoModelo('semPrazo', 'do evento')).toBeNull()
@@ -88,15 +89,19 @@ describe('textos de modelos por tipo', () => {
 
   it('[UNITÁRIO] dicas e próximos passos do formulário falam da data do tipo', () => {
     expect(TEXTOS_MODELOS_CHECKLIST.dicasModelo('da festa de 15 anos')[1]).toBe(
-      'Os itens entram no detalhe do modelo, cada um com prazo em dias antes ou depois da data da festa de 15 anos.',
+      'Os itens se editam no detalhe do modelo, cada um com prazo em dias antes ou depois da data da festa de 15 anos.',
     )
     expect(TEXTOS_MODELOS_CHECKLIST.dicasModelo('do evento')[1]).toContain('data do evento')
     expect(TEXTOS_MODELOS_CHECKLIST.depoisDeCriarAplicar('do evento')).toBe(
       'Em Aplicar checklist ou Aplicar outro modelo, escolha este modelo. Cada item vira uma tarefa com prazo contado a partir da data do evento.',
     )
-    expect(TEXTOS_MODELOS_POR_TIPO.edicaoNaoMudaAplicados('checklist')).toBe(
+    expect(TEXTOS_MODELOS_POR_TIPO.edicaoNaoMudaAplicados('checklist', TEXTOS_MODELOS_POR_TIPO.camposEdicaoModelo)).toBe(
       'Mudar o nome ou a descrição não altera o checklist dos eventos que já aplicaram este modelo.',
     )
+    expect(TEXTOS_MODELOS_POR_TIPO.edicaoNaoMudaAplicados('cronograma', TEXTOS_MODELOS_POR_TIPO.camposEdicaoModeloCronograma)).toBe(
+      'Mudar o nome, a descrição ou o horário de referência não altera o cronograma dos eventos que já aplicaram este modelo.',
+    )
+    expect(TEXTOS_MODELOS_CHECKLIST.dicasModelo('do evento')[1]).toMatch(/^Os itens se editam no detalhe do modelo/)
   })
 
   it.each([
@@ -116,7 +121,7 @@ describe('textos de modelos por tipo', () => {
     expect(TEXTOS_MODELOS_CRONOGRAMA.momentoTitulo(momento.relativoAoMomento)).toBe(`Em relação ${relativo}`)
     expect(rotuloLocalModelo('Cerimonia', tipo as TipoEvento | null)).toBe(principal)
     expect(rotuloLocalModelo('Recepcao', tipo as TipoEvento | null)).toBe(secundario)
-    expect(rotuloLocalModelo('Outro', tipo as TipoEvento | null)).toBe('Outro')
+    expect(rotuloLocalModelo('Outro', tipo as TipoEvento | null)).toBe('Escrever o local')
   })
 
   it('[UNITÁRIO] textos do detalhe de cronograma usam o momento sem cerimônia como padrão', () => {

@@ -921,7 +921,7 @@ describe('FornecedorView — atuação na assessoria', () => {
     expect(bloco.get('[data-teste="atuacao-proximo"]').text()).toBe('O próximo é Anfitriã evento-futuro, em 10 jun 2099.')
     expect(bloco.get('[data-teste="atuacao-ultima"]').text()).toContain('14 mar 2020')
     expect(bloco.get('[data-teste="atuacao-tipos"]').text()).toBe('1 casamento e 1 festa de 15 anos')
-    expect(bloco.get('[data-teste="atuacao-sem-tipo"]').text()).toBe('1 em evento arquivado, sem tipo identificado')
+    expect(bloco.get('[data-teste="atuacao-sem-tipo"]').text()).toBe('1 em evento arquivado ou sem tipo identificado')
     expect(bloco.get('[data-teste="atuacao-categoria"]').text()).toBe('Decoração é essencial para 1 evento pela frente.')
     expect(bloco.findAll('a, button')).toHaveLength(0)
 
@@ -1092,6 +1092,20 @@ describe('FornecedorFormularioView — categoria e lateral para eventos', () => 
     expect(situacao(wrapper).text()).toBe('Essencial nos 4 tipos de evento; já tem 2 fornecedores ativos.')
     await escolher(wrapper, 'Beleza')
     expect(situacao(wrapper).text()).toBe('Essencial em casamentos e festas de 15 anos; nenhum fornecedor ativo ainda.')
+  })
+
+  it('[COMPONENTE] edição: situação carregada é descrita no campo sem anúncio; troca pelo usuário anuncia uma vez', async () => {
+    const { wrapper } = await abrirEdicao([])
+
+    const texto = situacao(wrapper)
+    expect(texto.text()).not.toBe('')
+    expect(texto.attributes('aria-live')).toBe('off')
+    const descritoPor = wrapper.get('[data-teste="campo-categoria"]').attributes('aria-describedby') ?? ''
+    expect(descritoPor.split(' ')).toContain(texto.attributes('id'))
+
+    await escolher(wrapper, 'Fotografia')
+    expect(situacao(wrapper).attributes('aria-live')).toBe('polite')
+    expect(wrapper.findAll('[aria-live="polite"]').filter((elemento) => elemento.text() !== '')).toHaveLength(1)
   })
 
   it('[COMPONENTE] falha da base de fornecedores omite só a contagem e mantém o cadastro', async () => {

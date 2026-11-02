@@ -2,7 +2,8 @@ import type { VarianteStatus } from '@/componentes/base/tipos'
 import type { FaixaEtaria, RespostaRsvp, StatusEnvioConvite } from '@/tipos/convidados'
 import { formatarNumero } from '@/utilitarios/formatacao'
 import { NOME_PRODUTO } from '@/textos/rotulos'
-import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { referenciaDoModelo } from '@/textos/modelos'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { TipoEvento } from '@/tipos/eventos'
 
 function plural(quantidade: number, singular: string, varias: string): string {
@@ -21,7 +22,7 @@ export function emFrase(itens: readonly string[], conector = 'e'): string {
 }
 
 export function referenciaDoEvento(tipo: TipoEvento | null | undefined): string {
-  return ehTipoEvento(tipo) ? vocabularioOuNeutro(tipo).referencia.artigo : 'o evento'
+  return referenciaDoModelo(tipo).artigo
 }
 
 export function gruposSugeridos(tipo: TipoEvento | null | undefined): readonly string[] {

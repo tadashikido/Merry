@@ -92,6 +92,7 @@ const arquivado = computed(() => mapa.value?.eventoArquivado ?? evento.value?.ar
 const podeEditar = computed(() => mapa.value !== null && !arquivado.value)
 
 const tipo = computed(() => (evento.value && ehTipoEvento(evento.value.tipo) ? evento.value.tipo : null))
+const aguardandoTipo = computed(() => mapa.value !== null && evento.value === null && eventos.carregandoAtual)
 const vocabulario = computed(() => vocabularioOuNeutro(tipo.value))
 const rotuloEspecial = computed(() => vocabulario.value.mesaEspecial)
 const tituloVazio = computed(() =>
@@ -470,7 +471,7 @@ function acaoCabecalho(chave: string) {
         />
 
         <EstadoCarregando
-          v-if="store.carregando && !mapa"
+          v-if="(store.carregando && !mapa) || aguardandoTipo"
           variante="lista"
           :linhas="4"
         />

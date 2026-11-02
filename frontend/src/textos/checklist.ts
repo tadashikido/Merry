@@ -117,7 +117,7 @@ export const TEXTOS_MODELOS_CHECKLIST = {
   notaAplicar: 'Itens já aplicados não se repetem, e editar o modelo não muda as tarefas já criadas.',
   dicasModelo: (contracaoDe: string) => [
     'Na descrição, conte quando usar: porte, estilo ou local.',
-    `Os itens entram no detalhe do modelo, cada um com prazo em dias antes ou depois da data ${contracaoDe}.`,
+    `Os itens se editam no detalhe do modelo, cada um com prazo em dias antes ou depois da data ${contracaoDe}.`,
   ],
   depoisDeCriarItens: 'Adicione os itens no detalhe do modelo, que abre ao criar.',
   depoisDeCriarAplicar: (contracaoDe: string) =>
@@ -133,6 +133,9 @@ export function complementoMarcoModelo(marco: MarcoChecklist, contracaoDe: strin
   }
   if (marco === 'noDia' || marco === 'depois') {
     return contracaoDe
+  }
+  if (marco === 'retaFinal') {
+    return `último mês antes ${contracaoDe}`
   }
   return COMPLEMENTO_MARCO_CHECKLIST[marco]
 }

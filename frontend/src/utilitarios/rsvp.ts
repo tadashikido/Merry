@@ -1,7 +1,7 @@
 import { tratamentoDoConvite } from '@/textos/acessoAnfitriao'
 import { TEXTOS_COBRANCA } from '@/textos/confirmacoes'
 import { TEXTOS_ENVIO_CONVITE } from '@/textos/rsvp'
-import { aceitaSegundoNome, ehTipoEvento, vocabularioDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
+import { aceitaSegundoNome, ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { EventoDto, DataCalendario, TipoEvento } from '@/tipos/eventos'
 import type { ConviteDto } from '@/tipos/convidados'
 import type { EscolhaPresencaRsvp, PessoaRsvpDto } from '@/tipos/rsvp'
@@ -61,7 +61,7 @@ export function montarMensagemConvite(
   const nomes = formatarNomesEmFrase(evento.nomePrimeiraPessoa, evento.nomeSegundaPessoa)
   return TEXTOS_ENVIO_CONVITE.mensagemPronta({
     nomeConvite: convite.nome,
-    celebracao: vocabularioDoTipo(evento.tipo).celebracao(nomes, varios),
+    celebracao: vocabularioOuNeutro(evento.tipo).celebracao(nomes, varios),
     varios,
     data: formatarDataCalendarioExtenso(evento.data),
     dataLimite: formatarDiaMes(evento.dataLimiteRsvpEfetiva),

@@ -41,8 +41,8 @@ import {
   INTERVALO_RELOGIO_MS,
   itensPainelDoGrandeDia,
   minutoAtualNoRoteiro,
-  momentoPrincipal,
 } from '@/utilitarios/grandeDia'
+import { fraseMomentoDoCronograma } from '@/utilitarios/paraODiaCronograma'
 
 const props = defineProps<{ id: string }>()
 
@@ -91,17 +91,12 @@ const fraseMomento = computed(() => {
   if (!noDia.value || !momento.value || !dados.value) {
     return null
   }
-  const principal = momentoPrincipal(minutoAtual.value, dados.value.horarioCerimonia)
-  if (!principal) {
-    return null
-  }
-  const nome = vocabulario.value.momento.artigo
-  if (principal.minutos > 0) {
-    return TEXTOS_GRANDE_DIA.momentoComeca(nome, TEXTOS_GRANDE_DIA.emMinutos(principal.minutos), principal.horario)
-  }
-  return principal.minutos === 0
-    ? TEXTOS_GRANDE_DIA.momentoComecaAgora(nome, principal.horario)
-    : TEXTOS_GRANDE_DIA.momentoComecou(nome, principal.horario)
+  return fraseMomentoDoCronograma({
+    momento: vocabulario.value.momento.artigo,
+    horario: dados.value.horarioCerimonia,
+    fase: fase.value,
+    minutoAtual: minutoAtual.value,
+  })
 })
 
 const selo = computed(() => {

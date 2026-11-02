@@ -8,7 +8,7 @@ import NomesAnfitrioes from '@/componentes/base/NomesAnfitrioes.vue'
 import TileTipo from '@/componentes/base/TileTipo.vue'
 import EtiquetaFaseEvento from '@/componentes/eventos/EtiquetaFaseEvento.vue'
 import { ROTULOS_FASE, descreverContagem } from '@/textos/eventos'
-import { classeTomDoTipo, vocabularioDoTipo } from '@/textos/tiposEvento'
+import { classeTomDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { EventoResumoDto } from '@/tipos/eventos'
 import { formatarDataCalendarioComDiaSemana, formatarNomesEmFrase } from '@/utilitarios/formatacao'
 
@@ -19,7 +19,7 @@ const quando = computed(() => {
   return props.evento.horario ? `${data}, ${props.evento.horario}` : data
 })
 
-const tipo = computed(() => vocabularioDoTipo(props.evento.tipo).rotulo)
+const tipo = computed(() => vocabularioOuNeutro(props.evento.tipo).rotulo)
 
 const nomeAcessivel = computed(() =>
   [

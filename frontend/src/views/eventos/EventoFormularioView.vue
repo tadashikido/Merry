@@ -26,7 +26,7 @@ import { MENSAGENS_PADRAO } from '@/textos/mensagens'
 import { ROTULOS_ACOES } from '@/textos/rotulos'
 import { TEXTOS_EVENTOS } from '@/textos/eventos'
 import { TEXTOS_DUPLICACAO_EVENTO } from '@/textos/duplicacaoEvento'
-import { aceitaSegundoNome, vocabularioDoTipo, type VocabularioTipoEvento } from '@/textos/tiposEvento'
+import { aceitaSegundoNome, vocabularioOuNeutro, type VocabularioTipoEvento } from '@/textos/tiposEvento'
 import type { EventoDto, SalvarEventoRequest, TipoEvento } from '@/tipos/eventos'
 import { focarElemento } from '@/utilitarios/foco'
 import { formatarDataCalendario, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
@@ -109,7 +109,7 @@ const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 const idCampo = (campo: Campo) => `evento-${campo}`
 const idFoco = (campo: Campo) => (campo === 'tipo' ? `${idCampo('tipo')}-${formulario.valores.tipo}` : idCampo(campo))
 
-const vocabulario = computed<VocabularioTipoEvento>(() => vocabularioDoTipo(formulario.valores.tipo))
+const vocabulario = computed<VocabularioTipoEvento>(() => vocabularioOuNeutro(formulario.valores.tipo))
 const temSegundoNome = computed<boolean>(() => aceitaSegundoNome(formulario.valores.tipo))
 
 function regraSegundoNomeObrigatorio(valor: unknown): string | null {

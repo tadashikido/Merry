@@ -325,6 +325,7 @@ function cancelar() {
           >
             <OrientacaoFormularioModelo
               :recurso="TEXTOS_MODELOS_CRONOGRAMA.recurso"
+              :campos-edicao="TEXTOS_MODELOS_POR_TIPO.camposEdicaoModeloCronograma"
               :rotulo-sugerido="TEXTOS_MODELOS_CRONOGRAMA.sugerido"
               :dicas="dicasModelo"
               :edicao="edicao"

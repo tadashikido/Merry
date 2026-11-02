@@ -3228,7 +3228,7 @@ const regras = [
         Fornecedores
       </h2>
       <p class="guia__texto">
-        A base de fornecedores é a agenda de contatos da assessoria. O elemento memorável é o IndiceCategorias: uma lista de categorias com a contagem em Fraunces editorial (número editorial), que é ao mesmo tempo panorama da base e filtro; a categoria escolhida fica em meia-noite 100 com texto meia-noite. No celular o índice vira um seletor "Categoria". A lista agrupa por categoria (cabeçalho com a contagem em texto de apoio) e cada fornecedor é uma LinhaFornecedor, com os canais de contato na própria linha. Ícones novos: fornecedor (traço fino) e telefone.
+        A base de fornecedores é a agenda de contatos da assessoria. O elemento memorável é o IndiceCategorias: uma lista de categorias com a contagem em Fraunces editorial (número editorial), que é ao mesmo tempo panorama da base e filtro; a categoria escolhida fica em pílula meia-noite com texto claro e peso seminegrito. No celular o índice vira um seletor "Categoria". A lista agrupa por categoria (cabeçalho com a contagem em texto de apoio) e cada fornecedor é uma LinhaFornecedor, com os canais de contato na própria linha. Ícones novos: fornecedor (traço fino) e telefone.
       </p>
       <h3 class="guia__subtitulo">
         Índice de categorias e linhas de fornecedor

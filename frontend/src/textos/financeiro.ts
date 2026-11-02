@@ -86,6 +86,7 @@ export const TEXTOS_PAGAMENTOS_MES = {
   mesDoEvento: (contracaoDe: string) => `Mês ${contracaoDe}`,
   parcelas: (quantidade: number) => `${quantidade} ${plural(quantidade, 'parcela', 'parcelas')}`,
   ateEvento: (valor: string, contracaoDe: string) => `${valor} até a data ${contracaoDe}.`,
+  nadaAteEvento: (contracaoDe: string) => `Nada vence até a data ${contracaoDe}.`,
   depois: (valor: string) => `${valor} depois dela.`,
   restante: (valor: string, meses: number) => `E mais ${valor} em ${meses} ${plural(meses, 'mês', 'meses')}.`,
 } as const

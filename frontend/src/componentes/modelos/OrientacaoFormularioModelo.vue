@@ -17,8 +17,9 @@ const props = withDefaults(
     sugerido?: boolean
     contagem?: string | null
     recolhivel?: boolean
+    camposEdicao?: string
   }>(),
-  { edicao: false, tipo: null, sugerido: false, contagem: null, recolhivel: false },
+  { edicao: false, tipo: null, sugerido: false, contagem: null, recolhivel: false, camposEdicao: TEXTOS_MODELOS_POR_TIPO.camposEdicaoModelo },
 )
 
 const idOnde = useId()
@@ -28,7 +29,7 @@ const idExemplos = useId()
 const selo = computed(() => rotuloSugeridoDoModelo(props.tipo, props.rotuloSugerido))
 const ondeAparece = computed(() => ondeApareceModelo(props.edicao ? props.tipo : null, props.recurso))
 const nota = computed(() =>
-  props.edicao ? TEXTOS_MODELOS_POR_TIPO.edicaoNaoMudaAplicados(props.recurso) : TEXTOS_MODELOS_POR_TIPO.novoParaQualquerTipo,
+  props.edicao ? TEXTOS_MODELOS_POR_TIPO.edicaoNaoMudaAplicados(props.recurso, props.camposEdicao) : TEXTOS_MODELOS_POR_TIPO.novoParaQualquerTipo,
 )
 const exemplos = exemplosNomeModelo()
 </script>

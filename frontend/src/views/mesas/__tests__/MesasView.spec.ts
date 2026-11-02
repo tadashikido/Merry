@@ -95,6 +95,25 @@ function titulosMesas(): string[] {
 }
 
 describe('MesasView', { timeout: 30_000 }, () => {
+  it('[COMPONENTE] mapa que chega antes do evento espera o tipo, sem mostrar a mesa especial com rótulo neutro', async () => {
+    let liberarEvento: (resposta: Response) => void = () => {}
+    const eventoPendente = new Promise<Response>((resolver) => {
+      liberarEvento = resolver
+    })
+    const eventoAtrasado: Rota = (url, init) =>
+      (init?.method ?? 'GET') === 'GET' && url === ROTA_EVENTO ? (eventoPendente as unknown as Response) : undefined
+    rotearFetch(fetchSimulado, eventoAtrasado, quando('GET', ROTA_MESAS, () => respostaJson(mapaExemplo())))
+    await abrir()
+
+    expect(wrapper!.findAll('[data-teste="mesa"]')).toHaveLength(0)
+    expect(wrapper!.text()).not.toContain('Mesa de honra')
+
+    liberarEvento(respostaJson(eventoCompleto()))
+    await flushPromises()
+
+    expect(titulosMesas()[0]).toBe('Mesa dos noivos')
+  })
+
   it('[COMPONENTE] excluir mesa some na hora, oferece desfazer e desfazer devolve as pessoas sentadas sem DELETE', async () => {
     rotearFetch(fetchSimulado, ...rotasPadrao(mapaExemplo(), quando('DELETE', `${ROTA_MESAS}/${MESA_PADRINHOS}`, () => respostaVazia())))
     await abrir()

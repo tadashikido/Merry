@@ -455,6 +455,7 @@ function excluir() {
                         :options="opcoesCategoria"
                         option-label="rotulo"
                         option-value="valor"
+                        :placeholder="TEXTOS_ITEM_MODELO_CRONOGRAMA.nenhumaCategoria"
                         :invalid="invalido"
                         :aria-describedby="descritoPor"
                         :disabled="enviando"

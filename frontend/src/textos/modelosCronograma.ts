@@ -135,7 +135,7 @@ export const TEXTOS_MODELOS_CRONOGRAMA = {
 const ROTULOS_LOCAL_SEM_TIPO: Record<OpcaoLocalModelo, string> = {
   Cerimonia: 'Local principal',
   Recepcao: 'Outro local',
-  Outro: 'Outro',
+  Outro: 'Escrever o local',
 }
 
 export function rotuloLocalModelo(opcao: OpcaoLocalModelo, tipo: TipoEvento | null | undefined): string {
@@ -150,7 +150,7 @@ export function dicasModeloCronograma(tipo: TipoEvento | null | undefined): stri
   const momento = momentoDoModelo(tipo)
   return [
     'Na descrição, conte quando usar: porte, estilo ou local.',
-    `Os itens entram no detalhe do modelo, cada um com horário antes ou depois ${momento.contracaoDe}, da véspera ao dia seguinte.`,
+    `Os itens se editam no detalhe do modelo, cada um com horário antes ou depois ${momento.contracaoDe}, da véspera ao dia seguinte.`,
     ehTipoEvento(tipo)
       ? `O horário de referência é só um exemplo: ao aplicar, o roteiro acompanha o horário ${momento.contracaoDe} marcado no evento.`
       : `Ao aplicar, os horários contam a partir do momento principal de cada evento: ${momentosPrincipaisEmFrase()}.`,

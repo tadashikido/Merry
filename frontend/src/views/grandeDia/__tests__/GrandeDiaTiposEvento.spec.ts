@@ -9,7 +9,7 @@ import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
 import { TEXTOS_CADASTRO } from '@/textos/autenticacao'
 import { ROTULOS_MODULOS_EVENTO } from '@/textos/rotulos'
-import { TOM_DO_TIPO, vocabularioDoTipo } from '@/textos/tiposEvento'
+import { TOM_DO_TIPO, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { SessaoDto } from '@/tipos/api'
 import type { TotaisConvidadosDto } from '@/tipos/convidados'
 import type { TipoEvento } from '@/tipos/eventos'
@@ -198,7 +198,7 @@ describe('GrandeDiaView — tipos de evento', () => {
     await abrir(grandeDia({ tipo }))
 
     expect(wrapper!.get('[data-teste="grande-dia"]').classes()).toContain(`tom-tipo--${TOM_DO_TIPO[tipo]}`)
-    expect(wrapper!.get('[data-teste="grande-dia-tipo"]').text()).toBe(vocabularioDoTipo(tipo).rotulo)
+    expect(wrapper!.get('[data-teste="grande-dia-tipo"]').text()).toBe(vocabularioOuNeutro(tipo).rotulo)
     expect(wrapper!.get('[data-teste="cartao-agora"]').classes()).toContain('cartao-agora--cerimonia')
   })
 

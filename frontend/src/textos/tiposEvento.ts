@@ -298,10 +298,6 @@ export function ehTipoEvento(valor: unknown): valor is TipoEvento {
   return typeof valor === 'string' && (TIPOS_EVENTO as readonly string[]).includes(valor)
 }
 
-export function vocabularioDoTipo(tipo: TipoEvento | null | undefined): VocabularioTipoEvento {
-  return VOCABULARIO_TIPO_EVENTO[ehTipoEvento(tipo) ? tipo : 'Casamento']
-}
-
 export const TIPO_EVENTO_NEUTRO: TipoEvento = 'Comemoracao'
 
 export function vocabularioOuNeutro(tipo: TipoEvento | null | undefined): VocabularioTipoEvento {

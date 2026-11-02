@@ -883,6 +883,10 @@ function alterarResposta() {
     grid-row: 1;
   }
 
+  .rsvp__coluna-convite :deep(.cabecalho-convite__locais) {
+    display: none;
+  }
+
   .rsvp__principal {
     grid-column: 2;
     grid-row: 1 / span 2;

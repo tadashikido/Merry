@@ -16,7 +16,7 @@ import { useNotificacao } from '@/composables/useNotificacao'
 import { useAutenticacaoStore, type TipoFalha } from '@/stores/autenticacao'
 import { TEXTOS_ACEITE_ANFITRIAO, TRATAMENTO_ACEITE_ANFITRIAO, tratamentoDoConvite } from '@/textos/acessoAnfitriao'
 import { MENSAGENS_AUTENTICACAO } from '@/textos/autenticacao'
-import { vocabularioDoTipo } from '@/textos/tiposEvento'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { ConviteAcessoAnfitriaoDto } from '@/tipos/acessoAnfitriao'
 import { focarElemento } from '@/utilitarios/foco'
 import { formatarData, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
@@ -76,7 +76,7 @@ const nomes = computed(() =>
   convite.value ? formatarNomesAnfitrioes(convite.value.nomePrimeiraPessoa, convite.value.nomeSegundaPessoa) : '',
 )
 
-const vocabulario = computed(() => vocabularioDoTipo(convite.value?.tipo))
+const vocabulario = computed(() => vocabularioOuNeutro(convite.value?.tipo))
 
 const textos = computed(() => TRATAMENTO_ACEITE_ANFITRIAO[tratamentoDoConvite(convite.value?.nomeSegundaPessoa)])
 

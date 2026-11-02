@@ -6,7 +6,7 @@ import { corpoDaChamada, montarView, prepararAplicacao, respostaJson, respostaPr
 import { simularMatchMedia } from '@/__tests__/auxiliaresTeste'
 import CabecalhoConvite from '@/componentes/base/CabecalhoConvite.vue'
 import { registrarProvedorAutenticacao } from '@/servicos/clienteHttp'
-import { VOCABULARIO_TIPO_EVENTO, aceitaSegundoNome, ehTipoEvento, tiposEventoEmFrase, vocabularioDoTipo } from '@/textos/tiposEvento'
+import { VOCABULARIO_TIPO_EVENTO, aceitaSegundoNome, ehTipoEvento, tiposEventoEmFrase, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import { TIPOS_EVENTO, type TipoEvento } from '@/tipos/eventos'
 import { montarLocaisOperacao } from '@/utilitarios/cronogramaPublico'
 import { formatarNomesAnfitrioes, formatarNomesEmFrase } from '@/utilitarios/formatacao'
@@ -51,10 +51,11 @@ function rotulos(): string[] {
 const TERMOS_CASAMENTO = /cerimônia|recepção|noiv|casamento|padrinh/i
 
 describe('vocabulário por tipo de evento', () => {
-  it('[UNITÁRIO] cobre os quatro tipos e cai em Casamento para valor desconhecido', () => {
+  it('[UNITÁRIO] cobre os quatro tipos e cai no neutro (Comemoração), nunca em Casamento, para valor desconhecido', () => {
     expect(Object.keys(VOCABULARIO_TIPO_EVENTO)).toEqual([...TIPOS_EVENTO])
-    expect(vocabularioDoTipo('Corporativo' as TipoEvento)).toBe(VOCABULARIO_TIPO_EVENTO.Casamento)
-    expect(vocabularioDoTipo(null)).toBe(VOCABULARIO_TIPO_EVENTO.Casamento)
+    expect(vocabularioOuNeutro('Corporativo' as TipoEvento)).toBe(VOCABULARIO_TIPO_EVENTO.Comemoracao)
+    expect(vocabularioOuNeutro(null)).toBe(VOCABULARIO_TIPO_EVENTO.Comemoracao)
+    expect(vocabularioOuNeutro(undefined)).toBe(VOCABULARIO_TIPO_EVENTO.Comemoracao)
     expect(ehTipoEvento('QuinzeAnos')).toBe(true)
     expect(ehTipoEvento('Formatura')).toBe(false)
   })

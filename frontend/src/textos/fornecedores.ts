@@ -183,7 +183,7 @@ export const TEXTOS_ATUACAO_FORNECEDOR = {
   ultimaRotulo: 'Última atuação',
   porTipoRotulo: 'Por tipo de evento',
   semTipo: (quantidade: number) =>
-    `${quantidade.toLocaleString('pt-BR')} em ${plural(quantidade, 'evento arquivado', 'eventos arquivados')}, sem tipo identificado`,
+    `${quantidade.toLocaleString('pt-BR')} em ${plural(quantidade, 'evento arquivado ou sem tipo identificado', 'eventos arquivados ou sem tipo identificado')}`,
   essencialCarteira: (categoria: string, eventos: number) =>
     `${categoria} é essencial para ${eventos.toLocaleString('pt-BR')} ${plural(eventos, 'evento', 'eventos')} pela frente.`,
   essencialTipos: (categoria: string, tipos: readonly TipoEvento[]) =>

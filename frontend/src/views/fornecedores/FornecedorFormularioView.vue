@@ -85,6 +85,13 @@ const formulario = useFormulario(
 const { liberarSaida } = useAlteracoesNaoSalvas(formulario.temAlteracoes)
 
 const carteira = computed(() => (eventos.ativosCarregados ? eventos.ativos : null))
+const categoriaAlterada = ref(false)
+
+function alterarCategoria() {
+  categoriaAlterada.value = true
+  formulario.revalidarAoDigitar('categoria')
+}
+
 const situacaoCategoria = computed(() => {
   const categoria = formulario.valores.categoria
   if (!categoria) {
@@ -103,6 +110,7 @@ const atuacao = computed(() => {
 const comLateral = computed(() => !carregando.value && !falhaCarga.value && (!edicao.value || nomeCarregado.value !== ''))
 
 const idCampo = (campo: Campo) => `fornecedor-${campo}`
+const idSituacaoCategoria = `${idCampo('categoria')}-situacao`
 const titulo = computed(() => (edicao.value ? TEXTOS_FORNECEDORES.editarTitulo : TEXTOS_FORNECEDORES.novoTitulo))
 const descricaoCabecalho = computed(() => {
   if (!edicao.value) {
@@ -297,6 +305,7 @@ function cancelar() {
                       :id-campo="idCampo('categoria')"
                       obrigatorio
                       :erro="formulario.erros.categoria"
+                      :descricoes-extras="situacaoCategoria ? idSituacaoCategoria : undefined"
                     >
                       <Select
                         v-model="formulario.valores.categoria"
@@ -311,11 +320,12 @@ function cancelar() {
                         :aria-describedby="descritoPor"
                         :disabled="enviando"
                         data-teste="campo-categoria"
-                        @update:model-value="formulario.revalidarAoDigitar('categoria')"
+                        @update:model-value="alterarCategoria"
                       />
                       <p
+                        :id="idSituacaoCategoria"
                         class="formulario-fornecedor__situacao texto-legenda"
-                        aria-live="polite"
+                        :aria-live="categoriaAlterada ? 'polite' : 'off'"
                         data-teste="categoria-situacao"
                         v-text="situacaoCategoria ?? ''"
                       />

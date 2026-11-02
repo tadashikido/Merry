@@ -4,7 +4,7 @@ import { computed } from 'vue'
 import { classeIcone, type NomeIcone } from '@/design/icones'
 import type { TomCelebracao } from '@/design/tokens'
 import { ROTULOS_NAVEGACAO } from '@/textos/rotulos'
-import { ICONE_DO_TOM, classeTom, ehTipoEvento, tomDoTipo, vocabularioDoTipo } from '@/textos/tiposEvento'
+import { ICONE_DO_TOM, classeTom, ehTipoEvento, tomDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { TipoEvento } from '@/tipos/eventos'
 
 const props = withDefaults(
@@ -13,7 +13,7 @@ const props = withDefaults(
 )
 
 const tomAplicado = computed<TomCelebracao>(() => props.tom ?? tomDoTipo(props.tipo))
-const texto = computed(() => props.rotulo ?? (ehTipoEvento(props.tipo) ? vocabularioDoTipo(props.tipo).rotulo : ROTULOS_NAVEGACAO.rotuloEvento))
+const texto = computed(() => props.rotulo ?? (ehTipoEvento(props.tipo) ? vocabularioOuNeutro(props.tipo).rotulo : ROTULOS_NAVEGACAO.rotuloEvento))
 </script>
 
 <template>

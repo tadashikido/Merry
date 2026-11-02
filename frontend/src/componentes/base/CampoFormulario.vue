@@ -4,18 +4,17 @@ import { computed } from 'vue'
 import { ROTULOS_CAMPOS } from '@/textos/rotulos'
 
 const props = withDefaults(
-  defineProps<{ rotulo: string; idCampo: string; obrigatorio?: boolean; dica?: string; erro?: string | null }>(),
-  { obrigatorio: false, dica: undefined, erro: null },
+  defineProps<{ rotulo: string; idCampo: string; obrigatorio?: boolean; dica?: string; erro?: string | null; descricoesExtras?: string }>(),
+  { obrigatorio: false, dica: undefined, erro: null, descricoesExtras: undefined },
 )
 
 const idDica = computed(() => `${props.idCampo}-dica`)
 const idErro = computed(() => `${props.idCampo}-erro`)
 const invalido = computed(() => Boolean(props.erro))
 const descritoPor = computed(() => {
-  if (invalido.value) {
-    return idErro.value
-  }
-  return props.dica ? idDica.value : undefined
+  const principal = invalido.value ? idErro.value : props.dica ? idDica.value : null
+  const ids = [principal, props.descricoesExtras?.trim() || null].filter((id): id is string => Boolean(id))
+  return ids.length > 0 ? ids.join(' ') : undefined
 })
 </script>
 

@@ -19,7 +19,7 @@ import EtiquetaFaseEvento from '@/componentes/eventos/EtiquetaFaseEvento.vue'
 import { useNotificacao } from '@/composables/useNotificacao'
 import { useEventosStore } from '@/stores/eventos'
 import { ROTULOS_FASE, TEXTOS_EVENTOS, descreverContagem, resumoListaEventos } from '@/textos/eventos'
-import { tomDoTipo, vocabularioDoTipo } from '@/textos/tiposEvento'
+import { tomDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { EventoResumoDto, FaseEvento, SituacaoListagemEventos, TipoEvento } from '@/tipos/eventos'
 import { contemTexto } from '@/utilitarios/busca'
 import { contarPorFase, contarPorTipo, descreverCarteiraPorTipo, filtrarEventos } from '@/utilitarios/carteiraEventos'
@@ -104,12 +104,12 @@ const opcoesTipo = computed<OpcaoFiltroPilula<ValorFiltroTipo>[]>(() => [
   },
   ...quantidadesPorTipo.value.map(({ tipo: valor, quantidade }) => ({
     valor,
-    rotulo: vocabularioDoTipo(valor).rotulo,
+    rotulo: vocabularioOuNeutro(valor).rotulo,
     tom: tomDoTipo(valor),
     contagem: quantidade,
   })),
   ...(tipo.value && !quantidadesPorTipo.value.some((item) => item.tipo === tipo.value)
-    ? [{ valor: tipo.value, rotulo: vocabularioDoTipo(tipo.value).rotulo, tom: tomDoTipo(tipo.value) }]
+    ? [{ valor: tipo.value, rotulo: vocabularioOuNeutro(tipo.value).rotulo, tom: tomDoTipo(tipo.value) }]
     : []),
 ])
 

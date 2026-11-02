@@ -35,7 +35,7 @@ import { focarElemento } from '@/utilitarios/foco'
 import { formatarDataCalendarioCurta, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { LIMITES_EVENTO, dataEvento, horarioEvento, nomeAnfitrioes, textoOpcional } from '@/utilitarios/validacaoEvento'
 import { obrigatorio } from '@/utilitarios/validacao'
-import { aceitaSegundoNome, classeTomDoTipo, vocabularioDoTipo, type VocabularioTipoEvento } from '@/textos/tiposEvento'
+import { aceitaSegundoNome, classeTomDoTipo, vocabularioOuNeutro, type VocabularioTipoEvento } from '@/textos/tiposEvento'
 import type { TipoEvento } from '@/tipos/eventos'
 
 const props = defineProps<{ origem?: string }>()
@@ -99,7 +99,7 @@ const opcoesOrigem = computed(() =>
     valor: evento.id,
     rotulo: TEXTOS_DUPLICACAO_EVENTO.opcaoOrigem(
       formatarNomesAnfitrioes(evento.nomePrimeiraPessoa, evento.nomeSegundaPessoa),
-      vocabularioDoTipo(evento.tipo).rotulo,
+      vocabularioOuNeutro(evento.tipo).rotulo,
       formatarDataCalendarioCurta(evento.data),
       evento.arquivado,
     ),
@@ -114,7 +114,7 @@ const nomesOrigem = computed(() =>
 const tipoOrigem = computed<TipoEvento>(
   () => origemDaPrevia.value?.tipo ?? origens.value?.find((evento) => evento.id === origemId.value)?.tipo ?? TIPO_SEM_ORIGEM,
 )
-const vocabulario = computed<VocabularioTipoEvento>(() => vocabularioDoTipo(tipoOrigem.value))
+const vocabulario = computed<VocabularioTipoEvento>(() => vocabularioOuNeutro(tipoOrigem.value))
 const temSegundoNome = computed<boolean>(() => aceitaSegundoNome(tipoOrigem.value))
 
 function regraSegundoNomeObrigatorio(valor: unknown): string | null {

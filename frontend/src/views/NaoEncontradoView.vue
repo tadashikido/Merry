@@ -8,7 +8,7 @@ import TileTipo from '@/componentes/base/TileTipo.vue'
 import { useAutenticacaoStore } from '@/stores/autenticacao'
 import { useEventosStore } from '@/stores/eventos'
 import { TEXTOS_NAO_ENCONTRADO } from '@/textos/naoEncontrado'
-import { ehTipoEvento, vocabularioDoTipo } from '@/textos/tiposEvento'
+import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 
 type Perfil = 'visitante' | 'assessoria' | 'anfitriao'
 
@@ -30,7 +30,7 @@ const perfil = computed<Perfil>(() => {
 const referenciaDoEvento = computed(() => {
   const evento = eventos.atual
   if (evento && evento.id === autenticacao.eventoDoAnfitriao && ehTipoEvento(evento.tipo)) {
-    return vocabularioDoTipo(evento.tipo).referencia.artigo
+    return vocabularioOuNeutro(evento.tipo).referencia.artigo
   }
   return TEXTOS_NAO_ENCONTRADO.referenciaNeutra
 })

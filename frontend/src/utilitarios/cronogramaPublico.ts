@@ -2,7 +2,7 @@ import { CATEGORIAS_FORNECEDOR, type CategoriaFornecedor } from '@/tipos/fornece
 import { ROTULOS_CATEGORIA_FORNECEDOR } from '@/textos/fornecedores'
 import { TEXTOS_CRONOGRAMA_PUBLICO, TEXTOS_LINKS_CRONOGRAMA } from '@/textos/cronogramaPublico'
 import type { DataCalendario, TipoEvento } from '@/tipos/eventos'
-import { vocabularioDoTipo } from '@/textos/tiposEvento'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { DiaCronograma } from '@/tipos/cronograma'
 import type {
   CronogramaPublicoDto,
@@ -141,7 +141,7 @@ export interface DadosLocaisOperacao {
 }
 
 export function montarLocaisOperacao(evento: DadosLocaisOperacao): { rotulo: string; valor: string }[] {
-  const vocabulario = vocabularioDoTipo(evento.tipo)
+  const vocabulario = vocabularioOuNeutro(evento.tipo)
   const lista: { rotulo: string; valor: string }[] = []
   if (evento.horarioCerimonia || evento.localCerimonia) {
     lista.push({

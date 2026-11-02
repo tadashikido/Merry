@@ -34,7 +34,12 @@ const nota = computed(() => {
   if (ateEventoCentavos === null) {
     return null
   }
-  const partes = [TEXTOS_PAGAMENTOS_MES.ateEvento(formatarMoeda(deCentavos(ateEventoCentavos)), vocabulario.value.referencia.contracaoDe)]
+  const contracaoDe = vocabulario.value.referencia.contracaoDe
+  const partes = [
+    ateEventoCentavos > 0
+      ? TEXTOS_PAGAMENTOS_MES.ateEvento(formatarMoeda(deCentavos(ateEventoCentavos)), contracaoDe)
+      : TEXTOS_PAGAMENTOS_MES.nadaAteEvento(contracaoDe),
+  ]
   if (depoisCentavos > 0) {
     partes.push(TEXTOS_PAGAMENTOS_MES.depois(formatarMoeda(deCentavos(depoisCentavos))))
   }

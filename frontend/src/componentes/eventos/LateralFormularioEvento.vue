@@ -6,7 +6,7 @@ import type { ItemOrientacaoAcesso } from '@/componentes/base/OrientacaoAcesso.v
 import { useModelosChecklistStore } from '@/stores/modelosChecklist'
 import { useModelosCronogramaStore } from '@/stores/modelosCronograma'
 import { TEXTOS_FORMULARIO_EVENTO } from '@/textos/eventos'
-import { classeTomDoTipo, vocabularioDoTipo } from '@/textos/tiposEvento'
+import { classeTomDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { TipoEvento } from '@/tipos/eventos'
 import { modelosDoTipo, type ModeloComTipo } from '@/utilitarios/modelosPorTipo'
 
@@ -27,7 +27,7 @@ const props = defineProps<{ tipo: TipoEvento; mostrarModelos: boolean }>()
 const modelosChecklist = useModelosChecklistStore()
 const modelosCronograma = useModelosCronogramaStore()
 
-const vocabulario = computed(() => vocabularioDoTipo(props.tipo))
+const vocabulario = computed(() => vocabularioOuNeutro(props.tipo))
 
 const itensOrientacao = computed<ItemOrientacaoAcesso[]>(() => [
   {

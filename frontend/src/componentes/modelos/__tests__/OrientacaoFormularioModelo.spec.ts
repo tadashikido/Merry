@@ -55,7 +55,7 @@ describe('OrientacaoFormularioModelo', () => {
     expect(wrapper.get('[data-teste="selo-modelo"]').text()).toBe(selo)
     expect(wrapper.get('[data-teste="onde-aparece-modelo"]').text()).toBe(onde)
     expect(wrapper.get('[data-teste="contagem-modelo"]').text()).toBe('12 itens')
-    expect(wrapper.get('[data-teste="nota-onde-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.edicaoNaoMudaAplicados('checklist'))
+    expect(wrapper.get('[data-teste="nota-onde-modelo"]').text()).toBe(TEXTOS_MODELOS_POR_TIPO.edicaoNaoMudaAplicados('checklist', TEXTOS_MODELOS_POR_TIPO.camposEdicaoModelo))
   })
 
   it('[COMPONENTE] edição de modelo próprio (tipo nulo) fala de qualquer evento, sem casamento nem comemoração', () => {

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import Skeleton from 'primevue/skeleton'
 
 import { TEXTOS_DUPLICACAO_EVENTO } from '@/textos/duplicacaoEvento'
-import { vocabularioDoTipo } from '@/textos/tiposEvento'
+import { vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { PreviaDuplicacaoDto } from '@/tipos/duplicacaoEvento'
 import type { TipoEvento } from '@/tipos/eventos'
 import { formatarDataCalendarioCurta } from '@/utilitarios/formatacao'
@@ -29,7 +29,7 @@ const props = defineProps<{
   leva: ModulosLevados
 }>()
 
-const vocabulario = computed(() => vocabularioDoTipo(props.tipo))
+const vocabulario = computed(() => vocabularioOuNeutro(props.tipo))
 
 function valorModulo(quantidade: number, levado: boolean, vao: (quantidade: number) => string): string {
   if (quantidade === 0) {

@@ -7,6 +7,7 @@ const DIAS_POR_MES = 30
 const MESES_POR_ANO = 12
 const LIMITE_DIAS_EXATOS = 14
 const LIMITE_SEMANAS = 60
+const SEMANAS_ATE_UM_MES = 4
 
 export type UnidadePrazo = 'dia' | 'semana' | 'mes' | 'ano'
 
@@ -22,15 +23,12 @@ export function aproximarDias(dias: number): PrazoAproximado {
   if (absoluto < LIMITE_DIAS_EXATOS) {
     return { unidade: 'dia', quantidade: absoluto, meses: 0, exato: true }
   }
-  if (absoluto < LIMITE_SEMANAS) {
-    return {
-      unidade: 'semana',
-      quantidade: Math.round(absoluto / DIAS_POR_SEMANA),
-      meses: 0,
-      exato: absoluto % DIAS_POR_SEMANA === 0,
-    }
+  const semanas = Math.round(absoluto / DIAS_POR_SEMANA)
+  const semanasExatas = absoluto % DIAS_POR_SEMANA === 0
+  if (absoluto < LIMITE_SEMANAS && (semanasExatas || semanas < SEMANAS_ATE_UM_MES)) {
+    return { unidade: 'semana', quantidade: semanas, meses: 0, exato: semanasExatas }
   }
-  const meses = Math.round(absoluto / DIAS_POR_MES)
+  const meses = Math.max(1, Math.round(absoluto / DIAS_POR_MES))
   if (meses < MESES_POR_ANO) {
     return { unidade: 'mes', quantidade: meses, meses: 0, exato: false }
   }
