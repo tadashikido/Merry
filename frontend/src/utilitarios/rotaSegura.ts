@@ -8,3 +8,10 @@ export function destinoSeguro(valor: unknown): string | null {
   }
   return texto
 }
+
+const FORMATO_IDENTIFICADOR = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export function identificadorSeguro(valor: unknown): string | null {
+  const texto = Array.isArray(valor) ? valor[0] : valor
+  return typeof texto === 'string' && FORMATO_IDENTIFICADOR.test(texto) ? texto : null
+}

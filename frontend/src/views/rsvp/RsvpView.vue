@@ -28,7 +28,7 @@ import { TEXTOS_LISTA_ACOMPANHANTES, TEXTOS_RSVP } from '@/textos/rsvp'
 import type { FaixaEtaria } from '@/tipos/convidados'
 import type { RestricaoPessoaFormulario } from '@/tipos/dadosSensiveis'
 import type { EscolhaPresencaRsvp, RsvpPublicoDto } from '@/tipos/rsvp'
-import { hojeEmSaoPaulo } from '@/utilitarios/dataCalendario'
+import { useHojeEmSaoPaulo } from '@/composables/useAtualizacaoPeriodica'
 import { informaConteudo, restricaoParaEnvio, restricaoVazia, validarRestricao } from '@/utilitarios/dadosSensiveis'
 import { PARAMETRO_PREVIA_RSVP, escolhaInicial, formatarDiaMes, tokenRsvpValido } from '@/utilitarios/rsvp'
 
@@ -106,7 +106,7 @@ const estadoErro = computed(() => {
 })
 
 const conviteAmplo = computed(() => Boolean(dados.value) && !estadoErro.value)
-const hoje = hojeEmSaoPaulo()
+const hoje = useHojeEmSaoPaulo()
 
 function novaChave(): string {
   proximaChave += 1

@@ -1,4 +1,6 @@
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, type ComputedRef } from 'vue'
+import type { DataCalendario } from '@/tipos/eventos'
+import { hojeEmSaoPaulo } from '@/utilitarios/dataCalendario'
 
 export function useAtualizacaoPeriodica(acao: () => void | Promise<void>, intervaloMs: number) {
   let temporizador: ReturnType<typeof setInterval> | null = null
@@ -55,4 +57,11 @@ export function useRelogioDispositivo(intervaloMs: number) {
   })
 
   return agora
+}
+
+export const INTERVALO_HOJE_MS = 60_000
+
+export function useHojeEmSaoPaulo(intervaloMs: number = INTERVALO_HOJE_MS): ComputedRef<DataCalendario> {
+  const agora = useRelogioDispositivo(intervaloMs)
+  return computed(() => hojeEmSaoPaulo(new Date(agora.value)))
 }

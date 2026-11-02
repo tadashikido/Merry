@@ -398,7 +398,7 @@ export function criarRotas(rotasExtras: RouteRecordRaw[] = []): RouteRecordRaw[]
       path: '/:caminho(.*)*',
       name: 'nao-encontrado',
       component: () => import('@/views/NaoEncontradoView.vue'),
-      meta: { titulo: `Página não encontrada · ${TITULO_APLICACAO}` },
+      meta: { titulo: `Página não encontrada · ${TITULO_APLICACAO}`, semIndexacao: true },
     },
   ]
 }

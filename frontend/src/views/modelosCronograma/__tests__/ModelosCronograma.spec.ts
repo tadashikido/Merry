@@ -321,6 +321,32 @@ describe('ModeloCronogramaView', () => {
     expect(montagem.roteador.currentRoute.value.params.itemId).toBe(ID_ITEM_MODELO_CRONOGRAMA)
   })
 
+  it('[INTEGRAÇÃO] ?item= com identificador válido devolve o foco ao item editado', async () => {
+    rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
+
+    await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}?item=${ID_ITEM_MODELO_CRONOGRAMA}`)
+
+    await aguardarAte(() =>
+      expect(document.activeElement?.closest(`[data-item-modelo-cronograma="${ID_ITEM_MODELO_CRONOGRAMA}"]`)).not.toBeNull(),
+    )
+  })
+
+  it.each(['"]<img src=x onerror=alert(1)>', '"] [data-teste="linha-cronograma-conteudo"], [x="', 'novo'])(
+    '[SEGURANÇA] ?item= fora do formato (%s) não monta seletor nem lança exceção',
+    async (valor) => {
+      rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto())))
+      const consulta = vi.spyOn(document, 'querySelector')
+
+      const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}?item=${encodeURIComponent(valor)}`)
+      await flushPromises()
+
+      expect(wrapper.get('h1').text()).toBe('Roteiro clássico')
+      expect(consulta.mock.calls.some(([seletor]) => String(seletor).includes('data-item-modelo-cronograma'))).toBe(false)
+      expect(document.activeElement?.closest('[data-item-modelo-cronograma]') ?? null).toBeNull()
+      consulta.mockRestore()
+    },
+  )
+
   it('[COMPONENTE] modelo inexistente mostra não encontrado com volta', async () => {
     rotearFetch(fetchSimulado)
     const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}`)

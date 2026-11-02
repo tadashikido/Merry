@@ -21,6 +21,10 @@ describe('roteador', () => {
     expect(criarRoteadorDeTeste().resolve(caminho).name).toBe('nao-encontrado')
   })
 
+  it('[SEGURANÇA] página não encontrada não é indexável', () => {
+    expect(criarRoteadorDeTeste().resolve('/caminho-inexistente').meta.semIndexacao).toBe(true)
+  })
+
   it.each([
     ['/casamentos', '/eventos', 'eventos'],
     ['/casamentos/novo', '/eventos/novo', 'evento-novo'],

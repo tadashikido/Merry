@@ -43,7 +43,7 @@ export function resumirAtuacaoFornecedor(
   eventos: readonly EventoResumoDto[] | null,
   hoje: DataCalendario,
 ): ResumoAtuacaoFornecedor {
-  const { total, contratados } = resumirParticipacoes([...participacoes], '', 0)
+  const { total, contratados } = resumirParticipacoes([...participacoes], null, 0)
   const validas = participacoes.filter((participacao) => participacao.status !== 'Cancelado')
 
   const pelaFrente = validas

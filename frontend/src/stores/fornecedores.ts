@@ -78,6 +78,31 @@ export const useFornecedoresStore = defineStore('fornecedores', () => {
     }
   }
 
+  let cargaAuxiliarLista: Promise<void> | null = null
+
+  function garantirLista(): Promise<void> {
+    if (lista.value !== null || carregandoLista.value) {
+      return Promise.resolve()
+    }
+    if (cargaAuxiliarLista) {
+      return cargaAuxiliarLista
+    }
+    const carga = requisitar<FornecedorResumoDto[]>(ROTA_FORNECEDORES)
+      .then((resposta) => {
+        if (cargaAuxiliarLista === carga && lista.value === null) {
+          lista.value = resposta
+        }
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (cargaAuxiliarLista === carga) {
+          cargaAuxiliarLista = null
+        }
+      })
+    cargaAuxiliarLista = carga
+    return carga
+  }
+
   async function carregarAtual(fornecedorId: string): Promise<void> {
     if (atual.value?.id !== fornecedorId) {
       atual.value = null
@@ -179,6 +204,7 @@ export const useFornecedoresStore = defineStore('fornecedores', () => {
   }
 
   function limpar() {
+    cargaAuxiliarLista = null
     lista.value = null
     carregandoLista.value = false
     falhaLista.value = null
@@ -195,6 +221,7 @@ export const useFornecedoresStore = defineStore('fornecedores', () => {
     lista,
     carregandoLista,
     falhaLista,
+    garantirLista,
     atual,
     carregandoAtual,
     falhaAtual,

@@ -235,10 +235,10 @@ export const LIMITE_PARTICIPACOES_RECENTES = 4
 
 export function resumirParticipacoes(
   participacoes: ParticipacaoFornecedorDto[],
-  eventoAtualId: string,
+  eventoAtualId: string | null,
   limite: number = LIMITE_PARTICIPACOES_RECENTES,
 ): ResumoParticipacoes {
-  const outras = participacoes.filter((participacao) => participacao.eventoId !== eventoAtualId)
+  const outras = eventoAtualId === null ? participacoes : participacoes.filter((participacao) => participacao.eventoId !== eventoAtualId)
   const recentes = outras.slice(0, Math.max(0, limite))
   return {
     total: outras.length,

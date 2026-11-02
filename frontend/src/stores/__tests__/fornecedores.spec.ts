@@ -55,6 +55,35 @@ describe('useFornecedoresStore', () => {
     expect(store.falhaLista?.tipo).toBe('conexao')
   })
 
+  it('[UNITÁRIO] garantirLista carrega uma vez sem tocar no estado de carga e falha da lista', async () => {
+    const store = useFornecedoresStore()
+    fetchSimulado.mockResolvedValueOnce(respostaJson([resumoFornecedor()]))
+
+    const primeira = store.garantirLista()
+    const segunda = store.garantirLista()
+    expect(store.carregandoLista).toBe(false)
+    await Promise.all([primeira, segunda])
+
+    expect(fetchSimulado).toHaveBeenCalledTimes(1)
+    expect(store.lista).toEqual([resumoFornecedor()])
+    await store.garantirLista()
+    expect(fetchSimulado).toHaveBeenCalledTimes(1)
+  })
+
+  it('[UNITÁRIO] falha do garantirLista não sobrescreve a falha exibida pela lista', async () => {
+    const store = useFornecedoresStore()
+    fetchSimulado.mockResolvedValueOnce(respostaProblema(403, { title: 'Proibido' })).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+
+    await store.carregar()
+    expect(store.falhaLista?.tipo).toBe('semPermissao')
+
+    await store.garantirLista()
+
+    expect(store.falhaLista?.tipo).toBe('semPermissao')
+    expect(store.carregandoLista).toBe(false)
+    expect(store.lista).toBeNull()
+  })
+
   it('[UNITÁRIO] criar envia o corpo e inclui o novo item na lista carregada', async () => {
     const store = useFornecedoresStore()
     fetchSimulado

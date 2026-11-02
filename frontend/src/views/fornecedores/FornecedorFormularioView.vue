@@ -23,7 +23,7 @@ import { TEXTOS_FORMULARIO_FORNECEDOR, TEXTOS_FORNECEDORES, descreverSituacaoCat
 import type { CategoriaFornecedor, SalvarFornecedorRequest } from '@/tipos/fornecedores'
 import { resumirAtuacaoFornecedor } from '@/utilitarios/atuacaoFornecedor'
 import { situacaoCategoriaNaBase } from '@/utilitarios/coberturaFornecedores'
-import { hojeEmSaoPaulo } from '@/utilitarios/dataCalendario'
+import { useHojeEmSaoPaulo } from '@/composables/useAtualizacaoPeriodica'
 import { focarElemento } from '@/utilitarios/foco'
 import {
   LIMITES_FORNECEDOR,
@@ -92,11 +92,12 @@ const situacaoCategoria = computed(() => {
   }
   return descreverSituacaoCategoria(situacaoCategoriaNaBase(categoria, store.lista, carteira.value, props.fornecedorId ?? null))
 })
+const hoje = useHojeEmSaoPaulo()
 const atuacao = computed(() => {
   if (!props.fornecedorId || store.participacoesDe !== props.fornecedorId || !store.participacoes) {
     return null
   }
-  const resumo = resumirAtuacaoFornecedor(store.participacoes, carteira.value, hojeEmSaoPaulo())
+  const resumo = resumirAtuacaoFornecedor(store.participacoes, carteira.value, hoje.value)
   return resumo.total > 0 ? resumo : null
 })
 const comLateral = computed(() => !carregando.value && !falhaCarga.value && (!edicao.value || nomeCarregado.value !== ''))
@@ -143,9 +144,7 @@ async function carregar() {
 onMounted(async () => {
   document.title = titulo.value
   void eventos.garantirAtivos()
-  if (store.lista === null && !store.carregandoLista) {
-    void store.carregar()
-  }
+  void store.garantirLista()
   if (props.fornecedorId) {
     void store.carregarParticipacoes(props.fornecedorId)
   }

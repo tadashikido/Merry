@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 
-import { useAtualizacaoPeriodica, useRelogioDispositivo } from '@/composables/useAtualizacaoPeriodica'
+import { useAtualizacaoPeriodica, useHojeEmSaoPaulo, useRelogioDispositivo } from '@/composables/useAtualizacaoPeriodica'
 
 function montarCom(configurar: () => void) {
   return mount(
@@ -74,6 +74,22 @@ describe('useRelogioDispositivo', () => {
     vi.advanceTimersByTime(15_000)
 
     expect(agora.value).toBeGreaterThanOrEqual(inicial + 15_000)
+    wrapper.unmount()
+  })
+})
+
+describe('useHojeEmSaoPaulo', () => {
+  it('[UNITÁRIO] vira a data à meia-noite de São Paulo com a tela aberta', () => {
+    vi.setSystemTime(new Date('2026-11-02T02:59:30Z'))
+    let hoje: { value: string } = { value: '' }
+    const wrapper = montarCom(() => {
+      hoje = useHojeEmSaoPaulo()
+    })
+    expect(hoje.value).toBe('2026-11-01')
+
+    vi.advanceTimersByTime(60_000)
+
+    expect(hoje.value).toBe('2026-11-02')
     wrapper.unmount()
   })
 })

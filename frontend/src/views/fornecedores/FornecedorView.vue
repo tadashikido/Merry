@@ -26,7 +26,7 @@ import type { TipoEvento } from '@/tipos/eventos'
 import type { FornecedorDto } from '@/tipos/fornecedores'
 import { resumirAtuacaoFornecedor, tiposDasParticipacoes } from '@/utilitarios/atuacaoFornecedor'
 import { essencialidadeDaCategoria } from '@/utilitarios/coberturaFornecedores'
-import { hojeEmSaoPaulo } from '@/utilitarios/dataCalendario'
+import { useHojeEmSaoPaulo } from '@/composables/useAtualizacaoPeriodica'
 import { formatarData, formatarDataCalendarioCurta, formatarNomesAnfitrioes } from '@/utilitarios/formatacao'
 import { possuiContato } from '@/utilitarios/fornecedores'
 import { VARIANTES_STATUS_FORNECEDOR_EVENTO } from '@/utilitarios/fornecedoresEvento'
@@ -47,7 +47,8 @@ const falhaParticipacoes = computed(() => (store.participacoesDe === props.forne
 const exclusaoBloqueada = ref(false)
 const carteira = computed(() => (eventos.ativosCarregados ? eventos.ativos : null))
 const tiposPorEvento = computed(() => tiposDasParticipacoes(participacoes.value ?? [], carteira.value))
-const atuacao = computed(() => (participacoes.value ? resumirAtuacaoFornecedor(participacoes.value, carteira.value, hojeEmSaoPaulo()) : null))
+const hoje = useHojeEmSaoPaulo()
+const atuacao = computed(() => (participacoes.value ? resumirAtuacaoFornecedor(participacoes.value, carteira.value, hoje.value) : null))
 const essencialidade = computed(() => (fornecedor.value ? essencialidadeDaCategoria(fornecedor.value.categoria, carteira.value) : null))
 
 function tipoDoEvento(eventoId: string): TipoEvento | null {

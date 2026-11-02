@@ -25,6 +25,7 @@ import {
 import { TEXTOS_MODELOS_CRONOGRAMA, referenciaHorarioModelo, rotuloLocalModelo } from '@/textos/modelosCronograma'
 import type { ItemModeloCronogramaDto } from '@/tipos/modelosCronograma'
 import { descreverRelativoCerimonia, formatarDuracao, resumirDias } from '@/utilitarios/cronograma'
+import { identificadorSeguro } from '@/utilitarios/rotaSegura'
 import {
   agruparItensModeloPorDia,
   alcanceDoModelo,
@@ -100,13 +101,13 @@ watch(
 watch(
   () => modelo.value?.itens.length,
   () => {
-    const focar = rota.query.item
-    if (typeof focar !== 'string' || !modelo.value) {
+    const focar = identificadorSeguro(rota.query.item)
+    if (!focar || !modelo.value) {
       return
     }
     void nextTick(() =>
       document
-        .querySelector<HTMLElement>(`[data-item-modelo-cronograma="${focar}"] [data-teste="linha-cronograma-conteudo"]`)
+        .querySelector<HTMLElement>(`[data-item-modelo-cronograma="${CSS.escape(focar)}"] [data-teste="linha-cronograma-conteudo"]`)
         ?.focus(),
     )
   },

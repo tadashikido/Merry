@@ -51,6 +51,10 @@ describe('resumirParticipacoes', () => {
     expect(resumirParticipacoes([participacao('x', 'Contratado')], 'x').total).toBe(0)
   })
 
+  it('[UNITÁRIO] sem evento atual (null) não exclui nenhuma participação', () => {
+    expect(resumirParticipacoes([participacao('x', 'Contratado'), participacao('', 'Cancelado')], null)).toMatchObject({ total: 2, contratados: 1 })
+  })
+
   it('[UNITÁRIO] respeita limite informado', () => {
     const resumo = resumirParticipacoes([participacao('a', 'Cotacao'), participacao('b', 'Cotacao')], 'z', 1)
     expect(resumo.recentes).toHaveLength(1)

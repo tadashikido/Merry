@@ -141,8 +141,10 @@ describe('fundação Celebri: fontes e página', () => {
     expect(indexHtml).toContain('<meta name="theme-color" content="#FFFFFF">')
     expect(indexHtml).not.toMatch(/Nossia/i)
     expect(indexHtml).toContain('<link rel="icon" href="/favicon.svg" type="image/svg+xml">')
-    expect(faviconSvg).not.toMatch(/<script|href=|https?:\/\/(?!www\.w3\.org)/i)
-    expect(faviconSvg).toContain('#E3B964')
+    expect(faviconSvg).not.toMatch(/<script|\son\w+=|https?:\/\/(?!www\.w3\.org)/i)
+    const referencias = faviconSvg.match(/href="[^"]*"/gi) ?? []
+    expect(referencias.every((referencia) => referencia.startsWith('href="data:image/png;base64,'))).toBe(true)
+    expect(faviconSvg).toContain('#14244A')
     expect(indexHtml).not.toMatch(/(?:href|src)="https?:\/\//)
     expect(indexHtml).not.toMatch(/Enlace/)
   })
