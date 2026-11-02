@@ -17,7 +17,7 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.31")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1536,6 +1536,127 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Celebri.Dominio.Operadores.OperadorPlataforma", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ativo");
+
+                    b.Property<DateTimeOffset?>("BloqueadoAte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("bloqueado_ate");
+
+                    b.Property<DateTimeOffset>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<int>("FalhasLoginConsecutivas")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("falhas_login_consecutivas");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nome");
+
+                    b.Property<DateTimeOffset?>("SenhaAlteradaEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("senha_alterada_em");
+
+                    b.Property<string>("SenhaHash")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("senha_hash");
+
+                    b.Property<uint>("Versao")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_operadores_plataforma");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_operadores_plataforma_email");
+
+                    b.ToTable("operadores_plataforma", (string)null);
+                });
+
+            modelBuilder.Entity("Celebri.Dominio.Operadores.RefreshTokenOperador", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<DateTimeOffset>("ExpiraEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expira_em");
+
+                    b.Property<Guid>("Familia")
+                        .HasColumnType("uuid")
+                        .HasColumnName("familia");
+
+                    b.Property<Guid>("OperadorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("operador_id");
+
+                    b.Property<DateTimeOffset?>("RevogadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revogado_em");
+
+                    b.Property<DateTimeOffset?>("SubstituidoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("substituido_em");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("token_hash")
+                        .IsFixedLength();
+
+                    b.Property<uint>("Versao")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_refresh_tokens_operador");
+
+                    b.HasIndex("Familia")
+                        .HasDatabaseName("ix_refresh_tokens_operador_familia");
+
+                    b.HasIndex("OperadorId")
+                        .HasDatabaseName("ix_refresh_tokens_operador_operador_id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_refresh_tokens_operador_token_hash");
+
+                    b.ToTable("refresh_tokens_operador", (string)null);
+                });
+
             modelBuilder.Entity("Celebri.Dominio.Organizacoes.Organizacao", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2170,6 +2291,16 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_mesas_organizacoes_organizacao_id");
+                });
+
+            modelBuilder.Entity("Celebri.Dominio.Operadores.RefreshTokenOperador", b =>
+                {
+                    b.HasOne("Celebri.Dominio.Operadores.OperadorPlataforma", null)
+                        .WithMany()
+                        .HasForeignKey("OperadorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_refresh_tokens_operador_operadores_plataforma_operador_id");
                 });
 
             modelBuilder.Entity("Celebri.Dominio.Rsvp.AcessoRsvp", b =>

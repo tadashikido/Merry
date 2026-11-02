@@ -555,6 +555,23 @@ describe('Formulários de modelo e item', () => {
     await aguardarRota(montagem.roteador, 'modelo-checklist')
   })
 
+  it('[COMPONENTE] clique perdido: sair do nome inválido não move o botão e o primeiro clique em Criar valida', async () => {
+    rotearFetch(fetchSimulado)
+    const { wrapper } = await abrir('/modelos-checklist/novo')
+    const campoNome = wrapper.get('[data-teste="campo-nome"]')
+    const salvar = wrapper.get('[data-teste="salvar-modelo"]')
+
+    await campoNome.setValue('A')
+    ;(campoNome.element as HTMLInputElement).focus()
+    await salvar.trigger('mousedown')
+    await campoNome.trigger('blur')
+    expect(wrapper.findAll('[data-teste="erro-campo"]')).toHaveLength(0)
+
+    await salvar.trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain(TEXTOS_MODELOS_CHECKLIST.erroNomeTamanho)
+  })
+
   it('[COMPONENTE] erro só aparece depois da primeira tentativa e some ao digitar um nome válido', async () => {
     rotearFetch(fetchSimulado)
     const { wrapper } = await abrir('/modelos-checklist/novo')

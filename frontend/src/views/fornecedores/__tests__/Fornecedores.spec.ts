@@ -1108,6 +1108,22 @@ describe('FornecedorFormularioView — categoria e lateral para eventos', () => 
     expect(wrapper.findAll('[aria-live="polite"]').filter((elemento) => elemento.text() !== '')).toHaveLength(1)
   })
 
+  it('[COMPONENTE] clique perdido: sair da empresa vazia não renderiza erro e o primeiro clique em Salvar valida', async () => {
+    const { wrapper } = await abrirNovo(() => respostaJson(carteira('Casamento')))
+    const empresa = wrapper.get('[data-teste="campo-nome-empresa"]')
+    const salvar = wrapper.get('[data-teste="salvar-fornecedor"]')
+
+    ;(empresa.element as HTMLInputElement).focus()
+    await salvar.trigger('mousedown')
+    await empresa.trigger('blur')
+    expect(wrapper.findAll('[data-teste="erro-campo"]')).toHaveLength(0)
+
+    await salvar.trigger('click')
+    await flushPromises()
+    expect(wrapper.findAll('[data-teste="erro-campo"]').length).toBeGreaterThan(0)
+    expect(chamadas(fetchSimulado, 'POST', ROTA)).toHaveLength(0)
+  })
+
   it('[COMPONENTE] falha da base de fornecedores omite só a contagem e mantém o cadastro', async () => {
     const { wrapper } = await abrirNovo(
       () => respostaJson(carteira('Casamento')),

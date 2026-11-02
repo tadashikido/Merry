@@ -1,7 +1,9 @@
 using Celebri.Api;
 using Celebri.Aplicacao;
+using Celebri.Aplicacao.Operadores;
 using Celebri.Infraestrutura;
 using Celebri.Infraestrutura.Persistencia;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,11 @@ if (ComandosAdministrativos.EhComandoAdministrativo(args))
 if (app.Configuration.GetValue<bool>("Banco:AplicarMigrationsAoIniciar"))
 {
     await AplicadorMigrations.AplicarMigrationsAsync(app.Services);
+
+    using var escopoProvisionamento = app.Services.CreateScope();
+    await escopoProvisionamento.ServiceProvider
+        .GetRequiredService<IProvisionamentoOperadorService>()
+        .ProvisionarInicialAsync(app.Lifetime.ApplicationStopping);
 }
 
 app.UsarPipelineApi();

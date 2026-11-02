@@ -386,6 +386,18 @@ export function criarRotas(rotasExtras: RouteRecordRaw[] = []): RouteRecordRaw[]
       meta: { titulo: `Nova senha · ${TITULO_APLICACAO}` },
     },
     {
+      path: '/operador/entrar',
+      name: 'operador-entrar',
+      component: () => import('@/views/operador/OperadorEntrarView.vue'),
+      meta: { titulo: `Operação · ${TITULO_APLICACAO}`, somenteVisitanteOperador: true, semIndexacao: true },
+    },
+    {
+      path: '/operador',
+      name: 'operador-area',
+      component: () => import('@/views/operador/OperadorAreaView.vue'),
+      meta: { titulo: `Operação · ${TITULO_APLICACAO}`, requerOperador: true, semIndexacao: true },
+    },
+    {
       path: `${PREFIXO_LEGADO_EVENTOS}/:caminho(.*)*`,
       redirect: (rota) => ({ path: caminhoEventoDoLegado(rota.path), query: rota.query, hash: rota.hash }),
     },

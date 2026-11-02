@@ -12,6 +12,7 @@ using Celebri.Dominio.Financeiro;
 using Celebri.Dominio.Fornecedores;
 using Celebri.Dominio.Isolamento;
 using Celebri.Dominio.Mesas;
+using Celebri.Dominio.Operadores;
 using Celebri.Dominio.Organizacoes;
 using Celebri.Dominio.Rsvp;
 using Celebri.Dominio.Tarefas;
@@ -64,6 +65,10 @@ public class CelebriDbContext : DbContext
     public DbSet<Usuario> Usuarios => Set<Usuario>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<OperadorPlataforma> OperadoresPlataforma => Set<OperadorPlataforma>();
+
+    public DbSet<RefreshTokenOperador> RefreshTokensOperador => Set<RefreshTokenOperador>();
 
     public DbSet<TokenRedefinicaoSenha> TokensRedefinicaoSenha => Set<TokenRedefinicaoSenha>();
 

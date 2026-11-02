@@ -6,7 +6,9 @@ import ToastService from 'primevue/toastservice'
 import App from './App.vue'
 import roteador from './router'
 import { instalarGuardaAutenticacao } from './router/guardaAutenticacao'
+import { instalarGuardaOperador } from './router/guardaOperador'
 import { useAutenticacaoStore } from './stores/autenticacao'
+import { useOperadorAutenticacaoStore } from './stores/operadorAutenticacao'
 import { presetTema } from './design/presetTema'
 import { localePtBr } from './design/localePtBr'
 import { lerNonceCsp } from './design/nonceCsp'
@@ -21,6 +23,7 @@ const aplicacao = createApp(App)
 const pinia = createPinia()
 aplicacao.use(pinia)
 instalarGuardaAutenticacao(roteador, useAutenticacaoStore(pinia))
+instalarGuardaOperador(roteador, useOperadorAutenticacaoStore(pinia))
 aplicacao.use(roteador)
 aplicacao.use(PrimeVue, {
   theme: {

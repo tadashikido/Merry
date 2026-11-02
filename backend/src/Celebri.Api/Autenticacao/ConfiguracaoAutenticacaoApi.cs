@@ -19,9 +19,13 @@ public static class ConfiguracaoAutenticacaoApi
 
     public static IServiceCollection AdicionarAutenticacaoApi(this IServiceCollection servicos, IConfiguration configuracao)
     {
-        servicos.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+        servicos.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer()
+            .AddJwtBearer(EsquemasAutenticacao.Operador);
         servicos.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
             .Configure<IOptions<OpcoesJwt>>((opcoes, opcoesJwt) => ConfigurarJwtBearer(opcoes, opcoesJwt.Value));
+        servicos.AddOptions<JwtBearerOptions>(EsquemasAutenticacao.Operador)
+            .Configure<IOptions<OpcoesJwt>>((opcoes, opcoesJwt) => ConfigurarJwtBearerOperador(opcoes, opcoesJwt.Value));
 
         servicos.AddAuthorization(opcoes =>
         {
@@ -82,6 +86,30 @@ public static class ConfiguracaoAutenticacaoApi
         opcoes.Events = new JwtBearerEvents
         {
             OnTokenValidated = ValidadorSessaoAnfitriao.ValidarAsync,
+        };
+    }
+
+    public static void ConfigurarJwtBearerOperador(JwtBearerOptions opcoes, OpcoesJwt opcoesJwt)
+    {
+        opcoes.MapInboundClaims = false;
+        opcoes.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = opcoesJwt.Emissor,
+            ValidateAudience = true,
+            ValidAudience = opcoesJwt.AudienciaOperador,
+            ValidateLifetime = true,
+            RequireExpirationTime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(opcoesJwt.ObterBytesChave()),
+            ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
+            ClockSkew = ToleranciaRelogio,
+            NameClaimType = ClaimsAutenticacao.Nome,
+            RoleClaimType = ClaimsAutenticacao.Papel,
+        };
+        opcoes.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = ValidadorSessaoOperador.ValidarAsync,
         };
     }
 

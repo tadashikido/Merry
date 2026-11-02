@@ -15,6 +15,8 @@ public class OpcoesJwt
 
     public string Audiencia { get; set; } = "casamento-web";
 
+    public string AudienciaOperador { get; set; } = "casamento-operador";
+
     public static bool ChaveValida(string? chave)
     {
         return !string.IsNullOrWhiteSpace(chave) && Encoding.UTF8.GetByteCount(chave) >= TamanhoMinimoChaveBytes;

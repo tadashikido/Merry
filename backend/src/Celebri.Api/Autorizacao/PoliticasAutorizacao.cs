@@ -1,3 +1,4 @@
+using Celebri.Aplicacao.Operadores;
 using Celebri.Dominio.Usuarios;
 using Microsoft.AspNetCore.Authorization;
 
@@ -5,6 +6,8 @@ namespace Celebri.Api.Autorizacao;
 
 public static class PoliticasAutorizacao
 {
+    public const string Operacao = "Operacao";
+
     public const string ListarEventos = "ListarEventos";
     public const string ConsultarEventos = "ConsultarEventos";
     public const string GerenciarEventos = "GerenciarEventos";
@@ -35,6 +38,8 @@ public static class PoliticasAutorizacao
 
     private static readonly IReadOnlyList<string> AssessoriaEAnfitriao = [nameof(PapelUsuario.Dono), nameof(PapelUsuario.Anfitriao)];
 
+    private static readonly IReadOnlyList<string> SomenteOperador = [PapeisOperador.Papel];
+
     public static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> PapeisPorPolitica = new Dictionary<string, IReadOnlyList<string>>
     {
         [ListarEventos] = SomenteAssessoria,
@@ -62,6 +67,7 @@ public static class PoliticasAutorizacao
         [GerenciarCronograma] = SomenteAssessoria,
         [ConsultarMesas] = AssessoriaEAnfitriao,
         [GerenciarMesas] = AssessoriaEAnfitriao,
+        [Operacao] = SomenteOperador,
     };
 
     public static void Registrar(AuthorizationOptions opcoes)

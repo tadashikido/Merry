@@ -8,6 +8,8 @@ using Celebri.Aplicacao.DadosSensiveis;
 using Celebri.Aplicacao.DadosSensiveis.Portas;
 using Celebri.Aplicacao.Email;
 using Celebri.Aplicacao.Isolamento;
+using Celebri.Aplicacao.Operadores;
+using Celebri.Aplicacao.Operadores.Portas;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.Rsvp.Portas;
 using Celebri.Infraestrutura.Arquivos;
@@ -73,6 +75,9 @@ public static class ConfiguracaoInfraestrutura
             .Validate(opcoes => UrlFrontendValida(opcoes.UrlFrontend), MensagemUrlFrontendInvalida)
             .ValidateOnStart();
 
+        servicos.AddOptions<OpcoesOperadorInicial>()
+            .Bind(configuracao.GetSection(OpcoesOperadorInicial.Secao));
+
         servicos.AddOptions<OpcoesEmail>()
             .Bind(configuracao.GetSection(OpcoesEmail.Secao))
             .Validate(
@@ -89,6 +94,8 @@ public static class ConfiguracaoInfraestrutura
         servicos.AddScoped<IUsuarioRepository, UsuarioRepository>();
         servicos.AddScoped<IOrganizacaoRepository, OrganizacaoRepository>();
         servicos.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        servicos.AddScoped<IOperadorPlataformaRepository, OperadorPlataformaRepository>();
+        servicos.AddScoped<IRefreshTokenOperadorRepository, RefreshTokenOperadorRepository>();
         servicos.AddScoped<ITokenRedefinicaoSenhaRepository, TokenRedefinicaoSenhaRepository>();
         servicos.AddScoped<IEventoRepository, EventoRepository>();
         servicos.AddScoped<IDuplicacaoEventoRepository, DuplicacaoEventoRepository>();
@@ -114,6 +121,7 @@ public static class ConfiguracaoInfraestrutura
         servicos.AddSingleton<IHashSenhaService, HashSenhaService>();
         servicos.AddSingleton<IGeradorTokenOpaco, GeradorTokenOpaco>();
         servicos.AddSingleton<IGeradorTokenAcesso, GeradorTokenAcessoJwt>();
+        servicos.AddSingleton<IGeradorTokenOperador, GeradorTokenOperadorJwt>();
         servicos.AddSingleton<ICifradorTokenRsvp, CifradorTokenRsvp>();
         servicos.AddSingleton<ICifradorTokenCronograma, CifradorTokenCronograma>();
         servicos.AddSingleton<ICifradorDadosSensiveis, CifradorDadosSensiveis>();

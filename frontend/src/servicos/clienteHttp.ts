@@ -9,6 +9,7 @@ export interface OpcoesRequisicao {
   tempoLimiteMs?: number
   anonima?: boolean
   manterAtiva?: boolean
+  provedor?: ProvedorAutenticacao
 }
 
 export interface ProvedorAutenticacao {
@@ -117,7 +118,8 @@ async function executar<T>(
     cabecalhos['Content-Type'] = 'application/json'
   }
 
-  const token = opcoes.anonima ? null : (provedorAutenticacao?.obterToken() ?? null)
+  const provedor = opcoes.provedor ?? provedorAutenticacao
+  const token = opcoes.anonima ? null : (provedor?.obterToken() ?? null)
   if (token) {
     cabecalhos.Authorization = `Bearer ${token}`
   }
@@ -141,8 +143,8 @@ async function executar<T>(
     clearTimeout(temporizador)
   }
 
-  if (resposta.status === 401 && podeRenovar && !opcoes.anonima && provedorAutenticacao) {
-    const renovou = await provedorAutenticacao.renovar()
+  if (resposta.status === 401 && podeRenovar && !opcoes.anonima && provedor) {
+    const renovou = await provedor.renovar()
     if (renovou) {
       return executar<T>(caminho, opcoes, false, leitor, aceite)
     }
