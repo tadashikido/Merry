@@ -18,6 +18,16 @@ public class GuardaIsolamentoTestes
             CategoriaBypass.AtualizacaoEmMassa,
             1,
             "Recifragem (SubstituirCifrasAsync) altera só TokenCifrado; AcessoCronograma fica fora do query filter global, então a consulta parte de DaOrganizacaoAtual (Where explícito por OrganizacaoIdAtual) dentro do escopo de sistema por organização."),
+        new(
+            "Celebri.Aplicacao/DadosSensiveis/ExecutorRetencaoDadosSensiveis.cs",
+            CategoriaBypass.TrocaOrganizacao,
+            1,
+            "Job de retenção LGPD sem usuário autenticado: lista as organizações e cria um escopo de serviços novo por organização antes de Assumir, então cada escopo enxerga só uma organização e nunca herda um request."),
+        new(
+            "Celebri.Aplicacao/Recifragem/ExecutorRecifragemDadosSensiveis.cs",
+            CategoriaBypass.TrocaOrganizacao,
+            1,
+            "Comando administrativo de recifragem sem usuário autenticado: cria um escopo de serviços novo por organização antes de Assumir, então cada lote de recifragem fica restrito a uma organização e nunca herda um request."),
     ];
 
     private static readonly CategoriaBypass[] CategoriasComExcecao =
@@ -25,6 +35,7 @@ public class GuardaIsolamentoTestes
         CategoriaBypass.IgnorarFiltros,
         CategoriaBypass.SqlCru,
         CategoriaBypass.AtualizacaoEmMassa,
+        CategoriaBypass.TrocaOrganizacao,
     ];
 
     private static readonly Lazy<IReadOnlyList<(string Arquivo, OcorrenciaBypass Ocorrencia)>> OcorrenciasProducao = new(VarrerProducao);
@@ -114,7 +125,7 @@ public class GuardaIsolamentoTestes
 
         Assert.True(
             violacoes.Count == 0,
-            $"Bypass do isolamento por organização fora da lista de exceções (IgnoreQueryFilters, SQL cru ou ExecuteUpdate/ExecuteDelete). Use o DbContext com query filter ou registre a exceção justificada em {nameof(GuardaIsolamentoTestes)}.{nameof(ListaExcecoes)}:{Environment.NewLine}{Descrever(violacoes)}");
+            $"Bypass do isolamento por organização fora da lista de exceções (IgnoreQueryFilters, SQL cru, ExecuteUpdate/ExecuteDelete ou troca de organização por EscopoIsolamentoSistema.Assumir). Use o DbContext com query filter, mantenha Assumir restrito aos jobs de sistema ou registre a exceção justificada em {nameof(GuardaIsolamentoTestes)}.{nameof(ListaExcecoes)}:{Environment.NewLine}{Descrever(violacoes)}");
     }
 
     [Fact]

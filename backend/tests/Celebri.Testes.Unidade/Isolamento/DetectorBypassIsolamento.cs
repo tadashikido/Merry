@@ -8,6 +8,7 @@ public enum CategoriaBypass
     SqlCru,
     AtualizacaoEmMassa,
     AlteracaoChaveIsolamento,
+    TrocaOrganizacao,
 }
 
 public sealed record OcorrenciaBypass(CategoriaBypass Categoria, int Linha, string Trecho);
@@ -21,6 +22,7 @@ public static partial class DetectorBypassIsolamento
         (CategoriaBypass.AtualizacaoEmMassa, AtualizacaoEmMassa()),
         (CategoriaBypass.AlteracaoChaveIsolamento, SetPropertySobreChaveIsolamento()),
         (CategoriaBypass.AlteracaoChaveIsolamento, SetPropertyPorNomeSobreChaveIsolamento()),
+        (CategoriaBypass.TrocaOrganizacao, AssumirEscopoSistema()),
     ];
 
     public static IReadOnlyList<OcorrenciaBypass> Detectar(string conteudo)
@@ -29,13 +31,13 @@ public static partial class DetectorBypassIsolamento
 
         return Padroes
             .SelectMany(item => item.Padrao.Matches(conteudo)
-                .Select(correspondencia => new OcorrenciaBypass(
-                    item.Categoria,
-                    NumeroLinha(conteudo, correspondencia.Index),
-                    correspondencia.Value)))
-            .GroupBy(ocorrencia => (ocorrencia.Categoria, ocorrencia.Linha))
-            .Select(grupo => grupo.First())
-            .OrderBy(ocorrencia => ocorrencia.Linha)
+                .Select(correspondencia => (item.Categoria, Correspondencia: correspondencia)))
+            .DistinctBy(item => (item.Categoria, item.Correspondencia.Index))
+            .OrderBy(item => item.Correspondencia.Index)
+            .Select(item => new OcorrenciaBypass(
+                item.Categoria,
+                NumeroLinha(conteudo, item.Correspondencia.Index),
+                item.Correspondencia.Value))
             .ToList();
     }
 
@@ -68,4 +70,7 @@ public static partial class DetectorBypassIsolamento
 
     [GeneratedRegex(@"\bSetProperty\s*(<[^>]*>)?\s*\(\s*\w+\s*=>\s*EF\s*\.\s*Property\s*<[^>]*>\s*\([^,]*,\s*[^)]*?\b(OrganizacaoId|EventoId|PropriedadeEvento)\b", RegexOptions.Singleline)]
     private static partial Regex SetPropertyPorNomeSobreChaveIsolamento();
+
+    [GeneratedRegex(@"\.\s*Assumir\b")]
+    private static partial Regex AssumirEscopoSistema();
 }
