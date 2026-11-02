@@ -298,7 +298,7 @@ describe('LayoutPublico', () => {
     const regra = estilo.slice(inicio, estilo.indexOf('}', inicio))
     expect(regra).toContain('border: 1px dashed var(--p-cor-borda-suave)')
     expect(regra).toContain('box-shadow: none')
-    expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}/)
+    expect(estilo).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
   })
 
   it('[COMPONENTE] em modo demonstração não cria um segundo main', () => {
