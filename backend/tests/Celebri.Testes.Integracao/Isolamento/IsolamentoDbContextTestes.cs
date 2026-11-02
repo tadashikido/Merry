@@ -187,6 +187,25 @@ public sealed class IsolamentoDbContextTestes : IsolamentoOrganizacaoTestesBase
     }
 
     [Fact]
+    public async Task ExecuteUpdateSobreOrganizacaoId_NaoPassaPeloInterceptor_EMoveRegistroParaOutraOrganizacao()
+    {
+        var idDeA = await PersistirAsync(OrganizacaoA, "A");
+        var organizacaoDestino = OrganizacaoB.OrganizacaoId;
+
+        await using (var contexto = CriarContexto(OrganizacaoA))
+        {
+            var afetados = await contexto.Set<RegistroIsolado>()
+                .Where(item => item.Id == idDeA)
+                .ExecuteUpdateAsync(atualizacao => atualizacao.SetProperty(item => item.OrganizacaoId, organizacaoDestino));
+            Assert.Equal(1, afetados);
+        }
+
+        await using var contextoA = CriarContexto(OrganizacaoA);
+        Assert.False(await contextoA.Set<RegistroIsolado>().AnyAsync(item => item.Id == idDeA));
+        await AssertDescricaoAsync(OrganizacaoB, idDeA, "A");
+    }
+
+    [Fact]
     public async Task ContextoSemOrganizacao_NaoDeveLerNemGravar()
     {
         await PersistirAsync(OrganizacaoA, "A");

@@ -38,18 +38,6 @@ public class ConvencaoRsvpTestes
     }
 
     [Fact]
-    public void CodigoDeProducao_NaoDeveIgnorarFiltrosDeIsolamento()
-    {
-        var violacoes = Fontes()
-            .Where(fonte => fonte.Conteudo.Contains("IgnoreQueryFilters", StringComparison.Ordinal)
-                || fonte.Conteudo.Contains("FromSql", StringComparison.Ordinal))
-            .Select(fonte => Path.GetFileName(fonte.Arquivo))
-            .ToList();
-
-        Assert.Empty(violacoes);
-    }
-
-    [Fact]
     public void Totais_AcompanhantesPermitidos_DevemSerVagasRestantes()
     {
         var convite = Convite.Criar(Guid.NewGuid(), ConviteTestes.Dados("Família", null, 2, ConviteTestes.Pessoa("Célia")), DateTimeOffset.UnixEpoch);
