@@ -320,6 +320,7 @@ function cancelar() {
                         :aria-describedby="descritoPor"
                         :disabled="enviando"
                         data-teste="campo-categoria"
+                        @show="categoriaAlterada = true"
                         @update:model-value="alterarCategoria"
                       />
                       <p

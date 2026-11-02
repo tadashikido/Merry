@@ -1038,10 +1038,10 @@ describe('Formulários de modelo de cronograma', () => {
   })
 
   it.each([
-    ['Casamento', 'a cerimônia', 'Ex.: Entrada dos padrinhos', ['Local da cerimônia', 'Local da recepção', 'Outro'], '30 min antes da cerimônia', 'de um casamento'],
-    ['QuinzeAnos', 'a festa', 'Ex.: Valsa com a corte', ['Local da festa', 'Outro local', 'Outro'], '30 min antes da festa', 'de uma festa de 15 anos'],
-    ['Aniversario', 'a festa', 'Ex.: Abertura da festa', ['Local da festa', 'Outro local', 'Outro'], '30 min antes da festa', 'de um aniversário'],
-    ['Comemoracao', 'o evento', 'Ex.: Brinde de homenagem', ['Local do evento', 'Outro local', 'Outro'], '30 min antes do evento', 'de uma comemoração'],
+    ['Casamento', 'a cerimônia', 'Ex.: Entrada dos padrinhos', ['Local da cerimônia', 'Local da recepção', 'Escrever o local'], '30 min antes da cerimônia', 'de um casamento'],
+    ['QuinzeAnos', 'a festa', 'Ex.: Valsa com a corte', ['Local da festa', 'Outro local', 'Escrever o local'], '30 min antes da festa', 'de uma festa de 15 anos'],
+    ['Aniversario', 'a festa', 'Ex.: Abertura da festa', ['Local da festa', 'Outro local', 'Escrever o local'], '30 min antes da festa', 'de um aniversário'],
+    ['Comemoracao', 'o evento', 'Ex.: Brinde de homenagem', ['Local do evento', 'Outro local', 'Escrever o local'], '30 min antes do evento', 'de uma comemoração'],
   ] as const)('[COMPONENTE] item de modelo %s fala do momento principal no cabeçalho, locais, dica e lateral', async (tipo, artigo, placeholder, locais, previa, apoio) => {
     rotearFetch(fetchSimulado, quando('GET', ROTA_MODELO, () => respostaJson(modeloCronogramaCompleto({ tipoEvento: tipo }))))
     const { wrapper } = await abrir(`/modelos-cronograma/${ID_MODELO_CRONOGRAMA}/itens/novo`)
@@ -1076,7 +1076,7 @@ describe('Formulários de modelo de cronograma', () => {
 
     expect(wrapper.get('.cabecalho-pagina__descricao').text()).toBe(TEXTOS_MODELOS_CRONOGRAMA.apoioReferencia('16:00', 'o evento'))
     expect(wrapper.get('#item-modelo-cronograma-atividade').attributes('placeholder')).toBe('Ex.: Recepção dos convidados')
-    expect(wrapper.get('[data-teste="campo-opcao-local"]').findAll('button').map((opcao) => opcao.text())).toEqual(['Local principal', 'Outro local', 'Outro'])
+    expect(wrapper.get('[data-teste="campo-opcao-local"]').findAll('button').map((opcao) => opcao.text())).toEqual(['Local principal', 'Outro local', 'Escrever o local'])
     await wrapper.get('#item-modelo-cronograma-inicio').setValue('19:00')
 
     expect(wrapper.get('[data-teste="formulario-item-modelo-cronograma"]').text()).toContain('3 h depois do evento')
