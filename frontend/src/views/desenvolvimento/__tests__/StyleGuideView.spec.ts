@@ -160,7 +160,12 @@ describe('StyleGuideView', () => {
   it('[COMPONENTE] documenta marca, iconografia, os 8 estados, o workspace e os dois contextos do Celebri', async () => {
     expect(wrapper.get('#marca').findAll('[data-teste="marca-produto"]')).toHaveLength(6)
     expect(wrapper.get('#marca').get('.guia__logo-principal').text()).toBe('Celebri')
-    expect(wrapper.get('#marca').find('img').exists()).toBe(false)
+    const imagensMarca = wrapper.get('#marca').findAll('[data-teste="marca-produto"] img.marca__simbolo')
+    expect(imagensMarca.length).toBeGreaterThan(0)
+    imagensMarca.forEach((imagem) => {
+      expect(imagem.attributes('alt')).toBe('')
+      expect(imagem.attributes('src')).not.toMatch(/^https?:\/\//)
+    })
     expect(wrapper.get('[data-teste="guia-icones"]').findAll('li')).toHaveLength(NOMES_ICONES.length)
     const estados = wrapper.get('#estados').findAll('.guia__rotulo-estado').map((rotulo) => rotulo.text())
     expect(estados).toEqual([
