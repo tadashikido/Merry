@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { ErroApi, registrarProvedorAutenticacao, requisitar } from '@/servicos/clienteHttp'
+import { limparCacheDadosEvento } from '@/utilitarios/cacheOffline'
 import type { ConviteAcessoAnfitriaoDto } from '@/tipos/acessoAnfitriao'
 import type {
   CadastroOrganizacaoRequest,
@@ -119,6 +120,7 @@ export const useAutenticacaoStore = defineStore('autenticacao', () => {
     tokenAcesso.value = null
     expiraEm.value = null
     usuario.value = null
+    void limparCacheDadosEvento()
   }
 
   function renovar(): Promise<boolean> {

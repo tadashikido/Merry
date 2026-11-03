@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import ToastService from 'primevue/toastservice'
+import { registerSW } from 'virtual:pwa-register'
 
 import App from './App.vue'
 import roteador from './router'
@@ -40,3 +41,12 @@ aplicacao.use(PrimeVue, {
 aplicacao.use(ToastService)
 
 aplicacao.mount('#app')
+
+registerSW({
+  onNeedRefresh() {
+    window.dispatchEvent(new CustomEvent('pwa:atualizacao-disponivel'))
+  },
+  onOfflineReady() {
+    window.dispatchEvent(new CustomEvent('pwa:pronto-offline'))
+  },
+})

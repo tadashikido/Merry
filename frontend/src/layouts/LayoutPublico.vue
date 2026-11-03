@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MarcaProduto from '@/componentes/base/MarcaProduto.vue'
+import ConviteInstalacao from '@/componentes/base/ConviteInstalacao.vue'
 
 withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convite' | 'operacao'; amplo?: boolean; vazio?: boolean }>(), {
   demonstracao: false,
@@ -35,6 +36,7 @@ withDefaults(defineProps<{ demonstracao?: boolean; variante?: 'padrao' | 'convit
     >
       <slot name="rodape" />
     </footer>
+    <ConviteInstalacao />
   </div>
 </template>
 

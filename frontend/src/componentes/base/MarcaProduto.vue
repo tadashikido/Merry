@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { NOME_PRODUTO } from '@/textos/rotulos'
+import simboloAzul from '@/assets/marca/simbolo-celebri.png'
+import simboloMarfim from '@/assets/marca/simbolo-celebri-branca.png'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{ nome?: string; somenteSimbolo?: boolean; tom?: 'escuro' | 'claro'; destaque?: boolean; fundo?: 'claro' | 'escuro' }>(),
   {
     nome: NOME_PRODUTO,
@@ -11,6 +14,8 @@ withDefaults(
     fundo: 'claro',
   },
 )
+
+const origemSimbolo = computed(() => (props.fundo === 'escuro' ? simboloMarfim : simboloAzul))
 </script>
 
 <template>
@@ -19,24 +24,13 @@ withDefaults(
     :class="[`marca--${tom}`, `marca--fundo-${fundo}`, { 'marca--destaque': destaque }]"
     data-teste="marca-produto"
   >
-    <svg
+    <img
       class="marca__simbolo"
-      viewBox="0 0 48 48"
-      fill="none"
+      :src="origemSimbolo"
+      alt=""
       aria-hidden="true"
-      focusable="false"
+      decoding="async"
     >
-      <path
-        class="marca__arco"
-        d="M37 13.1A17 17 0 1 0 37 34.9"
-        stroke-width="4.5"
-        stroke-linecap="round"
-      />
-      <path
-        class="marca__centelha"
-        d="M41 17.5Q41 24 47.5 24Q41 24 41 30.5Q41 24 34.5 24Q41 24 41 17.5Z"
-      />
-    </svg>
     <span
       v-if="somenteSimbolo"
       class="somente-leitor-tela"
@@ -51,7 +45,6 @@ withDefaults(
 <style scoped>
 .marca {
   --marca-tinta: var(--p-cor-titulo);
-  --marca-brilho: var(--p-cor-centelha-clara);
 
   display: inline-flex;
   align-items: center;
@@ -65,21 +58,12 @@ withDefaults(
 
 .marca--fundo-escuro {
   --marca-tinta: var(--p-cor-lateral-escura-texto);
-  --marca-brilho: var(--p-cor-centelha);
 }
 
 .marca__simbolo {
   flex: none;
-  width: var(--marca-tamanho-simbolo, 1.15em);
-  height: var(--marca-tamanho-simbolo, 1.15em);
-}
-
-.marca__arco {
-  stroke: currentcolor;
-}
-
-.marca__centelha {
-  fill: var(--marca-brilho);
+  width: auto;
+  height: var(--marca-tamanho-simbolo, 1.25em);
 }
 
 .marca__nome {
