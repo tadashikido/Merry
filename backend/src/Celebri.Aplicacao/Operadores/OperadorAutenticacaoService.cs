@@ -163,6 +163,29 @@ public class OperadorAutenticacaoService : IOperadorAutenticacaoService
         return Mapear(operador);
     }
 
+    public async Task AlterarSenhaAsync(Guid operadorId, AlterarSenhaOperadorRequest request, CancellationToken cancelamento)
+    {
+        var operador = await _operadorRepository.ObterPorIdAsync(operadorId, cancelamento);
+        if (operador is null || !operador.Ativo)
+        {
+            throw new RecursoNaoEncontradoException(MensagensAutenticacao.UsuarioNaoEncontrado);
+        }
+
+        if (_hashSenhaService.Verificar(operador.SenhaHash, request.SenhaAtual) == ResultadoVerificacaoSenha.Invalida)
+        {
+            throw new RegraNegocioException(MensagensOperador.SenhaAtualIncorreta);
+        }
+
+        var erroSenha = PoliticaSenha.Validar(request.NovaSenha, operador.Email);
+        if (erroSenha is not null)
+        {
+            throw new RegraNegocioException(erroSenha);
+        }
+
+        operador.AlterarSenha(_hashSenhaService.GerarHash(request.NovaSenha), _relogio.GetUtcNow());
+        await _unidadeTrabalho.SalvarAsync(cancelamento);
+    }
+
     private async Task<bool> PodeReapresentarAsync(RefreshTokenOperador token, DateTimeOffset agora, CancellationToken cancelamento)
     {
         var janela = TimeSpan.FromSeconds(Math.Max(0, _opcoes.JanelaReusoRefreshTokenSegundos));

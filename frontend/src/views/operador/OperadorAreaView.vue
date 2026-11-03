@@ -36,12 +36,20 @@ async function sair() {
           {{ TEXTOS_OPERADOR.saudacao(store.operador.nome) }}
         </h1>
       </div>
-      <Button
-        :label="TEXTOS_OPERADOR.sair"
-        severity="secondary"
-        data-teste="operador-sair"
-        @click="sair"
-      />
+      <div class="operador-area__acoes">
+        <Button
+          :label="TEXTOS_OPERADOR.trocarSenha"
+          severity="secondary"
+          data-teste="operador-trocar-senha"
+          @click="roteador.push({ name: 'operador-senha' })"
+        />
+        <Button
+          :label="TEXTOS_OPERADOR.sair"
+          severity="secondary"
+          data-teste="operador-sair"
+          @click="sair"
+        />
+      </div>
     </header>
     <p class="operador-area__placeholder">
       {{ TEXTOS_OPERADOR.areaPlaceholder }}
@@ -72,6 +80,12 @@ async function sair() {
 
 .operador-area__titulo {
   margin: 0.25rem 0 0;
+}
+
+.operador-area__acoes {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .operador-area__placeholder {

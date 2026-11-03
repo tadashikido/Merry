@@ -2,12 +2,14 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { ErroApi, requisitar, type ProvedorAutenticacao } from '@/servicos/clienteHttp'
+import { MENSAGENS_OPERADOR } from '@/textos/operador'
 
 export const ROTAS_OPERADOR = {
   entrar: '/api/operador/autenticacao/entrar',
   renovar: '/api/operador/autenticacao/renovar',
   sair: '/api/operador/autenticacao/sair',
   eu: '/api/operador/autenticacao/eu',
+  alterarSenha: '/api/operador/autenticacao/alterar-senha',
 } as const
 
 export interface OperadorAutenticadoDto {
@@ -26,6 +28,13 @@ export interface EntrarOperadorRequest {
   email: string
   senha: string
 }
+
+export interface AlterarSenhaOperadorRequest {
+  senhaAtual: string
+  novaSenha: string
+}
+
+export type ResultadoAlteracaoSenha = { ok: true } | { ok: false; mensagem: string }
 
 export type AvisoEntradaOperador = 'sessaoTerminou' | 'saiu'
 
@@ -139,6 +148,18 @@ export const useOperadorAutenticacaoStore = defineStore('operadorAutenticacao', 
     }
   }
 
+  async function alterarSenha(dados: AlterarSenhaOperadorRequest): Promise<ResultadoAlteracaoSenha> {
+    try {
+      await requisitar<void>(ROTAS_OPERADOR.alterarSenha, { metodo: 'POST', corpo: dados, provedor })
+      return { ok: true }
+    } catch (falha) {
+      if (falha instanceof ErroApi) {
+        return { ok: false, mensagem: falha.status === 0 ? MENSAGENS_OPERADOR.conexao : falha.message }
+      }
+      return { ok: false, mensagem: MENSAGENS_OPERADOR.inesperado }
+    }
+  }
+
   function consumirAviso(): AvisoEntradaOperador | null {
     const aviso = avisoEntrada.value
     avisoEntrada.value = null
@@ -157,6 +178,7 @@ export const useOperadorAutenticacaoStore = defineStore('operadorAutenticacao', 
     entrar,
     sair,
     carregarOperador,
+    alterarSenha,
     consumirAviso,
   }
 })

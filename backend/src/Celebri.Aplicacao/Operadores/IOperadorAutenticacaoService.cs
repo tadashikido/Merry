@@ -9,4 +9,6 @@ public interface IOperadorAutenticacaoService
     Task SairAsync(string? refreshToken, CancellationToken cancelamento);
 
     Task<OperadorAutenticadoDto> ObterOperadorAsync(Guid operadorId, CancellationToken cancelamento);
+
+    Task AlterarSenhaAsync(Guid operadorId, AlterarSenhaOperadorRequest request, CancellationToken cancelamento);
 }

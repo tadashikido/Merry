@@ -5,6 +5,7 @@ using Celebri.Dominio.Autenticacao;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Isolamento;
+using Celebri.Dominio.Operadores;
 using Celebri.Dominio.Organizacoes;
 using Celebri.Dominio.Rsvp;
 using Celebri.Dominio.Usuarios;
@@ -22,6 +23,8 @@ public class ConvencaoIsolamentoTestes
         typeof(Usuario),
         typeof(RefreshToken),
         typeof(TokenRedefinicaoSenha),
+        typeof(OperadorPlataforma),
+        typeof(RefreshTokenOperador),
     ];
 
     private static readonly Type[] EntidadesDeResolucaoPublicaForaDoIsolamento =

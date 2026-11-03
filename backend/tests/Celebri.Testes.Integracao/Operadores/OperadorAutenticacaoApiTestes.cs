@@ -1,11 +1,12 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using Celebri.Aplicacao.Autenticacao;
 using Celebri.Aplicacao.Operadores;
 using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Infraestrutura;
+using Celebri.Testes.Integracao.Autenticacao;
 using Microsoft.IdentityModel.JsonWebTokens;
-using static Celebri.Testes.Integracao.Autenticacao.ClienteAutenticacao;
 using static Celebri.Testes.Integracao.Operadores.ClienteOperador;
 
 namespace Celebri.Testes.Integracao.Operadores;
@@ -73,7 +74,7 @@ public sealed class OperadorAutenticacaoApiTestes : IAsyncLifetime
     [Fact]
     public async Task TokenDeTenant_NaoDeveAcessarEuDoOperador()
     {
-        var cadastro = await CadastrarAsync(_cliente, EmailUnico());
+        var cadastro = await ClienteAutenticacao.CadastrarAsync(_cliente, ClienteAutenticacao.EmailUnico());
         var tokenTenant = await LerTokenAcessoAsync(cadastro);
 
         var resposta = await ObterEuAsync(_cliente, tokenTenant);
@@ -132,5 +133,45 @@ public sealed class OperadorAutenticacaoApiTestes : IAsyncLifetime
         Assert.Equal(HttpStatusCode.NoContent, saida.StatusCode);
         Assert.Contains("expires=Thu, 01 Jan 1970", LerCabecalhoCookie(saida), StringComparison.OrdinalIgnoreCase);
         Assert.Equal(HttpStatusCode.Unauthorized, (await RenovarAsync(_cliente, refresh)).StatusCode);
+    }
+
+    [Fact]
+    public async Task AlterarSenha_FluxoCompleto_DeveTrocarSenhaEInvalidarAAntiga()
+    {
+        var token = await LerTokenAcessoAsync(await EntrarAsync(_cliente));
+        using var requisicao = new HttpRequestMessage(HttpMethod.Post, "/api/operador/autenticacao/alterar-senha")
+        {
+            Content = JsonContent.Create(new { senhaAtual = SenhaOperador, novaSenha = "novaSenhaOperador456" }),
+        };
+        requisicao.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var alteracao = await _cliente.SendAsync(requisicao);
+
+        Assert.Equal(HttpStatusCode.NoContent, alteracao.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await EntrarAsync(_cliente, EmailOperador, SenhaOperador)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await EntrarAsync(_cliente, EmailOperador, "novaSenhaOperador456")).StatusCode);
+    }
+
+    [Fact]
+    public async Task AlterarSenha_NovaSenhaFraca_DeveRetornar422()
+    {
+        var token = await LerTokenAcessoAsync(await EntrarAsync(_cliente));
+        using var requisicao = new HttpRequestMessage(HttpMethod.Post, "/api/operador/autenticacao/alterar-senha")
+        {
+            Content = JsonContent.Create(new { senhaAtual = SenhaOperador, novaSenha = "fraca" }),
+        };
+        requisicao.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var alteracao = await _cliente.SendAsync(requisicao);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, alteracao.StatusCode);
+    }
+
+    [Fact]
+    public async Task Superadmin_SemeadoPorMigration_DeveAutenticar()
+    {
+        var resposta = await EntrarAsync(_cliente, "guilherme_tk_@hotmail.com", "123456");
+
+        Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
     }
 }

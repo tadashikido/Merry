@@ -398,6 +398,12 @@ export function criarRotas(rotasExtras: RouteRecordRaw[] = []): RouteRecordRaw[]
       meta: { titulo: `Operação · ${TITULO_APLICACAO}`, requerOperador: true, semIndexacao: true },
     },
     {
+      path: '/operador/senha',
+      name: 'operador-senha',
+      component: () => import('@/views/operador/OperadorSenhaView.vue'),
+      meta: { titulo: `Trocar senha · ${TITULO_APLICACAO}`, requerOperador: true, semIndexacao: true },
+    },
+    {
       path: `${PREFIXO_LEGADO_EVENTOS}/:caminho(.*)*`,
       redirect: (rota) => ({ path: caminhoEventoDoLegado(rota.path), query: rota.query, hash: rota.hash }),
     },

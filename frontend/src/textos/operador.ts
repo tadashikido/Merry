@@ -9,6 +9,13 @@ export const TEXTOS_OPERADOR = {
   areaPlaceholder: 'O console de assessorias chega em breve.',
   sair: 'Sair',
   saudacao: (nome: string): string => `Olá, ${nome}`,
+  trocarSenha: 'Trocar senha',
+  senhaTitulo: 'Trocar senha',
+  senhaDescricao: 'Defina uma nova senha para a sua conta de operação.',
+  rotuloSenhaAtual: 'Senha atual',
+  rotuloNovaSenha: 'Nova senha',
+  botaoSalvarSenha: 'Salvar nova senha',
+  voltarArea: 'Voltar',
 } as const
 
 export const MENSAGENS_OPERADOR = {
@@ -18,4 +25,5 @@ export const MENSAGENS_OPERADOR = {
   inesperado: 'Algo deu errado. Tente novamente.',
   sessaoTerminou: 'Sua sessão expirou. Entre novamente.',
   saiu: 'Você saiu da área de operação.',
+  senhaAlterada: 'Senha alterada com sucesso.',
 } as const

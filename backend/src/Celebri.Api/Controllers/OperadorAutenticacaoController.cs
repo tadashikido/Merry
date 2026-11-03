@@ -81,4 +81,20 @@ public class OperadorAutenticacaoController : ControllerBase
 
         return Ok(await _operadorAutenticacaoService.ObterOperadorAsync(operadorId, cancelamento));
     }
+
+    [Authorize(Policy = PoliticasAutorizacao.Operacao, AuthenticationSchemes = EsquemasAutenticacao.Operador)]
+    [HttpPost("alterar-senha")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> AlterarSenha(AlterarSenhaOperadorRequest request, CancellationToken cancelamento)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimsAutenticacao.UsuarioId), out var operadorId))
+        {
+            return Unauthorized();
+        }
+
+        await _operadorAutenticacaoService.AlterarSenhaAsync(operadorId, request, cancelamento);
+        return NoContent();
+    }
 }

@@ -123,4 +123,39 @@ public class OperadorAutenticacaoServiceTestes
         await Assert.ThrowsAsync<RecursoNaoEncontradoException>(
             () => _cenario.Autenticacao.ObterOperadorAsync(Guid.NewGuid(), CancellationToken.None));
     }
+
+    [Fact]
+    public async Task AlterarSenha_Correta_DeveTrocarEPermitirLoginComNova()
+    {
+        var operador = _cenario.CriarOperador("op@exemplo.com");
+
+        await _cenario.Autenticacao.AlterarSenhaAsync(
+            operador.Id, new AlterarSenhaOperadorRequest(CenarioOperador.SenhaValida, "novaSenha456"), CancellationToken.None);
+
+        await Assert.ThrowsAsync<CredenciaisInvalidasException>(
+            () => _cenario.Autenticacao.EntrarAsync(new EntrarOperadorRequest("op@exemplo.com", CenarioOperador.SenhaValida), CancellationToken.None));
+        var sessao = await _cenario.Autenticacao.EntrarAsync(
+            new EntrarOperadorRequest("op@exemplo.com", "novaSenha456"), CancellationToken.None);
+        Assert.NotNull(sessao.Sessao);
+    }
+
+    [Fact]
+    public async Task AlterarSenha_SenhaAtualIncorreta_DeveLancarRegraNegocio()
+    {
+        var operador = _cenario.CriarOperador("op@exemplo.com");
+
+        await Assert.ThrowsAsync<RegraNegocioException>(
+            () => _cenario.Autenticacao.AlterarSenhaAsync(
+                operador.Id, new AlterarSenhaOperadorRequest("erradaAtual123", "novaSenha456"), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task AlterarSenha_NovaSenhaFraca_DeveLancarRegraNegocio()
+    {
+        var operador = _cenario.CriarOperador("op@exemplo.com");
+
+        await Assert.ThrowsAsync<RegraNegocioException>(
+            () => _cenario.Autenticacao.AlterarSenhaAsync(
+                operador.Id, new AlterarSenhaOperadorRequest(CenarioOperador.SenhaValida, "fraca"), CancellationToken.None));
+    }
 }

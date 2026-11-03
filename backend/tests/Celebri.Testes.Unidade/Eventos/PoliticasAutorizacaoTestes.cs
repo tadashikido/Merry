@@ -112,9 +112,14 @@ public class PoliticasAutorizacaoTestes
             PoliticasAutorizacao.ConsultarMesas,
             PoliticasAutorizacao.GerenciarMesas,
         };
+        var somenteOperador = new[]
+        {
+            PoliticasAutorizacao.Operacao,
+        };
 
-        Assert.Equal(somenteDono.Length + donoEAnfitriao.Length, PoliticasAutorizacao.PapeisPorPolitica.Count);
+        Assert.Equal(somenteDono.Length + donoEAnfitriao.Length + somenteOperador.Length, PoliticasAutorizacao.PapeisPorPolitica.Count);
         Assert.All(somenteDono, politica => Assert.Equal(["Dono"], PoliticasAutorizacao.PapeisPorPolitica[politica]));
         Assert.All(donoEAnfitriao, politica => Assert.Equal(["Dono", "Anfitriao"], PoliticasAutorizacao.PapeisPorPolitica[politica]));
+        Assert.All(somenteOperador, politica => Assert.Equal(["OperadorPlataforma"], PoliticasAutorizacao.PapeisPorPolitica[politica]));
     }
 }
