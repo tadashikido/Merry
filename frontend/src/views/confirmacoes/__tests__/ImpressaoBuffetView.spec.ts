@@ -190,7 +190,8 @@ describe('ImpressaoBuffetView', () => {
     await abrir()
 
     const ficha = wrapper!.get('[data-teste="ficha-buffet"]')
-    expect(ficha.get('[data-teste="ficha-aviso-saude"]').text()).toBe(TEXTOS_FICHA_BUFFET.rodape)
+    expect(ficha.get('header [data-teste="ficha-aviso"]').text()).toBe(TEXTOS_FICHA_BUFFET.rodape)
+    expect(ficha.get('[data-teste="ficha-aviso"]').attributes('role')).toBe('note')
     expect(ficha.text()).not.toMatch(/@[a-z0-9-]+\.[a-z]{2,}/i)
     expect(ficha.text()).not.toMatch(/\(?\d{2}\)?\s?9?\d{4}-?\d{4}/)
     expect(ficha.html()).not.toContain('<script')
@@ -212,7 +213,7 @@ describe('ImpressaoBuffetView', () => {
     const texto = wrapper!.text()
     expect(texto).toContain('foram apagadas em 01/06/2027')
     expect(wrapper!.find('[data-teste="ficha-restricoes-pessoas"]').exists()).toBe(false)
-    expect(wrapper!.find('[data-teste="ficha-aviso-saude"]').exists()).toBe(true)
+    expect(wrapper!.find('[data-teste="ficha-aviso"]').exists()).toBe(true)
   })
 
   it('[COMPONENTE] estilo usa tokens, @container na tela e regras de impressão A4', () => {
@@ -238,9 +239,9 @@ describe('ImpressaoBuffetView', () => {
 
     expect(estilo).toMatch(/\.ficha__titulo \{\s*font-family: var\(--p-fonte-display\)/)
     expect(estilo).toMatch(/\.ficha__legenda-tabela \{[^}]*font-family: var\(--p-fonte-display\)/)
-    expect(estilo).toMatch(/\.ficha__detalhe dt \{[^}]*--p-fonte-tamanho-rotulo[^}]*text-transform: uppercase/)
     expect(estilo).toMatch(/\.ficha__alergia \{[^}]*border-left: medium solid var\(--p-cor-erro\)/)
-    expect(impressao).toMatch(/\.ficha__tipo \{\s*color: var\(--p-cor-texto\);\s*background: none;\s*border: 1px solid var\(--p-cor-texto\);/)
+    expect(fonte).toContain("import CabecalhoDocumentoEvento from '@/componentes/base/CabecalhoDocumentoEvento.vue'")
+    expect(estilo).not.toMatch(/\.ficha__(cabecalho|documento|gerado|identificacao|anfitriao|tipo|detalhe|rodape)\b/)
     expect(impressao).toMatch(/\.ficha__alergia \{\s*border-left-color: var\(--p-cor-texto\)/)
     expect(impressao).toMatch(/\.ficha__titulo,[\s\S]*?color: var\(--p-cor-texto\)/)
   })

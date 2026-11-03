@@ -6,6 +6,12 @@ import { TEXTOS_MESAS } from '@/textos/mesas'
 const props = withDefaults(defineProps<{ ocupados: number; lugares: number; compacta?: boolean }>(), { compacta: false })
 
 const completa = computed(() => props.lugares > 0 && props.ocupados >= props.lugares)
+const LUGARES_POR_FILEIRA = 15
+
+const porFileira = computed(() => {
+  const total = Math.max(props.lugares, 1)
+  return Math.ceil(total / Math.ceil(total / LUGARES_POR_FILEIRA))
+})
 const lugares = computed(() =>
   Array.from({ length: Math.max(props.lugares, 0) }, (_, indice) => ({ indice, ocupado: indice < props.ocupados })),
 )
@@ -19,6 +25,7 @@ const lugares = computed(() =>
   >
     <span
       class="ocupacao-mesa__fileira"
+      :style="{ '--lugares-por-fileira': porFileira }"
       role="img"
       :aria-label="TEXTOS_MESAS.ocupacaoAcessivel(ocupados, props.lugares)"
     >
@@ -56,7 +63,7 @@ const lugares = computed(() =>
   display: inline-flex;
   flex-wrap: wrap;
   gap: var(--p-espaco-1);
-  max-inline-size: calc(15 * var(--p-espaco-3) + 14 * var(--p-espaco-1));
+  max-inline-size: calc(var(--lugares-por-fileira) * var(--p-espaco-3) + (var(--lugares-por-fileira) - 1) * var(--p-espaco-1));
 }
 
 .ocupacao-mesa__lugar {
@@ -94,7 +101,7 @@ const lugares = computed(() =>
 }
 
 .ocupacao-mesa--compacta .ocupacao-mesa__fileira {
-  max-inline-size: calc(15 * var(--p-espaco-2) + 14 * var(--p-espaco-1));
+  max-inline-size: calc(var(--lugares-por-fileira) * var(--p-espaco-2) + (var(--lugares-por-fileira) - 1) * var(--p-espaco-1));
 }
 
 @media print {

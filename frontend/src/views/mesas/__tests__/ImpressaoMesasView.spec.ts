@@ -52,8 +52,10 @@ describe('ImpressaoMesasView reestruturada', () => {
     await abrir({ localCerimonia: 'Capela São José', localRecepcao: 'Villa Giardino' })
 
     const cabecalho = wrapper!.get('[data-teste="mapa-mesas-impressao"] header')
-    expect(cabecalho.get('.mapa__documento').text()).toContain(TEXTOS_IMPRESSAO_MESAS.documento)
-    expect(cabecalho.get('.mapa__documento').text()).toContain('Gerado em')
+    expect(cabecalho.classes()).toContain('cabecalho-documento')
+    expect(cabecalho.get('.cabecalho-documento__documento').text()).toContain(TEXTOS_IMPRESSAO_MESAS.documento)
+    expect(cabecalho.get('.cabecalho-documento__documento').text()).toContain('Gerado em')
+    expect(cabecalho.get('[data-teste="mapa-aviso"]').text()).toBe(TEXTOS_IMPRESSAO_MESAS.rodape)
     expect(cabecalho.findAll('h1')).toHaveLength(1)
     expect(cabecalho.get('h1').text()).toBe('Ana Beatriz & Bruno')
     expect(cabecalho.get('[data-teste="mapa-tipo"]').text()).toBe('Casamento')
@@ -244,13 +246,14 @@ describe('ImpressaoMesasView reestruturada', () => {
     expect(wrapper.get('[data-teste="imprimir"]').attributes('disabled')).toBeDefined()
   })
 
-  it('[SEGURANÇA] rodapé de privacidade presente e nenhum contato ou HTML injetado', async () => {
+  it('[SEGURANÇA] aviso de privacidade presente no cabeçalho e nenhum contato ou HTML injetado', async () => {
     const base = mapaExemplo()
     const pessoas = base.pessoas.map((pessoa, indice) => (indice === 0 ? { ...pessoa, nome: '<img src=x onerror=alert(1)>' } : pessoa))
     await abrir({}, { ...base, pessoas })
 
     const folha = wrapper!.get('[data-teste="mapa-mesas-impressao"]')
-    expect(folha.get('[data-teste="rodape-impressao"]').text()).toBe(TEXTOS_IMPRESSAO_MESAS.rodape)
+    expect(folha.get('header [data-teste="mapa-aviso"]').text()).toBe(TEXTOS_IMPRESSAO_MESAS.rodape)
+    expect(folha.find('footer').exists()).toBe(false)
     expect(folha.text()).toContain('<img src=x onerror=alert(1)>')
     expect(folha.find('img').exists()).toBe(false)
     expect(folha.text()).not.toMatch(/@[a-z0-9-]+\.[a-z]{2,}/i)
@@ -282,16 +285,16 @@ describe('ImpressaoMesasView reestruturada', () => {
 
     expect(estilo).toMatch(/\.mapa__resumo-numero \{\s*font-family: var\(--p-fonte-display\)/)
     expect(estilo).toMatch(/\.mapa__mesa-titulo,\s*\.mapa__secao-titulo \{\s*font-family: var\(--p-fonte-display\)/)
-    expect(estilo).toMatch(/\.mapa__detalhe dt \{[^}]*--p-fonte-tamanho-rotulo[^}]*text-transform: uppercase/)
     expect(estilo).toMatch(/\.mapa__mesa--especial \{[^}]*border-top: medium solid var\(--tom-viva\)/)
     expect(estilo).toMatch(/\.mapa__amostra-especial \{[^}]*border-top: medium solid var\(--tom-viva\)/)
     expect(estilo).toMatch(/\.mapa__faltam \{[^}]*border-left: medium solid var\(--p-cor-alerta\)/)
-    expect(impressao).toMatch(/\.mapa__tipo \{\s*color: var\(--p-cor-texto\);\s*background: none;\s*border: 1px solid var\(--p-cor-texto\);/)
     expect(impressao).toMatch(/\.mapa__mesa--especial \{\s*border-color: var\(--p-cor-texto\)/)
     expect(impressao).toMatch(/\.mapa__mesa-titulo,[\s\S]*?color: var\(--p-cor-texto\)/)
 
     const ocupacao = readFileSync(resolve(__dirname, '../../../componentes/base/OcupacaoMesa.vue'), 'utf-8')
     const impressaoOcupacao = ocupacao.slice(ocupacao.indexOf('@media print'))
+    expect(fonte).toContain("import CabecalhoDocumentoEvento from '@/componentes/base/CabecalhoDocumentoEvento.vue'")
+    expect(estilo).not.toMatch(/\.mapa__(cabecalho|documento|gerado|identificacao|anfitriao|tipo|detalhe|rodape)\b/)
     expect(impressaoOcupacao).toMatch(/\.ocupacao-mesa--completa \.ocupacao-mesa__lugar--ocupado \{[^}]*background: var\(--p-cor-primaria\)/)
   })
 })

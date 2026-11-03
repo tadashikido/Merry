@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { describe, expect, it } from 'vitest'
 import { h } from 'vue'
 import { mount } from '@vue/test-utils'
@@ -37,6 +40,32 @@ describe('OcupacaoMesa', () => {
     const wrapper = mount(OcupacaoMesa, { props: { ocupados: 0, lugares: 1 } })
 
     expect(wrapper.get('[role="img"]').attributes('aria-label')).toBe('0 de 1 lugar ocupado')
+  })
+
+  it.each([
+    [8, 8],
+    [15, 15],
+    [16, 8],
+    [20, 10],
+    [24, 12],
+    [31, 11],
+    [45, 15],
+  ])('[COMPONENTE] mesa de %i lugares distribui no máximo %i por fileira, sem ponto sozinho', (lugares, porFileira) => {
+    const wrapper = mount(OcupacaoMesa, { props: { ocupados: lugares - 1, lugares, compacta: true } })
+
+    const fileira = wrapper.get('.ocupacao-mesa__fileira').element as HTMLElement
+    expect(fileira.style.getPropertyValue('--lugares-por-fileira')).toBe(String(porFileira))
+    const fileiras = Math.ceil(lugares / porFileira)
+    const ultima = lugares - (fileiras - 1) * porFileira
+    expect(fileiras === 1 || ultima > 1).toBe(true)
+    expect(wrapper.findAll('[data-teste="lugar-mesa"]')).toHaveLength(lugares)
+  })
+
+  it('[COMPONENTE] largura máxima da fileira vem da variável de lugares por fileira', () => {
+    const fonte = readFileSync(resolve(__dirname, '../OcupacaoMesa.vue'), 'utf-8')
+
+    expect(fonte).not.toMatch(/calc\(15 \*/)
+    expect(fonte.match(/max-inline-size: calc\(var\(--lugares-por-fileira\)/g)).toHaveLength(2)
   })
 })
 

@@ -3,6 +3,7 @@ import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { EventoExportacaoDto } from '@/tipos/confirmacoes'
 import type { EventoDto, TipoEvento } from '@/tipos/eventos'
 import { formatarDataCalendarioComDiaSemana } from '@/utilitarios/formatacao'
+import { origemInterna, type RotaResolvida } from '@/utilitarios/navegacao'
 
 export interface DetalheFichaEvento {
   chave: 'data' | 'horario' | 'localPrincipal' | 'localSecundario'
@@ -53,30 +54,6 @@ export function cabecalhoFichaEvento(exportacao: EventoExportacaoDto, evento: Ev
 }
 
 export type OrigemFichaBuffet = 'restricoes' | 'confirmacoes'
-
-export interface RotaResolvida {
-  name?: unknown
-  params: Record<string, unknown>
-}
-
-export function origemInterna<T extends string>(
-  anterior: unknown,
-  eventoId: string,
-  resolver: (caminho: string) => RotaResolvida,
-  permitidas: readonly T[],
-  padrao: T,
-): T {
-  if (typeof anterior !== 'string' || !anterior.startsWith('/') || anterior.startsWith('//')) {
-    return padrao
-  }
-  try {
-    const rota = resolver(anterior)
-    const permitida = permitidas.find((nome) => nome === rota.name)
-    return permitida !== undefined && rota.params.id === eventoId ? permitida : padrao
-  } catch {
-    return padrao
-  }
-}
 
 export function origemDaFicha(
   anterior: unknown,

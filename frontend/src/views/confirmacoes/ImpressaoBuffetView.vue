@@ -4,9 +4,9 @@ import { RouterLink, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 
 import LayoutImpressao from '@/layouts/LayoutImpressao.vue'
+import CabecalhoDocumentoEvento from '@/componentes/base/CabecalhoDocumentoEvento.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
-import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import ResumoCardapio from '@/componentes/base/ResumoCardapio.vue'
 import type { LinhaCardapio } from '@/componentes/base/tipos'
 import { useConfirmacoesStore } from '@/stores/confirmacoes'
@@ -18,6 +18,7 @@ import type { ExportacaoBuffetDto, PessoaBuffetDto } from '@/tipos/confirmacoes'
 import { descreverRestricoes } from '@/utilitarios/exportacaoBuffet'
 import { cabecalhoFichaEvento, origemDaFicha } from '@/utilitarios/fichaBuffet'
 import { formatarData, formatarDataHora, formatarNomesAnfitrioes, formatarNumero } from '@/utilitarios/formatacao'
+import { lerEstadoAnterior } from '@/utilitarios/navegacao'
 import { faixaConfirmacao } from '@/utilitarios/painelConfirmacoes'
 import { conferenciaBuffet } from '@/utilitarios/preparoBuffet'
 
@@ -50,11 +51,6 @@ const temConferencia = computed(
     conferencia.value !== null &&
     (conferencia.value.orientacoes.length > 0 || conferencia.value.outras > 0 || conferencia.value.necessidades > 0),
 )
-
-function lerEstadoAnterior(): unknown {
-  const estado: unknown = window.history.state
-  return typeof estado === 'object' && estado !== null && 'back' in estado ? estado.back : null
-}
 
 const origem = computed(() => origemDaFicha(lerEstadoAnterior(), props.id, (caminho) => roteador.resolve(caminho)))
 
@@ -186,46 +182,15 @@ function imprimir() {
       class="ficha pilha pilha--bloco"
       data-teste="ficha-buffet"
     >
-      <header class="ficha__cabecalho pilha pilha--grupo">
-        <div class="ficha__documento">
-          <p class="ficha__documento-nome">
-            {{ TEXTOS_FICHA_BUFFET.documento }}
-          </p>
-          <p class="ficha__gerado texto-legenda numeros-tabulares">
-            {{ TEXTOS_FICHA_BUFFET.gerado(formatarDataHora(ficha.geradoEm)) }}
-          </p>
-        </div>
-        <div class="ficha__identificacao pilha pilha--campo">
-          <EtiquetaTipo
-            v-if="cabecalho?.tipoRotulo"
-            class="ficha__tipo"
-            :tipo="cabecalho.tipo"
-            :rotulo="cabecalho.tipoRotulo"
-            com-icone
-            data-teste="ficha-tipo"
-          />
-          <h1 class="ficha__anfitriao">
-            {{ nomes }}
-          </h1>
-        </div>
-        <dl
-          class="ficha__detalhes"
-          :aria-label="TEXTOS_FICHA_BUFFET.detalhesRotulo"
-          data-teste="ficha-detalhes"
-        >
-          <div
-            v-for="detalhe in cabecalho?.detalhes ?? []"
-            :key="detalhe.chave"
-            class="ficha__detalhe"
-            :data-teste="`ficha-detalhe-${detalhe.chave}`"
-          >
-            <dt>{{ detalhe.rotulo }}</dt>
-            <dd class="numeros-tabulares">
-              {{ detalhe.valor }}
-            </dd>
-          </div>
-        </dl>
-      </header>
+      <CabecalhoDocumentoEvento
+        :documento="TEXTOS_FICHA_BUFFET.documento"
+        :gerado="TEXTOS_FICHA_BUFFET.gerado(formatarDataHora(ficha.geradoEm))"
+        :nomes="nomes"
+        :cabecalho="cabecalho"
+        :rotulo-detalhes="TEXTOS_FICHA_BUFFET.detalhesRotulo"
+        prefixo-teste="ficha"
+        :aviso="TEXTOS_FICHA_BUFFET.rodape"
+      />
 
       <div class="ficha__resumos">
         <ResumoCardapio
@@ -439,13 +404,6 @@ function imprimir() {
           </section>
         </div>
       </section>
-
-      <footer
-        class="ficha__rodape"
-        data-teste="ficha-aviso-saude"
-      >
-        {{ TEXTOS_FICHA_BUFFET.rodape }}
-      </footer>
     </article>
   </LayoutImpressao>
 </template>
@@ -453,56 +411,6 @@ function imprimir() {
 <style scoped>
 .ficha {
   container: ficha / inline-size;
-}
-
-.ficha__cabecalho {
-  padding-bottom: var(--p-ritmo-cartao);
-  border-bottom: 1px solid var(--p-cor-texto);
-}
-
-.ficha__identificacao {
-  min-width: 0;
-}
-
-.ficha__anfitriao {
-  font-family: var(--p-fonte-display);
-  font-size: var(--p-fonte-tamanho-pagina-celular);
-  font-weight: var(--p-fonte-peso-leve);
-  font-variant-numeric: lining-nums;
-  line-height: var(--p-fonte-entrelinha-titulo);
-  letter-spacing: var(--p-fonte-espacamento-letras-display);
-  overflow-wrap: anywhere;
-}
-
-.ficha__tipo {
-  align-self: flex-start;
-}
-
-.ficha__detalhes {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-ritmo-campo) var(--p-ritmo-cartao);
-  margin: 0;
-}
-
-.ficha__detalhe {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.ficha__detalhe dt {
-  font-size: var(--p-fonte-tamanho-rotulo);
-  font-weight: var(--p-fonte-peso-negrito);
-  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
-  text-transform: uppercase;
-  color: var(--p-cor-texto-apoio);
-}
-
-.ficha__detalhe dd {
-  margin: 0;
-  color: var(--p-cor-texto);
-  overflow-wrap: anywhere;
 }
 
 .ficha__conferir {
@@ -554,27 +462,6 @@ function imprimir() {
   font-size: var(--p-fonte-tamanho-apoio);
   line-height: var(--p-fonte-entrelinha-leitura);
   color: var(--p-cor-texto);
-}
-
-.ficha__documento {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
-  padding-bottom: var(--p-ritmo-campo);
-  border-bottom: 1px solid var(--p-cor-divisoria);
-}
-
-.ficha__documento-nome {
-  margin: 0;
-  font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-texto);
-}
-
-.ficha__gerado {
-  margin: 0;
 }
 
 .ficha__resumos {
@@ -760,23 +647,8 @@ function imprimir() {
   color: var(--p-cor-texto-apoio);
 }
 
-.ficha__rodape {
-  padding-top: var(--p-ritmo-grupo);
-  font-family: var(--p-fonte-serif);
-  font-size: var(--p-fonte-tamanho-apoio);
-  line-height: var(--p-fonte-entrelinha-leitura);
-  color: var(--p-cor-texto);
-  border-top: 1px solid var(--p-cor-texto);
-  break-inside: avoid;
-}
-
 @container ficha (min-width: 36rem) {
-  .ficha__anfitriao {
-    font-size: var(--p-fonte-tamanho-pagina);
-  }
-
   .ficha__resumos,
-  .ficha__detalhes,
   .ficha__orientacoes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -797,12 +669,7 @@ function imprimir() {
     --pilha-espaco: var(--p-ritmo-cartao);
   }
 
-  .ficha__anfitriao {
-    font-size: var(--p-fonte-tamanho-pagina-celular);
-  }
-
   .ficha__resumos,
-  .ficha__detalhes,
   .ficha__orientacoes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -813,12 +680,6 @@ function imprimir() {
 
   .ficha__alergia-titulo .ie {
     display: none;
-  }
-
-  .ficha__tipo {
-    color: var(--p-cor-texto);
-    background: none;
-    border: 1px solid var(--p-cor-texto);
   }
 
   .ficha__legenda-tabela {
@@ -835,16 +696,12 @@ function imprimir() {
     columns: 2;
   }
 
-  .ficha__anfitriao,
   .ficha__titulo,
   .ficha__legenda-tabela,
   .ficha__tabela th,
   .ficha :deep(.resumo-cardapio__titulo),
   .ficha :deep(.resumo-cardapio__valor),
   .ficha__nota,
-  .ficha__tipo,
-  .ficha__detalhe dt,
-  .ficha__gerado,
   .ficha__marcador,
   .ficha__nome-convite span,
   .ficha :deep(.resumo-cardapio__rodape) {

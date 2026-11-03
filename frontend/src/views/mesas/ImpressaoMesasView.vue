@@ -4,18 +4,19 @@ import { RouterLink, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 
 import LayoutImpressao from '@/layouts/LayoutImpressao.vue'
+import CabecalhoDocumentoEvento from '@/componentes/base/CabecalhoDocumentoEvento.vue'
 import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
-import EtiquetaTipo from '@/componentes/base/EtiquetaTipo.vue'
 import OcupacaoMesa from '@/componentes/base/OcupacaoMesa.vue'
 import { useEventosStore } from '@/stores/eventos'
 import { useMesasStore } from '@/stores/mesas'
 import { TEXTOS_FECHAMENTO_MESAS, TEXTOS_IMPRESSAO_MESAS, TEXTOS_MESAS } from '@/textos/mesas'
 import { classeTomDoTipo, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import type { PessoaMesaDto } from '@/tipos/mesas'
-import { cabecalhoFichaEvento, origemInterna } from '@/utilitarios/fichaBuffet'
+import { cabecalhoFichaEvento } from '@/utilitarios/fichaBuffet'
 import { formatarDataHora, formatarNomesAnfitrioes, formatarNumero } from '@/utilitarios/formatacao'
 import { agruparPorConvite, conviteDeUmaPessoa, mesasComPessoas, resumoDaMesa, rotuloMesa } from '@/utilitarios/mesas'
+import { lerEstadoAnterior, origemInterna } from '@/utilitarios/navegacao'
 
 const props = defineProps<{ id: string }>()
 
@@ -64,11 +65,6 @@ const faltamLugares = computed(() => {
   const totais = mapa.value?.totais
   return totais ? Math.max(totais.semMesa - totais.lugaresLivres, 0) : 0
 })
-
-function lerEstadoAnterior(): unknown {
-  const estado: unknown = window.history.state
-  return typeof estado === 'object' && estado !== null && 'back' in estado ? estado.back : null
-}
 
 const voltar = computed(() => {
   const origem = origemInterna(
@@ -163,47 +159,15 @@ function imprimir() {
       :class="classeTomDoTipo(cabecalho?.tipo ?? null)"
       data-teste="mapa-mesas-impressao"
     >
-      <header class="mapa__cabecalho pilha pilha--grupo">
-        <div class="mapa__documento">
-          <p class="mapa__documento-nome">
-            {{ TEXTOS_IMPRESSAO_MESAS.documento }}
-          </p>
-          <p class="mapa__gerado texto-legenda numeros-tabulares">
-            {{ TEXTOS_IMPRESSAO_MESAS.gerado(formatarDataHora(geradoEm)) }}
-          </p>
-        </div>
-        <div class="mapa__identificacao pilha pilha--campo">
-          <EtiquetaTipo
-            v-if="cabecalho?.tipoRotulo"
-            class="mapa__tipo"
-            :tipo="cabecalho.tipo"
-            :rotulo="cabecalho.tipoRotulo"
-            com-icone
-            data-teste="mapa-tipo"
-          />
-          <h1 class="mapa__anfitriao">
-            {{ nomes }}
-          </h1>
-        </div>
-        <dl
-          v-if="cabecalho"
-          class="mapa__detalhes"
-          :aria-label="TEXTOS_IMPRESSAO_MESAS.detalhesRotulo"
-          data-teste="mapa-detalhes"
-        >
-          <div
-            v-for="detalhe in cabecalho.detalhes"
-            :key="detalhe.chave"
-            class="mapa__detalhe"
-            :data-teste="`mapa-detalhe-${detalhe.chave}`"
-          >
-            <dt>{{ detalhe.rotulo }}</dt>
-            <dd class="numeros-tabulares">
-              {{ detalhe.valor }}
-            </dd>
-          </div>
-        </dl>
-      </header>
+      <CabecalhoDocumentoEvento
+        :documento="TEXTOS_IMPRESSAO_MESAS.documento"
+        :gerado="TEXTOS_IMPRESSAO_MESAS.gerado(formatarDataHora(geradoEm))"
+        :nomes="nomes"
+        :cabecalho="cabecalho"
+        :rotulo-detalhes="TEXTOS_IMPRESSAO_MESAS.detalhesRotulo"
+        prefixo-teste="mapa"
+        :aviso="TEXTOS_IMPRESSAO_MESAS.rodape"
+      />
 
       <div class="mapa__conferencia pilha pilha--grupo">
         <ul
@@ -348,13 +312,6 @@ function imprimir() {
           </li>
         </ul>
       </section>
-
-      <footer
-        class="mapa__rodape"
-        data-teste="rodape-impressao"
-      >
-        {{ TEXTOS_IMPRESSAO_MESAS.rodape }}
-      </footer>
     </article>
   </LayoutImpressao>
 </template>
@@ -362,77 +319,6 @@ function imprimir() {
 <style scoped>
 .mapa {
   container: mapa / inline-size;
-}
-
-.mapa__cabecalho {
-  padding-bottom: var(--p-ritmo-cartao);
-  border-bottom: 1px solid var(--p-cor-texto);
-}
-
-.mapa__documento {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--p-ritmo-campo) var(--p-ritmo-grupo);
-  padding-bottom: var(--p-ritmo-campo);
-  border-bottom: 1px solid var(--p-cor-divisoria);
-}
-
-.mapa__documento-nome {
-  margin: 0;
-  font-size: var(--p-fonte-tamanho-titulo);
-  font-weight: var(--p-fonte-peso-medio);
-  color: var(--p-cor-texto);
-}
-
-.mapa__gerado {
-  margin: 0;
-}
-
-.mapa__identificacao {
-  min-width: 0;
-}
-
-.mapa__anfitriao {
-  font-family: var(--p-fonte-display);
-  font-size: var(--p-fonte-tamanho-pagina-celular);
-  font-weight: var(--p-fonte-peso-leve);
-  font-variant-numeric: lining-nums;
-  line-height: var(--p-fonte-entrelinha-titulo);
-  letter-spacing: var(--p-fonte-espacamento-letras-display);
-  overflow-wrap: anywhere;
-}
-
-.mapa__tipo {
-  align-self: flex-start;
-}
-
-.mapa__detalhes {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--p-ritmo-campo) var(--p-ritmo-cartao);
-  margin: 0;
-}
-
-.mapa__detalhe {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.mapa__detalhe dt {
-  font-size: var(--p-fonte-tamanho-rotulo);
-  font-weight: var(--p-fonte-peso-negrito);
-  letter-spacing: var(--p-fonte-espacamento-letras-rotulo);
-  text-transform: uppercase;
-  color: var(--p-cor-texto-apoio);
-}
-
-.mapa__detalhe dd {
-  margin: 0;
-  color: var(--p-cor-texto);
-  overflow-wrap: anywhere;
 }
 
 .mapa__conferencia {
@@ -610,28 +496,10 @@ function imprimir() {
   border-top: 1px solid var(--p-cor-divisoria);
 }
 
-.mapa__rodape {
-  padding-top: var(--p-ritmo-grupo);
-  font-family: var(--p-fonte-serif);
-  font-size: var(--p-fonte-tamanho-apoio);
-  line-height: var(--p-fonte-entrelinha-leitura);
-  color: var(--p-cor-texto);
-  border-top: 1px solid var(--p-cor-texto);
-  break-inside: avoid;
-}
-
 @container mapa (min-width: 36rem) {
-  .mapa__anfitriao {
-    font-size: var(--p-fonte-tamanho-pagina);
-  }
-
   .mapa__mesas,
   .mapa__convites {
     columns: 2;
-  }
-
-  .mapa__detalhes {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -645,10 +513,6 @@ function imprimir() {
 @media print {
   .mapa {
     --pilha-espaco: var(--p-ritmo-cartao);
-  }
-
-  .mapa__anfitriao {
-    font-size: var(--p-fonte-tamanho-pagina-celular);
   }
 
   .mapa__mesas,
@@ -665,10 +529,6 @@ function imprimir() {
     border-color: var(--p-cor-texto);
   }
 
-  .mapa__detalhes {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .mapa__faltam {
     border-left-color: var(--p-cor-texto);
   }
@@ -681,21 +541,11 @@ function imprimir() {
     border-top-color: var(--p-cor-texto);
   }
 
-  .mapa__tipo {
-    color: var(--p-cor-texto);
-    background: none;
-    border: 1px solid var(--p-cor-texto);
-  }
-
-  .mapa__anfitriao,
   .mapa__mesa-titulo,
   .mapa__secao-titulo,
   .mapa__resumo-numero,
   .mapa__nota,
-  .mapa__gerado,
   .mapa__selo,
-  .mapa__tipo,
-  .mapa__detalhe dt,
   .mapa__resumo-rotulo,
   .mapa__legenda,
   .mapa__mesa-resumo,
