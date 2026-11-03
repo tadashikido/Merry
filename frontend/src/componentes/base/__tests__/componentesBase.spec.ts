@@ -250,17 +250,16 @@ describe('BadgeStatus', () => {
 })
 
 describe('MarcaProduto', () => {
-  it('[COMPONENTE] exibe o símbolo provisório em SVG inline decorativo e o logotipo com o nome Celebri, sem imagem externa', () => {
+  it('[COMPONENTE] exibe a logo oficial como símbolo decorativo e o logotipo com o nome Celebri, de mesma origem', () => {
     const wrapper = mount(MarcaProduto)
 
     expect(wrapper.get('.marca__nome').text()).toBe('Celebri')
-    expect(wrapper.find('img').exists()).toBe(false)
-    const simbolo = wrapper.get('svg.marca__simbolo')
+    const simbolo = wrapper.get('img.marca__simbolo')
     expect(simbolo.attributes('aria-hidden')).toBe('true')
-    expect(simbolo.attributes('viewBox')).toBe('0 0 48 48')
-    expect(simbolo.find('.marca__arco').exists()).toBe(true)
-    expect(simbolo.find('.marca__centelha').exists()).toBe(true)
-    expect(wrapper.html()).not.toMatch(/href=|<script/i)
+    expect(simbolo.attributes('alt')).toBe('')
+    expect(simbolo.attributes('src')).toBeTruthy()
+    expect(simbolo.attributes('src')).not.toMatch(/^https?:\/\//)
+    expect(wrapper.html()).not.toMatch(/<script/i)
     expect(wrapper.classes()).toEqual(expect.arrayContaining(['marca--escuro', 'marca--fundo-claro']))
     expect(wrapper.classes()).not.toContain('marca--destaque')
   })
@@ -269,7 +268,7 @@ describe('MarcaProduto', () => {
     const wrapper = mount(MarcaProduto, { props: { somenteSimbolo: true, tom: 'claro' } })
 
     expect(wrapper.find('.marca__nome').exists()).toBe(false)
-    expect(wrapper.get('.marca__simbolo').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.get('img.marca__simbolo').attributes('aria-hidden')).toBe('true')
     expect(wrapper.get('.somente-leitor-tela').text()).toBe('Celebri')
     expect(wrapper.classes()).toContain('marca--claro')
   })

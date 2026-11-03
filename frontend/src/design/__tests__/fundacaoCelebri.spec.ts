@@ -159,14 +159,20 @@ describe('fundação Celebri: marca e textos', () => {
     expect(TEXTOS_AUTENTICACAO_LAYOUT.frase).toBe('Eventos que conectam.')
   })
 
-  it('[COMPONENTE] a entrada mostra o logotipo provisório Celebri em destaque sobre o painel escuro e na barra do celular, sem imagem do Nossia', () => {
+  it('[COMPONENTE] a entrada mostra o logotipo oficial Celebri em destaque sobre o painel escuro e na barra do celular, com imagem decorativa de mesma origem', () => {
     const wrapper = mount(LayoutAutenticacao, { props: { titulo: 'Entrar' }, global })
 
     const destaque = wrapper.get('.layout-autenticacao__logo')
     expect(destaque.classes()).toEqual(expect.arrayContaining(['marca--destaque', 'marca--fundo-escuro']))
     expect(destaque.text()).toBe('Celebri')
     expect(wrapper.get('header [data-teste="marca-produto"] .marca__nome').text()).toBe('Celebri')
-    expect(wrapper.find('img').exists()).toBe(false)
+    const simbolos = wrapper.findAll('[data-teste="marca-produto"] img.marca__simbolo')
+    expect(simbolos.length).toBeGreaterThan(0)
+    simbolos.forEach((simbolo) => {
+      expect(simbolo.attributes('alt')).toBe('')
+      expect(simbolo.attributes('aria-hidden')).toBe('true')
+      expect(simbolo.attributes('src')).not.toMatch(/^https?:\/\//)
+    })
     expect(wrapper.html()).not.toMatch(/nossia/i)
     wrapper.findAll('svg').forEach((svg) => expect(svg.attributes('aria-hidden')).toBe('true'))
   })
