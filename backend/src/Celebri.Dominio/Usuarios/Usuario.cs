@@ -40,6 +40,13 @@ public class Usuario
 
     public DateTimeOffset? SenhaAlteradaEm { get; private set; }
 
+    public DateTimeOffset? UltimoLoginEm { get; private set; }
+
+    public void RegistrarUltimoLogin(DateTimeOffset agora)
+    {
+        UltimoLoginEm = agora;
+    }
+
     public static Usuario CriarDono(Guid organizacaoId, string nome, string email, string senhaHash, DateTimeOffset agora)
     {
         return Criar(organizacaoId, null, PapelUsuario.Dono, nome, email, senhaHash, agora);

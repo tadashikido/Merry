@@ -28,6 +28,11 @@ public class GuardaIsolamentoTestes
             CategoriaBypass.TrocaOrganizacao,
             1,
             "Comando administrativo de recifragem sem usuário autenticado: cria um escopo de serviços novo por organização antes de Assumir, então cada lote de recifragem fica restrito a uma organização e nunca herda um request."),
+        new(
+            "Celebri.Infraestrutura/Persistencia/Repositorios/OperacaoConsultaRepository.cs",
+            CategoriaBypass.IgnorarFiltros,
+            1,
+            "Leitura administrativa cross-organização do operador de plataforma: apenas metadados de organização e contagens agregadas (nenhum dado de convidado), restrita aos endpoints sob a política de operador; nenhum caminho de tenant usa este repositório."),
     ];
 
     private static readonly CategoriaBypass[] CategoriasComExcecao =

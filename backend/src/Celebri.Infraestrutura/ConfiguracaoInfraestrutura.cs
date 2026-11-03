@@ -96,6 +96,7 @@ public static class ConfiguracaoInfraestrutura
         servicos.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         servicos.AddScoped<IOperadorPlataformaRepository, OperadorPlataformaRepository>();
         servicos.AddScoped<IRefreshTokenOperadorRepository, RefreshTokenOperadorRepository>();
+        servicos.AddScoped<IOperacaoConsultaRepository, OperacaoConsultaRepository>();
         servicos.AddScoped<ITokenRedefinicaoSenhaRepository, TokenRedefinicaoSenhaRepository>();
         servicos.AddScoped<IEventoRepository, EventoRepository>();
         servicos.AddScoped<IDuplicacaoEventoRepository, DuplicacaoEventoRepository>();

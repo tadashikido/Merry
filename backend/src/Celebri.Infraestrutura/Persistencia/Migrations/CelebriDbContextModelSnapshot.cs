@@ -1689,6 +1689,10 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                         .HasColumnType("character varying(120)")
                         .HasColumnName("nome");
 
+                    b.Property<DateTimeOffset?>("SuspensaEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("suspensa_em");
+
                     b.Property<uint>("Versao")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -1929,6 +1933,10 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
                         .HasColumnName("senha_hash");
+
+                    b.Property<DateTimeOffset?>("UltimoLoginEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ultimo_login_em");
 
                     b.Property<uint>("Versao")
                         .IsConcurrencyToken()

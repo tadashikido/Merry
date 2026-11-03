@@ -235,4 +235,26 @@ public class AutenticacaoServiceTestes
     {
         await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() => _cenario.Autenticacao.ObterUsuarioAsync(Guid.NewGuid(), CancellationToken.None));
     }
+
+    [Fact]
+    public async Task Entrar_OrganizacaoSuspensa_DeveRecusarComContaSuspensa()
+    {
+        await _cenario.CadastrarAsync("ana@exemplo.com");
+        _cenario.Banco.Organizacoes[0].Suspender(_cenario.Relogio.GetUtcNow());
+
+        var excecao = await Assert.ThrowsAsync<CredenciaisInvalidasException>(
+            () => _cenario.Autenticacao.EntrarAsync(new EntrarRequest("ana@exemplo.com", CenarioAutenticacao.SenhaValida), CancellationToken.None));
+
+        Assert.Equal(MensagensAutenticacao.ContaSuspensa, excecao.Message);
+    }
+
+    [Fact]
+    public async Task Entrar_DeveRegistrarUltimoLogin()
+    {
+        await _cenario.CadastrarAsync("ana@exemplo.com");
+
+        await _cenario.Autenticacao.EntrarAsync(new EntrarRequest("ana@exemplo.com", CenarioAutenticacao.SenhaValida), CancellationToken.None);
+
+        Assert.NotNull(_cenario.Banco.Usuarios[0].UltimoLoginEm);
+    }
 }

@@ -64,7 +64,9 @@ async function enviar() {
   <main class="operador-senha">
     <header class="operador-senha__topo">
       <div>
-        <p class="operador-senha__rotulo">{{ TEXTOS_OPERADOR.areaTitulo }}</p>
+        <p class="operador-senha__rotulo">
+          {{ TEXTOS_OPERADOR.areaTitulo }}
+        </p>
         <h1 class="operador-senha__titulo">
           {{ TEXTOS_OPERADOR.senhaTitulo }}
         </h1>

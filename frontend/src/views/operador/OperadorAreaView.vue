@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 
 import { useOperadorAutenticacaoStore } from '@/stores/operadorAutenticacao'
 import { TEXTOS_OPERADOR } from '@/textos/operador'
+import { TEXTOS_OPERACAO } from '@/textos/operacao'
 
 const store = useOperadorAutenticacaoStore()
 const roteador = useRouter()
@@ -51,9 +52,22 @@ async function sair() {
         />
       </div>
     </header>
-    <p class="operador-area__placeholder">
-      {{ TEXTOS_OPERADOR.areaPlaceholder }}
-    </p>
+    <nav class="operador-area__nav">
+      <RouterLink
+        class="operador-area__cartao"
+        :to="{ name: 'operador-dashboard' }"
+        data-teste="nav-dashboard"
+      >
+        {{ TEXTOS_OPERACAO.navVisaoGeral }}
+      </RouterLink>
+      <RouterLink
+        class="operador-area__cartao"
+        :to="{ name: 'operador-assessorias' }"
+        data-teste="nav-assessorias"
+      >
+        {{ TEXTOS_OPERACAO.navAssessorias }}
+      </RouterLink>
+    </nav>
   </main>
 </template>
 
@@ -88,7 +102,28 @@ async function sair() {
   flex-wrap: wrap;
 }
 
-.operador-area__placeholder {
+.operador-area__nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
   margin-top: 1.5rem;
+}
+
+.operador-area__cartao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 5rem;
+  padding: 1.25rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--p-cor-texto, inherit);
+  background: var(--p-cor-superficie, #fff);
+  border: 1px solid var(--p-cor-borda, #e2e8f0);
+  border-radius: var(--p-raio-painel, 0.75rem);
+}
+
+.operador-area__cartao:hover {
+  border-color: var(--p-cor-destaque, #14244a);
 }
 </style>

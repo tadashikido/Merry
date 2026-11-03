@@ -16,6 +16,7 @@ using Celebri.Aplicacao.GrandeDia;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Mesas;
 using Celebri.Aplicacao.ModelosCronograma;
+using Celebri.Aplicacao.Operacao;
 using Celebri.Aplicacao.Operadores;
 using Celebri.Aplicacao.Recifragem;
 using Celebri.Aplicacao.Rsvp;
@@ -36,6 +37,7 @@ public static class ConfiguracaoAplicacao
         servicos.AddScoped<IRecuperacaoSenhaService, RecuperacaoSenhaService>();
         servicos.AddScoped<IOperadorAutenticacaoService, OperadorAutenticacaoService>();
         servicos.AddScoped<IProvisionamentoOperadorService, ProvisionamentoOperadorService>();
+        servicos.AddScoped<IAssessoriaOperacaoService, AssessoriaOperacaoService>();
         servicos.AddScoped<ContextoIsolamentoUsuarioAtual>();
         servicos.AddScoped<EscopoIsolamentoRsvp>();
         servicos.AddScoped<EscopoIsolamentoAcessoAnfitriao>();

@@ -18,6 +18,20 @@ public class Organizacao
 
     public DateTimeOffset CriadaEm { get; private set; }
 
+    public DateTimeOffset? SuspensaEm { get; private set; }
+
+    public bool EstaSuspensa => SuspensaEm is not null;
+
+    public void Suspender(DateTimeOffset agora)
+    {
+        SuspensaEm ??= agora;
+    }
+
+    public void Reativar()
+    {
+        SuspensaEm = null;
+    }
+
     public DateTimeOffset? ModeloChecklistSugeridoEm { get; private set; }
 
     public bool PossuiModeloChecklistSugerido => ModeloChecklistSugeridoEm is not null;

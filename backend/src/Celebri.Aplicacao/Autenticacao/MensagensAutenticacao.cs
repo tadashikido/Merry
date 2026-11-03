@@ -8,4 +8,5 @@ public static class MensagensAutenticacao
     public const string LinkRedefinicaoInvalido = "Link de redefinição inválido ou expirado.";
     public const string RecuperacaoSolicitada = "Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.";
     public const string UsuarioNaoEncontrado = "Usuário não encontrado.";
+    public const string ContaSuspensa = "Acesso suspenso. Fale com o suporte da plataforma.";
 }

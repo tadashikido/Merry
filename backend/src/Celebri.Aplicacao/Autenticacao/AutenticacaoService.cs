@@ -96,7 +96,9 @@ public class AutenticacaoService : IAutenticacaoService
         }
 
         var organizacao = await ObterOrganizacaoAsync(usuario.OrganizacaoId, cancelamento);
+        GarantirNaoSuspensa(organizacao);
         usuario.RegistrarLoginBemSucedido();
+        usuario.RegistrarUltimoLogin(agora);
         var refreshToken = EmitirRefreshToken(usuario.Id, Guid.NewGuid(), agora);
 
         await _unidadeTrabalho.SalvarAsync(cancelamento);
@@ -144,6 +146,7 @@ public class AutenticacaoService : IAutenticacaoService
         }
 
         var organizacao = await ObterOrganizacaoAsync(usuario.OrganizacaoId, cancelamento);
+        GarantirNaoSuspensa(organizacao);
         tokenAtual.Substituir(agora);
         var novoRefreshToken = EmitirRefreshToken(usuario.Id, tokenAtual.Familia, agora);
 
@@ -226,6 +229,7 @@ public class AutenticacaoService : IAutenticacaoService
         }
 
         var organizacao = await ObterOrganizacaoAsync(usuario.OrganizacaoId, cancelamento);
+        GarantirNaoSuspensa(organizacao);
         var novoRefreshToken = EmitirRefreshToken(usuario.Id, token.Familia, agora);
         await _unidadeTrabalho.SalvarAsync(cancelamento);
         return MontarResultado(usuario, organizacao, novoRefreshToken);
@@ -246,6 +250,14 @@ public class AutenticacaoService : IAutenticacaoService
         catch (ConcorrenciaException)
         {
             return;
+        }
+    }
+
+    private static void GarantirNaoSuspensa(Organizacao organizacao)
+    {
+        if (organizacao.EstaSuspensa)
+        {
+            throw new CredenciaisInvalidasException(MensagensAutenticacao.ContaSuspensa);
         }
     }
 
