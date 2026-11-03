@@ -29,6 +29,19 @@ export default defineConfig({
       workbox: {
         navigateFallback: null,
         globPatterns: ['**/*.{js,css,svg,png,ico,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url, request }) =>
+              request.method === 'GET' && url.pathname.startsWith('/api/eventos/'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'celebri-dados-evento',
+              networkTimeoutSeconds: 4,
+              cacheableResponse: { statuses: [200] },
+              expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 12 },
+            },
+          },
+        ],
       },
     }),
   ],
