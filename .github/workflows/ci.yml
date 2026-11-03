@@ -115,8 +115,14 @@ jobs:
       - name: Construir imagem do frontend
         run: docker compose -f docker-compose.prod.yml --env-file .env.ci build web
 
+      - name: Testar contexto Docker da api
+        run: bash infra/testes/contexto-docker-api.test.sh
+
+      - name: Construir imagem da api
+        run: docker compose -f docker-compose.prod.yml --env-file .env.ci build api
+
       - name: Lint dos scripts
-        run: shellcheck deploy.sh infra/deploy/localizar-deploy.sh infra/testes/deploy.test.sh infra/testes/localizar-deploy.test.sh infra/testes/proxy.test.sh infra/testes/contexto-docker-web.test.sh infra/testes/env-exemplo.test.sh
+        run: shellcheck deploy.sh infra/deploy/localizar-deploy.sh infra/testes/deploy.test.sh infra/testes/localizar-deploy.test.sh infra/testes/proxy.test.sh infra/testes/contexto-docker-web.test.sh infra/testes/contexto-docker-api.test.sh infra/testes/env-exemplo.test.sh
 
       - name: Testar deploy.sh
         run: bash infra/testes/deploy.test.sh

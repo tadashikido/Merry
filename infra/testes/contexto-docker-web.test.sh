@@ -40,7 +40,7 @@ existe_no_contexto() {
   grep -qxF "$1" <<< "$CONTEUDO_CONTEXTO"
 }
 
-REFERENCIAS="$(sed -n 's/.*"path"[[:space:]]*:[[:space:]]*"\.\/\([^"]*\)".*/\1/p' "$DIRETORIO_FRONTEND/tsconfig.json")"
+REFERENCIAS="$(sed -n 's/.*"path"[[:space:]]*:[[:space:]]*"\(\.\/\)\{0,1\}\([^"]*\)".*/\2/p' "$DIRETORIO_FRONTEND/tsconfig.json")"
 
 if [ -z "$REFERENCIAS" ]; then
   falhar "nenhuma referência encontrada em frontend/tsconfig.json"

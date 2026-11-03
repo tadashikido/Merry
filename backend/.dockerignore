@@ -3,3 +3,8 @@
 **/TestResults/
 tests/
 .vs/
+.env
+.env.*
+**/*.user
+**/.idea/
+**/.vscode/
