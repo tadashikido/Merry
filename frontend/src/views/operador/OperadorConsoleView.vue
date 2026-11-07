@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import Textarea from 'primevue/textarea'
 
 import BadgeStatus from '@/componentes/base/BadgeStatus.vue'
 import DialogoConfirmacao from '@/componentes/base/DialogoConfirmacao.vue'
@@ -10,7 +13,9 @@ import EstadoCarregando from '@/componentes/base/EstadoCarregando.vue'
 import EstadoErro from '@/componentes/base/EstadoErro.vue'
 import EstadoVazio from '@/componentes/base/EstadoVazio.vue'
 import MensagemFormulario from '@/componentes/base/MensagemFormulario.vue'
+import { useImpersonacaoStore } from '@/stores/impersonacao'
 import { useOperacaoAssessoriasStore, type AssessoriaResumo, type SituacaoFiltro } from '@/stores/operacaoAssessorias'
+import { TEXTOS_IMPERSONACAO } from '@/textos/impersonacao'
 import { TEXTOS_OPERACAO } from '@/textos/operacao'
 
 interface Mensagem {
@@ -19,12 +24,17 @@ interface Mensagem {
 }
 
 const store = useOperacaoAssessoriasStore()
+const impersonacao = useImpersonacaoStore()
+const roteador = useRouter()
 
 const busca = ref('')
 const situacao = ref<SituacaoFiltro | null>(null)
 const alvo = ref<AssessoriaResumo | null>(null)
 const executando = ref(false)
 const mensagem = ref<Mensagem | null>(null)
+const verComoAlvo = ref<AssessoriaResumo | null>(null)
+const motivo = ref('')
+const iniciandoImpersonacao = ref(false)
 
 const opcoesSituacao = [
   { rotulo: TEXTOS_OPERACAO.situacaoAtivas, valor: 'ativa' as SituacaoFiltro },
@@ -73,6 +83,36 @@ async function confirmar() {
   }
 
   mensagem.value = { variante: 'erro', texto: TEXTOS_OPERACAO.erroAcao }
+}
+
+function abrirVerComo(assessoria: AssessoriaResumo) {
+  verComoAlvo.value = assessoria
+  motivo.value = ''
+}
+
+function fecharVerComo() {
+  if (!iniciandoImpersonacao.value) {
+    verComoAlvo.value = null
+  }
+}
+
+async function confirmarVerComo() {
+  const assessoria = verComoAlvo.value
+  if (!assessoria || motivo.value.trim().length === 0) {
+    return
+  }
+  iniciandoImpersonacao.value = true
+  const resultado = await impersonacao.iniciar(assessoria.id, motivo.value.trim())
+  iniciandoImpersonacao.value = false
+
+  if (resultado.ok) {
+    verComoAlvo.value = null
+    await roteador.push({ name: 'inicio' })
+    return
+  }
+
+  verComoAlvo.value = null
+  mensagem.value = { variante: 'erro', texto: TEXTOS_IMPERSONACAO.erroIniciar }
 }
 
 watch(situacao, aplicar)
@@ -174,13 +214,21 @@ onMounted(aplicar)
               />
             </td>
             <td>
-              <Button
-                :label="assessoria.suspensa ? TEXTOS_OPERACAO.acaoReativar : TEXTOS_OPERACAO.acaoSuspender"
-                severity="secondary"
-                size="small"
-                data-teste="operacao-acao"
-                @click="alvo = assessoria"
-              />
+              <div class="operacao-console__acoes">
+                <Button
+                  :label="TEXTOS_IMPERSONACAO.verComo"
+                  size="small"
+                  data-teste="operacao-ver-como"
+                  @click="abrirVerComo(assessoria)"
+                />
+                <Button
+                  :label="assessoria.suspensa ? TEXTOS_OPERACAO.acaoReativar : TEXTOS_OPERACAO.acaoSuspender"
+                  severity="secondary"
+                  size="small"
+                  data-teste="operacao-acao"
+                  @click="alvo = assessoria"
+                />
+              </div>
             </td>
           </tr>
         </tbody>
@@ -199,6 +247,50 @@ onMounted(aplicar)
       @confirmar="confirmar"
       @cancelar="alvo = null"
     />
+
+    <Dialog
+      :visible="verComoAlvo !== null"
+      modal
+      :header="verComoAlvo ? TEXTOS_IMPERSONACAO.dialogoTitulo(verComoAlvo.nome) : ''"
+      :closable="!iniciandoImpersonacao"
+      :close-on-escape="!iniciandoImpersonacao"
+      :draggable="false"
+      :style="{ width: '30rem' }"
+      data-teste="dialogo-ver-como"
+      @update:visible="fecharVerComo"
+    >
+      <label
+        class="operacao-console__motivo-rotulo"
+        for="impersonacao-motivo"
+      >
+        {{ TEXTOS_IMPERSONACAO.motivoLabel }}
+      </label>
+      <Textarea
+        id="impersonacao-motivo"
+        v-model="motivo"
+        class="operacao-console__motivo"
+        rows="3"
+        :placeholder="TEXTOS_IMPERSONACAO.motivoPlaceholder"
+        :disabled="iniciandoImpersonacao"
+        data-teste="impersonacao-motivo"
+      />
+      <template #footer>
+        <Button
+          :label="TEXTOS_IMPERSONACAO.cancelar"
+          severity="secondary"
+          outlined
+          :disabled="iniciandoImpersonacao"
+          @click="fecharVerComo"
+        />
+        <Button
+          :label="TEXTOS_IMPERSONACAO.iniciar"
+          :loading="iniciandoImpersonacao"
+          :disabled="motivo.trim().length === 0"
+          data-teste="impersonacao-iniciar"
+          @click="confirmarVerComo"
+        />
+      </template>
+    </Dialog>
   </section>
 </template>
 
@@ -240,5 +332,20 @@ onMounted(aplicar)
 .operacao-console__tabela th {
   font-size: 0.8125rem;
   color: var(--p-text-muted-color, #64748b);
+}
+
+.operacao-console__acoes {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.operacao-console__motivo-rotulo {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.operacao-console__motivo {
+  width: 100%;
 }
 </style>

@@ -10,4 +10,5 @@ public static class ClaimsAutenticacao
     public const string Email = "email";
     public const string IdentificadorToken = "jti";
     public const string TipoIdentidade = "tipo";
+    public const string Impersonacao = "impersonacao";
 }

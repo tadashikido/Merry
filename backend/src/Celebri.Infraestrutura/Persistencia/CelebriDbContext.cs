@@ -10,6 +10,7 @@ using Celebri.Dominio.DadosSensiveis;
 using Celebri.Dominio.Eventos;
 using Celebri.Dominio.Financeiro;
 using Celebri.Dominio.Fornecedores;
+using Celebri.Dominio.Impersonacao;
 using Celebri.Dominio.Isolamento;
 using Celebri.Dominio.Mesas;
 using Celebri.Dominio.Operadores;
@@ -69,6 +70,8 @@ public class CelebriDbContext : DbContext
     public DbSet<OperadorPlataforma> OperadoresPlataforma => Set<OperadorPlataforma>();
 
     public DbSet<RefreshTokenOperador> RefreshTokensOperador => Set<RefreshTokenOperador>();
+
+    public DbSet<SessaoImpersonacao> SessoesImpersonacao => Set<SessaoImpersonacao>();
 
     public DbSet<TokenRedefinicaoSenha> TokensRedefinicaoSenha => Set<TokenRedefinicaoSenha>();
 

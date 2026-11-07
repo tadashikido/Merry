@@ -12,6 +12,7 @@ using Celebri.Aplicacao.Eventos;
 using Celebri.Aplicacao.Financeiro;
 using Celebri.Aplicacao.Fornecedores;
 using Celebri.Aplicacao.FornecedoresEvento;
+using Celebri.Aplicacao.Impersonacao;
 using Celebri.Aplicacao.GrandeDia;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Mesas;
@@ -38,6 +39,7 @@ public static class ConfiguracaoAplicacao
         servicos.AddScoped<IOperadorAutenticacaoService, OperadorAutenticacaoService>();
         servicos.AddScoped<IProvisionamentoOperadorService, ProvisionamentoOperadorService>();
         servicos.AddScoped<IAssessoriaOperacaoService, AssessoriaOperacaoService>();
+        servicos.AddScoped<IImpersonacaoService, ImpersonacaoService>();
         servicos.AddScoped<ContextoIsolamentoUsuarioAtual>();
         servicos.AddScoped<EscopoIsolamentoRsvp>();
         servicos.AddScoped<EscopoIsolamentoAcessoAnfitriao>();

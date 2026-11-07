@@ -10,5 +10,7 @@ public interface IUsuarioRepository
 
     Task<bool> ExisteEmailAsync(string emailNormalizado, CancellationToken cancelamento);
 
+    Task<Usuario?> ObterDonoDaOrganizacaoAsync(Guid organizacaoId, CancellationToken cancelamento);
+
     void Adicionar(Usuario usuario);
 }

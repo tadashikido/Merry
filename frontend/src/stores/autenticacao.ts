@@ -101,6 +101,8 @@ export const useAutenticacaoStore = defineStore('autenticacao', () => {
   const sessaoVerificada = ref(false)
   const avisoEntrada = ref<AvisoEntrada | null>(null)
   const emailInformado = ref('')
+  const impersonando = ref(false)
+  const assessoriaImpersonada = ref<{ id: string; nome: string } | null>(null)
 
   const autenticado = computed(() => tokenAcesso.value !== null && usuario.value !== null)
   const ehAnfitriao = computed(() => autenticado.value && usuario.value?.papel === PAPEL_ANFITRIAO)
@@ -123,7 +125,27 @@ export const useAutenticacaoStore = defineStore('autenticacao', () => {
     void limparCacheDadosEvento()
   }
 
+  function aplicarImpersonacao(dados: { tokenAcesso: string; expiraEm: string; assessoria: { id: string; nome: string } }) {
+    tokenAcesso.value = dados.tokenAcesso
+    expiraEm.value = dados.expiraEm
+    impersonando.value = true
+    assessoriaImpersonada.value = dados.assessoria
+    sessaoVerificada.value = true
+    avisoEntrada.value = null
+  }
+
+  function encerrarImpersonacao() {
+    impersonando.value = false
+    assessoriaImpersonada.value = null
+    limparSessao()
+  }
+
   function renovar(): Promise<boolean> {
+    if (impersonando.value) {
+      sessaoVerificada.value = true
+      return Promise.resolve(false)
+    }
+
     if (renovacaoEmAndamento) {
       return renovacaoEmAndamento
     }
@@ -267,5 +289,9 @@ export const useAutenticacaoStore = defineStore('autenticacao', () => {
     consultarConviteAnfitriao,
     aceitarConviteAnfitriao,
     consumirAviso,
+    impersonando,
+    assessoriaImpersonada,
+    aplicarImpersonacao,
+    encerrarImpersonacao,
   }
 })

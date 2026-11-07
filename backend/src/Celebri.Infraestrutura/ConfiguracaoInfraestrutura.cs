@@ -7,6 +7,7 @@ using Celebri.Aplicacao.CronogramaPublico.Portas;
 using Celebri.Aplicacao.DadosSensiveis;
 using Celebri.Aplicacao.DadosSensiveis.Portas;
 using Celebri.Aplicacao.Email;
+using Celebri.Aplicacao.Impersonacao.Portas;
 using Celebri.Aplicacao.Isolamento;
 using Celebri.Aplicacao.Operadores;
 using Celebri.Aplicacao.Operadores.Portas;
@@ -97,6 +98,7 @@ public static class ConfiguracaoInfraestrutura
         servicos.AddScoped<IOperadorPlataformaRepository, OperadorPlataformaRepository>();
         servicos.AddScoped<IRefreshTokenOperadorRepository, RefreshTokenOperadorRepository>();
         servicos.AddScoped<IOperacaoConsultaRepository, OperacaoConsultaRepository>();
+        servicos.AddScoped<ISessaoImpersonacaoRepository, SessaoImpersonacaoRepository>();
         servicos.AddScoped<ITokenRedefinicaoSenhaRepository, TokenRedefinicaoSenhaRepository>();
         servicos.AddScoped<IEventoRepository, EventoRepository>();
         servicos.AddScoped<IDuplicacaoEventoRepository, DuplicacaoEventoRepository>();
@@ -123,6 +125,7 @@ public static class ConfiguracaoInfraestrutura
         servicos.AddSingleton<IGeradorTokenOpaco, GeradorTokenOpaco>();
         servicos.AddSingleton<IGeradorTokenAcesso, GeradorTokenAcessoJwt>();
         servicos.AddSingleton<IGeradorTokenOperador, GeradorTokenOperadorJwt>();
+        servicos.AddSingleton<IGeradorTokenImpersonacao, GeradorTokenImpersonacaoJwt>();
         servicos.AddSingleton<ICifradorTokenRsvp, CifradorTokenRsvp>();
         servicos.AddSingleton<ICifradorTokenCronograma, CifradorTokenCronograma>();
         servicos.AddSingleton<ICifradorDadosSensiveis, CifradorDadosSensiveis>();

@@ -34,6 +34,11 @@ public class BancoMemoria : IUsuarioRepository, IOrganizacaoRepository, IRefresh
         return Task.FromResult(Usuarios.Any(usuario => usuario.Email == emailNormalizado));
     }
 
+    public Task<Usuario?> ObterDonoDaOrganizacaoAsync(Guid organizacaoId, CancellationToken cancelamento)
+    {
+        return Task.FromResult(Usuarios.FirstOrDefault(usuario => usuario.OrganizacaoId == organizacaoId && usuario.Papel == PapelUsuario.Dono));
+    }
+
     public void Adicionar(Usuario usuario)
     {
         Usuarios.Add(usuario);

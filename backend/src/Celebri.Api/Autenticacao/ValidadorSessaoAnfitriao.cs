@@ -27,6 +27,13 @@ public static class ValidadorSessaoAnfitriao
             return;
         }
 
+        var identificadorImpersonacao = principal.FindFirstValue(ClaimsAutenticacao.Impersonacao);
+        if (identificadorImpersonacao is not null)
+        {
+            await ValidarImpersonacaoAsync(contexto, identificadorImpersonacao);
+            return;
+        }
+
         if (papel != nameof(PapelUsuario.Anfitriao))
         {
             return;
@@ -48,6 +55,24 @@ public static class ValidadorSessaoAnfitriao
             && usuario.OrganizacaoId == organizacaoId;
 
         if (!valido)
+        {
+            contexto.Fail(MotivoSessaoEncerrada);
+        }
+    }
+
+    private static async Task ValidarImpersonacaoAsync(TokenValidatedContext contexto, string identificador)
+    {
+        if (!Guid.TryParse(identificador, out var sessaoId))
+        {
+            contexto.Fail(MotivoSessaoEncerrada);
+            return;
+        }
+
+        var repositorio = contexto.HttpContext.RequestServices.GetRequiredService<ISessaoImpersonacaoRepository>();
+        var relogio = contexto.HttpContext.RequestServices.GetRequiredService<TimeProvider>();
+        var sessao = await repositorio.ObterPorIdAsync(sessaoId, contexto.HttpContext.RequestAborted);
+
+        if (sessao is null || !sessao.EstaAtiva(relogio.GetUtcNow()))
         {
             contexto.Fail(MotivoSessaoEncerrada);
         }

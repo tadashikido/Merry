@@ -79,6 +79,7 @@ public static class ConfiguracaoApi
         app.UseCors(PoliticaCorsFrontend);
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseMiddleware<Celebri.Api.Autenticacao.MiddlewareImpersonacaoSomenteLeitura>();
         app.UseRateLimiter();
 
         app.MapControllers();

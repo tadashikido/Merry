@@ -1465,6 +1465,59 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Celebri.Dominio.Impersonacao.SessaoImpersonacao", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("EncerradaEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("encerrada_em");
+
+                    b.Property<DateTimeOffset>("ExpiraEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expira_em");
+
+                    b.Property<DateTimeOffset>("IniciadaEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("iniciada_em");
+
+                    b.Property<string>("Motivo")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("motivo");
+
+                    b.Property<Guid>("OperadorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("operador_id");
+
+                    b.Property<Guid>("OrganizacaoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizacao_id");
+
+                    b.Property<uint>("Versao")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sessoes_impersonacao");
+
+                    b.HasIndex("IniciadaEm")
+                        .HasDatabaseName("ix_sessoes_impersonacao_iniciada_em");
+
+                    b.HasIndex("OperadorId")
+                        .HasDatabaseName("ix_sessoes_impersonacao_operador_id");
+
+                    b.HasIndex("OrganizacaoId")
+                        .HasDatabaseName("ix_sessoes_impersonacao_organizacao_id");
+
+                    b.ToTable("sessoes_impersonacao", (string)null);
+                });
+
             modelBuilder.Entity("Celebri.Dominio.Mesas.Mesa", b =>
                 {
                     b.Property<Guid>("Id")

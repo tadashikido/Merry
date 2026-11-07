@@ -28,6 +28,13 @@ public class UsuarioRepository : IUsuarioRepository
         return _contexto.Usuarios.AnyAsync(usuario => usuario.Email == emailNormalizado, cancelamento);
     }
 
+    public Task<Usuario?> ObterDonoDaOrganizacaoAsync(Guid organizacaoId, CancellationToken cancelamento)
+    {
+        return _contexto.Usuarios.FirstOrDefaultAsync(
+            usuario => usuario.OrganizacaoId == organizacaoId && usuario.Papel == PapelUsuario.Dono,
+            cancelamento);
+    }
+
     public void Adicionar(Usuario usuario)
     {
         _contexto.Usuarios.Add(usuario);

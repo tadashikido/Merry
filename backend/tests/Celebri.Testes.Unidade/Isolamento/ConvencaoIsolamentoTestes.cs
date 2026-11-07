@@ -4,6 +4,7 @@ using Celebri.Dominio.AcessosAnfitriao;
 using Celebri.Dominio.Autenticacao;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Dominio.Eventos;
+using Celebri.Dominio.Impersonacao;
 using Celebri.Dominio.Isolamento;
 using Celebri.Dominio.Operadores;
 using Celebri.Dominio.Organizacoes;
@@ -25,6 +26,7 @@ public class ConvencaoIsolamentoTestes
         typeof(TokenRedefinicaoSenha),
         typeof(OperadorPlataforma),
         typeof(RefreshTokenOperador),
+        typeof(SessaoImpersonacao),
     ];
 
     private static readonly Type[] EntidadesDeResolucaoPublicaForaDoIsolamento =
