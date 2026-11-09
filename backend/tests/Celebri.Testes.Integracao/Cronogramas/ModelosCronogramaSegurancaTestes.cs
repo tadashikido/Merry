@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Celebri.Aplicacao.Autenticacao;
+using Celebri.Aplicacao.Eventos;
 using Celebri.Dominio.Cronogramas;
 using Celebri.Testes.Integracao.Banco;
 using Celebri.Testes.Integracao.Eventos;
@@ -80,9 +81,10 @@ public sealed class ModelosCronogramaSegurancaTestes : IsolamentoOrganizacaoTest
         var (eventoId, anfitriao) = await CriarAnfitriaoAsync();
         var sugerido = await SugeridoAsync(OrganizacaoA.Cliente);
         await AplicarComSucessoAsync(OrganizacaoA.Cliente, eventoId, sugerido.Id);
+        var versaoEvento = (await OrganizacaoA.Cliente.GetFromJsonAsync<EventoDto>($"{ClienteEventos.Rota}/{eventoId}"))!.Versao;
         Assert.Equal(
             HttpStatusCode.OK,
-            (await OrganizacaoA.Cliente.PutAsJsonAsync($"{ClienteEventos.Rota}/{eventoId}", ClienteEventos.CorpoValido(horario: "18:00"))).StatusCode);
+            (await OrganizacaoA.Cliente.PutAsJsonAsync($"{ClienteEventos.Rota}/{eventoId}", ClienteEventos.CorpoValido(horario: "18:00", versao: versaoEvento))).StatusCode);
 
         var resposta = await anfitriao.GetAsync(ClienteCronograma.Rota(eventoId));
 

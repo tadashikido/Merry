@@ -38,6 +38,7 @@ function completo(id: string, arquivado = false): EventoDto {
     atualizadoEm: '2026-09-28T12:00:00Z',
     dataLimiteRsvp: null,
     dataLimiteRsvpEfetiva: '2027-05-05',
+    versao: 1,
   }
 }
 

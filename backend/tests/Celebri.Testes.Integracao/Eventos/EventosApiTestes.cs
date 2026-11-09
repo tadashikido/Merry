@@ -178,7 +178,7 @@ public sealed class EventosApiTestes : IsolamentoOrganizacaoTestesBase
 
         var resposta = await OrganizacaoA.Cliente.PutAsJsonAsync(
             $"{Rota}/{criado.Id}",
-            CorpoValido(nomeSegundaPessoa: "Bruna", data: Iso(hoje.AddDays(3)), horario: null, convidadosEstimados: null));
+            CorpoValido(nomeSegundaPessoa: "Bruna", data: Iso(hoje.AddDays(3)), horario: null, convidadosEstimados: null, versao: criado.Versao));
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         var atualizado = (await resposta.Content.ReadFromJsonAsync<EventoDto>())!;
@@ -187,6 +187,7 @@ public sealed class EventosApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.Null(atualizado.ConvidadosEstimados);
         Assert.Equal("SemanaDoEvento", atualizado.Fase);
         Assert.True(atualizado.AtualizadoEm >= criado.AtualizadoEm);
+        Assert.NotEqual(criado.Versao, atualizado.Versao);
     }
 
     [Fact]
@@ -219,7 +220,7 @@ public sealed class EventosApiTestes : IsolamentoOrganizacaoTestesBase
         var criado = await CriarAsync(OrganizacaoA.Cliente);
         await OrganizacaoA.Cliente.PostAsync($"{Rota}/{criado.Id}/arquivar", null);
 
-        var resposta = await OrganizacaoA.Cliente.PutAsJsonAsync($"{Rota}/{criado.Id}", CorpoValido(nomeSegundaPessoa: "Outra"));
+        var resposta = await OrganizacaoA.Cliente.PutAsJsonAsync($"{Rota}/{criado.Id}", CorpoValido(nomeSegundaPessoa: "Outra", versao: criado.Versao));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resposta.StatusCode);
         using var json = await LerJsonAsync(resposta);

@@ -1139,6 +1139,12 @@ namespace Celebri.Infraestrutura.Persistencia.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("tipo");
 
+                    b.Property<uint>("Versao")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id")
                         .HasName("pk_eventos");
 

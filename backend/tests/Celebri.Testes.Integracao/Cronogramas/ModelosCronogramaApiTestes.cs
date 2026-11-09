@@ -289,7 +289,7 @@ public sealed class ModelosCronogramaApiTestes : IsolamentoOrganizacaoTestesBase
 
         var edicao = await OrganizacaoA.Cliente.PutAsJsonAsync(
             $"{ClienteEventos.Rota}/{evento.Id}",
-            ClienteEventos.CorpoValido(horario: "17:00"));
+            ClienteEventos.CorpoValido(horario: "17:00", versao: evento.Versao));
         Assert.Equal(HttpStatusCode.OK, edicao.StatusCode);
 
         var consulta = (await OrganizacaoA.Cliente.GetFromJsonAsync<RecalculoHorariosDto>(RotaRecalculo(evento.Id)))!;

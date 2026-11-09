@@ -241,7 +241,7 @@ public sealed class ChecklistEventoApiTestes : IsolamentoOrganizacaoTestesBase
         var novaData = DataEvento.AddDays(45);
         var atualizacao = await OrganizacaoA.Cliente.PutAsJsonAsync(
             $"{ClienteEventos.Rota}/{evento.Id}",
-            ClienteEventos.CorpoValido(data: ClienteTarefas.Data(novaData)));
+            ClienteEventos.CorpoValido(data: ClienteTarefas.Data(novaData), versao: evento.Versao));
         Assert.Equal(HttpStatusCode.OK, atualizacao.StatusCode);
 
         var semRecalculo = await ObterChecklistAsync(OrganizacaoA.Cliente, evento.Id);

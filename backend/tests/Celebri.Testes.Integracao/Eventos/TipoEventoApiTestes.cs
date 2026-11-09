@@ -112,7 +112,7 @@ public sealed class TipoEventoApiTestes : IsolamentoOrganizacaoTestesBase
 
         var resposta = await OrganizacaoA.Cliente.PutAsJsonAsync(
             $"{Rota}/{criado.Id}",
-            CorpoValido(nomePrimeiraPessoa: "Helena", nomeSegundaPessoa: null, tipo: nameof(TipoEvento.Aniversario)));
+            CorpoValido(nomePrimeiraPessoa: "Helena", nomeSegundaPessoa: null, tipo: nameof(TipoEvento.Aniversario), versao: criado.Versao));
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         var atualizado = (await resposta.Content.ReadFromJsonAsync<EventoDto>())!;

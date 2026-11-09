@@ -20,6 +20,15 @@ public sealed class RepositorioEventosFinanceiro : IEventoRepository
         return Task.FromResult(Itens.FirstOrDefault(evento => evento.Id == id));
     }
 
+    public uint ObterVersao(Evento evento)
+    {
+        return 0;
+    }
+
+    public void DefinirVersaoOriginal(Evento evento, uint versao)
+    {
+    }
+
     public void Adicionar(Evento evento)
     {
         Itens.Add(evento);

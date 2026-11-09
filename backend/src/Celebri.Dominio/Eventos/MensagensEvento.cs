@@ -17,4 +17,5 @@ public static class MensagensEvento
     public const string NaoEncontrado = "Evento não encontrado.";
     public const string DataLimiteRsvpInvalida = "A data limite precisa ser igual ou anterior à data do evento.";
     public const string SituacaoInvalida = "Informe a situação Ativos ou Arquivados.";
+    public const string VersaoObrigatoria = "Recarregue o evento antes de salvar.";
 }

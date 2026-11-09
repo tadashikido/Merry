@@ -27,7 +27,8 @@ public class EventoServiceTestes
     private static SalvarEventoRequest Request(
         DateOnly? data = null,
         string? horario = "16:30",
-        string nomeSegundaPessoa = "Bruno")
+        string nomeSegundaPessoa = "Bruno",
+        uint? versao = 1)
     {
         return new SalvarEventoRequest(
             "Ana Beatriz",
@@ -38,7 +39,8 @@ public class EventoServiceTestes
             "  ",
             150,
             "Flores brancas",
-            Tipo: TipoEvento.Casamento);
+            Tipo: TipoEvento.Casamento,
+            Versao: versao);
     }
 
     [Fact]
@@ -158,6 +160,18 @@ public class EventoServiceTestes
     }
 
     [Fact]
+    public async Task Atualizar_SemVersao_DeveLancarConcorrenciaSemSalvar()
+    {
+        var criado = await _service.CriarAsync(Request(), CancellationToken.None);
+        var salvamentosAntes = _unidadeTrabalho.Salvamentos;
+
+        await Assert.ThrowsAsync<ConcorrenciaException>(() =>
+            _service.AtualizarAsync(criado.Id, Request(versao: null), CancellationToken.None));
+
+        Assert.Equal(salvamentosAntes, _unidadeTrabalho.Salvamentos);
+    }
+
+    [Fact]
     public async Task ArquivarERestaurar_DevemRetornarSituacaoAtualizada()
     {
         var criado = await _service.CriarAsync(Request(), CancellationToken.None);
@@ -211,6 +225,15 @@ public class EventoServiceTestes
         public Task<Evento?> ObterPorIdAsync(Guid id, CancellationToken cancelamento)
         {
             return Task.FromResult(Itens.FirstOrDefault(evento => evento.Id == id));
+        }
+
+        public uint ObterVersao(Evento evento)
+        {
+            return 0;
+        }
+
+        public void DefinirVersaoOriginal(Evento evento, uint versao)
+        {
         }
 
         public void Adicionar(Evento evento)

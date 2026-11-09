@@ -9,4 +9,8 @@ public interface IEventoRepository
     Task<Evento?> ObterPorIdAsync(Guid id, CancellationToken cancelamento);
 
     void Adicionar(Evento evento);
+
+    uint ObterVersao(Evento evento);
+
+    void DefinirVersaoOriginal(Evento evento, uint versao);
 }

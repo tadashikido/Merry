@@ -85,6 +85,11 @@ export const TEXTOS_EVENTOS = {
   semPermissao: 'Você não tem permissão para alterar eventos.',
   semAcesso: 'Você não tem acesso aos eventos desta assessoria.',
   criado: 'Evento cadastrado.',
+  conflitoTitulo: 'Este evento foi alterado por outra pessoa',
+  conflitoTexto:
+    'Alguém salvou mudanças neste evento enquanto você editava. Para não sobrescrever, recarregue os dados atuais e reaplique o que faltar.',
+  conflitoRecarregar: 'Recarregar dados',
+  conflitoRecarregado: 'Dados atualizados com a versão mais recente.',
   arquivado: (nomes: string) => `“${nomes}” foi arquivado. Você encontra em Arquivados.`,
   restaurado: (nomes: string) => `“${nomes}” foi restaurado.`,
   acaoComNome: (acao: string, nomes: string) => `${acao} ${nomes}`,

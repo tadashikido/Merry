@@ -182,6 +182,30 @@ describe('EventoFormularioView no design system Celebri', () => {
     expect(wrapper!.get('[data-teste="salvar-evento"]').attributes('disabled')).toBeDefined()
   })
 
+  it('[SEGURANÇA] conflito ao salvar mostra aviso, preserva o digitado e recarrega sob demanda', async () => {
+    rotearFetch(
+      fetchSimulado,
+      quando('GET', `/api/eventos/${ID_EVENTO}`, () => respostaJson(eventoCompleto())),
+      quando('PUT', `/api/eventos/${ID_EVENTO}`, () => respostaProblema(409)),
+    )
+    await abrir(`/eventos/${ID_EVENTO}/editar`)
+
+    await wrapper!.get('#evento-nomePrimeiraPessoa').setValue('Ana Carolina')
+    await wrapper!.get('[data-teste="formulario-evento"]').trigger('submit')
+    await flushPromises()
+
+    expect(wrapper!.get('[data-teste="conflito-edicao"]').text()).toContain(TEXTOS_EVENTOS.conflitoTexto)
+    expect(wrapper!.find('[data-teste="recarregar-conflito"]').exists()).toBe(true)
+    expect((wrapper!.get('#evento-nomePrimeiraPessoa').element as HTMLInputElement).value).toBe('Ana Carolina')
+
+    await wrapper!.get('[data-teste="recarregar-conflito"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper!.find('[data-teste="conflito-edicao"]').exists()).toBe(false)
+    expect(chamadas(fetchSimulado, 'GET', `/api/eventos/${ID_EVENTO}`).length).toBeGreaterThanOrEqual(2)
+    expect((wrapper!.get('#evento-nomePrimeiraPessoa').element as HTMLInputElement).value).toBe('Ana Beatriz')
+  })
+
   it('[UNITÁRIO] template valida no blur só após a tentativa e revalida ao digitar em todos os campos', () => {
     const fonte = readFileSync(resolve(__dirname, '../EventoFormularioView.vue'), 'utf-8')
 

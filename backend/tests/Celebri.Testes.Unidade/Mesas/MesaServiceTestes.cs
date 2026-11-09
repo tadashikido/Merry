@@ -276,6 +276,15 @@ public class MesaServiceTestes
             return Task.FromResult(itens.FirstOrDefault(evento => evento.Id == id));
         }
 
+        public uint ObterVersao(Evento evento)
+        {
+            return 0;
+        }
+
+        public void DefinirVersaoOriginal(Evento evento, uint versao)
+        {
+        }
+
         public void Adicionar(Evento evento)
         {
             itens.Add(evento);

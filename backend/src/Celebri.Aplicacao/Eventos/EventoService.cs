@@ -65,7 +65,8 @@ public class EventoService : IEventoService
         _eventoRepository.Adicionar(evento);
         await _unidadeTrabalho.SalvarAsync(cancelamento);
 
-        return ParaDto(evento, _calendario.Hoje(), _usuarioAtual.EhAssessoria());
+        return ParaDto(evento, _calendario.Hoje(), _usuarioAtual.EhAssessoria())
+            with { Versao = _eventoRepository.ObterVersao(evento) };
     }
 
     public async Task<EventoDto> AtualizarAsync(Guid id, SalvarEventoRequest request, CancellationToken cancelamento)
@@ -73,6 +74,13 @@ public class EventoService : IEventoService
         ArgumentNullException.ThrowIfNull(request);
 
         var evento = await ObterExistenteAsync(id, cancelamento);
+
+        if (request.Versao is not { } versao)
+        {
+            throw new ConcorrenciaException(MensagensEvento.VersaoObrigatoria);
+        }
+
+        _eventoRepository.DefinirVersaoOriginal(evento, versao);
         evento.Atualizar(request.ParaDados(), _relogio.GetUtcNow());
         await _unidadeTrabalho.SalvarAsync(cancelamento);
 
@@ -153,7 +161,8 @@ public class EventoService : IEventoService
     private async Task<EventoDto> ParaDtoComChecklistAsync(Evento evento, CancellationToken cancelamento)
     {
         var ehAssessoria = _usuarioAtual.EhAssessoria();
-        var dto = ParaDto(evento, _calendario.Hoje(), ehAssessoria);
+        var dto = ParaDto(evento, _calendario.Hoje(), ehAssessoria)
+            with { Versao = _eventoRepository.ObterVersao(evento) };
 
         if (!ehAssessoria)
         {

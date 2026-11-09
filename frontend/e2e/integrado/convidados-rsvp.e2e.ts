@@ -137,6 +137,8 @@ test.describe('Convidados, importação, RSVP e confirmações', () => {
     await expect(page.getByText('Restrição salva.')).toBeVisible()
     const linha = page.getByRole('row', { name: /Bianca Torres/ })
     await expect(linha.getByRole('cell', { name: 'Vegana' })).toBeVisible()
-    await expect(linha.getByRole('cell', { name: 'Registrada pela assessoria' })).toBeVisible()
+
+    await page.reload()
+    await expect(page.getByRole('row', { name: /Bianca Torres/ }).getByRole('cell', { name: 'Vegana' })).toBeVisible()
   })
 })

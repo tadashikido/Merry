@@ -284,7 +284,7 @@ public sealed class LinksCronogramaApiTestes : IsolamentoOrganizacaoTestesBase, 
 
         var mudanca = await OrganizacaoA.Cliente.PutAsJsonAsync(
             $"{ClienteEventos.Rota}/{evento.Id}",
-            ClienteEventos.CorpoValido(data: hoje.AddDays(-8).ToString("yyyy-MM-dd")));
+            ClienteEventos.CorpoValido(data: hoje.AddDays(-8).ToString("yyyy-MM-dd"), versao: evento.Versao));
         Assert.Equal(HttpStatusCode.OK, mudanca.StatusCode);
 
         await AssertNaoEncontradoAsync(await ConsultarAsync(ClienteAnonimo, link.Token!));

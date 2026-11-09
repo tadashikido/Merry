@@ -78,6 +78,8 @@ const edicao = computed(() => Boolean(props.id))
 const enviando = ref(false)
 const mensagemErro = ref<string | null>(null)
 const bloqueadoPorPermissao = ref(false)
+const conflito = ref(false)
+const recarregandoConflito = ref(false)
 
 const formulario = useFormulario(
   {
@@ -207,11 +209,13 @@ function montarRequest(): SalvarEventoRequest {
     localRecepcao: textoOuNulo(valores.localRecepcao),
     convidadosEstimados: convidados === '' ? null : Number(convidados),
     observacoes: textoOuNulo(valores.observacoes),
+    versao: edicao.value ? eventoEditado.value?.versao : undefined,
   }
 }
 
 async function enviar() {
   mensagemErro.value = null
+  conflito.value = false
   if (!formulario.validar()) {
     const campo = formulario.primeiroCampoInvalido.value
     if (campo) {
@@ -273,7 +277,28 @@ async function enviar() {
     return
   }
 
+  if (falha.tipo === 'conflito') {
+    conflito.value = true
+    await focarElemento('conflito-edicao-evento')
+    return
+  }
+
   notificacao.erro(falha.tipo === 'conexao' && falha.mensagem ? falha.mensagem : undefined)
+}
+
+async function recarregarConflito() {
+  if (!props.id) {
+    return
+  }
+  recarregandoConflito.value = true
+  await store.obter(props.id)
+  recarregandoConflito.value = false
+  conflito.value = false
+  if (store.atual?.id === props.id) {
+    liberarSaida()
+    notificacao.sucesso(TEXTOS_EVENTOS.conflitoRecarregado)
+    await focarElemento(idCampo('nomePrimeiraPessoa'))
+  }
 }
 
 async function oferecerRecalculo(id: string): Promise<boolean> {
@@ -427,6 +452,24 @@ function cancelar() {
               :mensagem="mensagemErro"
               data-teste="erro-formulario"
             />
+
+            <MensagemFormulario
+              v-if="conflito"
+              id="conflito-edicao-evento"
+              variante="alerta"
+              :mensagem="TEXTOS_EVENTOS.conflitoTexto"
+              data-teste="conflito-edicao"
+            >
+              <Button
+                type="button"
+                :label="TEXTOS_EVENTOS.conflitoRecarregar"
+                severity="secondary"
+                :loading="recarregandoConflito"
+                :aria-busy="recarregandoConflito"
+                data-teste="recarregar-conflito"
+                @click="recarregarConflito"
+              />
+            </MensagemFormulario>
 
             <form
               class="formulario-cartao"

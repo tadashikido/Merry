@@ -33,4 +33,14 @@ public class EventoRepository : IEventoRepository
     {
         _contexto.Eventos.Add(evento);
     }
+
+    public uint ObterVersao(Evento evento)
+    {
+        return _contexto.Entry(evento).Property<uint>("Versao").CurrentValue;
+    }
+
+    public void DefinirVersaoOriginal(Evento evento, uint versao)
+    {
+        _contexto.Entry(evento).Property<uint>("Versao").OriginalValue = versao;
+    }
 }

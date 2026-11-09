@@ -23,7 +23,8 @@ public static class ClienteEventos
         string? localRecepcao = "Espaço Jardim",
         int? convidadosEstimados = 150,
         string? observacoes = "Flores brancas",
-        string? tipo = "Casamento")
+        string? tipo = "Casamento",
+        uint? versao = null)
     {
         return new
         {
@@ -36,6 +37,7 @@ public static class ClienteEventos
             localRecepcao,
             convidadosEstimados,
             observacoes,
+            versao,
         };
     }
 

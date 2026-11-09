@@ -132,7 +132,7 @@ test.describe('Mesas em lista', () => {
 
     await page.goto(`/eventos/${evento.id}/mesas`)
     await expect(page.getByTestId('abas-mesas')).toBeVisible()
-    await page.getByLabel('Grupo').click()
+    await page.getByRole('combobox', { name: 'Grupo' }).click()
     await page.getByRole('option', { name: 'Família do noivo' }).click()
     await expect(page.getByTestId('coluna-sem-mesa')).not.toContainText('Beatriz Sales')
     await page.getByTestId('limpar-filtros').click()

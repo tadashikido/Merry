@@ -19,4 +19,5 @@ public sealed record EventoDto(
     DateOnly? DataLimiteRsvp,
     DateOnly DataLimiteRsvpEfetiva,
     string Tipo,
+    uint Versao = 0,
     int? PercentualChecklist = null);

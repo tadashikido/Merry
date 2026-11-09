@@ -33,6 +33,7 @@ export interface EventoDto extends EventoResumoDto {
   atualizadoEm: string
   dataLimiteRsvp: DataCalendario | null
   dataLimiteRsvpEfetiva: DataCalendario
+  versao: number
   percentualChecklist?: number | null
 }
 
@@ -47,4 +48,5 @@ export interface SalvarEventoRequest {
   convidadosEstimados: number | null
   observacoes: string | null
   dataLimiteRsvp: DataCalendario | null
+  versao?: number
 }

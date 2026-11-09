@@ -23,7 +23,7 @@ test.describe('Acesso dos anfitriões e isolamento', () => {
     const contextoAnfitriao = await browser.newContext({ baseURL })
     const anfitriao = await contextoAnfitriao.newPage()
     await anfitriao.goto(caminhoRelativo(link))
-    await expect(anfitriao.getByRole('heading', { name: /Acessem o evento de/ })).toBeVisible()
+    await expect(anfitriao.getByRole('heading', { name: /Acessem o casamento de/ })).toBeVisible()
     await anfitriao.locator('#aceite-senha').fill(senhaAnfitriao)
     await anfitriao.locator('#aceite-confirmacao').fill(senhaAnfitriao)
     await anfitriao.getByRole('button', { name: 'Criar senha e entrar' }).click()

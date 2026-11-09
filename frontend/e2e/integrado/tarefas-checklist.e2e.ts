@@ -44,13 +44,13 @@ test.describe('Tarefas e checklist', () => {
   test('aplica o checklist sugerido e conclui um item', async ({ paginaAssessoria: page, api }) => {
     const evento = await api.criarEvento({ data: dataFutura(400) })
     await page.goto(`/eventos/${evento.id}/checklist`)
-    await expect(page.getByRole('heading', { name: 'Este evento ainda não tem checklist' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'O casamento ainda não tem checklist' })).toBeVisible()
     await expect(page.getByRole('combobox', { name: 'Checklist essencial' })).toBeVisible()
     await expect(page.getByText(/Vai criar \d+ tarefas\./)).toBeVisible()
 
-    await page.getByRole('region', { name: 'Aplicar modelo' }).getByRole('button', { name: 'Aplicar modelo' }).click()
+    await page.getByRole('region', { name: 'Aplicar modelo' }).getByRole('button', { name: 'Aplicar checklist' }).click()
 
-    await expect(page.getByRole('heading', { name: 'Este evento ainda não tem checklist' })).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'O casamento ainda não tem checklist' })).toHaveCount(0)
     const primeiroConcluir = page.getByRole('button', { name: /^Concluir: / }).first()
     await expect(primeiroConcluir).toBeVisible()
     const rotulo = (await primeiroConcluir.getAttribute('aria-label')) ?? ''

@@ -44,6 +44,7 @@ public class EventoConfiguration : IEntityTypeConfiguration<Evento>
         builder.Property(evento => evento.Observacoes).HasMaxLength(Evento.TamanhoMaximoObservacoes);
         builder.Property(evento => evento.CriadoEm).IsRequired();
         builder.Property(evento => evento.AtualizadoEm).IsRequired();
+        builder.Property<uint>("Versao").IsRowVersion().HasColumnName("xmin").HasColumnType("xid");
         builder.Ignore(evento => evento.Arquivado);
 
         builder.HasIndex(evento => new { evento.OrganizacaoId, evento.Data }).HasDatabaseName(IndiceOrganizacaoData);
