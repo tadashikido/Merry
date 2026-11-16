@@ -762,18 +762,23 @@ async function recalcular() {
 }
 
 .checklist__marco {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
   column-gap: var(--p-ritmo-grupo);
+  row-gap: var(--p-ritmo-campo);
   font-size: var(--p-fonte-tamanho-controle);
 }
 
 .checklist__marco dt {
   display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
   align-items: baseline;
   gap: var(--p-ritmo-campo);
   color: var(--p-cor-texto);
+  overflow-wrap: anywhere;
 }
 
 .checklist__ponto-marco {
@@ -786,12 +791,13 @@ async function recalcular() {
 }
 
 .checklist__marco dd {
+  flex: 0 0 auto;
   margin: 0;
   color: var(--p-cor-texto-secundario);
 }
 
 .checklist__marco .checklist__falta {
-  grid-column: 1 / -1;
+  flex-basis: 100%;
   font-size: var(--p-fonte-tamanho-apoio);
   color: var(--p-cor-erro-texto);
 }

@@ -176,6 +176,8 @@ const itensTrilha = computed<ItemTrilha[]>(() => {
   display: flex;
   flex-direction: column;
   gap: var(--p-espaco-2);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .cabecalho-pagina__acoes :deep(.p-button) {

@@ -544,7 +544,7 @@ function arquivarEmVezDeExcluir() {
 @container fornecedor (min-width: 40rem) and (max-width: 63.99rem) {
   .fornecedor__ficha {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
     gap: var(--p-ritmo-bloco) var(--p-ritmo-cartao);
   }
 
