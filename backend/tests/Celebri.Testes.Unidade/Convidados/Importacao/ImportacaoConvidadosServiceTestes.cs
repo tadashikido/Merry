@@ -267,6 +267,14 @@ public class ImportacaoConvidadosServiceTestes
             return Task.FromResult(Itens.FirstOrDefault(convite => convite.Id == conviteId && convite.EventoId == eventoId));
         }
 
+        public Task<IReadOnlyList<Convite>> ObterPorIdsAsync(Guid eventoId, IReadOnlyCollection<Guid> conviteIds, CancellationToken cancelamento)
+        {
+            IReadOnlyList<Convite> resultado = Itens
+                .Where(convite => convite.EventoId == eventoId && conviteIds.Contains(convite.Id))
+                .ToList();
+            return Task.FromResult(resultado);
+        }
+
         public Task<int> ContarConvidadosAsync(Guid eventoId, CancellationToken cancelamento)
         {
             return Task.FromResult(ContagemForcada ?? Itens.Where(convite => convite.EventoId == eventoId).Sum(convite => convite.Convidados.Count));

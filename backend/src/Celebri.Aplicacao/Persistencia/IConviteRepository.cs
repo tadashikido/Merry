@@ -12,6 +12,8 @@ public interface IConviteRepository
 
     Task<Convite?> ObterPorIdAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento);
 
+    Task<IReadOnlyList<Convite>> ObterPorIdsAsync(Guid eventoId, IReadOnlyCollection<Guid> conviteIds, CancellationToken cancelamento);
+
     Task<int> ContarConvidadosAsync(Guid eventoId, CancellationToken cancelamento);
 
     Task<ResumoConvidados> ObterResumoAsync(Guid eventoId, CancellationToken cancelamento);

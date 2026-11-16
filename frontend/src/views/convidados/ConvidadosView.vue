@@ -39,7 +39,7 @@ import {
 import { ehTipoEvento, vocabularioOuNeutro } from '@/textos/tiposEvento'
 import { TEXTOS_IMPORTACAO } from '@/textos/importacaoConvidados'
 import { TEXTOS_ENVIO_CONVITE, VARIANTE_STATUS_ENVIO } from '@/textos/rsvp'
-import { RESPOSTAS_RSVP, type ConviteDto, type RespostaRsvp } from '@/tipos/convidados'
+import { RESPOSTAS_RSVP, STATUS_ENVIO_CONVITE, type ConviteDto, type RespostaRsvp, type StatusEnvioConvite } from '@/tipos/convidados'
 import {
   GRUPO_NENHUM,
   GRUPO_TODOS,
@@ -102,6 +102,9 @@ function abrirPainel() {
 const busca = ref('')
 const grupo = ref(GRUPO_TODOS)
 const resposta = ref<FiltroResposta>('Todas')
+const statusEnvio = ref<StatusEnvioConvite | 'Todos'>('Todos')
+const confirmandoLote = ref(false)
+const processandoLote = ref(false)
 
 const evento = computed(() => (eventos.atual?.id === props.id ? eventos.atual : null))
 const nomes = computed(() =>
@@ -151,13 +154,27 @@ const opcoesResposta: OpcaoFiltroPilula<FiltroResposta>[] = [
   ...RESPOSTAS_RSVP.map((valor) => ({ rotulo: ROTULOS_FILTRO_RESPOSTA[valor], valor })),
 ]
 
+const opcoesStatusEnvio = [
+  { chave: 'Todos' as const, rotulo: TEXTOS_CONVIDADOS.statusEnvioTodos },
+  ...STATUS_ENVIO_CONVITE.map((valor) => ({ chave: valor, rotulo: ROTULOS_STATUS_ENVIO[valor] })),
+]
+
 const filtros = computed(() => ({
   busca: busca.value,
   grupo: grupo.value,
   resposta: resposta.value === 'Todas' ? null : resposta.value,
+  statusEnvio: statusEnvio.value === 'Todos' ? null : statusEnvio.value,
 }))
 
-const temFiltros = computed(() => grupo.value !== GRUPO_TODOS || resposta.value !== 'Todas')
+const temFiltros = computed(
+  () => grupo.value !== GRUPO_TODOS || resposta.value !== 'Todas' || statusEnvio.value !== 'Todos',
+)
+
+const conviteIdsNaoEnviadosFiltrados = computed(() =>
+  linhas.value.filter((linha) => linha.filtrado.convite.statusEnvio === 'NaoEnviado').map((linha) => linha.id),
+)
+
+const podeMarcarLote = computed(() => !arquivado.value && conviteIdsNaoEnviadosFiltrados.value.length > 0)
 
 const linhas = computed<LinhaConvite[]>(() =>
   filtrarConvites(lista.value?.convites ?? [], filtros.value).map((filtrado) => ({
@@ -194,6 +211,7 @@ watch(
     busca.value = ''
     grupo.value = GRUPO_TODOS
     resposta.value = 'Todas'
+    statusEnvio.value = 'Todos'
     void eventos.obter(id)
     void store.carregar(id)
   },
@@ -227,6 +245,39 @@ function filtrarGrupo(chave: string) {
 function limparFiltros() {
   grupo.value = GRUPO_TODOS
   resposta.value = 'Todas'
+  statusEnvio.value = 'Todos'
+}
+
+function abrirConfirmacaoLote() {
+  if (podeMarcarLote.value) {
+    confirmandoLote.value = true
+  }
+}
+
+function cancelarLote() {
+  confirmandoLote.value = false
+}
+
+async function confirmarLote() {
+  const ids = conviteIdsNaoEnviadosFiltrados.value
+  if (ids.length === 0) {
+    confirmandoLote.value = false
+    return
+  }
+  processandoLote.value = true
+  try {
+    const resultado = await store.marcarEnviadosEmLote(props.id, ids)
+    if (resultado.ok) {
+      notificacao.sucesso(TEXTOS_ENVIO_CONVITE.loteSucesso(ids.length))
+    } else {
+      notificacao.erro(
+        resultado.falha.tipo === 'semPermissao' ? TEXTOS_ENVIO_CONVITE.semPermissao : TEXTOS_ENVIO_CONVITE.loteErro,
+      )
+    }
+  } finally {
+    processandoLote.value = false
+    confirmandoLote.value = false
+  }
 }
 
 function adicionar() {
@@ -380,6 +431,24 @@ function excluir(convite: ConviteDto) {
         </div>
 
         <div class="convidados__lista pilha pilha--grupo">
+          <div
+            v-if="podeMarcarLote"
+            class="convidados__lote"
+            data-teste="barra-lote"
+          >
+            <span class="convidados__lote-contagem texto-legenda">
+              {{ TEXTOS_ENVIO_CONVITE.loteContagem(conviteIdsNaoEnviadosFiltrados.length) }}
+            </span>
+            <Button
+              :label="TEXTOS_ENVIO_CONVITE.marcarEnviadosLote"
+              icon="ie ie-enviar"
+              size="small"
+              :loading="processandoLote"
+              data-teste="marcar-enviados-lote"
+              @click="abrirConfirmacaoLote"
+            />
+          </div>
+
           <ListagemDados
             v-model:busca="busca"
             :itens="linhas"
@@ -416,6 +485,15 @@ function excluir(convite: ConviteDto) {
                 :aria-label="TEXTOS_CONVIDADOS.filtroGrupo"
                 :disabled="!lista || lista.convites.length === 0"
                 data-teste="filtro-grupo"
+              />
+              <Select
+                v-model="statusEnvio"
+                :options="opcoesStatusEnvio"
+                option-label="rotulo"
+                option-value="chave"
+                :aria-label="TEXTOS_CONVIDADOS.filtroStatusEnvio"
+                :disabled="!lista || lista.convites.length === 0"
+                data-teste="filtro-status-envio"
               />
             </template>
 
@@ -586,6 +664,17 @@ function excluir(convite: ConviteDto) {
         @confirmar="envio.confirmarAcaoLink"
         @cancelar="envio.cancelarConfirmacao"
       />
+
+      <DialogoConfirmacao
+        :visivel="confirmandoLote"
+        :titulo="TEXTOS_ENVIO_CONVITE.loteConfirmarTitulo"
+        :mensagem="TEXTOS_ENVIO_CONVITE.loteConfirmarTexto(conviteIdsNaoEnviadosFiltrados.length)"
+        :rotulo-confirmar="TEXTOS_ENVIO_CONVITE.loteConfirmarAcao"
+        :rotulo-cancelar="TEXTOS_ENVIO_CONVITE.cancelar"
+        :executando="processandoLote"
+        @confirmar="confirmarLote"
+        @cancelar="cancelarLote"
+      />
     </template>
   </LayoutPainelUsuario>
 </template>
@@ -674,6 +763,18 @@ function excluir(convite: ConviteDto) {
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--p-ritmo-campo);
+}
+
+.convidados__lote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--p-ritmo-campo);
+}
+
+.convidados__lote-contagem {
+  margin: 0;
 }
 
 .convidados__envio {

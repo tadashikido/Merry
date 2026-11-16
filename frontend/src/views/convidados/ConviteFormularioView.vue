@@ -464,6 +464,12 @@ function excluir() {
                 data-teste="aviso-arquivado"
               />
               <MensagemFormulario
+                v-if="!edicao && !arquivado"
+                variante="informacao"
+                :mensagem="TEXTOS_CONVIDADOS.ajudaMontarAntes"
+                data-teste="ajuda-montar-antes"
+              />
+              <MensagemFormulario
                 v-if="mensagemErro"
                 :mensagem="mensagemErro"
                 data-teste="erro-formulario"

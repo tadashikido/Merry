@@ -218,6 +218,83 @@ public class ConviteServiceTestes
         await Assert.ThrowsAsync<ArgumentNullException>(() => _service.AtualizarAsync(_evento.Id, Guid.NewGuid(), null!, CancellationToken.None));
     }
 
+    private Convite ConvitePersistido(string nome, Guid? eventoId = null)
+    {
+        var convite = Convite.Criar(
+            eventoId ?? _evento.Id,
+            new DadosConvite(nome, null, 0, [new DadosConvidado(null, "Pessoa", null, null, FaixaEtaria.Adulto, RespostaRsvp.Pendente)]),
+            Agora);
+        _convites.Itens.Add(convite);
+        return convite;
+    }
+
+    [Fact]
+    public async Task MarcarEnviados_DeveMarcarNaoEnviadosEPersistirUmaVez()
+    {
+        var primeiro = ConvitePersistido("Família Souza");
+        var segundo = ConvitePersistido("Família Lima");
+
+        var lista = await _service.MarcarEnviadosAsync(_evento.Id, [primeiro.Id, segundo.Id], CancellationToken.None);
+
+        Assert.Equal(StatusEnvioConvite.Enviado, primeiro.StatusEnvio);
+        Assert.Equal(StatusEnvioConvite.Enviado, segundo.StatusEnvio);
+        Assert.Equal(1, _unidadeTrabalho.Salvamentos);
+        Assert.All(lista.Convites, convite => Assert.Equal("Enviado", convite.StatusEnvio));
+    }
+
+    [Fact]
+    public async Task MarcarEnviados_NaoDeveRegredirConviteJaVisualizado()
+    {
+        var visualizado = ConvitePersistido("Família Souza");
+        visualizado.MarcarEnviado(Agora);
+        visualizado.MarcarVisualizado(Agora);
+        var pendente = ConvitePersistido("Família Lima");
+
+        await _service.MarcarEnviadosAsync(_evento.Id, [visualizado.Id, pendente.Id], CancellationToken.None);
+
+        Assert.Equal(StatusEnvioConvite.Visualizado, visualizado.StatusEnvio);
+        Assert.Equal(StatusEnvioConvite.Enviado, pendente.StatusEnvio);
+    }
+
+    [Fact]
+    public async Task MarcarEnviados_IdsDuplicados_DeveMarcarNormalmente()
+    {
+        var convite = ConvitePersistido("Família Souza");
+
+        await _service.MarcarEnviadosAsync(_evento.Id, [convite.Id, convite.Id], CancellationToken.None);
+
+        Assert.Equal(StatusEnvioConvite.Enviado, convite.StatusEnvio);
+        Assert.Equal(1, _unidadeTrabalho.Salvamentos);
+    }
+
+    [Fact]
+    public async Task MarcarEnviados_IdDeOutroEvento_DeveLancar404ENaoSalvar()
+    {
+        var outroEvento = NovoEvento();
+        var alheio = ConvitePersistido("De outro evento", outroEvento.Id);
+        var meu = ConvitePersistido("Meu convite");
+
+        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(() =>
+            _service.MarcarEnviadosAsync(_evento.Id, [meu.Id, alheio.Id], CancellationToken.None));
+
+        Assert.Equal(StatusEnvioConvite.NaoEnviado, meu.StatusEnvio);
+        Assert.Equal(StatusEnvioConvite.NaoEnviado, alheio.StatusEnvio);
+        Assert.Equal(0, _unidadeTrabalho.Salvamentos);
+    }
+
+    [Fact]
+    public async Task MarcarEnviados_EventoArquivado_DeveLancar422ENaoSalvar()
+    {
+        var arquivado = NovoEvento(arquivado: true);
+        var convite = ConvitePersistido("Família Souza", arquivado.Id);
+
+        await Assert.ThrowsAsync<RegraNegocioException>(() =>
+            _service.MarcarEnviadosAsync(arquivado.Id, [convite.Id], CancellationToken.None));
+
+        Assert.Equal(StatusEnvioConvite.NaoEnviado, convite.StatusEnvio);
+        Assert.Equal(0, _unidadeTrabalho.Salvamentos);
+    }
+
     private sealed class RepositorioEventosMemoria : IEventoRepository
     {
         public List<Evento> Itens { get; } = [];
@@ -272,6 +349,14 @@ public class ConviteServiceTestes
         public Task<Convite?> ObterPorIdAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento)
         {
             return Task.FromResult(Itens.FirstOrDefault(convite => convite.Id == conviteId && convite.EventoId == eventoId));
+        }
+
+        public Task<IReadOnlyList<Convite>> ObterPorIdsAsync(Guid eventoId, IReadOnlyCollection<Guid> conviteIds, CancellationToken cancelamento)
+        {
+            IReadOnlyList<Convite> resultado = Itens
+                .Where(convite => convite.EventoId == eventoId && conviteIds.Contains(convite.Id))
+                .ToList();
+            return Task.FromResult(resultado);
         }
 
         public Task<int> ContarConvidadosAsync(Guid eventoId, CancellationToken cancelamento)

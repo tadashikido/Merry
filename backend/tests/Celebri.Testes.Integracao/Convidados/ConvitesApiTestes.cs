@@ -361,4 +361,89 @@ public sealed class ConvitesApiTestes : IsolamentoOrganizacaoTestesBase
         Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.GetAsync(Rota(eventoId))).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await ClienteAnonimo.PostAsJsonAsync(Rota(eventoId), CorpoValido())).StatusCode);
     }
+
+    [Fact]
+    public async Task MarcarEnviados_DeveMarcarConvitesSelecionadosComoEnviados()
+    {
+        var eventoId = await CriarEventoAsync();
+        var primeiro = await CriarAsync(OrganizacaoA.Cliente, eventoId);
+        var segundo = await CriarAsync(OrganizacaoA.Cliente, eventoId, CorpoValido(nome: "Família Lima"));
+
+        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(
+            RotaMarcarEnviados(eventoId),
+            new { conviteIds = new[] { primeiro.Id, segundo.Id } });
+
+        Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
+        var lista = (await resposta.Content.ReadFromJsonAsync<ListaConvitesDto>())!;
+        Assert.All(lista.Convites, convite => Assert.Equal("Enviado", convite.StatusEnvio));
+
+        await using var contexto = CriarContexto(OrganizacaoA);
+        var statuses = await contexto.Convites
+            .Where(convite => convite.EventoId == eventoId)
+            .Select(convite => convite.StatusEnvio)
+            .ToListAsync();
+        Assert.All(statuses, status => Assert.Equal(StatusEnvioConvite.Enviado, status));
+    }
+
+    [Fact]
+    public async Task MarcarEnviados_Repetido_NaoRegrideStatus()
+    {
+        var eventoId = await CriarEventoAsync();
+        var convite = await CriarAsync(OrganizacaoA.Cliente, eventoId);
+
+        await OrganizacaoA.Cliente.PostAsJsonAsync(RotaMarcarEnviados(eventoId), new { conviteIds = new[] { convite.Id } });
+        var repetido = await OrganizacaoA.Cliente.PostAsJsonAsync(RotaMarcarEnviados(eventoId), new { conviteIds = new[] { convite.Id } });
+
+        Assert.Equal(HttpStatusCode.OK, repetido.StatusCode);
+        await using var contexto = CriarContexto(OrganizacaoA);
+        var status = await contexto.Convites
+            .Where(item => item.Id == convite.Id)
+            .Select(item => item.StatusEnvio)
+            .SingleAsync();
+        Assert.Equal(StatusEnvioConvite.Enviado, status);
+    }
+
+    [Fact]
+    public async Task MarcarEnviados_ListaVazia_DeveRetornar400()
+    {
+        var eventoId = await CriarEventoAsync();
+
+        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(
+            RotaMarcarEnviados(eventoId),
+            new { conviteIds = Array.Empty<Guid>() });
+
+        Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
+    }
+
+    [Fact]
+    public async Task MarcarEnviados_ConviteDeOutroEvento_DeveRetornar404ENaoMarcar()
+    {
+        var eventoUm = await CriarEventoAsync();
+        var eventoDois = await CriarEventoAsync();
+        var convite = await CriarAsync(OrganizacaoA.Cliente, eventoUm);
+
+        var resposta = await OrganizacaoA.Cliente.PostAsJsonAsync(
+            RotaMarcarEnviados(eventoDois),
+            new { conviteIds = new[] { convite.Id } });
+
+        Assert.Equal(HttpStatusCode.NotFound, resposta.StatusCode);
+        await using var contexto = CriarContexto(OrganizacaoA);
+        var status = await contexto.Convites
+            .Where(item => item.Id == convite.Id)
+            .Select(item => item.StatusEnvio)
+            .SingleAsync();
+        Assert.Equal(StatusEnvioConvite.NaoEnviado, status);
+    }
+
+    [Fact]
+    public async Task MarcarEnviados_SemToken_DeveRetornar401()
+    {
+        var eventoId = await CriarEventoAsync();
+
+        var resposta = await ClienteAnonimo.PostAsJsonAsync(
+            RotaMarcarEnviados(eventoId),
+            new { conviteIds = new[] { Guid.NewGuid() } });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resposta.StatusCode);
+    }
 }

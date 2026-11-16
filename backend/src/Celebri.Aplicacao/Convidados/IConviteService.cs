@@ -12,5 +12,7 @@ public interface IConviteService
 
     Task<ConviteDto> AtualizarAsync(Guid eventoId, Guid conviteId, SalvarConviteRequest request, CancellationToken cancelamento);
 
+    Task<ListaConvitesDto> MarcarEnviadosAsync(Guid eventoId, IReadOnlyList<Guid> conviteIds, CancellationToken cancelamento);
+
     Task RemoverAsync(Guid eventoId, Guid conviteId, CancellationToken cancelamento);
 }

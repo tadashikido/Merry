@@ -3,6 +3,7 @@ using Celebri.Aplicacao.Mesas;
 using Celebri.Aplicacao.Persistencia;
 using Celebri.Aplicacao.UsuarioAtual;
 using Celebri.Dominio.Convidados;
+using Celebri.Dominio.Eventos;
 
 namespace Celebri.Aplicacao.Convidados;
 
@@ -34,6 +35,35 @@ public class ConviteService : IConviteService
     public async Task<ListaConvitesDto> ListarAsync(Guid eventoId, CancellationToken cancelamento)
     {
         var evento = await _verificador.ObterAsync(eventoId, cancelamento);
+        return await MontarListaAsync(evento, cancelamento);
+    }
+
+    public async Task<ListaConvitesDto> MarcarEnviadosAsync(Guid eventoId, IReadOnlyList<Guid> conviteIds, CancellationToken cancelamento)
+    {
+        ArgumentNullException.ThrowIfNull(conviteIds);
+
+        var evento = await _verificador.ObterEditavelAsync(eventoId, cancelamento);
+        var idsUnicos = conviteIds.Distinct().ToList();
+        var convites = await _conviteRepository.ObterPorIdsAsync(evento.Id, idsUnicos, cancelamento);
+
+        if (convites.Count != idsUnicos.Count)
+        {
+            throw new RecursoNaoEncontradoException(MensagensConvidados.ConviteNaoEncontrado);
+        }
+
+        var agora = _relogio.GetUtcNow();
+        foreach (var convite in convites)
+        {
+            convite.MarcarEnviado(agora);
+        }
+
+        await _unidadeTrabalho.SalvarAsync(cancelamento);
+
+        return await MontarListaAsync(evento, cancelamento);
+    }
+
+    private async Task<ListaConvitesDto> MontarListaAsync(Evento evento, CancellationToken cancelamento)
+    {
         var convites = await _conviteRepository.ListarPorEventoAsync(evento.Id, cancelamento);
         var totais = CalculadoraTotaisConvidados.Calcular(CalculadoraTotaisConvidados.Resumir(convites));
         var mesas = await _mesaRepository.ListarAsync(evento.Id, cancelamento);

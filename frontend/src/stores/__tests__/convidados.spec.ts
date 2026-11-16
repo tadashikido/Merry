@@ -207,4 +207,35 @@ describe('useConvidadosStore', () => {
     expect(normalizarChaveCampo('$.convidados[0].faixaEtaria')).toBe('convidados[0].faixaEtaria')
     expect(interpretarFalhaConvidados(new Error('x')).tipo).toBe('inesperado')
   })
+
+  it('[UNITÁRIO] marca convites como enviados em lote e atualiza a lista', async () => {
+    requisitarSimulado.mockResolvedValueOnce(LISTA)
+    const store = useConvidadosStore()
+    await store.carregar(EVENTO)
+
+    const listaEnviada: ListaConvitesDto = { ...LISTA, convites: [{ ...CONVITE, statusEnvio: 'Enviado' }] }
+    requisitarSimulado.mockResolvedValueOnce(listaEnviada)
+
+    const resultado = await store.marcarEnviadosEmLote(EVENTO, ['c1'])
+
+    expect(resultado.ok).toBe(true)
+    expect(requisitarSimulado).toHaveBeenLastCalledWith(`/api/eventos/${EVENTO}/convites/marcar-enviados`, {
+      metodo: 'POST',
+      corpo: { conviteIds: ['c1'] },
+    })
+    expect(store.lista?.convites[0]?.statusEnvio).toBe('Enviado')
+  })
+
+  it('[UNITÁRIO] propaga falha de permissão no lote sem alterar a lista', async () => {
+    requisitarSimulado.mockResolvedValueOnce(LISTA)
+    const store = useConvidadosStore()
+    await store.carregar(EVENTO)
+
+    requisitarSimulado.mockRejectedValueOnce(new ErroApi('Sem permissão', 403, null))
+    const resultado = await store.marcarEnviadosEmLote(EVENTO, ['c1'])
+
+    expect(resultado.ok).toBe(false)
+    expect(resultado.ok ? null : resultado.falha.tipo).toBe('semPermissao')
+    expect(store.lista?.convites[0]?.statusEnvio).toBe('NaoEnviado')
+  })
 })

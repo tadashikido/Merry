@@ -25,4 +25,5 @@ public static class MensagensConvidados
     public const string CobrancaPrazoEncerrado = "O prazo do RSVP terminou. Lembretes ficam disponíveis só até a data limite.";
     public const string CobrancaSemLink = "Este convite está sem link de confirmação ativo. Gere um novo link antes de cobrar.";
     public const string TamanhoNomeAcompanhante = "Use entre 2 e 120 caracteres no nome do acompanhante.";
+    public const string ConvitesParaEnvioObrigatorios = "Selecione ao menos um convite para marcar como enviado.";
 }

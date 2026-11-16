@@ -44,6 +44,18 @@ public class ConviteRepository : IConviteRepository
             .FirstOrDefaultAsync(convite => convite.Id == conviteId && convite.EventoId == eventoId, cancelamento);
     }
 
+    public async Task<IReadOnlyList<Convite>> ObterPorIdsAsync(Guid eventoId, IReadOnlyCollection<Guid> conviteIds, CancellationToken cancelamento)
+    {
+        if (conviteIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await _contexto.Convites
+            .Where(convite => convite.EventoId == eventoId && conviteIds.Contains(convite.Id))
+            .ToListAsync(cancelamento);
+    }
+
     public Task<int> ContarConvidadosAsync(Guid eventoId, CancellationToken cancelamento)
     {
         return _contexto.Convidados.CountAsync(convidado => convidado.EventoId == eventoId, cancelamento);

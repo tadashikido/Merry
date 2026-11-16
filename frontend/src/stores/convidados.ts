@@ -304,6 +304,18 @@ export const useConvidadosStore = defineStore('convidados', () => {
     return resultado
   }
 
+  async function marcarEnviadosEmLote(id: string, conviteIds: string[]): Promise<ResultadoConvidados<ListaConvitesDto>> {
+    await exclusoes.efetivarEscopo(escopoConvites(id))
+    const resultado = await tentar(() =>
+      requisitar<ListaConvitesDto>(`${rotaConvites(id)}/marcar-enviados`, { metodo: 'POST', corpo: { conviteIds } }),
+    )
+    if (resultado.ok && eventoId.value === id) {
+      lista.value = ocultarPendentes(id, resultado.valor)
+      aposAlteracao(id)
+    }
+    return resultado
+  }
+
   function invalidar(id: string) {
     aposAlteracao(id)
   }
@@ -353,6 +365,7 @@ export const useConvidadosStore = defineStore('convidados', () => {
     regenerarLinkRsvp,
     revogarLinkRsvp,
     marcarEnviado,
+    marcarEnviadosEmLote,
     invalidar,
     limpar,
   }

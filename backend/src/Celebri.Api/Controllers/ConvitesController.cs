@@ -79,6 +79,22 @@ public class ConvitesController : ControllerBase
         return Ok(await _conviteService.AtualizarAsync(eventoId, conviteId, request, cancelamento));
     }
 
+    [HttpPost("marcar-enviados")]
+    [Authorize(Policy = PoliticasAutorizacao.GerenciarConvidados)]
+    [ProducesResponseType(typeof(ListaConvitesDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<ListaConvitesDto>> MarcarEnviados(
+        Guid eventoId,
+        MarcarConvitesEnviadosRequest request,
+        CancellationToken cancelamento)
+    {
+        return Ok(await _conviteService.MarcarEnviadosAsync(eventoId, request.ConviteIds!, cancelamento));
+    }
+
     [HttpDelete("{conviteId:guid}")]
     [Authorize(Policy = PoliticasAutorizacao.GerenciarConvidados)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -51,7 +51,7 @@ const CONVITES: ConviteDto[] = [
   convite('Padrinhos', 'Amigos do noivo', [pessoa('Rita')]),
 ]
 
-const SEM_FILTRO = { busca: '', grupo: GRUPO_TODOS, resposta: null }
+const SEM_FILTRO = { busca: '', grupo: GRUPO_TODOS, resposta: null, statusEnvio: null }
 
 describe('telefone', () => {
   it.each([
@@ -158,11 +158,25 @@ describe('filtroConvidados', () => {
       busca: 'souza',
       grupo: chaveGrupo('Amigos do noivo'),
       resposta: 'Confirmado',
+      statusEnvio: null,
     })
 
     expect(resultado).toHaveLength(1)
     expect(resultado[0]?.convidadosVisiveis.map((item) => item.nome)).toEqual(['Zé Souza'])
     expect(resultado[0]?.convidadosOcultos).toBe(1)
+  })
+
+  it('[UNITÁRIO] filtra convites por status de envio', () => {
+    const convites: ConviteDto[] = [
+      { ...convite('A', null, [pessoa('A1')]), statusEnvio: 'NaoEnviado' },
+      { ...convite('B', null, [pessoa('B1')]), statusEnvio: 'Enviado' },
+      { ...convite('C', null, [pessoa('C1')]), statusEnvio: 'Visualizado' },
+    ]
+
+    expect(filtrarConvites(convites, { ...SEM_FILTRO, statusEnvio: 'NaoEnviado' }).map((item) => item.convite.nome)).toEqual(['A'])
+    expect(filtrarConvites(convites, { ...SEM_FILTRO, statusEnvio: 'Enviado' }).map((item) => item.convite.nome)).toEqual(['B'])
+    expect(filtrarConvites(convites, SEM_FILTRO)).toHaveLength(3)
+    expect(filtrosAtivos({ ...SEM_FILTRO, statusEnvio: 'Visualizado' })).toBe(true)
   })
 })
 

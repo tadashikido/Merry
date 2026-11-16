@@ -16,6 +16,11 @@ public static class ClienteConvites
         return $"{Rota(eventoId)}/{conviteId}";
     }
 
+    public static string RotaMarcarEnviados(Guid eventoId)
+    {
+        return $"{Rota(eventoId)}/marcar-enviados";
+    }
+
     public static object Pessoa(
         string nome = "Carla Souza",
         string? telefone = "(11) 98765-4321",

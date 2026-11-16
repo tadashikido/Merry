@@ -4,6 +4,7 @@ export type StatusEnvioConvite = 'NaoEnviado' | 'Enviado' | 'Visualizado'
 
 export const FAIXAS_ETARIAS: readonly FaixaEtaria[] = ['Adulto', 'Crianca']
 export const RESPOSTAS_RSVP: readonly RespostaRsvp[] = ['Pendente', 'Confirmado', 'Recusado']
+export const STATUS_ENVIO_CONVITE: readonly StatusEnvioConvite[] = ['NaoEnviado', 'Enviado', 'Visualizado']
 
 export interface ConvidadoDto {
   id: string

@@ -1,4 +1,4 @@
-import type { ConvidadoDto, ConviteDto, RespostaRsvp } from '@/tipos/convidados'
+import type { ConvidadoDto, ConviteDto, RespostaRsvp, StatusEnvioConvite } from '@/tipos/convidados'
 import { contemTexto, normalizarParaBusca } from '@/utilitarios/busca'
 import { formatarTelefone } from '@/utilitarios/telefone'
 
@@ -9,6 +9,7 @@ export interface FiltrosConvidados {
   busca: string
   grupo: string
   resposta: RespostaRsvp | null
+  statusEnvio: StatusEnvioConvite | null
 }
 
 export interface ConviteFiltrado {
@@ -52,7 +53,12 @@ function convidadoCorrespondeBusca(convidado: ConvidadoDto, busca: string): bool
 }
 
 export function filtrosAtivos(filtros: FiltrosConvidados): boolean {
-  return filtros.busca.trim() !== '' || filtros.grupo !== GRUPO_TODOS || filtros.resposta !== null
+  return (
+    filtros.busca.trim() !== '' ||
+    filtros.grupo !== GRUPO_TODOS ||
+    filtros.resposta !== null ||
+    filtros.statusEnvio !== null
+  )
 }
 
 export function filtrarConvites(convites: ConviteDto[], filtros: FiltrosConvidados): ConviteFiltrado[] {
@@ -60,6 +66,10 @@ export function filtrarConvites(convites: ConviteDto[], filtros: FiltrosConvidad
 
   for (const convite of convites) {
     if (filtros.grupo !== GRUPO_TODOS && chaveGrupo(convite.grupo) !== filtros.grupo) {
+      continue
+    }
+
+    if (filtros.statusEnvio !== null && convite.statusEnvio !== filtros.statusEnvio) {
       continue
     }
 

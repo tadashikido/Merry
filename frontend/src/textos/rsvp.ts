@@ -89,6 +89,16 @@ export const TEXTOS_ENVIO_CONVITE = {
   linkCopiado: 'Link copiado',
   mensagemCopiada: 'Mensagem copiada',
   marcadoEnviado: 'Convite marcado como enviado',
+  marcarEnviadosLote: 'Marcar como enviados',
+  loteContagem: (quantidade: number) =>
+    `${quantidade} ${quantidade === 1 ? 'não enviado' : 'não enviados'} neste filtro`,
+  loteConfirmarTitulo: 'Marcar convites como enviados?',
+  loteConfirmarTexto: (quantidade: number) =>
+    `${quantidade} ${quantidade === 1 ? 'convite não enviado passará' : 'convites não enviados passarão'} para “Enviado”. Os já enviados não mudam e nenhuma mensagem é disparada.`,
+  loteConfirmarAcao: 'Marcar como enviados',
+  loteSucesso: (quantidade: number) =>
+    `${quantidade} ${quantidade === 1 ? 'convite marcado' : 'convites marcados'} como ${quantidade === 1 ? 'enviado' : 'enviados'}.`,
+  loteErro: 'Não foi possível marcar os convites. Tente novamente.',
   linkRegenerado: 'Novo link gerado. O anterior parou de funcionar.',
   linkRevogado: 'Link desativado',
   confirmarRegenerarTitulo: 'Gerar novo link?',

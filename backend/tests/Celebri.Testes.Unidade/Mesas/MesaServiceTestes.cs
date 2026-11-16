@@ -309,6 +309,14 @@ public class MesaServiceTestes
             return Task.FromResult(itens.FirstOrDefault(convite => convite.EventoId == eventoId && convite.Id == conviteId));
         }
 
+        public Task<IReadOnlyList<Convite>> ObterPorIdsAsync(Guid eventoId, IReadOnlyCollection<Guid> conviteIds, CancellationToken cancelamento)
+        {
+            IReadOnlyList<Convite> resultado = itens
+                .Where(convite => convite.EventoId == eventoId && conviteIds.Contains(convite.Id))
+                .ToList();
+            return Task.FromResult(resultado);
+        }
+
         public Task<int> ContarConvidadosAsync(Guid eventoId, CancellationToken cancelamento)
         {
             return Task.FromResult(itens.Where(convite => convite.EventoId == eventoId).Sum(convite => convite.Convidados.Count));
